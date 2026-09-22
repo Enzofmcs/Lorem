@@ -67,8 +67,28 @@ class LocalLoremRepositoryTest {
 
         override fun observeAll() = history
 
-        override suspend fun upsertAll(history: List<ProblemHistoryEntity>) {
-            this.history.value = history
+        override suspend fun insertIfAbsent(history: ProblemHistoryEntity) {
+            if (this.history.value.none { it.contestId == history.contestId && it.problemIndex == history.problemIndex }) {
+                this.history.value += history
+            }
+        }
+
+        override suspend fun promoteExisting(
+            contestId: Long,
+            problemIndex: String,
+            attempted: Boolean,
+            hasAcceptedSubmission: Boolean,
+        ) {
+            history.value = history.value.map { entry ->
+                if (entry.contestId == contestId && entry.problemIndex == problemIndex) {
+                    entry.copy(
+                        attempted = entry.attempted || attempted,
+                        hasAcceptedSubmission = entry.hasAcceptedSubmission || hasAcceptedSubmission,
+                    )
+                } else {
+                    entry
+                }
+            }
         }
     }
 }
