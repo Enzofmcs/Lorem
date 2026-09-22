@@ -44,13 +44,13 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
-- **Foco:** Historia 02 - Importar o historico do Codeforces.
-- **Ultima historia verificada:** Historia 01 - Vincular o handle do Codeforces.
-- **Primeiro item pendente:** registrar problemas com AC e tentativas sem AC.
-- **Proxima entrega demonstravel:** importar e persistir o historico sem duplicar problemas.
+- **Foco:** Historia 03 - Carregar o catalogo de problemas.
+- **Ultima historia verificada:** Historia 02 - Importar o historico do Codeforces.
+- **Primeiro item pendente:** buscar `problemset.problems`.
+- **Proxima entrega demonstravel:** carregar e persistir o catalogo de problemas.
 - **Bloqueios conhecidos:** nenhum.
 
-Progresso e aceite: [`docs/ROADMAP.md#historia-02---importar-o-historico-do-codeforces`](docs/ROADMAP.md#historia-02---importar-o-historico-do-codeforces).
+Progresso e aceite: [`docs/ROADMAP.md#historia-03---carregar-o-catalogo-de-problemas`](docs/ROADMAP.md#historia-03---carregar-o-catalogo-de-problemas).
 
 ## Politica de contexto
 

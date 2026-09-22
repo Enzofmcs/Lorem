@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dev.lorem.app.domain.model.LocalProfile
+import dev.lorem.app.domain.model.ProblemHistory
 import dev.lorem.app.ui.ConfigurationUiState
 import dev.lorem.app.ui.HistorySyncUiState
 import dev.lorem.app.ui.screens.ConfigurationScreen
@@ -21,6 +22,7 @@ fun LoremNavHost(
     onConfirmHandle: () -> Unit,
     onHomeNavigationHandled: () -> Unit,
     historySyncState: HistorySyncUiState,
+    problemHistory: List<ProblemHistory>,
     onSynchronizeHistory: () -> Unit,
     navController: NavHostController = rememberNavController(),
 ) {
@@ -53,7 +55,9 @@ fun LoremNavHost(
                 HomeScreen(
                     profile = it,
                     syncState = historySyncState,
+                    problemHistory = problemHistory,
                     onSynchronize = onSynchronizeHistory,
+                    onNavigate = navController::navigate,
                 )
             }
         }
