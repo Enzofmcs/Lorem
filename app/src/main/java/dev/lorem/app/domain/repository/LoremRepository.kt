@@ -12,5 +12,6 @@ interface LoremRepository {
 
     suspend fun clearProfile()
 
-    suspend fun saveProblemHistory(history: List<ProblemHistory>)
+    /** Persists history only for the Codeforces account identified by [ownerHandle]. */
+    suspend fun saveProblemHistory(ownerHandle: String, history: List<ProblemHistory>)
 }

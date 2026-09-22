@@ -28,7 +28,7 @@ class SynchronizeProblemHistory(
             is SubmissionHistoryResult.Success -> {
                 val history = buildProblemHistory(result.submissions)
                 try {
-                    loremRepository.saveProblemHistory(history)
+                    loremRepository.saveProblemHistory(profile.handle, history)
                     loremRepository.saveProfile(profile.copy(lastSyncEpochMillis = nowMillis()))
                     ProblemHistorySyncResult.Success(history.size)
                 } catch (error: Exception) {

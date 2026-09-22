@@ -47,7 +47,8 @@ class ProblemHistoryPersistenceTest {
 
         val firstDatabase = database(databaseFile)
         val firstRepository = repository(preferencesFile, firstScope, firstDatabase)
-        firstRepository.saveProblemHistory(expected)
+        firstRepository.saveProfile(profile())
+        firstRepository.saveProblemHistory("tourist", expected)
         assertEquals(expected, firstRepository.problemHistory.first())
         firstDatabase.close()
         firstScope.cancel()
@@ -111,6 +112,30 @@ class ProblemHistoryPersistenceTest {
         database.close()
     }
 
+    @Test
+    fun `histories owned by different normalized handles are never combined`() = runTest {
+        val database = database(temporaryFolder.newFile("owners.db"))
+        val repository = repository(
+            temporaryFolder.newFile("owners.preferences_pb"),
+            backgroundScope,
+            database,
+        )
+        val touristHistory = history(400L, "A", accepted = true)
+        val otherHistory = history(500L, "B", accepted = false)
+
+        repository.saveProfile(profile(handle = "Tourist"))
+        repository.saveProblemHistory("TOURIST", listOf(touristHistory))
+        repository.saveProblemHistory("other", listOf(otherHistory))
+        assertEquals(listOf(touristHistory), repository.problemHistory.first())
+
+        repository.saveProfile(profile(handle = "Other"))
+        assertEquals(listOf(otherHistory), repository.problemHistory.first())
+
+        repository.saveProfile(profile(handle = "tourist"))
+        assertEquals(listOf(touristHistory), repository.problemHistory.first())
+        database.close()
+    }
+
     private fun database(file: File): LoremDatabase = Room.databaseBuilder(
         ApplicationProvider.getApplicationContext(),
         LoremDatabase::class.java,
@@ -135,8 +160,8 @@ class ProblemHistoryPersistenceTest {
         hasAcceptedSubmission = accepted,
     )
 
-    private fun profile() = LocalProfile(
-        handle = "tourist",
+    private fun profile(handle: String = "tourist") = LocalProfile(
+        handle = handle,
         displayName = "Tourist",
         officialRating = null,
         loremRating = 1500,
