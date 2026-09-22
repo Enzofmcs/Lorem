@@ -10,7 +10,7 @@
 
 **Ultima historia verificada:** Historia 01 - Vincular o handle do Codeforces.
 
-**Primeiro item pendente:** buscar todas as submissoes necessarias com `user.status`.
+**Primeiro item pendente:** registrar problemas com AC e tentativas sem AC.
 
 **Proxima entrega demonstravel:** importar e persistir o historico sem duplicar problemas.
 
