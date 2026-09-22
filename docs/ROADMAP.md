@@ -102,9 +102,9 @@ checklists; veja [`DECISIONS.md`](DECISIONS.md).
 
 #### Checklist
 
-- [ ] Buscar todas as submissoes necessarias com `user.status`.
-- [ ] Paginar quando uma unica resposta nao cobrir o historico.
-- [ ] Mapear problemas por `contestId + index`.
+- [x] Buscar todas as submissoes necessarias com `user.status`.
+- [x] Paginar quando uma unica resposta nao cobrir o historico.
+- [x] Mapear problemas por `contestId + index`.
 - [ ] Registrar problemas com AC.
 - [ ] Registrar problemas tentados sem AC.
 - [ ] Deduplicar varias submissoes do mesmo problema.
