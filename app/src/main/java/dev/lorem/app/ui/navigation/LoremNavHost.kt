@@ -8,7 +8,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dev.lorem.app.domain.model.LocalProfile
 import dev.lorem.app.ui.ConfigurationUiState
+import dev.lorem.app.ui.HistorySyncUiState
 import dev.lorem.app.ui.screens.ConfigurationScreen
+import dev.lorem.app.ui.screens.HomeScreen
 import dev.lorem.app.ui.screens.PlaceholderScreen
 
 @Composable
@@ -18,6 +20,8 @@ fun LoremNavHost(
     onHandleChange: (String) -> Unit,
     onConfirmHandle: () -> Unit,
     onHomeNavigationHandled: () -> Unit,
+    historySyncState: HistorySyncUiState,
+    onSynchronizeHistory: () -> Unit,
     navController: NavHostController = rememberNavController(),
 ) {
     val profile = configurationState.savedProfile ?: initialProfile
@@ -44,7 +48,18 @@ fun LoremNavHost(
                 onConfirm = onConfirmHandle,
             )
         }
-        LoremDestination.all.filterNot { it == LoremDestination.Configuration }.forEach { destination ->
+        composable(LoremDestination.Home.route) {
+            profile?.let {
+                HomeScreen(
+                    profile = it,
+                    syncState = historySyncState,
+                    onSynchronize = onSynchronizeHistory,
+                )
+            }
+        }
+        LoremDestination.all.filterNot {
+            it == LoremDestination.Configuration || it == LoremDestination.Home
+        }.forEach { destination ->
             composable(destination.route) {
                 PlaceholderScreen(
                     destination = destination,
