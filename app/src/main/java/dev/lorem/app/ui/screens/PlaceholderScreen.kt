@@ -15,11 +15,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.lorem.app.ui.navigation.LoremDestination
+import dev.lorem.app.domain.model.LocalProfile
 
 @Composable
 fun PlaceholderScreen(
     destination: LoremDestination,
-    persistedName: String?,
+    profile: LocalProfile?,
     onNavigate: (String) -> Unit,
 ) {
     Scaffold { innerPadding ->
@@ -33,8 +34,10 @@ fun PlaceholderScreen(
         ) {
             Text(destination.title, style = MaterialTheme.typography.headlineMedium)
             Text("Tela provisória da História 00.")
-            if (destination == LoremDestination.Home && persistedName != null) {
-                Text("Dado local restaurado: $persistedName")
+            if (destination == LoremDestination.Home && profile != null) {
+                Text("${profile.displayName} (@${profile.handle})")
+                Text("Rating oficial: ${profile.officialRating ?: "não disponível"}")
+                Text("Rating Lorem: ${profile.loremRating}")
             }
             LoremDestination.all.forEach { target ->
                 Button(

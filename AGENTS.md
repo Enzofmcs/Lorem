@@ -279,19 +279,19 @@ O desenvolvimento segue o ciclo: especificar a historia, planejar a menor mudanc
 
 #### Checklist
 
-- [ ] Criar campo e acao de confirmacao do handle.
-- [ ] Validar o handle com `user.info`.
-- [ ] Exibir identificacao e rating oficial quando disponiveis.
-- [ ] Salvar o perfil localmente.
-- [ ] Restaurar o perfil ao reabrir o app.
+- [x] Criar campo e acao de confirmacao do handle.
+- [x] Validar o handle com `user.info`.
+- [x] Exibir identificacao e rating oficial quando disponiveis.
+- [x] Salvar o perfil localmente.
+- [x] Restaurar o perfil ao reabrir o app.
 - [ ] Permitir atualizar ou trocar o handle com confirmacao.
-- [ ] Tratar usuario inexistente, falta de internet, limite da API e resposta `FAILED`.
+- [x] Tratar usuario inexistente, falta de internet, limite da API e resposta `FAILED`.
 
 #### Exemplos de aceite
 
-- [ ] **Dado** um handle valido, **quando** confirmar, **entao** a Home e aberta e o perfil permanece salvo.
-- [ ] **Dado** um handle invalido, **quando** confirmar, **entao** o usuario permanece na tela e recebe uma mensagem clara.
-- [ ] **Dada** uma falha de rede, **quando** tentar novamente, **entao** o app nao perde o texto digitado nem trava.
+- [x] **Dado** um handle valido, **quando** confirmar, **entao** a Home e aberta e o perfil permanece salvo.
+- [x] **Dado** um handle invalido, **quando** confirmar, **entao** o usuario permanece na tela e recebe uma mensagem clara.
+- [x] **Dada** uma falha de rede, **quando** tentar novamente, **entao** o app nao perde o texto digitado nem trava.
 
 ---
 
@@ -661,7 +661,7 @@ Nao preencher silenciosamente. Registrar a escolha em **Registro de decisoes** e
 
 ### DA-01 - Rating inicial
 
-- [ ] Usar rating oficial atual do Codeforces.
+- [x] Usar rating oficial atual do Codeforces.
 - [ ] Permitir que o usuario escolha o rating inicial.
 - [ ] Usar um valor padrao e calibrar pelos primeiros Ipsums.
 
@@ -732,6 +732,7 @@ Use o formato abaixo. Nao apagar decisoes antigas; marque quando forem substitui
 | D-006 | 2026-09-18 | Rating estimado e faixa consolidada sao conceitos separados. | Evitar que poucos acertos isolados representem dominio amplo. | 11-13 |
 | D-007 | 2026-09-18 | A estrutura inicial persiste somente um perfil local temporario com DataStore; integracoes do Codeforces permanecem falsas. | Comprovar persistencia e separacao de camadas sem antecipar Room, rede ou regras das historias seguintes. | 00, 01 |
 | D-008 | 2026-09-22 | Arquivos JAR nao serao versionados; os scripts do Gradle baixam o bootstrap oficial para o cache e validam SHA-256. | Manter o diff da PR totalmente textual sem perder os comandos `./gradlew`. | 00 |
+| D-009 | 2026-09-22 | O Rating Lorem inicial usa o rating oficial atual do Codeforces quando ele estiver disponivel; contas sem rating oficial iniciam em 800. | Aproveitar a melhor referencia publica existente sem impedir o uso por contas ainda nao ranqueadas e manter um ponto inicial coerente com a menor dificuldade dos problemas avaliados. | 01, 04, 08 |
 
 ---
 
@@ -741,6 +742,7 @@ Mantenha apenas as cinco sessoes mais recentes; o Git preserva o historico anter
 
 | Data | Historia | Alteracoes | Verificacoes | Pendencias/proximo passo |
 |---|---|---|---|---|
+| 2026-09-22 | 01 | DA-01 resolvida; perfil validado, `user.info`, limitador de dois segundos, persistencia atomica e fluxo de configuracao integrados. | Testes automatizados de sucesso, usuario inexistente, `FAILED`, rede, limite, bloqueio de repeticao, persistencia/restauracao e navegacao; testes, lint e build executados. | Verificar manualmente em dispositivo a troca de handle com confirmacao antes de marcar o item restante e concluir a historia. |
 | 2026-09-22 | 00 | Criterios de aceite marcados como concluidos e estado do projeto avancado para a Historia 01. | Jornada manual em dispositivo ou emulador funcional confirmada pelo usuario: abertura na Configuracao sem perfil, navegacao pelas seis telas e restauracao do nome salvo apos reiniciar o processo; separacao das telas previamente verificada. | Iniciar a Historia 01 pelo campo e pela acao de confirmacao do handle. |
 | 2026-09-22 | 00 | Removido JAR do diff, adicionado bootstrap Gradle verificado, corrigida inicializacao dos destinos e criada jornada automatizada das seis telas. | Bootstrap limpo, teste Compose/Robolectric, persistencia, testes, lint e build. | Nao havia remoto ou referencia `main` no clone; validar manualmente em dispositivo/emulador com aceleracao antes de concluir a historia. |
 | 2026-09-18 | 00 | Projeto Android criado com Compose/Material 3, navegacao provisoria, DataStore, contratos, fakes, testes e README. | `./gradlew test`, `./gradlew lint` e `./gradlew assembleDebug` concluidos com sucesso. | Executar em emulador/dispositivo a abertura, navegacao por todas as telas e restauracao apos encerrar o processo; criterios de aceite permanecem desmarcados. |

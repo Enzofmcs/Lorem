@@ -14,7 +14,10 @@ class MainActivity : ComponentActivity() {
         val container = (application as LoremApplication).container
         setContent {
             LoremTheme {
-                LoremApp(repository = container.loremRepository)
+                LoremApp(
+                    repository = container.loremRepository,
+                    codeforcesRepository = container.codeforcesRepository,
+                )
             }
         }
     }

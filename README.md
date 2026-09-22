@@ -8,16 +8,16 @@ Um **Ipsum** é a tentativa oficial e cronometrada de resolver um problema recom
 
 ## Estado atual
 
-A História 00 fornece uma base Android de módulo único com:
+A base Android de módulo único agora inclui o primeiro fluxo da História 01:
 
 - Kotlin, Jetpack Compose e Material 3;
 - seis destinos provisórios navegáveis;
-- escolha da tela inicial a partir de um pequeno perfil local;
-- persistência desse dado de demonstração com DataStore;
-- contratos de repositório e implementações falsas sem acesso à rede;
+- escolha da tela inicial a partir de um perfil local validado;
+- persistência atômica do perfil Codeforces com DataStore;
+- consulta real ao `user.info`, centralizada por um limitador de requisições;
 - injeção manual e estado de UI exposto por `ViewModel`/`StateFlow`.
 
-Não há integração real com Codeforces, recomendação, cronômetro ou cálculo de rating nesta etapa.
+Ainda não há importação de submissões, recomendação, cronômetro ou cálculo do rating após Ipsums.
 
 ## Escopo resumido
 
@@ -51,7 +51,7 @@ as seguintes reutilizam o arquivo validado em `~/.gradle/wrapper/lorem`.
 3. Selecione a configuração `app` e um dispositivo compatível.
 4. Execute o aplicativo.
 
-Sem dado salvo, o Lorem começa em **Configuração**. Salve o nome de teste para abrir **Início**; na próxima inicialização, o dado restaurado faz **Início** ser o destino inicial.
+Sem perfil salvo, o Lorem começa em **Configuração**. Valide um handle público do Codeforces para abrir **Início**; na próxima inicialização, o perfil restaurado faz **Início** ser o destino inicial.
 
 ## Verificações
 
@@ -87,4 +87,4 @@ Na raiz do projeto:
 
 ## Próximos passos
 
-A próxima entrega é a **História 01 — Vincular o handle do Codeforces**. Ela substituirá o dado local temporário por um perfil validado, sem antecipar as demais funcionalidades descritas no `AGENTS.md`.
+A entrega atual é a **História 01 — Vincular o handle do Codeforces**. Consulte o checklist no `AGENTS.md` para os itens já comprovados e as verificações ainda pendentes.
