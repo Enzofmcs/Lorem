@@ -3,9 +3,18 @@ package dev.lorem.app.data.local
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
+import dev.lorem.app.domain.ProblemHistorySyncResult
+import dev.lorem.app.domain.SynchronizeProblemHistory
+import dev.lorem.app.domain.model.CodeforcesProblem
+import dev.lorem.app.domain.model.CodeforcesSubmission
+import dev.lorem.app.domain.model.LocalProfile
 import dev.lorem.app.domain.model.ProblemHistory
 import dev.lorem.app.domain.model.ProblemId
+import dev.lorem.app.domain.repository.CodeforcesRepository
+import dev.lorem.app.domain.repository.SubmissionHistoryResult
+import dev.lorem.app.domain.repository.UserLookupResult
 import java.io.File
+import java.time.Instant
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.first
@@ -15,8 +24,11 @@ import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
+@RunWith(RobolectricTestRunner::class)
 @Config(sdk = [35])
 class ProblemHistoryPersistenceTest {
     @get:Rule
@@ -47,19 +59,55 @@ class ProblemHistoryPersistenceTest {
     }
 
     @Test
-    fun `saving the same import again does not duplicate problems`() = runTest {
+    fun `synchronizing the same submissions twice preserves identical rows`() = runTest {
         val database = database(temporaryFolder.newFile("idempotent.db"))
         val repository = repository(
             temporaryFolder.newFile("idempotent.preferences_pb"),
             backgroundScope,
             database,
         )
-        val history = listOf(history(contestId = 200L, index = "C", accepted = true))
+        repository.saveProfile(profile())
+        val submissions = listOf(
+            submission(id = 1L, contestId = 200L, index = "C", verdict = "OK"),
+            submission(id = 2L, contestId = 201L, index = "A", verdict = "WRONG_ANSWER"),
+        )
+        val synchronize = SynchronizeProblemHistory(repository, FakeCodeforcesRepository(submissions))
 
-        repository.saveProblemHistory(history)
-        repository.saveProblemHistory(history)
+        assertEquals(ProblemHistorySyncResult.Success(2), synchronize())
+        val firstImport = repository.problemHistory.first()
+        assertEquals(ProblemHistorySyncResult.Success(2), synchronize())
 
-        assertEquals(history, repository.problemHistory.first())
+        assertEquals(2, repository.problemHistory.first().size)
+        assertEquals(firstImport, repository.problemHistory.first())
+        database.close()
+    }
+
+    @Test
+    fun `later accepted submission promotes one row and older wrong answer cannot regress it`() = runTest {
+        val database = database(temporaryFolder.newFile("promotion.db"))
+        val repository = repository(
+            temporaryFolder.newFile("promotion.preferences_pb"),
+            backgroundScope,
+            database,
+        )
+        repository.saveProfile(profile())
+        val codeforces = FakeCodeforcesRepository(
+            listOf(submission(id = 1L, contestId = 300L, index = "B", verdict = "WRONG_ANSWER")),
+        )
+        val synchronize = SynchronizeProblemHistory(repository, codeforces)
+
+        synchronize()
+        assertEquals(listOf(history(300L, "B", accepted = false)), repository.problemHistory.first())
+
+        codeforces.submissions = listOf(submission(id = 2L, contestId = 300L, index = "B", verdict = "OK"))
+        synchronize()
+        assertEquals(listOf(history(300L, "B", accepted = true)), repository.problemHistory.first())
+
+        codeforces.submissions = listOf(
+            submission(id = 1L, contestId = 300L, index = "B", verdict = "WRONG_ANSWER"),
+        )
+        synchronize()
+        assertEquals(listOf(history(300L, "B", accepted = true)), repository.problemHistory.first())
         database.close()
     }
 
@@ -86,4 +134,30 @@ class ProblemHistoryPersistenceTest {
         attempted = true,
         hasAcceptedSubmission = accepted,
     )
+
+    private fun profile() = LocalProfile(
+        handle = "tourist",
+        displayName = "Tourist",
+        officialRating = null,
+        loremRating = 1500,
+        consolidatedRating = null,
+        lastSyncEpochMillis = 0L,
+    )
+
+    private fun submission(id: Long, contestId: Long, index: String, verdict: String?) = CodeforcesSubmission(
+        id = id,
+        problemId = ProblemId(contestId, index),
+        verdict = verdict,
+        createdAt = Instant.ofEpochSecond(id),
+    )
+
+    private class FakeCodeforcesRepository(
+        var submissions: List<CodeforcesSubmission>,
+    ) : CodeforcesRepository {
+        override suspend fun user(handle: String): UserLookupResult = error("Not used")
+
+        override suspend fun submissionHistory(handle: String) = SubmissionHistoryResult.Success(submissions)
+
+        override suspend fun problems(): List<CodeforcesProblem> = error("Not used")
+    }
 }

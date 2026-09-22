@@ -108,15 +108,15 @@ checklists; veja [`DECISIONS.md`](DECISIONS.md).
 - [x] Registrar problemas com AC.
 - [x] Registrar problemas tentados sem AC.
 - [x] Deduplicar varias submissoes do mesmo problema.
-- [ ] Salvar o historico localmente.
-- [ ] Atualizar sem duplicar registros.
+- [x] Salvar o historico localmente.
+- [x] Atualizar sem duplicar registros.
 - [ ] Mostrar estado de sincronizacao e falhas recuperaveis.
 
 #### Exemplos de aceite
 
 - [x] Um problema com qualquer submissao anterior e considerado tentado.
 - [x] WA seguido de AC aparece como resolvido, mas continua marcado como ja tentado.
-- [ ] Sincronizar duas vezes produz o mesmo conjunto de problemas.
+- [x] Sincronizar duas vezes produz o mesmo conjunto de problemas.
 
 ---
 
