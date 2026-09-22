@@ -221,15 +221,15 @@ A API publica retorna `OK` ou `FAILED` e permite no maximo uma chamada a cada do
 
 ### Comandos de verificacao esperados
 
-Confirmar os comandos reais no repositorio antes de usa-los. Com o Gradle Wrapper padrao:
+Este repositorio nao versiona o Gradle Wrapper para evitar artefatos binarios. Use Gradle 8.11 ou superior com Java 17:
 
 ```bash
-./gradlew test
-./gradlew lint
-./gradlew assembleDebug
+gradle test
+gradle lint
+gradle assembleDebug
 ```
 
-No Windows sem WSL, usar os equivalentes com `gradlew.bat`.
+No Windows sem WSL, use os mesmos comandos em um terminal no qual o Gradle esteja disponivel no `PATH`.
 
 ---
 
@@ -255,14 +255,14 @@ O desenvolvimento segue o ciclo: especificar a historia, planejar a menor mudanc
 
 #### Checklist
 
-- [ ] Criar ou confirmar o projeto Android com Kotlin e Compose.
+- [x] Criar ou confirmar o projeto Android com Kotlin e Compose.
 - [ ] Definir pacotes ou camadas para dados, dominio e interface.
 - [ ] Criar navegacao entre Configuracao, Inicio, Ipsum, Resultado, Historico e Estatisticas.
 - [ ] Configurar armazenamento local.
 - [ ] Criar interfaces para acesso ao Codeforces e ao banco local.
 - [ ] Criar implementacoes falsas para testar o fluxo sem depender da rede.
-- [ ] Confirmar os comandos de build, teste e lint neste arquivo.
-- [ ] Executar build inicial com sucesso.
+- [x] Confirmar os comandos de build, teste e lint neste arquivo.
+- [x] Executar build inicial com sucesso.
 
 #### Criterios de aceite
 
@@ -730,6 +730,8 @@ Use o formato abaixo. Nao apagar decisoes antigas; marque quando forem substitui
 | D-004 | 2026-09-18 | AC posterior muda a classificacao da pendencia, mas nao o rating original. | Preservar as condicoes avaliadas no Ipsum. | 08-10 |
 | D-005 | 2026-09-18 | O Lorem usa somente tags oficiais do Codeforces. | Evitar complexidade desnecessaria. | 03, 11-13 |
 | D-006 | 2026-09-18 | Rating estimado e faixa consolidada sao conceitos separados. | Evitar que poucos acertos isolados representem dominio amplo. | 11-13 |
+| D-007 | 2026-09-22 | A base Android usa Kotlin, Compose e SDK 35, com Java 17 como alvo de compilacao. | Restaurar um executavel minimo e reproduzivel sem antecipar historias futuras. | 00 |
+| D-008 | 2026-09-22 | O Gradle Wrapper nao sera versionado; o projeto requer Gradle 8.11 ou superior instalado. | Evitar que o binario `gradle-wrapper.jar` bloqueie a criacao do PR neste repositorio. | 00 |
 
 ---
 
@@ -739,6 +741,8 @@ Mantenha apenas as cinco sessoes mais recentes; o Git preserva o historico anter
 
 | Data | Historia | Alteracoes | Verificacoes | Pendencias/proximo passo |
 |---|---|---|---|---|
+| 2026-09-22 | 00 | Gradle Wrapper removido do versionamento e comandos ajustados para o Gradle instalado. | `gradle test lint assembleDebug` concluido com Gradle 8.14.4 e Java 17. | Validar abertura em dispositivo/emulador e implementar navegacao provisoria. |
+| 2026-09-22 | 00 | Projeto Android e tela inicial Compose criados; activity inicial registrada com tema valido. | `./gradlew test lint assembleDebug` concluido; APK e activity launcher inspecionados. | Validar abertura em dispositivo/emulador e implementar navegacao provisoria. |
 | 2026-09-18 | Planejamento | Guia inicial criado. | Escopo comparado com as decisoes do produto. | Iniciar Historia 00. |
 
 ---
