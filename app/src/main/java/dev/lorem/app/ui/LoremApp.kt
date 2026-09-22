@@ -23,6 +23,7 @@ fun LoremApp(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val configurationState by viewModel.configurationState.collectAsStateWithLifecycle()
+    val historySyncState by viewModel.historySyncState.collectAsStateWithLifecycle()
     when (val state = uiState) {
         LoremUiState.Loading -> Box(
             modifier = Modifier.fillMaxSize(),
@@ -35,6 +36,8 @@ fun LoremApp(
             onHandleChange = viewModel::updateHandle,
             onConfirmHandle = viewModel::confirmHandle,
             onHomeNavigationHandled = viewModel::homeNavigationHandled,
+            historySyncState = historySyncState,
+            onSynchronizeHistory = viewModel::synchronizeHistory,
         )
     }
 }

@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import dev.lorem.app.domain.model.LocalProfile
+import dev.lorem.app.domain.ProblemHistorySyncResult
+import dev.lorem.app.domain.SynchronizeProblemHistory
 import dev.lorem.app.domain.repository.CodeforcesRepository
 import dev.lorem.app.domain.repository.LoremRepository
 import dev.lorem.app.domain.repository.UserLookupResult
@@ -28,11 +30,23 @@ data class ConfigurationUiState(
     val navigateHome: Boolean = false,
 )
 
+sealed interface HistorySyncUiState {
+    data object Idle : HistorySyncUiState
+    data object Loading : HistorySyncUiState
+    data class Success(val problemCount: Int) : HistorySyncUiState
+    data class Error(val message: String) : HistorySyncUiState
+}
+
 class LoremViewModel(
     private val repository: LoremRepository,
     private val codeforcesRepository: CodeforcesRepository,
     private val nowMillis: () -> Long = System::currentTimeMillis,
 ) : ViewModel() {
+    private val synchronizeProblemHistory = SynchronizeProblemHistory(
+        loremRepository = repository,
+        codeforcesRepository = codeforcesRepository,
+        nowMillis = nowMillis,
+    )
     val uiState: StateFlow<LoremUiState> = repository.profile
         .map<LocalProfile?, LoremUiState>(LoremUiState::Ready)
         .stateIn(
@@ -44,6 +58,9 @@ class LoremViewModel(
     private val mutableConfigurationState = MutableStateFlow(ConfigurationUiState())
     val configurationState: StateFlow<ConfigurationUiState> =
         mutableConfigurationState.asStateFlow()
+
+    private val mutableHistorySyncState = MutableStateFlow<HistorySyncUiState>(HistorySyncUiState.Idle)
+    val historySyncState: StateFlow<HistorySyncUiState> = mutableHistorySyncState.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -91,7 +108,7 @@ class LoremViewModel(
             officialRating = user.rating,
             loremRating = user.rating ?: INITIAL_UNRATED_RATING,
             consolidatedRating = null,
-            lastSyncEpochMillis = nowMillis(),
+            lastSyncEpochMillis = 0L,
         )
         try {
             repository.saveProfile(profile)
@@ -116,6 +133,35 @@ class LoremViewModel(
 
     fun homeNavigationHandled() {
         mutableConfigurationState.value = mutableConfigurationState.value.copy(navigateHome = false)
+    }
+
+    fun synchronizeHistory() {
+        if (mutableHistorySyncState.value == HistorySyncUiState.Loading) return
+        mutableHistorySyncState.value = HistorySyncUiState.Loading
+        viewModelScope.launch {
+            mutableHistorySyncState.value = when (val result = synchronizeProblemHistory()) {
+                is ProblemHistorySyncResult.Success -> HistorySyncUiState.Success(result.problemCount)
+                ProblemHistorySyncResult.NoActiveProfile -> HistorySyncUiState.Error("Nenhum perfil ativo para sincronizar.")
+                is ProblemHistorySyncResult.Failed -> HistorySyncUiState.Error(
+                    "Codeforces recusou a sincronização: ${result.message}",
+                )
+                ProblemHistorySyncResult.RateLimited -> HistorySyncUiState.Error(
+                    "Limite do Codeforces atingido. Aguarde e tente novamente.",
+                )
+                ProblemHistorySyncResult.NetworkFailure -> HistorySyncUiState.Error(
+                    "Sem conexão com o Codeforces. Verifique a internet e tente novamente.",
+                )
+                is ProblemHistorySyncResult.HttpFailure -> HistorySyncUiState.Error(
+                    "Falha HTTP ${result.statusCode} ao sincronizar. Tente novamente.",
+                )
+                ProblemHistorySyncResult.InvalidResponse -> HistorySyncUiState.Error(
+                    "O Codeforces enviou uma resposta inválida. Tente novamente.",
+                )
+                ProblemHistorySyncResult.PersistenceFailure -> HistorySyncUiState.Error(
+                    "Não foi possível salvar o histórico. Tente novamente.",
+                )
+            }
+        }
     }
 
     companion object {
