@@ -235,13 +235,13 @@ No Windows sem WSL, use os mesmos comandos em um terminal no qual o Gradle estej
 
 ## 8. Estado atual
 
-**Foco atual:** Historia 00 - Estrutura basica (implementada; jornada manual pendente).
+**Foco atual:** Historia 01 - Vincular o handle do Codeforces.
 
-**Ultima historia verificada:** nenhuma.
+**Ultima historia verificada:** Historia 00 - Estrutura basica.
 
-**Proxima entrega demonstravel:** executar a jornada da estrutura basica em emulador ou dispositivo e, depois, iniciar a Historia 01.
+**Proxima entrega demonstravel:** vincular e persistir um handle valido do Codeforces.
 
-**Bloqueios conhecidos:** a jornada foi coberta por teste de interface com Robolectric, mas o emulador sem aceleracao de hardware nao concluiu o boot; abertura, navegacao e restauracao apos encerrar o processo ainda exigem verificacao manual em dispositivo ou emulador funcional.
+**Bloqueios conhecidos:** nenhum.
 
 ---
 
@@ -266,10 +266,10 @@ O desenvolvimento segue o ciclo: especificar a historia, planejar a menor mudanc
 
 #### Criterios de aceite
 
-- [ ] O aplicativo abre sem erro.
-- [ ] E possivel navegar entre telas provisórias.
-- [ ] Um dado de teste continua existindo depois de fechar e reabrir o app.
-- [ ] As telas nao acessam diretamente rede ou banco.
+- [x] O aplicativo abre sem erro.
+- [x] E possivel navegar entre telas provisórias.
+- [x] Um dado de teste continua existindo depois de fechar e reabrir o app.
+- [x] As telas nao acessam diretamente rede ou banco.
 
 ---
 
@@ -741,6 +741,7 @@ Mantenha apenas as cinco sessoes mais recentes; o Git preserva o historico anter
 
 | Data | Historia | Alteracoes | Verificacoes | Pendencias/proximo passo |
 |---|---|---|---|---|
+| 2026-09-22 | 00 | Criterios de aceite marcados como concluidos e estado do projeto avancado para a Historia 01. | Jornada manual em dispositivo ou emulador funcional confirmada pelo usuario: abertura na Configuracao sem perfil, navegacao pelas seis telas e restauracao do nome salvo apos reiniciar o processo; separacao das telas previamente verificada. | Iniciar a Historia 01 pelo campo e pela acao de confirmacao do handle. |
 | 2026-09-22 | 00 | Removido JAR do diff, adicionado bootstrap Gradle verificado, corrigida inicializacao dos destinos e criada jornada automatizada das seis telas. | Bootstrap limpo, teste Compose/Robolectric, persistencia, testes, lint e build. | Nao havia remoto ou referencia `main` no clone; validar manualmente em dispositivo/emulador com aceleracao antes de concluir a historia. |
 | 2026-09-18 | 00 | Projeto Android criado com Compose/Material 3, navegacao provisoria, DataStore, contratos, fakes, testes e README. | `./gradlew test`, `./gradlew lint` e `./gradlew assembleDebug` concluidos com sucesso. | Executar em emulador/dispositivo a abertura, navegacao por todas as telas e restauracao apos encerrar o processo; criterios de aceite permanecem desmarcados. |
 | 2026-09-18 | Planejamento | Guia inicial criado. | Escopo comparado com as decisoes do produto. | Iniciar Historia 00. |
