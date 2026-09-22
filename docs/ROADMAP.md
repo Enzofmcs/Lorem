@@ -6,13 +6,13 @@
 
 ## Estado atual
 
-**Foco atual:** Historia 01 - Vincular o handle do Codeforces.
+**Foco atual:** Historia 02 - Importar o historico do Codeforces.
 
-**Ultima historia verificada:** Historia 00 - Estrutura basica.
+**Ultima historia verificada:** Historia 01 - Vincular o handle do Codeforces.
 
-**Primeiro item pendente:** executar o smoke test manual da troca de handle em dispositivo.
+**Primeiro item pendente:** buscar todas as submissoes necessarias com `user.status`.
 
-**Proxima entrega demonstravel:** confirmar manualmente a Historia 01 e iniciar a Historia 02.
+**Proxima entrega demonstravel:** importar e persistir o historico sem duplicar problemas.
 
 **Bloqueios conhecidos:** nenhum.
 

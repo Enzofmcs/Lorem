@@ -44,13 +44,13 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
-- **Foco:** Historia 01 - Vincular o handle do Codeforces.
-- **Ultima historia verificada:** Historia 00 - Estrutura basica.
-- **Primeiro item pendente:** executar o smoke test manual da troca de handle em dispositivo.
-- **Proxima entrega demonstravel:** confirmar manualmente a Historia 01 e iniciar a Historia 02.
+- **Foco:** Historia 02 - Importar o historico do Codeforces.
+- **Ultima historia verificada:** Historia 01 - Vincular o handle do Codeforces.
+- **Primeiro item pendente:** buscar todas as submissoes necessarias com `user.status`.
+- **Proxima entrega demonstravel:** importar e persistir o historico sem duplicar problemas.
 - **Bloqueios conhecidos:** nenhum.
 
-Progresso e aceite: [`docs/ROADMAP.md#historia-01---vincular-o-handle-do-codeforces`](docs/ROADMAP.md#historia-01---vincular-o-handle-do-codeforces).
+Progresso e aceite: [`docs/ROADMAP.md#historia-02---importar-o-historico-do-codeforces`](docs/ROADMAP.md#historia-02---importar-o-historico-do-codeforces).
 
 ## Politica de contexto
 
