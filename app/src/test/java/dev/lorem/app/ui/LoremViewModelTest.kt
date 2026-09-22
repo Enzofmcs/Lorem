@@ -56,6 +56,59 @@ class LoremViewModelTest {
     }
 
     @Test
+    fun `successful profile change selects empty history owned by the new user`() = runTest {
+        val existing = ProblemHistory(ProblemId(7L, "B"), attempted = true, hasAcceptedSubmission = true)
+        val local = MemoryRepository(profile(), listOf(existing))
+        val viewModel = LoremViewModel(
+            local,
+            CountingRepository(UserLookupResult.Success(CodeforcesUser("other", "Other", 1200))),
+        )
+
+        viewModel.updateHandle("other")
+        viewModel.confirmHandle()
+        advanceUntilIdle()
+
+        assertEquals("other", local.profile.value?.handle)
+        assertEquals(emptyList<ProblemHistory>(), local.problemHistory.value)
+        assertEquals(listOf(existing), local.historyFor("tourist"))
+    }
+
+    @Test
+    fun `failed profile validation preserves current profile and history`() = runTest {
+        val existing = ProblemHistory(ProblemId(8L, "C"), attempted = true, hasAcceptedSubmission = false)
+        val original = profile(lastSync = 55L)
+        val local = MemoryRepository(original, listOf(existing))
+        val viewModel = LoremViewModel(local, CountingRepository(UserLookupResult.UserNotFound))
+
+        viewModel.updateHandle("missing")
+        viewModel.confirmHandle()
+        advanceUntilIdle()
+
+        assertEquals(original, local.profile.value)
+        assertEquals(listOf(existing), local.problemHistory.value)
+    }
+
+    @Test
+    fun `canonical handle differing only by case retains owned history and training data`() = runTest {
+        val existing = ProblemHistory(ProblemId(9L, "D"), attempted = true, hasAcceptedSubmission = true)
+        val original = profile(lastSync = 66L)
+        val local = MemoryRepository(original, listOf(existing))
+        val viewModel = LoremViewModel(
+            local,
+            CountingRepository(UserLookupResult.Success(CodeforcesUser("Tourist", "Canonical", 3900))),
+        )
+
+        viewModel.updateHandle("TOURIST")
+        viewModel.confirmHandle()
+        advanceUntilIdle()
+
+        assertEquals("Tourist", local.profile.value?.handle)
+        assertEquals(original.loremRating, local.profile.value?.loremRating)
+        assertEquals(66L, local.profile.value?.lastSyncEpochMillis)
+        assertEquals(listOf(existing), local.problemHistory.value)
+    }
+
+    @Test
     fun `successful synchronization persists deduplicated history before updating timestamp`() = runTest {
         val original = profile(lastSync = 10L)
         val local = MemoryRepository(original)
@@ -147,19 +200,29 @@ private class MemoryRepository(
 ) : LoremRepository {
     override val profile = MutableStateFlow(initialProfile)
     override val problemHistory = MutableStateFlow(initialHistory)
+    private val histories = mutableMapOf<String, List<ProblemHistory>>()
     val savedOperations = mutableListOf<String>()
+    init {
+        initialProfile?.let { histories[normalize(it.handle)] = initialHistory }
+    }
     override suspend fun saveProfile(profile: LocalProfile) {
         savedOperations += "profile"
         this.profile.value = profile
+        problemHistory.value = histories[normalize(profile.handle)].orEmpty()
     }
     override suspend fun clearProfile() { profile.value = null }
-    override suspend fun saveProblemHistory(history: List<ProblemHistory>) {
+    override suspend fun saveProblemHistory(ownerHandle: String, history: List<ProblemHistory>) {
         savedOperations += "history"
-        problemHistory.value = (problemHistory.value + history)
+        val owner = normalize(ownerHandle)
+        val merged = (histories[owner].orEmpty() + history)
             .associateBy(ProblemHistory::problemId)
             .values
             .toList()
+        histories[owner] = merged
+        if (profile.value?.handle?.let(::normalize) == owner) problemHistory.value = merged
     }
+    fun historyFor(handle: String): List<ProblemHistory> = histories[normalize(handle)].orEmpty()
+    private fun normalize(handle: String) = handle.trim().lowercase()
 }
 
 private class CountingRepository(

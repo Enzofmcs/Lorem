@@ -11,8 +11,11 @@ import dev.lorem.app.domain.model.LocalProfile
 import dev.lorem.app.domain.model.ProblemHistory
 import dev.lorem.app.domain.repository.LoremRepository
 import java.io.IOException
+import java.util.Locale
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 
 class LocalLoremRepository(
@@ -25,8 +28,11 @@ class LocalLoremRepository(
         }
         .map(::readProfile)
 
-    override val problemHistory: Flow<List<ProblemHistory>> = problemHistoryDao
-        .observeAll()
+    override val problemHistory: Flow<List<ProblemHistory>> = profile
+        .flatMapLatest { profile ->
+            profile?.let { problemHistoryDao.observeForOwner(normalizeHandle(it.handle)) }
+                ?: flowOf(emptyList())
+        }
         .map { history -> history.map { it.toDomain() } }
 
     override suspend fun saveProfile(profile: LocalProfile) {
@@ -57,8 +63,10 @@ class LocalLoremRepository(
         }
     }
 
-    override suspend fun saveProblemHistory(history: List<ProblemHistory>) {
-        problemHistoryDao.upsertAll(history.map { it.toEntity() })
+    override suspend fun saveProblemHistory(ownerHandle: String, history: List<ProblemHistory>) {
+        val normalizedOwner = normalizeHandle(ownerHandle)
+        require(normalizedOwner.isNotBlank()) { "ownerHandle must not be blank" }
+        problemHistoryDao.upsertAll(history.map { it.toEntity(normalizedOwner) })
     }
 
     private fun readProfile(preferences: Preferences): LocalProfile? {
@@ -77,6 +85,7 @@ class LocalLoremRepository(
     }
 
     private companion object {
+        fun normalizeHandle(handle: String): String = handle.trim().lowercase(Locale.ROOT)
         val LEGACY_DISPLAY_NAME = stringPreferencesKey("display_name")
         val HANDLE = stringPreferencesKey("profile_handle")
         val DISPLAY_NAME = stringPreferencesKey("profile_display_name")

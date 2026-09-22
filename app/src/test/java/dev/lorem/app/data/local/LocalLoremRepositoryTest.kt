@@ -65,22 +65,30 @@ class LocalLoremRepositoryTest {
     private class FakeProblemHistoryDao : ProblemHistoryDao {
         private val history = MutableStateFlow<List<ProblemHistoryEntity>>(emptyList())
 
-        override fun observeAll() = history
+        override fun observeForOwner(ownerHandle: String) = MutableStateFlow(
+            history.value.filter { it.ownerHandle == ownerHandle },
+        )
 
         override suspend fun insertIfAbsent(history: ProblemHistoryEntity) {
-            if (this.history.value.none { it.contestId == history.contestId && it.problemIndex == history.problemIndex }) {
+            if (this.history.value.none {
+                    it.ownerHandle == history.ownerHandle &&
+                        it.contestId == history.contestId &&
+                        it.problemIndex == history.problemIndex
+                }
+            ) {
                 this.history.value += history
             }
         }
 
         override suspend fun promoteExisting(
+            ownerHandle: String,
             contestId: Long,
             problemIndex: String,
             attempted: Boolean,
             hasAcceptedSubmission: Boolean,
         ) {
             history.value = history.value.map { entry ->
-                if (entry.contestId == contestId && entry.problemIndex == problemIndex) {
+                if (entry.ownerHandle == ownerHandle && entry.contestId == contestId && entry.problemIndex == problemIndex) {
                     entry.copy(
                         attempted = entry.attempted || attempted,
                         hasAcceptedSubmission = entry.hasAcceptedSubmission || hasAcceptedSubmission,

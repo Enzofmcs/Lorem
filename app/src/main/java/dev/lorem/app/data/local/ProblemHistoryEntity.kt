@@ -6,16 +6,18 @@ import dev.lorem.app.domain.model.ProblemId
 
 @Entity(
     tableName = "problem_history",
-    primaryKeys = ["contestId", "problemIndex"],
+    primaryKeys = ["ownerHandle", "contestId", "problemIndex"],
 )
 data class ProblemHistoryEntity(
+    val ownerHandle: String,
     val contestId: Long,
     val problemIndex: String,
     val attempted: Boolean,
     val hasAcceptedSubmission: Boolean,
 )
 
-fun ProblemHistory.toEntity() = ProblemHistoryEntity(
+fun ProblemHistory.toEntity(ownerHandle: String) = ProblemHistoryEntity(
+    ownerHandle = ownerHandle,
     contestId = problemId.contestId,
     problemIndex = problemId.index,
     attempted = attempted,

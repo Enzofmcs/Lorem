@@ -123,7 +123,7 @@ private class MemoryLoremRepository(initialProfile: LocalProfile? = null) : Lore
     override val problemHistory = MutableStateFlow<List<ProblemHistory>>(emptyList())
     override suspend fun saveProfile(profile: LocalProfile) { this.profile.value = profile }
     override suspend fun clearProfile() { profile.value = null }
-    override suspend fun saveProblemHistory(history: List<ProblemHistory>) {
+    override suspend fun saveProblemHistory(ownerHandle: String, history: List<ProblemHistory>) {
         problemHistory.value = history
     }
 }

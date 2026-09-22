@@ -21,7 +21,7 @@ class FakeLoremRepository(initialProfile: LocalProfile? = null) : LoremRepositor
         storedProfile.value = null
     }
 
-    override suspend fun saveProblemHistory(history: List<ProblemHistory>) {
+    override suspend fun saveProblemHistory(ownerHandle: String, history: List<ProblemHistory>) {
         storedProblemHistory.value = (storedProblemHistory.value + history)
             .associateBy(ProblemHistory::problemId)
             .values

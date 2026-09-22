@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -102,13 +103,17 @@ class LoremViewModel(
 
     private suspend fun persist(result: UserLookupResult.Success) {
         val user = result.user
+        val savedProfile = repository.profile.first()
+        val sameOwner = savedProfile?.handle?.trim()?.equals(user.handle.trim(), ignoreCase = true) == true
         val profile = LocalProfile(
             handle = user.handle,
             displayName = user.displayName,
             officialRating = user.rating,
-            loremRating = user.rating ?: INITIAL_UNRATED_RATING,
-            consolidatedRating = null,
-            lastSyncEpochMillis = 0L,
+            loremRating = savedProfile?.loremRating?.takeIf { sameOwner }
+                ?: user.rating
+                ?: INITIAL_UNRATED_RATING,
+            consolidatedRating = savedProfile?.consolidatedRating?.takeIf { sameOwner },
+            lastSyncEpochMillis = savedProfile?.lastSyncEpochMillis?.takeIf { sameOwner } ?: 0L,
         )
         try {
             repository.saveProfile(profile)
