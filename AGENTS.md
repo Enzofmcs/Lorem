@@ -221,15 +221,15 @@ A API publica retorna `OK` ou `FAILED` e permite no maximo uma chamada a cada do
 
 ### Comandos de verificacao esperados
 
-Confirmar os comandos reais no repositorio antes de usa-los. Com o Gradle Wrapper padrao:
+Este repositorio nao versiona o Gradle Wrapper para evitar artefatos binarios. Use Gradle 8.11 ou superior com Java 17:
 
 ```bash
-./gradlew test
-./gradlew lint
-./gradlew assembleDebug
+gradle test
+gradle lint
+gradle assembleDebug
 ```
 
-No Windows sem WSL, usar os equivalentes com `gradlew.bat`.
+No Windows sem WSL, use os mesmos comandos em um terminal no qual o Gradle esteja disponivel no `PATH`.
 
 ---
 
