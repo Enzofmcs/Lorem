@@ -3,6 +3,7 @@ package dev.lorem.app.ui
 import dev.lorem.app.domain.model.CodeforcesProblem
 import dev.lorem.app.domain.model.LocalProfile
 import dev.lorem.app.domain.repository.CodeforcesRepository
+import dev.lorem.app.domain.repository.SubmissionHistoryResult
 import dev.lorem.app.domain.repository.CodeforcesUser
 import dev.lorem.app.domain.repository.LoremRepository
 import dev.lorem.app.domain.repository.UserLookupResult
@@ -62,5 +63,7 @@ private class CountingRepository(
 ) : CodeforcesRepository {
     var calls = 0
     override suspend fun user(handle: String): UserLookupResult { calls++; return result }
+    override suspend fun submissionHistory(handle: String) =
+        SubmissionHistoryResult.Success(emptyList())
     override suspend fun problems(): List<CodeforcesProblem> = emptyList()
 }
