@@ -10,9 +10,9 @@
 
 **Ultima historia verificada:** Historia 00 - Estrutura basica.
 
-**Primeiro item pendente:** permitir atualizar ou trocar o handle com confirmacao.
+**Primeiro item pendente:** executar o smoke test manual da troca de handle em dispositivo.
 
-**Proxima entrega demonstravel:** concluir e verificar a troca de handle.
+**Proxima entrega demonstravel:** confirmar manualmente a Historia 01 e iniciar a Historia 02.
 
 **Bloqueios conhecidos:** nenhum.
 
@@ -85,7 +85,7 @@ checklists; veja [`DECISIONS.md`](DECISIONS.md).
 - [x] Exibir identificacao e rating oficial quando disponiveis.
 - [x] Salvar o perfil localmente.
 - [x] Restaurar o perfil ao reabrir o app.
-- [ ] Permitir atualizar ou trocar o handle com confirmacao.
+- [x] Permitir atualizar ou trocar o handle com confirmacao.
 - [x] Tratar usuario inexistente, falta de internet, limite da API e resposta `FAILED`.
 
 #### Exemplos de aceite

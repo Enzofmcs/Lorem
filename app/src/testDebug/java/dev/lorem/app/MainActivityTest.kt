@@ -1,11 +1,14 @@
 package dev.lorem.app
 
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTextReplacement
 import dev.lorem.app.domain.model.CodeforcesProblem
 import dev.lorem.app.domain.model.LocalProfile
 import dev.lorem.app.domain.repository.CodeforcesRepository
@@ -64,6 +67,45 @@ class MainActivityTest {
         composeRule.onNodeWithText("Vincular Codeforces").assertIsDisplayed()
     }
 
+    @Test
+    fun `changing handle requires confirmation before replacing saved profile`() {
+        val original = LocalProfile("old", "Old User", 1200, 1200, null, 1L)
+        val local = MemoryLoremRepository(original)
+        setApp(local, UserLookupResult.Success(CodeforcesUser("new", "New User", 1500)))
+
+        composeRule.onNodeWithText("Abrir Configuração").performClick()
+        composeRule.onNodeWithText("Handle do Codeforces").performTextReplacement("new")
+        composeRule.onNodeWithText("Atualizar handle").performClick()
+
+        composeRule.onNodeWithText("Trocar handle?").assertIsDisplayed()
+        assertEquals(original, local.profile.value)
+        composeRule.onNodeWithText("Cancelar").performClick()
+        composeRule.onAllNodesWithText("Trocar handle?").assertCountEquals(0)
+        assertEquals(original, local.profile.value)
+
+        composeRule.onNodeWithText("Atualizar handle").performClick()
+        composeRule.onNodeWithText("Trocar").performClick()
+        composeRule.waitUntil(5_000) { local.profile.value?.handle == "new" }
+
+        composeRule.onNodeWithText("New User (@new)").assertIsDisplayed()
+        assertEquals(1500, local.profile.value?.officialRating)
+    }
+
+    @Test
+    fun `failed handle change keeps existing profile`() {
+        val original = LocalProfile("old", "Old User", 1200, 1200, null, 1L)
+        val local = MemoryLoremRepository(original)
+        setApp(local, UserLookupResult.UserNotFound)
+
+        composeRule.onNodeWithText("Abrir Configuração").performClick()
+        composeRule.onNodeWithText("Handle do Codeforces").performTextReplacement("missing")
+        composeRule.onNodeWithText("Atualizar handle").performClick()
+        composeRule.onNodeWithText("Trocar").performClick()
+
+        composeRule.onNodeWithText("Usuário não encontrado no Codeforces.").assertIsDisplayed()
+        assertEquals(original, local.profile.value)
+    }
+
     private fun setApp(local: LoremRepository, result: UserLookupResult) {
         composeRule.setContent {
             LoremTheme {
@@ -74,8 +116,8 @@ class MainActivityTest {
     }
 }
 
-private class MemoryLoremRepository : LoremRepository {
-    override val profile = MutableStateFlow<LocalProfile?>(null)
+private class MemoryLoremRepository(initialProfile: LocalProfile? = null) : LoremRepository {
+    override val profile = MutableStateFlow(initialProfile)
     override suspend fun saveProfile(profile: LocalProfile) { this.profile.value = profile }
     override suspend fun clearProfile() { profile.value = null }
 }

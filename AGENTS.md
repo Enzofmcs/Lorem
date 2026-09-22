@@ -46,8 +46,8 @@ backend ou abstracao sem necessidade concreta.
 
 - **Foco:** Historia 01 - Vincular o handle do Codeforces.
 - **Ultima historia verificada:** Historia 00 - Estrutura basica.
-- **Primeiro item pendente:** permitir atualizar ou trocar o handle com confirmacao.
-- **Proxima entrega demonstravel:** concluir e verificar a troca de handle.
+- **Primeiro item pendente:** executar o smoke test manual da troca de handle em dispositivo.
+- **Proxima entrega demonstravel:** confirmar manualmente a Historia 01 e iniciar a Historia 02.
 - **Bloqueios conhecidos:** nenhum.
 
 Progresso e aceite: [`docs/ROADMAP.md#historia-01---vincular-o-handle-do-codeforces`](docs/ROADMAP.md#historia-01---vincular-o-handle-do-codeforces).
