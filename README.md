@@ -4,7 +4,7 @@ Lorem é um aplicativo Android de treino individual para programação competiti
 
 Um **Ipsum** é a tentativa oficial e cronometrada de resolver um problema recomendado. O fluxo completo de recomendação, submissões e avaliação será desenvolvido de forma incremental; ele ainda não faz parte desta estrutura inicial.
 
-> O [`AGENTS.md`](AGENTS.md) é a fonte de verdade para produto, regras de domínio, decisões, escopo e progresso. Este README apresenta apenas a visão técnica de entrada.
+> O [`AGENTS.md`](AGENTS.md) é o guia operacional compacto. A fonte de verdade detalhada está dividida por assunto em [`docs/`](docs/README.md). Este README apresenta apenas a visão técnica de entrada.
 
 ## Estado atual
 
@@ -21,7 +21,7 @@ Ainda não há importação de submissões, recomendação, cronômetro ou cálc
 
 ## Escopo resumido
 
-O Lorem terá perfil local associado a um handle público, catálogo e histórico do Codeforces, recomendação inédita, execução de um Ipsum, resultados, pendências, rating interno e estatísticas. Não fazem parte do escopo recursos sociais, backend próprio, Firebase, editor de código ou gamificação. Consulte o `AGENTS.md` para as regras completas.
+O Lorem terá perfil local associado a um handle público, catálogo e histórico do Codeforces, recomendação inédita, execução de um Ipsum, resultados, pendências, rating interno e estatísticas. Não fazem parte do escopo recursos sociais, backend próprio, Firebase, editor de código ou gamificação. Consulte [`docs/SPEC.md`](docs/SPEC.md) para as regras completas.
 
 ## Arquitetura inicial
 
@@ -81,10 +81,11 @@ Na raiz do projeto:
 │       └── test/
 ├── gradle/
 ├── AGENTS.md
+├── docs/
 ├── build.gradle.kts
 └── settings.gradle.kts
 ```
 
 ## Próximos passos
 
-A entrega atual é a **História 01 — Vincular o handle do Codeforces**. Consulte o checklist no `AGENTS.md` para os itens já comprovados e as verificações ainda pendentes.
+A entrega atual é a **História 01 — Vincular o handle do Codeforces**. Consulte o checklist em [`docs/ROADMAP.md`](docs/ROADMAP.md#historia-01---vincular-o-handle-do-codeforces) para os itens já comprovados e as verificações ainda pendentes.
