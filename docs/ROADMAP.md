@@ -6,13 +6,13 @@
 
 ## Estado atual
 
-**Foco atual:** Historia 02 - Importar o historico do Codeforces.
+**Foco atual:** Historia 03 - Carregar o catalogo de problemas.
 
-**Ultima historia verificada:** Historia 01 - Vincular o handle do Codeforces.
+**Ultima historia verificada:** Historia 02 - Importar o historico do Codeforces.
 
-**Primeiro item pendente:** registrar problemas com AC e tentativas sem AC.
+**Primeiro item pendente:** buscar `problemset.problems`.
 
-**Proxima entrega demonstravel:** importar e persistir o historico sem duplicar problemas.
+**Proxima entrega demonstravel:** carregar e persistir o catalogo de problemas.
 
 **Bloqueios conhecidos:** nenhum.
 
@@ -110,7 +110,7 @@ checklists; veja [`DECISIONS.md`](DECISIONS.md).
 - [x] Deduplicar varias submissoes do mesmo problema.
 - [x] Salvar o historico localmente.
 - [x] Atualizar sem duplicar registros.
-- [ ] Mostrar estado de sincronizacao e falhas recuperaveis.
+- [x] Mostrar estado de sincronizacao e falhas recuperaveis.
 
 #### Exemplos de aceite
 

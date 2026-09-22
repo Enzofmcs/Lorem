@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class LocalLoremRepository(
     private val dataStore: DataStore<Preferences>,
     private val problemHistoryDao: ProblemHistoryDao,

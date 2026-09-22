@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import dev.lorem.app.domain.model.LocalProfile
+import dev.lorem.app.domain.model.ProblemHistory
 import dev.lorem.app.domain.ProblemHistorySyncResult
 import dev.lorem.app.domain.SynchronizeProblemHistory
 import dev.lorem.app.domain.repository.CodeforcesRepository
@@ -54,6 +55,13 @@ class LoremViewModel(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = LoremUiState.Loading,
+        )
+
+    val problemHistory: StateFlow<List<ProblemHistory>> = repository.problemHistory
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptyList(),
         )
 
     private val mutableConfigurationState = MutableStateFlow(ConfigurationUiState())

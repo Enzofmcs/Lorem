@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -14,29 +16,53 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.lorem.app.domain.model.LocalProfile
+import dev.lorem.app.domain.model.ProblemHistory
 import dev.lorem.app.ui.HistorySyncUiState
+import dev.lorem.app.ui.navigation.LoremDestination
 
 @Composable
 fun HomeScreen(
     profile: LocalProfile,
     syncState: HistorySyncUiState,
+    problemHistory: List<ProblemHistory>,
     onSynchronize: () -> Unit,
+    onNavigate: (String) -> Unit,
 ) {
+    val attemptedCount = problemHistory.count(ProblemHistory::attempted)
+    val solvedCount = problemHistory.count(ProblemHistory::hasAcceptedSubmission)
+    val hasSynchronized = profile.lastSyncEpochMillis > 0L
     Scaffold { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(24.dp),
+                .padding(24.dp)
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text("Home", style = MaterialTheme.typography.headlineMedium)
+            Text("Início", style = MaterialTheme.typography.headlineMedium)
             Text("${profile.displayName} (@${profile.handle})")
             Text("Rating oficial: ${profile.officialRating ?: "não disponível"}")
             Text("Rating Lorem: ${profile.loremRating}")
+            Button(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = { onNavigate(LoremDestination.Configuration.route) },
+            ) {
+                Text("Abrir ${LoremDestination.Configuration.title}")
+            }
+
+            Text("Histórico do Codeforces", style = MaterialTheme.typography.titleMedium)
+            if (hasSynchronized) {
+                Text("Histórico salvo neste dispositivo.")
+                Text("Problemas tentados: $attemptedCount")
+                Text("Problemas resolvidos: $solvedCount")
+                Text("Última sincronização: ${formatSyncTime(profile.lastSyncEpochMillis)}")
+            }
 
             when (syncState) {
-                HistorySyncUiState.Idle -> Text("Sincronize para importar seu histórico do Codeforces.")
+                HistorySyncUiState.Idle -> if (!hasSynchronized) {
+                    Text("Sincronize para importar seu histórico do Codeforces.")
+                }
                 HistorySyncUiState.Loading -> {
                     CircularProgressIndicator()
                     Text("Sincronizando histórico…")
@@ -57,6 +83,21 @@ fun HomeScreen(
             ) {
                 Text(if (syncState is HistorySyncUiState.Error) "Tentar novamente" else "Sincronizar histórico")
             }
+
+            LoremDestination.all.filterNot {
+                it == LoremDestination.Home || it == LoremDestination.Configuration
+            }.forEach { destination ->
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = { onNavigate(destination.route) },
+                ) {
+                    Text("Abrir ${destination.title}")
+                }
+            }
         }
     }
 }
+
+private fun formatSyncTime(epochMillis: Long): String = java.time.Instant.ofEpochMilli(epochMillis)
+    .atZone(java.time.ZoneId.systemDefault())
+    .format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
