@@ -2,6 +2,7 @@ package dev.lorem.app.ui
 
 import dev.lorem.app.domain.model.CodeforcesProblem
 import dev.lorem.app.domain.model.LocalProfile
+import dev.lorem.app.domain.model.ProblemHistory
 import dev.lorem.app.domain.repository.CodeforcesRepository
 import dev.lorem.app.domain.repository.SubmissionHistoryResult
 import dev.lorem.app.domain.repository.CodeforcesUser
@@ -54,8 +55,12 @@ class LoremViewModelTest {
 
 private class MemoryRepository : LoremRepository {
     override val profile = MutableStateFlow<LocalProfile?>(null)
+    override val problemHistory = MutableStateFlow<List<ProblemHistory>>(emptyList())
     override suspend fun saveProfile(profile: LocalProfile) { this.profile.value = profile }
     override suspend fun clearProfile() { profile.value = null }
+    override suspend fun saveProblemHistory(history: List<ProblemHistory>) {
+        problemHistory.value = history
+    }
 }
 
 private class CountingRepository(

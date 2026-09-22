@@ -8,20 +8,26 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import dev.lorem.app.domain.model.LocalProfile
+import dev.lorem.app.domain.model.ProblemHistory
 import dev.lorem.app.domain.repository.LoremRepository
 import java.io.IOException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 
-class DataStoreLoremRepository(
+class LocalLoremRepository(
     private val dataStore: DataStore<Preferences>,
+    private val problemHistoryDao: ProblemHistoryDao,
 ) : LoremRepository {
     override val profile: Flow<LocalProfile?> = dataStore.data
         .catch { error ->
             if (error is IOException) emit(emptyPreferences()) else throw error
         }
         .map(::readProfile)
+
+    override val problemHistory: Flow<List<ProblemHistory>> = problemHistoryDao
+        .observeAll()
+        .map { history -> history.map { it.toDomain() } }
 
     override suspend fun saveProfile(profile: LocalProfile) {
         require(profile.handle.isNotBlank()) { "handle must not be blank" }
@@ -49,6 +55,10 @@ class DataStoreLoremRepository(
             preferences.remove(CONSOLIDATED_RATING)
             preferences.remove(LAST_SYNC)
         }
+    }
+
+    override suspend fun saveProblemHistory(history: List<ProblemHistory>) {
+        problemHistoryDao.upsertAll(history.map { it.toEntity() })
     }
 
     private fun readProfile(preferences: Preferences): LocalProfile? {

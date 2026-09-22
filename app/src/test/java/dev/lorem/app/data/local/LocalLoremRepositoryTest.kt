@@ -8,6 +8,7 @@ import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -16,7 +17,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 
-class DataStoreLoremRepositoryTest {
+class LocalLoremRepositoryTest {
     @get:Rule
     val temporaryFolder = TemporaryFolder()
 
@@ -49,14 +50,25 @@ class DataStoreLoremRepositoryTest {
             produceFile = { temporaryFolder.newFile("legacy.preferences_pb") },
         )
         dataStore.edit { it[stringPreferencesKey("display_name")] = "Ada" }
-        val repository = DataStoreLoremRepository(dataStore)
+        val repository = LocalLoremRepository(dataStore, FakeProblemHistoryDao())
 
         assertNull(repository.profile.first())
         repository.clearProfile()
         assertNull(dataStore.data.first()[stringPreferencesKey("display_name")])
     }
 
-    private fun repository(file: File, scope: CoroutineScope) = DataStoreLoremRepository(
+    private fun repository(file: File, scope: CoroutineScope) = LocalLoremRepository(
         dataStore = PreferenceDataStoreFactory.create(scope = scope, produceFile = { file }),
+        problemHistoryDao = FakeProblemHistoryDao(),
     )
+
+    private class FakeProblemHistoryDao : ProblemHistoryDao {
+        private val history = MutableStateFlow<List<ProblemHistoryEntity>>(emptyList())
+
+        override fun observeAll() = history
+
+        override suspend fun upsertAll(history: List<ProblemHistoryEntity>) {
+            this.history.value = history
+        }
+    }
 }
