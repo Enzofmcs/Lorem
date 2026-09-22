@@ -235,13 +235,13 @@ No Windows sem WSL, usar os equivalentes com `gradlew.bat`.
 
 ## 8. Estado atual
 
-**Foco atual:** Historia 00 - Estrutura basica.
+**Foco atual:** Historia 00 - Estrutura basica (implementada; jornada manual pendente).
 
 **Ultima historia verificada:** nenhuma.
 
-**Proxima entrega demonstravel:** abrir o app, informar um handle valido e chegar a uma Home persistida.
+**Proxima entrega demonstravel:** executar a jornada da estrutura basica em emulador ou dispositivo e, depois, iniciar a Historia 01.
 
-**Bloqueios conhecidos:** nenhum.
+**Bloqueios conhecidos:** a jornada foi coberta por teste de interface com Robolectric, mas o emulador sem aceleracao de hardware nao concluiu o boot; abertura, navegacao e restauracao apos encerrar o processo ainda exigem verificacao manual em dispositivo ou emulador funcional.
 
 ---
 
@@ -255,14 +255,14 @@ O desenvolvimento segue o ciclo: especificar a historia, planejar a menor mudanc
 
 #### Checklist
 
-- [ ] Criar ou confirmar o projeto Android com Kotlin e Compose.
-- [ ] Definir pacotes ou camadas para dados, dominio e interface.
-- [ ] Criar navegacao entre Configuracao, Inicio, Ipsum, Resultado, Historico e Estatisticas.
-- [ ] Configurar armazenamento local.
-- [ ] Criar interfaces para acesso ao Codeforces e ao banco local.
-- [ ] Criar implementacoes falsas para testar o fluxo sem depender da rede.
-- [ ] Confirmar os comandos de build, teste e lint neste arquivo.
-- [ ] Executar build inicial com sucesso.
+- [x] Criar ou confirmar o projeto Android com Kotlin e Compose.
+- [x] Definir pacotes ou camadas para dados, dominio e interface.
+- [x] Criar navegacao entre Configuracao, Inicio, Ipsum, Resultado, Historico e Estatisticas.
+- [x] Configurar armazenamento local.
+- [x] Criar interfaces para acesso ao Codeforces e ao banco local.
+- [x] Criar implementacoes falsas para testar o fluxo sem depender da rede.
+- [x] Confirmar os comandos de build, teste e lint neste arquivo.
+- [x] Executar build inicial com sucesso.
 
 #### Criterios de aceite
 
@@ -730,6 +730,8 @@ Use o formato abaixo. Nao apagar decisoes antigas; marque quando forem substitui
 | D-004 | 2026-09-18 | AC posterior muda a classificacao da pendencia, mas nao o rating original. | Preservar as condicoes avaliadas no Ipsum. | 08-10 |
 | D-005 | 2026-09-18 | O Lorem usa somente tags oficiais do Codeforces. | Evitar complexidade desnecessaria. | 03, 11-13 |
 | D-006 | 2026-09-18 | Rating estimado e faixa consolidada sao conceitos separados. | Evitar que poucos acertos isolados representem dominio amplo. | 11-13 |
+| D-007 | 2026-09-18 | A estrutura inicial persiste somente um perfil local temporario com DataStore; integracoes do Codeforces permanecem falsas. | Comprovar persistencia e separacao de camadas sem antecipar Room, rede ou regras das historias seguintes. | 00, 01 |
+| D-008 | 2026-09-22 | Arquivos JAR nao serao versionados; os scripts do Gradle baixam o bootstrap oficial para o cache e validam SHA-256. | Manter o diff da PR totalmente textual sem perder os comandos `./gradlew`. | 00 |
 
 ---
 
@@ -739,6 +741,8 @@ Mantenha apenas as cinco sessoes mais recentes; o Git preserva o historico anter
 
 | Data | Historia | Alteracoes | Verificacoes | Pendencias/proximo passo |
 |---|---|---|---|---|
+| 2026-09-22 | 00 | Removido JAR do diff, adicionado bootstrap Gradle verificado, corrigida inicializacao dos destinos e criada jornada automatizada das seis telas. | Bootstrap limpo, teste Compose/Robolectric, persistencia, testes, lint e build. | Nao havia remoto ou referencia `main` no clone; validar manualmente em dispositivo/emulador com aceleracao antes de concluir a historia. |
+| 2026-09-18 | 00 | Projeto Android criado com Compose/Material 3, navegacao provisoria, DataStore, contratos, fakes, testes e README. | `./gradlew test`, `./gradlew lint` e `./gradlew assembleDebug` concluidos com sucesso. | Executar em emulador/dispositivo a abertura, navegacao por todas as telas e restauracao apos encerrar o processo; criterios de aceite permanecem desmarcados. |
 | 2026-09-18 | Planejamento | Guia inicial criado. | Escopo comparado com as decisoes do produto. | Iniciar Historia 00. |
 
 ---
