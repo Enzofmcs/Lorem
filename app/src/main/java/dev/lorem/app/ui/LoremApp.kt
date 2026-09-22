@@ -9,27 +9,32 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import dev.lorem.app.domain.repository.CodeforcesRepository
 import dev.lorem.app.domain.repository.LoremRepository
 import dev.lorem.app.ui.navigation.LoremNavHost
 
 @Composable
 fun LoremApp(
     repository: LoremRepository,
-    viewModel: LoremViewModel = viewModel(factory = LoremViewModel.factory(repository)),
+    codeforcesRepository: CodeforcesRepository,
+    viewModel: LoremViewModel = viewModel(
+        factory = LoremViewModel.factory(repository, codeforcesRepository),
+    ),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val configurationState by viewModel.configurationState.collectAsStateWithLifecycle()
     when (val state = uiState) {
         LoremUiState.Loading -> Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center,
-        ) {
-            CircularProgressIndicator()
-        }
+        ) { CircularProgressIndicator() }
 
         is LoremUiState.Ready -> LoremNavHost(
             initialProfile = state.profile,
-            onSaveTestProfile = viewModel::saveTestProfile,
-            onClearTestProfile = viewModel::clearTestProfile,
+            configurationState = configurationState,
+            onHandleChange = viewModel::updateHandle,
+            onConfirmHandle = viewModel::confirmHandle,
+            onHomeNavigationHandled = viewModel::homeNavigationHandled,
         )
     }
 }
