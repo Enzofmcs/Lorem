@@ -17,6 +17,7 @@ import dev.lorem.app.ui.screens.PlaceholderScreen
 import dev.lorem.app.ui.screens.IpsumScreen
 import dev.lorem.app.domain.model.Ipsum
 import dev.lorem.app.ui.StartIpsumUiState
+import dev.lorem.app.ui.SubmissionCheckUiState
 
 @Composable
 fun LoremNavHost(
@@ -37,6 +38,8 @@ fun LoremNavHost(
     onStartIpsum: () -> Unit,
     onIpsumNavigationHandled: () -> Unit,
     onRevealIpsumHint: () -> Unit,
+    submissionCheckState: SubmissionCheckUiState,
+    onVerifyIpsumSubmissions: () -> Unit,
     navController: NavHostController = rememberNavController(),
 ) {
     val profile = initialProfile ?: configurationState.savedProfile
@@ -91,6 +94,8 @@ fun LoremNavHost(
             IpsumScreen(
                 ipsum = activeIpsum,
                 onRevealHint = onRevealIpsumHint,
+                submissionCheckState = submissionCheckState,
+                onVerifySubmissions = onVerifyIpsumSubmissions,
                 onNavigateHome = {
                     if (!navController.popBackStack(LoremDestination.Home.route, inclusive = false)) {
                         navController.navigate(LoremDestination.Home.route) { launchSingleTop = true }

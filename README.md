@@ -2,7 +2,7 @@
 
 Lorem é um aplicativo Android de treino individual para programação competitiva. O produto recomenda exercícios inéditos do Codeforces adequados ao nível do usuário e acompanhará sua evolução.
 
-Um **Ipsum** é a tentativa oficial e cronometrada de resolver um problema recomendado. A recomendação e o início persistente já estão implementados; cronômetro, submissões e avaliação serão desenvolvidos incrementalmente.
+Um **Ipsum** é a tentativa oficial e cronometrada de resolver um problema recomendado. Recomendação, cronômetro persistente e detecção de submissões durante a tentativa já estão implementados; o resultado e a avaliação serão desenvolvidos incrementalmente.
 
 > O [`AGENTS.md`](AGENTS.md) é o guia operacional compacto. A fonte de verdade detalhada está dividida por assunto em [`docs/`](docs/README.md). Este README apresenta apenas a visão técnica de entrada.
 
@@ -19,7 +19,7 @@ A base Android de módulo único concluiu a recomendação e o início da Histó
 - persistência de um único Ipsum ativo antes da navegação;
 - injeção manual e estado de UI exposto por `ViewModel`/`StateFlow`.
 
-Ainda não há cronômetro, detecção de submissões, encerramento ou cálculo do rating após Ipsums.
+Ainda não há encerramento manual, tela completa de resultado ou cálculo do rating após Ipsums.
 
 ## Escopo resumido
 
@@ -90,4 +90,4 @@ Na raiz do projeto:
 
 ## Próximos passos
 
-A próxima entrega é a **História 06 — Detectar submissões durante o Ipsum**. Consulte o checklist em [`docs/ROADMAP.md`](docs/ROADMAP.md#historia-06---detectar-submissoes-durante-o-ipsum) para os itens pendentes.
+A próxima entrega é a **História 07 — Encerrar e apresentar o resultado**. Consulte o checklist em [`docs/ROADMAP.md`](docs/ROADMAP.md#historia-07---encerrar-e-apresentar-o-resultado) para os itens pendentes.

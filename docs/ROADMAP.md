@@ -6,13 +6,13 @@
 
 ## Estado atual
 
-**Foco atual:** Historia 05 - Executar um Ipsum cronometrado.
+**Foco atual:** Historia 07 - Encerrar e apresentar o resultado.
 
-**Ultima historia verificada:** Historia 04 - Recomendar e iniciar um Ipsum.
+**Ultima historia verificada:** Historia 06 - Detectar submissoes durante o Ipsum.
 
-**Primeiro item pendente:** mostrar titulo, identificador e link do problema ativo.
+**Primeiro item pendente:** permitir encerramento manual sem AC.
 
-**Proxima entrega demonstravel:** restaurar e acompanhar o tempo do Ipsum ativo.
+**Proxima entrega demonstravel:** encerrar manualmente e apresentar o resultado do Ipsum.
 
 **Bloqueios conhecidos:** nenhum.
 
@@ -197,23 +197,23 @@ checklists; veja [`DECISIONS.md`](DECISIONS.md).
 
 #### Checklist
 
-- [ ] Consultar `user.status` sob demanda.
-- [ ] Considerar somente o problema do Ipsum ativo.
-- [ ] Ignorar submissoes anteriores ao horario de inicio.
-- [ ] Deduplicar por identificador da submissao.
-- [ ] Registrar WA, TLE, RTE e demais vereditos.
-- [ ] Contar erros anteriores ao primeiro AC.
-- [ ] Tratar submissao ainda em teste sem finalizar incorretamente.
-- [ ] Encerrar no primeiro AC valido.
-- [ ] Respeitar o intervalo minimo da API.
-- [ ] Verificar novamente ao retornar para a tela, quando apropriado.
+- [x] Consultar `user.status` sob demanda.
+- [x] Considerar somente o problema do Ipsum ativo.
+- [x] Ignorar submissoes anteriores ao horario de inicio.
+- [x] Deduplicar por identificador da submissao.
+- [x] Registrar WA, TLE, RTE e demais vereditos.
+- [x] Contar erros anteriores ao primeiro AC.
+- [x] Tratar submissao ainda em teste sem finalizar incorretamente.
+- [x] Encerrar no primeiro AC valido.
+- [x] Respeitar o intervalo minimo da API.
+- [x] Verificar novamente ao retornar para a tela, quando apropriado.
 
 #### Exemplos de aceite
 
-- [ ] Uma submissao antiga do mesmo problema nao encerra o Ipsum.
-- [ ] WA seguido de AC registra um erro e encerra com sucesso.
-- [ ] Uma submissao em teste nao e tratada como falha definitiva.
-- [ ] Varias verificacoes nao duplicam a mesma submissao.
+- [x] Uma submissao antiga do mesmo problema nao encerra o Ipsum.
+- [x] WA seguido de AC registra um erro e encerra com sucesso.
+- [x] Uma submissao em teste nao e tratada como falha definitiva.
+- [x] Varias verificacoes nao duplicam a mesma submissao.
 
 ---
 

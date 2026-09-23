@@ -8,8 +8,8 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
-    entities = [ProblemHistoryEntity::class, ProblemCatalogEntity::class, IpsumEntity::class],
-    version = 5,
+    entities = [ProblemHistoryEntity::class, ProblemCatalogEntity::class, IpsumEntity::class, IpsumSubmissionEntity::class],
+    version = 6,
     exportSchema = false,
 )
 abstract class LoremDatabase : RoomDatabase() {
@@ -22,7 +22,7 @@ abstract class LoremDatabase : RoomDatabase() {
             context,
             LoremDatabase::class.java,
             "lorem.db",
-        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5).build()
+        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6).build()
 
         private val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(db: SupportSQLiteDatabase) {
@@ -91,6 +91,22 @@ abstract class LoremDatabase : RoomDatabase() {
         internal val MIGRATION_4_5 = object : Migration(4, 5) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE ipsums ADD COLUMN hintRevealedAtEpochMillis INTEGER")
+            }
+        }
+
+        internal val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE ipsums ADD COLUMN endedAtEpochMillis INTEGER")
+                db.execSQL("ALTER TABLE ipsums ADD COLUMN errorCount INTEGER NOT NULL DEFAULT 0")
+                db.execSQL(
+                    """CREATE TABLE IF NOT EXISTS ipsum_submissions (
+                        submissionId INTEGER NOT NULL PRIMARY KEY,
+                        ipsumId INTEGER NOT NULL,
+                        verdict TEXT NOT NULL,
+                        createdAtEpochMillis INTEGER NOT NULL
+                    )""",
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_ipsum_submissions_ipsumId ON ipsum_submissions(ipsumId)")
             }
         }
     }

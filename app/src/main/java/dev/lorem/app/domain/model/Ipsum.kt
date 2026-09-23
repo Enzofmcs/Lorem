@@ -24,6 +24,8 @@ data class Ipsum(
     val fallbackDistance: Int,
     val startedAtEpochMillis: Long,
     val hintRevealedAtEpochMillis: Long? = null,
+    val endedAtEpochMillis: Long? = null,
+    val errorCount: Int = 0,
     val status: IpsumStatus,
 )
 

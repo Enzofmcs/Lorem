@@ -17,6 +17,8 @@ import dev.lorem.app.domain.RandomSource
 import dev.lorem.app.domain.RecommendIpsum
 import dev.lorem.app.domain.StartIpsum
 import dev.lorem.app.domain.StartIpsumResult
+import dev.lorem.app.domain.VerifyIpsumResult
+import dev.lorem.app.domain.VerifyIpsumSubmissions
 import dev.lorem.app.domain.model.Ipsum
 import kotlin.random.Random
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -62,6 +64,13 @@ sealed interface StartIpsumUiState {
     data class Error(val message: String) : StartIpsumUiState
 }
 
+sealed interface SubmissionCheckUiState {
+    data object Idle : SubmissionCheckUiState
+    data object Loading : SubmissionCheckUiState
+    data class Success(val newSubmissionCount: Int, val errorCount: Int, val completed: Boolean) : SubmissionCheckUiState
+    data class Error(val message: String) : SubmissionCheckUiState
+}
+
 class LoremViewModel(
     private val repository: LoremRepository,
     private val codeforcesRepository: CodeforcesRepository,
@@ -75,6 +84,7 @@ class LoremViewModel(
     )
     private val synchronizeProblemCatalog = SynchronizeProblemCatalog(repository, codeforcesRepository, nowMillis)
     private val startIpsum = StartIpsum(repository, RecommendIpsum(randomSource), nowMillis)
+    private val verifyIpsumSubmissions = VerifyIpsumSubmissions(repository, codeforcesRepository)
     val uiState: StateFlow<LoremUiState> = repository.profile
         .map<LocalProfile?, LoremUiState>(LoremUiState::Ready)
         .stateIn(
@@ -106,6 +116,8 @@ class LoremViewModel(
     val catalogSyncState: StateFlow<CatalogSyncUiState> = mutableCatalogSyncState.asStateFlow()
     private val mutableStartIpsumState = MutableStateFlow<StartIpsumUiState>(StartIpsumUiState.Idle)
     val startIpsumState: StateFlow<StartIpsumUiState> = mutableStartIpsumState.asStateFlow()
+    private val mutableSubmissionCheckState = MutableStateFlow<SubmissionCheckUiState>(SubmissionCheckUiState.Idle)
+    val submissionCheckState: StateFlow<SubmissionCheckUiState> = mutableSubmissionCheckState.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -274,6 +286,25 @@ class LoremViewModel(
             val ipsum = repository.activeIpsum.first() ?: return@launch
             if (ipsum.hintRevealedAtEpochMillis != null) return@launch
             repository.revealIpsumHint(ipsum.id, nowMillis())
+        }
+    }
+
+    fun verifyActiveIpsumSubmissions() {
+        if (mutableSubmissionCheckState.value == SubmissionCheckUiState.Loading) return
+        mutableSubmissionCheckState.value = SubmissionCheckUiState.Loading
+        viewModelScope.launch {
+            mutableSubmissionCheckState.value = when (val result = verifyIpsumSubmissions()) {
+                is VerifyIpsumResult.Success -> SubmissionCheckUiState.Success(
+                    result.newSubmissionCount, result.errorCount, result.completed,
+                )
+                VerifyIpsumResult.NoActiveIpsum -> SubmissionCheckUiState.Error("Não há Ipsum ativo para verificar.")
+                is VerifyIpsumResult.ApiFailure -> SubmissionCheckUiState.Error("Codeforces recusou a consulta: ${result.message}")
+                VerifyIpsumResult.RateLimited -> SubmissionCheckUiState.Error("Limite do Codeforces atingido. Aguarde e tente novamente.")
+                VerifyIpsumResult.NetworkFailure -> SubmissionCheckUiState.Error("Sem conexão com o Codeforces. Tente novamente.")
+                is VerifyIpsumResult.HttpFailure -> SubmissionCheckUiState.Error("Falha HTTP ${result.statusCode}. Tente novamente.")
+                VerifyIpsumResult.InvalidResponse -> SubmissionCheckUiState.Error("O Codeforces enviou uma resposta inválida. Tente novamente.")
+                VerifyIpsumResult.PersistenceFailure -> SubmissionCheckUiState.Error("Não foi possível salvar as submissões. Tente novamente.")
+            }
         }
     }
 
