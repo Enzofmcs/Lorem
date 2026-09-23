@@ -11,6 +11,7 @@ import dev.lorem.app.domain.model.IpsumStatus
 import dev.lorem.app.domain.model.ProblemId
 import dev.lorem.app.domain.repository.ActiveIpsumAlreadyExistsException
 import dev.lorem.app.domain.model.IpsumSubmission
+import dev.lorem.app.domain.model.IpsumFailureReason
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.async
 import kotlinx.coroutines.test.runTest
@@ -102,6 +103,41 @@ class IpsumPersistenceTest {
         assertEquals(IpsumStatus.COMPLETED, restored.status)
         assertEquals(2, restored.errorCount)
         assertEquals(4_000L, restored.endedAtEpochMillis)
+        assertEquals(
+            listOf("WRONG_ANSWER", "COMPILATION_ERROR"),
+            repository.getIpsumResult(saved.id)?.errorVerdicts,
+        )
+        assertEquals(null, repository.activeIpsum.first())
+        database.close()
+    }
+
+    @Test
+    fun `manual result is atomic persistent and cannot be ended twice`() = runTest {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val databaseFile = File(context.cacheDir, "manual-db-${System.nanoTime()}")
+        val preferences = File(context.cacheDir, "manual-state-${System.nanoTime()}.preferences_pb")
+        var database = Room.databaseBuilder(context, LoremDatabase::class.java, databaseFile.absolutePath).build()
+        var repository = repository(database, preferences, backgroundScope)
+        val saved = repository.createActiveIpsum(ipsum().copy(hintRevealedAtEpochMillis = 1_500L))
+        repository.recordIpsumSubmissions(saved.id, listOf(
+            IpsumSubmission(20, saved.id, "WRONG_ANSWER", 2_000),
+            IpsumSubmission(21, saved.id, "TIME_LIMIT_EXCEEDED", 3_000),
+        ))
+
+        assertEquals(true, repository.endIpsumWithoutAc(saved.id, IpsumFailureReason.LOGIC_NOT_FOUND, 5_000L))
+        assertEquals(false, repository.endIpsumWithoutAc(saved.id, IpsumFailureReason.TIME_EXPIRED, 9_000L))
+        database.close()
+
+        database = Room.databaseBuilder(context, LoremDatabase::class.java, databaseFile.absolutePath).build()
+        repository = repository(database, preferences, backgroundScope)
+        val result = repository.getIpsumResult(saved.id)!!
+
+        assertEquals(IpsumStatus.PENDING, result.ipsum.status)
+        assertEquals(IpsumFailureReason.LOGIC_NOT_FOUND, result.ipsum.failureReason)
+        assertEquals(5_000L, result.ipsum.endedAtEpochMillis)
+        assertEquals(1_500L, result.ipsum.hintRevealedAtEpochMillis)
+        assertEquals(2, result.ipsum.errorCount)
+        assertEquals(listOf("WRONG_ANSWER", "TIME_LIMIT_EXCEEDED"), result.errorVerdicts)
         assertEquals(null, repository.activeIpsum.first())
         database.close()
     }

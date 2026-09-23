@@ -20,6 +20,8 @@ import dev.lorem.app.domain.StartIpsumResult
 import dev.lorem.app.domain.VerifyIpsumResult
 import dev.lorem.app.domain.VerifyIpsumSubmissions
 import dev.lorem.app.domain.model.Ipsum
+import dev.lorem.app.domain.model.IpsumFailureReason
+import dev.lorem.app.domain.model.IpsumResult
 import kotlin.random.Random
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -67,8 +69,15 @@ sealed interface StartIpsumUiState {
 sealed interface SubmissionCheckUiState {
     data object Idle : SubmissionCheckUiState
     data object Loading : SubmissionCheckUiState
-    data class Success(val newSubmissionCount: Int, val errorCount: Int, val completed: Boolean) : SubmissionCheckUiState
+    data class Success(val newSubmissionCount: Int, val errorCount: Int, val completed: Boolean, val ipsumId: Long? = null) : SubmissionCheckUiState
     data class Error(val message: String) : SubmissionCheckUiState
+}
+
+sealed interface IpsumResultUiState {
+    data object Idle : IpsumResultUiState
+    data object Loading : IpsumResultUiState
+    data class Ready(val result: IpsumResult) : IpsumResultUiState
+    data class Error(val message: String) : IpsumResultUiState
 }
 
 class LoremViewModel(
@@ -105,6 +114,8 @@ class LoremViewModel(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
     val activeIpsum: StateFlow<Ipsum?> = repository.activeIpsum
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    val ipsums: StateFlow<List<Ipsum>> = repository.ipsums
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     private val mutableConfigurationState = MutableStateFlow(ConfigurationUiState())
     val configurationState: StateFlow<ConfigurationUiState> =
@@ -118,6 +129,8 @@ class LoremViewModel(
     val startIpsumState: StateFlow<StartIpsumUiState> = mutableStartIpsumState.asStateFlow()
     private val mutableSubmissionCheckState = MutableStateFlow<SubmissionCheckUiState>(SubmissionCheckUiState.Idle)
     val submissionCheckState: StateFlow<SubmissionCheckUiState> = mutableSubmissionCheckState.asStateFlow()
+    private val mutableIpsumResultState = MutableStateFlow<IpsumResultUiState>(IpsumResultUiState.Idle)
+    val ipsumResultState: StateFlow<IpsumResultUiState> = mutableIpsumResultState.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -293,9 +306,10 @@ class LoremViewModel(
         if (mutableSubmissionCheckState.value == SubmissionCheckUiState.Loading) return
         mutableSubmissionCheckState.value = SubmissionCheckUiState.Loading
         viewModelScope.launch {
+            val ipsumId = repository.activeIpsum.first()?.id
             mutableSubmissionCheckState.value = when (val result = verifyIpsumSubmissions()) {
                 is VerifyIpsumResult.Success -> SubmissionCheckUiState.Success(
-                    result.newSubmissionCount, result.errorCount, result.completed,
+                    result.newSubmissionCount, result.errorCount, result.completed, ipsumId,
                 )
                 VerifyIpsumResult.NoActiveIpsum -> SubmissionCheckUiState.Error("Não há Ipsum ativo para verificar.")
                 is VerifyIpsumResult.ApiFailure -> SubmissionCheckUiState.Error("Codeforces recusou a consulta: ${result.message}")
@@ -305,6 +319,36 @@ class LoremViewModel(
                 VerifyIpsumResult.InvalidResponse -> SubmissionCheckUiState.Error("O Codeforces enviou uma resposta inválida. Tente novamente.")
                 VerifyIpsumResult.PersistenceFailure -> SubmissionCheckUiState.Error("Não foi possível salvar as submissões. Tente novamente.")
             }
+        }
+    }
+
+    fun endActiveIpsum(reason: IpsumFailureReason?) {
+        if (reason == null) {
+            mutableIpsumResultState.value = IpsumResultUiState.Error("Selecione exatamente um motivo para encerrar sem AC.")
+            return
+        }
+        if (mutableIpsumResultState.value == IpsumResultUiState.Loading) return
+        mutableIpsumResultState.value = IpsumResultUiState.Loading
+        viewModelScope.launch {
+            val ipsum = repository.activeIpsum.first()
+            if (ipsum == null) {
+                mutableIpsumResultState.value = IpsumResultUiState.Error("Não há Ipsum ativo para encerrar.")
+                return@launch
+            }
+            val ended = repository.endIpsumWithoutAc(ipsum.id, reason, nowMillis())
+            val result = repository.getIpsumResult(ipsum.id)
+            mutableIpsumResultState.value = result?.let(IpsumResultUiState::Ready)
+                ?: IpsumResultUiState.Error(
+                    if (ended) "Resultado não encontrado." else "O Ipsum já foi encerrado ou não pôde ser salvo.",
+                )
+        }
+    }
+
+    fun openIpsumResult(ipsumId: Long) {
+        mutableIpsumResultState.value = IpsumResultUiState.Loading
+        viewModelScope.launch {
+            mutableIpsumResultState.value = repository.getIpsumResult(ipsumId)?.let(IpsumResultUiState::Ready)
+                ?: IpsumResultUiState.Error("Resultado não encontrado.")
         }
     }
 

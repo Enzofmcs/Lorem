@@ -5,6 +5,8 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.runtime.mutableStateOf
 import dev.lorem.app.domain.model.CodeforcesProblem
 import dev.lorem.app.domain.model.Ipsum
@@ -65,6 +67,9 @@ class IpsumScreenTest {
         assertTrue(verifyRequested)
         composeRule.onNodeWithText("Encerrar sem AC").performScrollTo().performClick()
         composeRule.onNodeWithText("Encerrar sem AC?").assertIsDisplayed()
+        composeRule.onNodeWithText("Encerrar").assertIsNotEnabled()
+        composeRule.onNodeWithText("Não encontrei a lógica.").performClick()
+        composeRule.onNodeWithText("Encerrar").assertIsEnabled()
     }
 
     @Test
