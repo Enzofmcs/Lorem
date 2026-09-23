@@ -15,6 +15,7 @@ class AppContainer(context: Context) {
         dataStore = context.profileDataStore,
         problemHistoryDao = database.problemHistoryDao(),
         problemCatalogDao = database.problemCatalogDao(),
+        ipsumDao = database.ipsumDao(),
     )
     val codeforcesRepository: CodeforcesRepository = CodeforcesApiRepository(
         gate = TwoSecondCodeforcesRequestGate(),

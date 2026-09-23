@@ -20,6 +20,7 @@ import dev.lorem.app.domain.model.ProblemHistory
 import dev.lorem.app.ui.HistorySyncUiState
 import dev.lorem.app.ui.CatalogSyncUiState
 import dev.lorem.app.ui.navigation.LoremDestination
+import dev.lorem.app.ui.StartIpsumUiState
 
 @Composable
 fun HomeScreen(
@@ -31,6 +32,9 @@ fun HomeScreen(
     catalogUpdatedAtEpochMillis: Long?,
     catalogSyncState: CatalogSyncUiState,
     onSynchronizeCatalog: () -> Unit,
+    hasActiveIpsum: Boolean = false,
+    startIpsumState: StartIpsumUiState = StartIpsumUiState.Idle,
+    onStartIpsum: () -> Unit = {},
     onNavigate: (String) -> Unit,
 ) {
     val attemptedCount = problemHistory.count(ProblemHistory::attempted)
@@ -51,6 +55,18 @@ fun HomeScreen(
             Text("${profile.displayName} (@${profile.handle})")
             Text("Rating oficial: ${profile.officialRating ?: "não disponível"}")
             Text("Rating Lorem: ${profile.loremRating}")
+            Button(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = onStartIpsum,
+                enabled = !hasActiveIpsum && startIpsumState != StartIpsumUiState.Loading,
+            ) {
+                Text(if (hasActiveIpsum) "Ipsum já ativo" else "Iniciar novo Ipsum")
+            }
+            when (startIpsumState) {
+                StartIpsumUiState.Idle, is StartIpsumUiState.Success -> Unit
+                StartIpsumUiState.Loading -> Text("Escolhendo e salvando um problema…")
+                is StartIpsumUiState.Error -> Text(startIpsumState.message, color = MaterialTheme.colorScheme.error)
+            }
             Button(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = { onNavigate(LoremDestination.Configuration.route) },
@@ -120,7 +136,7 @@ fun HomeScreen(
             }
 
             LoremDestination.all.filterNot {
-                it == LoremDestination.Home || it == LoremDestination.Configuration
+                it == LoremDestination.Home || it == LoremDestination.Configuration || it == LoremDestination.Ipsum
             }.forEach { destination ->
                 Button(
                     modifier = Modifier.fillMaxWidth(),

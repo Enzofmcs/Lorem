@@ -10,6 +10,9 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import dev.lorem.app.domain.model.LocalProfile
 import dev.lorem.app.domain.model.CodeforcesProblem
 import dev.lorem.app.domain.model.ProblemHistory
+import dev.lorem.app.domain.model.Ipsum
+import dev.lorem.app.domain.repository.ActiveIpsumAlreadyExistsException
+import android.database.sqlite.SQLiteConstraintException
 import dev.lorem.app.domain.repository.LoremRepository
 import java.io.IOException
 import java.util.Locale
@@ -24,6 +27,7 @@ class LocalLoremRepository(
     private val dataStore: DataStore<Preferences>,
     private val problemHistoryDao: ProblemHistoryDao,
     private val problemCatalogDao: ProblemCatalogDao,
+    private val ipsumDao: IpsumDao,
 ) : LoremRepository {
     override val profile: Flow<LocalProfile?> = dataStore.data
         .catch { error ->
@@ -44,6 +48,11 @@ class LocalLoremRepository(
     override val catalogLastUpdatedEpochMillis: Flow<Long?> = dataStore.data
         .catch { error -> if (error is IOException) emit(emptyPreferences()) else throw error }
         .map { it[CATALOG_LAST_UPDATED] }
+
+    override val ipsums: Flow<List<Ipsum>> = profile.flatMapLatest { profile ->
+        profile?.let { ipsumDao.observeForOwner(normalizeHandle(it.handle)) } ?: flowOf(emptyList())
+    }.map { values -> values.map(IpsumEntity::toDomain) }
+    override val activeIpsum: Flow<Ipsum?> = ipsumDao.observeActive().map { it?.toDomain() }
 
     override suspend fun saveProfile(profile: LocalProfile) {
         require(profile.handle.isNotBlank()) { "handle must not be blank" }
@@ -87,6 +96,19 @@ class LocalLoremRepository(
         val eligible = problems.filter { it.rating != null }.distinctBy { it.id }
         problemCatalogDao.replaceAll(eligible.map(CodeforcesProblem::toCatalogEntity))
         dataStore.edit { it[CATALOG_LAST_UPDATED] = updatedAtEpochMillis }
+    }
+
+    override suspend fun createActiveIpsum(ipsum: Ipsum): Ipsum {
+        require(ipsum.id == 0L) { "new Ipsum must not have an id" }
+        require(ipsum.startedAtEpochMillis > 0) { "startedAtEpochMillis must be positive" }
+        return try {
+            ipsum.copy(
+                id = ipsumDao.insert(ipsum.copy(ownerHandle = normalizeHandle(ipsum.ownerHandle)).toEntity()),
+                ownerHandle = normalizeHandle(ipsum.ownerHandle),
+            )
+        } catch (error: SQLiteConstraintException) {
+            throw ActiveIpsumAlreadyExistsException(error)
+        }
     }
 
     private fun readProfile(preferences: Preferences): LocalProfile? {

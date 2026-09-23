@@ -189,6 +189,7 @@ class ProblemHistoryPersistenceTest {
         ),
         problemHistoryDao = database.problemHistoryDao(),
         problemCatalogDao = database.problemCatalogDao(),
+        ipsumDao = database.ipsumDao(),
     )
 
     private fun history(contestId: Long, index: String, accepted: Boolean) = ProblemHistory(

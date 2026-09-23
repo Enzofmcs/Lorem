@@ -44,13 +44,13 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
-- **Foco:** Historia 04 - Recomendar e iniciar um Ipsum.
-- **Ultima historia verificada:** Historia 03 - Carregar o catalogo de problemas.
-- **Primeiro item pendente:** criar a acao `Iniciar novo Ipsum`.
-- **Proxima entrega demonstravel:** recomendar e persistir um Ipsum ativo.
+- **Foco:** Historia 05 - Executar um Ipsum cronometrado.
+- **Ultima historia verificada:** Historia 04 - Recomendar e iniciar um Ipsum.
+- **Primeiro item pendente:** mostrar titulo, identificador e link do problema ativo.
+- **Proxima entrega demonstravel:** restaurar e acompanhar o tempo do Ipsum ativo.
 - **Bloqueios conhecidos:** nenhum.
 
-Progresso e aceite: [`docs/ROADMAP.md#historia-04---recomendar-e-iniciar-um-ipsum`](docs/ROADMAP.md#historia-04---recomendar-e-iniciar-um-ipsum).
+Progresso e aceite: [`docs/ROADMAP.md#historia-05---executar-um-ipsum-cronometrado`](docs/ROADMAP.md#historia-05---executar-um-ipsum-cronometrado).
 
 ## Politica de contexto
 

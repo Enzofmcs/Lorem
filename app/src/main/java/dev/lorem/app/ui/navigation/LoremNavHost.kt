@@ -14,6 +14,9 @@ import dev.lorem.app.ui.HistorySyncUiState
 import dev.lorem.app.ui.screens.ConfigurationScreen
 import dev.lorem.app.ui.screens.HomeScreen
 import dev.lorem.app.ui.screens.PlaceholderScreen
+import dev.lorem.app.ui.screens.IpsumScreen
+import dev.lorem.app.domain.model.Ipsum
+import dev.lorem.app.ui.StartIpsumUiState
 
 @Composable
 fun LoremNavHost(
@@ -29,6 +32,9 @@ fun LoremNavHost(
     catalogUpdatedAtEpochMillis: Long?,
     catalogSyncState: CatalogSyncUiState,
     onSynchronizeCatalog: () -> Unit,
+    activeIpsum: Ipsum?,
+    startIpsumState: StartIpsumUiState,
+    onStartIpsum: () -> Unit,
     navController: NavHostController = rememberNavController(),
 ) {
     val profile = initialProfile ?: configurationState.savedProfile
@@ -44,6 +50,11 @@ fun LoremNavHost(
                 launchSingleTop = true
             }
             onHomeNavigationHandled()
+        }
+    }
+    LaunchedEffect(activeIpsum?.id) {
+        if (activeIpsum != null) {
+            navController.navigate(LoremDestination.Ipsum.route) { launchSingleTop = true }
         }
     }
     NavHost(navController = navController, startDestination = startDestination) {
@@ -66,12 +77,18 @@ fun LoremNavHost(
                     catalogUpdatedAtEpochMillis = catalogUpdatedAtEpochMillis,
                     catalogSyncState = catalogSyncState,
                     onSynchronizeCatalog = onSynchronizeCatalog,
+                    hasActiveIpsum = activeIpsum != null,
+                    startIpsumState = startIpsumState,
+                    onStartIpsum = onStartIpsum,
                     onNavigate = navController::navigate,
                 )
             }
         }
+        composable(LoremDestination.Ipsum.route) {
+            IpsumScreen(activeIpsum)
+        }
         LoremDestination.all.filterNot {
-            it == LoremDestination.Configuration || it == LoremDestination.Home
+            it == LoremDestination.Configuration || it == LoremDestination.Home || it == LoremDestination.Ipsum
         }.forEach { destination ->
             composable(destination.route) {
                 PlaceholderScreen(

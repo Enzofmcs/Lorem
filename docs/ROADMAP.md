@@ -6,13 +6,13 @@
 
 ## Estado atual
 
-**Foco atual:** Historia 04 - Recomendar e iniciar um Ipsum.
+**Foco atual:** Historia 05 - Executar um Ipsum cronometrado.
 
-**Ultima historia verificada:** Historia 03 - Carregar o catalogo de problemas.
+**Ultima historia verificada:** Historia 04 - Recomendar e iniciar um Ipsum.
 
-**Primeiro item pendente:** criar a acao `Iniciar novo Ipsum`.
+**Primeiro item pendente:** mostrar titulo, identificador e link do problema ativo.
 
-**Proxima entrega demonstravel:** recomendar e persistir um Ipsum ativo.
+**Proxima entrega demonstravel:** restaurar e acompanhar o tempo do Ipsum ativo.
 
 **Bloqueios conhecidos:** nenhum.
 
@@ -147,23 +147,23 @@ checklists; veja [`DECISIONS.md`](DECISIONS.md).
 
 #### Checklist
 
-- [ ] Criar a acao `Iniciar novo Ipsum`.
-- [ ] Impedir um segundo Ipsum quando houver outro ativo.
-- [ ] Sortear a categoria com probabilidades de 1/3.
-- [ ] Aplicar a faixa de rating correspondente.
-- [ ] Remover todos os problemas inelegiveis.
-- [ ] Aplicar a prioridade inicial de variedade.
-- [ ] Sortear entre os melhores candidatos restantes.
-- [ ] Persistir o Ipsum e o horario antes de abrir o link.
-- [ ] Registrar eventual fallback de rating.
-- [ ] Nao revelar rating, tags ou categoria.
+- [x] Criar a acao `Iniciar novo Ipsum`.
+- [x] Impedir um segundo Ipsum quando houver outro ativo.
+- [x] Sortear a categoria com probabilidades de 1/3.
+- [x] Aplicar a faixa de rating correspondente.
+- [x] Remover todos os problemas inelegiveis.
+- [x] Aplicar a prioridade inicial de variedade.
+- [x] Sortear entre os melhores candidatos restantes.
+- [x] Persistir o Ipsum e o horario antes de abrir o link.
+- [x] Registrar eventual fallback de rating.
+- [x] Nao revelar rating, tags ou categoria.
 
 #### Exemplos de aceite
 
-- [ ] Nenhum problema do historico remoto ou local pode ser escolhido.
-- [ ] Fechar o app imediatamente apos iniciar nao perde o Ipsum.
-- [ ] Repetir a selecao com dados controlados respeita as tres categorias.
-- [ ] Se nao existir candidato exato, o fallback e previsivel e registrado.
+- [x] Nenhum problema do historico remoto ou local pode ser escolhido.
+- [x] Fechar o app imediatamente apos iniciar nao perde o Ipsum.
+- [x] Repetir a selecao com dados controlados respeita as tres categorias.
+- [x] Se nao existir candidato exato, o fallback e previsivel e registrado.
 
 ---
 
