@@ -6,6 +6,9 @@ import androidx.lifecycle.viewModelScope
 import dev.lorem.app.domain.model.LocalProfile
 import dev.lorem.app.domain.model.ProblemHistory
 import dev.lorem.app.domain.ProblemHistorySyncResult
+import dev.lorem.app.domain.ProblemCatalogSyncResult
+import dev.lorem.app.domain.SynchronizeProblemCatalog
+import dev.lorem.app.domain.model.CodeforcesProblem
 import dev.lorem.app.domain.SynchronizeProblemHistory
 import dev.lorem.app.domain.repository.CodeforcesRepository
 import dev.lorem.app.domain.repository.LoremRepository
@@ -39,6 +42,13 @@ sealed interface HistorySyncUiState {
     data class Error(val message: String) : HistorySyncUiState
 }
 
+sealed interface CatalogSyncUiState {
+    data object Idle : CatalogSyncUiState
+    data object Loading : CatalogSyncUiState
+    data class Success(val problemCount: Int, val updatedAtEpochMillis: Long) : CatalogSyncUiState
+    data class Error(val message: String, val savedProblemCount: Int) : CatalogSyncUiState
+}
+
 class LoremViewModel(
     private val repository: LoremRepository,
     private val codeforcesRepository: CodeforcesRepository,
@@ -49,6 +59,7 @@ class LoremViewModel(
         codeforcesRepository = codeforcesRepository,
         nowMillis = nowMillis,
     )
+    private val synchronizeProblemCatalog = SynchronizeProblemCatalog(repository, codeforcesRepository, nowMillis)
     val uiState: StateFlow<LoremUiState> = repository.profile
         .map<LocalProfile?, LoremUiState>(LoremUiState::Ready)
         .stateIn(
@@ -63,6 +74,10 @@ class LoremViewModel(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = emptyList(),
         )
+    val problemCatalog: StateFlow<List<CodeforcesProblem>> = repository.problemCatalog
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    val catalogLastUpdatedEpochMillis: StateFlow<Long?> = repository.catalogLastUpdatedEpochMillis
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     private val mutableConfigurationState = MutableStateFlow(ConfigurationUiState())
     val configurationState: StateFlow<ConfigurationUiState> =
@@ -70,6 +85,8 @@ class LoremViewModel(
 
     private val mutableHistorySyncState = MutableStateFlow<HistorySyncUiState>(HistorySyncUiState.Idle)
     val historySyncState: StateFlow<HistorySyncUiState> = mutableHistorySyncState.asStateFlow()
+    private val mutableCatalogSyncState = MutableStateFlow<CatalogSyncUiState>(CatalogSyncUiState.Idle)
+    val catalogSyncState: StateFlow<CatalogSyncUiState> = mutableCatalogSyncState.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -176,6 +193,40 @@ class LoremViewModel(
             }
         }
     }
+
+    fun synchronizeCatalog() {
+        if (mutableCatalogSyncState.value == CatalogSyncUiState.Loading) return
+        mutableCatalogSyncState.value = CatalogSyncUiState.Loading
+        viewModelScope.launch {
+            mutableCatalogSyncState.value = when (val result = synchronizeProblemCatalog()) {
+                is ProblemCatalogSyncResult.Success -> CatalogSyncUiState.Success(
+                    result.eligibleProblemCount,
+                    result.updatedAtEpochMillis,
+                )
+                is ProblemCatalogSyncResult.Failed -> catalogError(
+                    "Codeforces recusou a atualização: ${result.message}", result.savedProblemCount,
+                )
+                is ProblemCatalogSyncResult.RateLimited -> catalogError(
+                    "Limite do Codeforces atingido. Aguarde e tente novamente.", result.savedProblemCount,
+                )
+                is ProblemCatalogSyncResult.NetworkFailure -> catalogError(
+                    "Sem conexão. O catálogo salvo continua disponível.", result.savedProblemCount,
+                )
+                is ProblemCatalogSyncResult.HttpFailure -> catalogError(
+                    "Falha HTTP ${result.statusCode}. O catálogo salvo continua disponível.", result.savedProblemCount,
+                )
+                is ProblemCatalogSyncResult.InvalidResponse -> catalogError(
+                    "Resposta inválida. O catálogo salvo continua disponível.", result.savedProblemCount,
+                )
+                is ProblemCatalogSyncResult.PersistenceFailure -> catalogError(
+                    "Não foi possível salvar o catálogo.", result.savedProblemCount,
+                )
+            }
+        }
+    }
+
+    private fun catalogError(message: String, savedProblemCount: Int) =
+        CatalogSyncUiState.Error(message, savedProblemCount)
 
     companion object {
         const val INITIAL_UNRATED_RATING = 800

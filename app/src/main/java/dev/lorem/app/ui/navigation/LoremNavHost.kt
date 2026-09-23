@@ -9,6 +9,7 @@ import androidx.navigation.compose.rememberNavController
 import dev.lorem.app.domain.model.LocalProfile
 import dev.lorem.app.domain.model.ProblemHistory
 import dev.lorem.app.ui.ConfigurationUiState
+import dev.lorem.app.ui.CatalogSyncUiState
 import dev.lorem.app.ui.HistorySyncUiState
 import dev.lorem.app.ui.screens.ConfigurationScreen
 import dev.lorem.app.ui.screens.HomeScreen
@@ -24,6 +25,10 @@ fun LoremNavHost(
     historySyncState: HistorySyncUiState,
     problemHistory: List<ProblemHistory>,
     onSynchronizeHistory: () -> Unit,
+    problemCatalogCount: Int,
+    catalogUpdatedAtEpochMillis: Long?,
+    catalogSyncState: CatalogSyncUiState,
+    onSynchronizeCatalog: () -> Unit,
     navController: NavHostController = rememberNavController(),
 ) {
     val profile = configurationState.savedProfile ?: initialProfile
@@ -57,6 +62,10 @@ fun LoremNavHost(
                     syncState = historySyncState,
                     problemHistory = problemHistory,
                     onSynchronize = onSynchronizeHistory,
+                    problemCatalogCount = problemCatalogCount,
+                    catalogUpdatedAtEpochMillis = catalogUpdatedAtEpochMillis,
+                    catalogSyncState = catalogSyncState,
+                    onSynchronizeCatalog = onSynchronizeCatalog,
                     onNavigate = navController::navigate,
                 )
             }

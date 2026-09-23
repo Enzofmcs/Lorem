@@ -44,13 +44,13 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
-- **Foco:** Historia 03 - Carregar o catalogo de problemas.
-- **Ultima historia verificada:** Historia 02 - Importar o historico do Codeforces.
-- **Primeiro item pendente:** buscar `problemset.problems`.
-- **Proxima entrega demonstravel:** carregar e persistir o catalogo de problemas.
+- **Foco:** Historia 04 - Recomendar e iniciar um Ipsum.
+- **Ultima historia verificada:** Historia 03 - Carregar o catalogo de problemas.
+- **Primeiro item pendente:** criar a acao `Iniciar novo Ipsum`.
+- **Proxima entrega demonstravel:** recomendar e persistir um Ipsum ativo.
 - **Bloqueios conhecidos:** nenhum.
 
-Progresso e aceite: [`docs/ROADMAP.md#historia-03---carregar-o-catalogo-de-problemas`](docs/ROADMAP.md#historia-03---carregar-o-catalogo-de-problemas).
+Progresso e aceite: [`docs/ROADMAP.md#historia-04---recomendar-e-iniciar-um-ipsum`](docs/ROADMAP.md#historia-04---recomendar-e-iniciar-um-ipsum).
 
 ## Politica de contexto
 

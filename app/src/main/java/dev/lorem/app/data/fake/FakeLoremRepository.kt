@@ -1,6 +1,7 @@
 package dev.lorem.app.data.fake
 
 import dev.lorem.app.domain.model.LocalProfile
+import dev.lorem.app.domain.model.CodeforcesProblem
 import dev.lorem.app.domain.model.ProblemHistory
 import dev.lorem.app.domain.repository.LoremRepository
 import kotlinx.coroutines.flow.Flow
@@ -9,9 +10,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 class FakeLoremRepository(initialProfile: LocalProfile? = null) : LoremRepository {
     private val storedProfile = MutableStateFlow(initialProfile)
     private val storedProblemHistory = MutableStateFlow<List<ProblemHistory>>(emptyList())
+    private val storedProblemCatalog = MutableStateFlow<List<CodeforcesProblem>>(emptyList())
+    private val storedCatalogUpdatedAt = MutableStateFlow<Long?>(null)
 
     override val profile: Flow<LocalProfile?> = storedProfile
     override val problemHistory: Flow<List<ProblemHistory>> = storedProblemHistory
+    override val problemCatalog: Flow<List<CodeforcesProblem>> = storedProblemCatalog
+    override val catalogLastUpdatedEpochMillis: Flow<Long?> = storedCatalogUpdatedAt
 
     override suspend fun saveProfile(profile: LocalProfile) {
         storedProfile.value = profile
@@ -26,5 +31,10 @@ class FakeLoremRepository(initialProfile: LocalProfile? = null) : LoremRepositor
             .associateBy(ProblemHistory::problemId)
             .values
             .toList()
+    }
+
+    override suspend fun replaceProblemCatalog(problems: List<CodeforcesProblem>, updatedAtEpochMillis: Long) {
+        storedProblemCatalog.value = problems.filter { it.rating != null }.distinctBy { it.id }
+        storedCatalogUpdatedAt.value = updatedAtEpochMillis
     }
 }

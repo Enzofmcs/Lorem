@@ -25,6 +25,9 @@ fun LoremApp(
     val configurationState by viewModel.configurationState.collectAsStateWithLifecycle()
     val historySyncState by viewModel.historySyncState.collectAsStateWithLifecycle()
     val problemHistory by viewModel.problemHistory.collectAsStateWithLifecycle()
+    val problemCatalog by viewModel.problemCatalog.collectAsStateWithLifecycle()
+    val catalogUpdatedAt by viewModel.catalogLastUpdatedEpochMillis.collectAsStateWithLifecycle()
+    val catalogSyncState by viewModel.catalogSyncState.collectAsStateWithLifecycle()
     when (val state = uiState) {
         LoremUiState.Loading -> Box(
             modifier = Modifier.fillMaxSize(),
@@ -40,6 +43,10 @@ fun LoremApp(
             historySyncState = historySyncState,
             problemHistory = problemHistory,
             onSynchronizeHistory = viewModel::synchronizeHistory,
+            problemCatalogCount = problemCatalog.size,
+            catalogUpdatedAtEpochMillis = catalogUpdatedAt,
+            catalogSyncState = catalogSyncState,
+            onSynchronizeCatalog = viewModel::synchronizeCatalog,
         )
     }
 }

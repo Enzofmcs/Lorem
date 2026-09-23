@@ -1,6 +1,7 @@
 package dev.lorem.app.data.remote
 
 import dev.lorem.app.domain.repository.SubmissionHistoryResult
+import dev.lorem.app.domain.repository.ProblemCatalogResult
 import dev.lorem.app.domain.repository.UserLookupResult
 import java.io.IOException
 import java.time.Instant
@@ -15,6 +16,46 @@ import org.robolectric.RobolectricTestRunner
 class CodeforcesApiRepositoryTest {
     private val immediateGate = object : CodeforcesRequestGate {
         override suspend fun <T> execute(request: suspend () -> T): T = request()
+    }
+
+    @Test
+    fun `problem catalog parses identity name optional rating and official tags`() = runTest {
+        val body = """{"status":"OK","result":{"problems":[{"contestId":4,"index":"A","name":"Watermelon","rating":800,"tags":["brute force","math"]},{"contestId":5,"index":"B","name":"Unrated","tags":["graphs"]}]}}"""
+
+        val result = repository(body).problems() as ProblemCatalogResult.Success
+
+        assertEquals(2, result.problems.size)
+        assertEquals("4A", result.problems[0].id.toString())
+        assertEquals("Watermelon", result.problems[0].name)
+        assertEquals(800, result.problems[0].rating)
+        assertEquals(setOf("brute force", "math"), result.problems[0].tags)
+        assertEquals(null, result.problems[1].rating)
+    }
+
+    @Test
+    fun `problem catalog ignores entries without stable identity`() = runTest {
+        val body = """{"status":"OK","result":{"problems":[{"name":"No identity","rating":900,"tags":[]},{"contestId":10,"index":"C","name":"Valid","rating":1000,"tags":[]}]}}"""
+
+        val result = repository(body).problems() as ProblemCatalogResult.Success
+
+        assertEquals(listOf("10C"), result.problems.map { it.id.toString() })
+    }
+
+    @Test
+    fun `problem catalog exposes failed invalid http and network responses`() = runTest {
+        assertEquals(
+            ProblemCatalogResult.Failed("maintenance"),
+            repository("""{"status":"FAILED","comment":"maintenance"}""").problems(),
+        )
+        assertEquals(ProblemCatalogResult.InvalidResponse, repository("invalid").problems())
+        assertEquals(
+            ProblemCatalogResult.HttpFailure(503),
+            CodeforcesApiRepository(immediateGate, CodeforcesHttpClient { HttpResponse(503, "") }).problems(),
+        )
+        assertEquals(
+            ProblemCatalogResult.NetworkFailure,
+            CodeforcesApiRepository(immediateGate, CodeforcesHttpClient { throw IOException("offline") }).problems(),
+        )
     }
 
     @Test

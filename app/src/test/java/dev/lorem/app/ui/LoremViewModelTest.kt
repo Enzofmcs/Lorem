@@ -6,6 +6,7 @@ import dev.lorem.app.domain.model.LocalProfile
 import dev.lorem.app.domain.model.ProblemHistory
 import dev.lorem.app.domain.model.ProblemId
 import dev.lorem.app.domain.repository.CodeforcesRepository
+import dev.lorem.app.domain.repository.ProblemCatalogResult
 import dev.lorem.app.domain.repository.SubmissionHistoryResult
 import dev.lorem.app.domain.repository.CodeforcesUser
 import dev.lorem.app.domain.repository.LoremRepository
@@ -200,6 +201,8 @@ private class MemoryRepository(
 ) : LoremRepository {
     override val profile = MutableStateFlow(initialProfile)
     override val problemHistory = MutableStateFlow(initialHistory)
+    override val problemCatalog = MutableStateFlow<List<CodeforcesProblem>>(emptyList())
+    override val catalogLastUpdatedEpochMillis = MutableStateFlow<Long?>(null)
     private val histories = mutableMapOf<String, List<ProblemHistory>>()
     val savedOperations = mutableListOf<String>()
     init {
@@ -222,6 +225,10 @@ private class MemoryRepository(
         if (profile.value?.handle?.let(::normalize) == owner) problemHistory.value = merged
     }
     fun historyFor(handle: String): List<ProblemHistory> = histories[normalize(handle)].orEmpty()
+    override suspend fun replaceProblemCatalog(problems: List<CodeforcesProblem>, updatedAtEpochMillis: Long) {
+        problemCatalog.value = problems
+        catalogLastUpdatedEpochMillis.value = updatedAtEpochMillis
+    }
     private fun normalize(handle: String) = handle.trim().lowercase()
 }
 
@@ -235,7 +242,7 @@ private class CountingRepository(
     override suspend fun user(handle: String): UserLookupResult { calls++; return result }
     override suspend fun submissionHistory(handle: String): SubmissionHistoryResult =
         historyResults[historyCalls.coerceAtMost(historyResults.lastIndex)].also { historyCalls++ }
-    override suspend fun problems(): List<CodeforcesProblem> = emptyList()
+    override suspend fun problems(): ProblemCatalogResult = ProblemCatalogResult.Success(emptyList())
 }
 
 private fun profile(lastSync: Long = 0L) = LocalProfile(

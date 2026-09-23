@@ -6,13 +6,13 @@
 
 ## Estado atual
 
-**Foco atual:** Historia 03 - Carregar o catalogo de problemas.
+**Foco atual:** Historia 04 - Recomendar e iniciar um Ipsum.
 
-**Ultima historia verificada:** Historia 02 - Importar o historico do Codeforces.
+**Ultima historia verificada:** Historia 03 - Carregar o catalogo de problemas.
 
-**Primeiro item pendente:** buscar `problemset.problems`.
+**Primeiro item pendente:** criar a acao `Iniciar novo Ipsum`.
 
-**Proxima entrega demonstravel:** carregar e persistir o catalogo de problemas.
+**Proxima entrega demonstravel:** recomendar e persistir um Ipsum ativo.
 
 **Bloqueios conhecidos:** nenhum.
 
@@ -126,18 +126,18 @@ checklists; veja [`DECISIONS.md`](DECISIONS.md).
 
 #### Checklist
 
-- [ ] Buscar `problemset.problems`.
-- [ ] Salvar identificacao, nome, rating e tags.
-- [ ] Ignorar no sorteio problemas sem rating.
-- [ ] Atualizar o catalogo sem apagar historico dos Ipsums.
-- [ ] Registrar a data da ultima atualizacao.
-- [ ] Permitir usar o catalogo salvo quando a rede estiver indisponivel.
+- [x] Buscar `problemset.problems`.
+- [x] Salvar identificacao, nome, rating e tags.
+- [x] Ignorar no sorteio problemas sem rating.
+- [x] Atualizar o catalogo sem apagar historico dos Ipsums.
+- [x] Registrar a data da ultima atualizacao.
+- [x] Permitir usar o catalogo salvo quando a rede estiver indisponivel.
 
 #### Exemplos de aceite
 
-- [ ] A recomendacao pode ser calculada localmente depois da sincronizacao.
-- [ ] Atualizar o catalogo nao duplica problemas.
-- [ ] Problemas sem rating nunca entram como candidatos.
+- [x] A recomendacao pode ser calculada localmente depois da sincronizacao.
+- [x] Atualizar o catalogo nao duplica problemas.
+- [x] Problemas sem rating nunca entram como candidatos.
 
 ---
 

@@ -13,6 +13,7 @@ import dev.lorem.app.domain.model.CodeforcesProblem
 import dev.lorem.app.domain.model.LocalProfile
 import dev.lorem.app.domain.model.ProblemHistory
 import dev.lorem.app.domain.repository.CodeforcesRepository
+import dev.lorem.app.domain.repository.ProblemCatalogResult
 import dev.lorem.app.domain.repository.SubmissionHistoryResult
 import dev.lorem.app.domain.repository.CodeforcesUser
 import dev.lorem.app.domain.repository.LoremRepository
@@ -121,10 +122,16 @@ class MainActivityTest {
 private class MemoryLoremRepository(initialProfile: LocalProfile? = null) : LoremRepository {
     override val profile = MutableStateFlow(initialProfile)
     override val problemHistory = MutableStateFlow<List<ProblemHistory>>(emptyList())
+    override val problemCatalog = MutableStateFlow<List<CodeforcesProblem>>(emptyList())
+    override val catalogLastUpdatedEpochMillis = MutableStateFlow<Long?>(null)
     override suspend fun saveProfile(profile: LocalProfile) { this.profile.value = profile }
     override suspend fun clearProfile() { profile.value = null }
     override suspend fun saveProblemHistory(ownerHandle: String, history: List<ProblemHistory>) {
         problemHistory.value = history
+    }
+    override suspend fun replaceProblemCatalog(problems: List<CodeforcesProblem>, updatedAtEpochMillis: Long) {
+        problemCatalog.value = problems
+        catalogLastUpdatedEpochMillis.value = updatedAtEpochMillis
     }
 }
 
@@ -134,5 +141,5 @@ private class ResultCodeforcesRepository(
     override suspend fun user(handle: String) = result
     override suspend fun submissionHistory(handle: String) =
         SubmissionHistoryResult.Success(emptyList())
-    override suspend fun problems(): List<CodeforcesProblem> = emptyList()
+    override suspend fun problems(): ProblemCatalogResult = ProblemCatalogResult.Success(emptyList())
 }

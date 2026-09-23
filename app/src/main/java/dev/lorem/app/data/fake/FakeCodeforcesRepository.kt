@@ -5,6 +5,7 @@ import dev.lorem.app.domain.model.CodeforcesSubmission
 import dev.lorem.app.domain.model.ProblemId
 import dev.lorem.app.domain.repository.CodeforcesRepository
 import dev.lorem.app.domain.repository.CodeforcesUser
+import dev.lorem.app.domain.repository.ProblemCatalogResult
 import dev.lorem.app.domain.repository.SubmissionHistoryResult
 import dev.lorem.app.domain.repository.UserLookupResult
 import java.time.Instant
@@ -33,12 +34,12 @@ class FakeCodeforcesRepository : CodeforcesRepository {
             ),
         )
 
-    override suspend fun problems(): List<CodeforcesProblem> = listOf(
+    override suspend fun problems(): ProblemCatalogResult = ProblemCatalogResult.Success(listOf(
         CodeforcesProblem(
             id = ProblemId(contestId = 4, index = "A"),
             name = "Watermelon",
             rating = 800,
             tags = setOf("brute force", "math"),
         ),
-    )
+    ))
 }
