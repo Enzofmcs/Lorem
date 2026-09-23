@@ -90,4 +90,4 @@ Na raiz do projeto:
 
 ## Próximos passos
 
-A próxima entrega é a **História 05 — Executar um Ipsum cronometrado**. Consulte o checklist em [`docs/ROADMAP.md`](docs/ROADMAP.md#historia-05---executar-um-ipsum-cronometrado) para os itens pendentes.
+A próxima entrega é a **História 06 — Detectar submissões durante o Ipsum**. Consulte o checklist em [`docs/ROADMAP.md`](docs/ROADMAP.md#historia-06---detectar-submissoes-durante-o-ipsum) para os itens pendentes.

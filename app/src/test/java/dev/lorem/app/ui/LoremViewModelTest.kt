@@ -244,6 +244,24 @@ class LoremViewModelTest {
         assertEquals(first, local.activeIpsum.value)
         assertTrue((viewModel.startIpsumState.value as StartIpsumUiState.Error).message.contains("Já existe"))
     }
+
+    @Test
+    fun `repeated hint requests retain the first reveal time`() = runTest {
+        val local = MemoryRepository(profile().copy(loremRating = 1200))
+        local.problemCatalog.value = listOf(problem(10, 1200))
+        var now = 1_000L
+        val viewModel = LoremViewModel(local, CountingRepository(), nowMillis = { now })
+        viewModel.startNewIpsum()
+        advanceUntilIdle()
+
+        viewModel.revealActiveIpsumHint()
+        advanceUntilIdle()
+        now = 2_000L
+        viewModel.revealActiveIpsumHint()
+        advanceUntilIdle()
+
+        assertEquals(1_000L, local.activeIpsum.value?.hintRevealedAtEpochMillis)
+    }
 }
 
 private class MemoryRepository(
@@ -288,6 +306,14 @@ private class MemoryRepository(
         ipsums.value += saved
         activeIpsum.value = saved
         return saved
+    }
+    override suspend fun revealIpsumHint(ipsumId: Long, revealedAtEpochMillis: Long) {
+        val current = activeIpsum.value ?: return
+        if (current.id == ipsumId && current.hintRevealedAtEpochMillis == null) {
+            val updated = current.copy(hintRevealedAtEpochMillis = revealedAtEpochMillis)
+            activeIpsum.value = updated
+            ipsums.value = ipsums.value.map { if (it.id == ipsumId) updated else it }
+        }
     }
     private fun normalize(handle: String) = handle.trim().lowercase()
 }

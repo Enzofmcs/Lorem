@@ -36,6 +36,7 @@ fun LoremNavHost(
     startIpsumState: StartIpsumUiState,
     onStartIpsum: () -> Unit,
     onIpsumNavigationHandled: () -> Unit,
+    onRevealIpsumHint: () -> Unit,
     navController: NavHostController = rememberNavController(),
 ) {
     val profile = initialProfile ?: configurationState.savedProfile
@@ -89,6 +90,7 @@ fun LoremNavHost(
         composable(LoremDestination.Ipsum.route) {
             IpsumScreen(
                 ipsum = activeIpsum,
+                onRevealHint = onRevealIpsumHint,
                 onNavigateHome = {
                     if (!navController.popBackStack(LoremDestination.Home.route, inclusive = false)) {
                         navController.navigate(LoremDestination.Home.route) { launchSingleTop = true }

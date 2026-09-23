@@ -53,6 +53,7 @@ fun LoremApp(
             startIpsumState = startIpsumState,
             onStartIpsum = viewModel::startNewIpsum,
             onIpsumNavigationHandled = viewModel::ipsumNavigationHandled,
+            onRevealIpsumHint = viewModel::revealActiveIpsumHint,
         )
     }
 }

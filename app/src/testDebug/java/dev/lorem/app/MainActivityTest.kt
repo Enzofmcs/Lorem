@@ -144,6 +144,11 @@ private class MemoryLoremRepository(initialProfile: LocalProfile? = null) : Lore
         activeIpsum.value = saved
         return saved
     }
+    override suspend fun revealIpsumHint(ipsumId: Long, revealedAtEpochMillis: Long) {
+        activeIpsum.value = activeIpsum.value?.takeIf { it.id == ipsumId }?.let {
+            if (it.hintRevealedAtEpochMillis == null) it.copy(hintRevealedAtEpochMillis = revealedAtEpochMillis) else it
+        }
+    }
 }
 
 private class ResultCodeforcesRepository(

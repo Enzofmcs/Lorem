@@ -26,6 +26,9 @@ interface LoremRepository {
 
     /** The persistence layer must reject insertion when any active Ipsum already exists. */
     suspend fun createActiveIpsum(ipsum: Ipsum): Ipsum
+
+    /** Records the first reveal only; subsequent and concurrent calls leave it unchanged. */
+    suspend fun revealIpsumHint(ipsumId: Long, revealedAtEpochMillis: Long)
 }
 
 class ActiveIpsumAlreadyExistsException(cause: Throwable? = null) : Exception(cause)

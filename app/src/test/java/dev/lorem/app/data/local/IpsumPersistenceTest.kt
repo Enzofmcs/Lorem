@@ -58,6 +58,19 @@ class IpsumPersistenceTest {
         assertEquals(1, database.ipsumDao().observeForOwner("tourist").first().size)
     }
 
+    @Test
+    fun `first hint reveal is persisted and later reveals do not replace its time`() = runTest {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val database = Room.inMemoryDatabaseBuilder(context, LoremDatabase::class.java).build()
+        val repository = repository(database, File(context.cacheDir, "hint-${System.nanoTime()}.preferences_pb"), backgroundScope)
+        val saved = repository.createActiveIpsum(ipsum())
+
+        repository.revealIpsumHint(saved.id, 2_000L)
+        repository.revealIpsumHint(saved.id, 3_000L)
+
+        assertEquals(2_000L, repository.activeIpsum.first()?.hintRevealedAtEpochMillis)
+    }
+
     private fun repository(database: LoremDatabase, file: File, scope: CoroutineScope) = LocalLoremRepository(
         dataStore = PreferenceDataStoreFactory.create(scope = scope, produceFile = { file }),
         problemHistoryDao = database.problemHistoryDao(),

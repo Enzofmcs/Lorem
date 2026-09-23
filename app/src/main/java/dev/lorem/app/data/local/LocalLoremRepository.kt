@@ -111,6 +111,11 @@ class LocalLoremRepository(
         }
     }
 
+    override suspend fun revealIpsumHint(ipsumId: Long, revealedAtEpochMillis: Long) {
+        require(revealedAtEpochMillis > 0) { "revealedAtEpochMillis must be positive" }
+        ipsumDao.revealHintOnce(ipsumId, revealedAtEpochMillis)
+    }
+
     private fun readProfile(preferences: Preferences): LocalProfile? {
         val handle = preferences[HANDLE]?.takeIf(String::isNotBlank) ?: return null
         val displayName = preferences[DISPLAY_NAME]?.takeIf(String::isNotBlank) ?: return null

@@ -23,5 +23,12 @@ data class Ipsum(
     val selectedRating: Int,
     val fallbackDistance: Int,
     val startedAtEpochMillis: Long,
+    val hintRevealedAtEpochMillis: Long? = null,
     val status: IpsumStatus,
 )
+
+fun Ipsum.problemUrl(): String =
+    "https://codeforces.com/contest/${problem.id.contestId}/problem/${problem.id.index}"
+
+fun elapsedIpsumMillis(startedAtEpochMillis: Long, nowEpochMillis: Long): Long =
+    (nowEpochMillis - startedAtEpochMillis).coerceAtLeast(0L)
