@@ -39,8 +39,8 @@ Nao preencher silenciosamente. Registrar a escolha em **Registro de decisoes** e
 
 ### DA-05 - Limite do fallback de recomendacao
 
-- [ ] Quantos passos de 100 podem ser explorados.
-- [ ] Se o app deve pedir confirmacao ao sair muito da faixa.
+- [x] Resolvida por D-010: explorar ate tres passos de 100.
+- [x] Resolvida por D-010: nao pedir confirmacao neste MVP.
 
 ### DA-06 - Atualizacao automatica
 
@@ -67,5 +67,6 @@ Use o formato abaixo. Nao apagar decisoes antigas; marque quando forem substitui
 | D-007 | 2026-09-18 | A estrutura inicial persiste somente um perfil local temporario com DataStore; integracoes do Codeforces permanecem falsas. | Comprovar persistencia e separacao de camadas sem antecipar Room, rede ou regras das historias seguintes. | 00, 01 |
 | D-008 | 2026-09-22 | Arquivos JAR nao serao versionados; os scripts do Gradle baixam o bootstrap oficial para o cache e validam SHA-256. | Manter o diff da PR totalmente textual sem perder os comandos `./gradlew`. | 00 |
 | D-009 | 2026-09-22 | O Rating Lorem inicial usa o rating oficial atual do Codeforces quando ele estiver disponivel; contas sem rating oficial iniciam em 800. | Aproveitar a melhor referencia publica existente sem impedir o uso por contas ainda nao ranqueadas e manter um ponto inicial coerente com a menor dificuldade dos problemas avaliados. | 01, 04, 08 |
+| D-010 | 2026-09-23 | A recomendacao normaliza o Rating Lorem para o multiplo de 100 mais proximo, com minimo 800; sem candidato na faixa da categoria, explora primeiro as camadas adjacentes mais proximas em passos de 100, ate 300 pontos, preservando variedade e sorteio entre empates, sem confirmacao. Persiste categoria e faixa originais, rating escolhido e distancia do fallback; sem candidato no limite, nao cria Ipsum e oferece erro recuperavel. | Tornar o fallback previsivel, auditavel e limitado sem interromper o fluxo simples do MVP. | 04, 12 |
 
 ---

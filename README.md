@@ -1,23 +1,25 @@
 # Lorem
 
-Lorem é um aplicativo Android de treino individual para programação competitiva. O produto deverá recomendar exercícios inéditos do Codeforces adequados ao nível do usuário e acompanhar sua evolução.
+Lorem é um aplicativo Android de treino individual para programação competitiva. O produto recomenda exercícios inéditos do Codeforces adequados ao nível do usuário e acompanhará sua evolução.
 
-Um **Ipsum** é a tentativa oficial e cronometrada de resolver um problema recomendado. O fluxo completo de recomendação, submissões e avaliação será desenvolvido de forma incremental; ele ainda não faz parte desta estrutura inicial.
+Um **Ipsum** é a tentativa oficial e cronometrada de resolver um problema recomendado. A recomendação e o início persistente já estão implementados; cronômetro, submissões e avaliação serão desenvolvidos incrementalmente.
 
 > O [`AGENTS.md`](AGENTS.md) é o guia operacional compacto. A fonte de verdade detalhada está dividida por assunto em [`docs/`](docs/README.md). Este README apresenta apenas a visão técnica de entrada.
 
 ## Estado atual
 
-A base Android de módulo único agora inclui o primeiro fluxo da História 01:
+A base Android de módulo único concluiu a recomendação e o início da História 04:
 
 - Kotlin, Jetpack Compose e Material 3;
-- seis destinos provisórios navegáveis;
+- navegação que restaura o Ipsum ativo;
 - escolha da tela inicial a partir de um perfil local validado;
 - persistência atômica do perfil Codeforces com DataStore;
 - consulta real ao `user.info`, centralizada por um limitador de requisições;
+- catálogo e histórico locais em Room, com recomendação inédita e fallback auditável;
+- persistência de um único Ipsum ativo antes da navegação;
 - injeção manual e estado de UI exposto por `ViewModel`/`StateFlow`.
 
-Ainda não há importação de submissões, recomendação, cronômetro ou cálculo do rating após Ipsums.
+Ainda não há cronômetro, detecção de submissões, encerramento ou cálculo do rating após Ipsums.
 
 ## Escopo resumido
 
@@ -30,7 +32,7 @@ O Lorem terá perfil local associado a um handle público, catálogo e históric
 - **`ui`**: composição raiz, `ViewModel`, tema, navegação e telas Compose;
 - **`AppContainer`**: composição manual das dependências.
 
-Composables recebem estado e ações: eles não acessam DataStore ou serviços externos diretamente. Room será considerado apenas quando histórias futuras exigirem dados estruturados.
+Composables recebem estado e ações: eles não acessam DataStore, Room ou serviços externos diretamente. Room preserva catálogo, histórico e Ipsums; DataStore mantém configurações pequenas.
 
 ## Requisitos de ambiente
 
@@ -88,4 +90,4 @@ Na raiz do projeto:
 
 ## Próximos passos
 
-A entrega atual é a **História 01 — Vincular o handle do Codeforces**. Consulte o checklist em [`docs/ROADMAP.md`](docs/ROADMAP.md#historia-01---vincular-o-handle-do-codeforces) para os itens já comprovados e as verificações ainda pendentes.
+A próxima entrega é a **História 05 — Executar um Ipsum cronometrado**. Consulte o checklist em [`docs/ROADMAP.md`](docs/ROADMAP.md#historia-05---executar-um-ipsum-cronometrado) para os itens pendentes.

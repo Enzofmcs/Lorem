@@ -12,6 +12,8 @@ import androidx.compose.ui.test.performTextReplacement
 import dev.lorem.app.domain.model.CodeforcesProblem
 import dev.lorem.app.domain.model.LocalProfile
 import dev.lorem.app.domain.model.ProblemHistory
+import dev.lorem.app.domain.model.Ipsum
+import dev.lorem.app.domain.repository.ActiveIpsumAlreadyExistsException
 import dev.lorem.app.domain.repository.CodeforcesRepository
 import dev.lorem.app.domain.repository.ProblemCatalogResult
 import dev.lorem.app.domain.repository.SubmissionHistoryResult
@@ -124,6 +126,8 @@ private class MemoryLoremRepository(initialProfile: LocalProfile? = null) : Lore
     override val problemHistory = MutableStateFlow<List<ProblemHistory>>(emptyList())
     override val problemCatalog = MutableStateFlow<List<CodeforcesProblem>>(emptyList())
     override val catalogLastUpdatedEpochMillis = MutableStateFlow<Long?>(null)
+    override val ipsums = MutableStateFlow<List<Ipsum>>(emptyList())
+    override val activeIpsum = MutableStateFlow<Ipsum?>(null)
     override suspend fun saveProfile(profile: LocalProfile) { this.profile.value = profile }
     override suspend fun clearProfile() { profile.value = null }
     override suspend fun saveProblemHistory(ownerHandle: String, history: List<ProblemHistory>) {
@@ -132,6 +136,13 @@ private class MemoryLoremRepository(initialProfile: LocalProfile? = null) : Lore
     override suspend fun replaceProblemCatalog(problems: List<CodeforcesProblem>, updatedAtEpochMillis: Long) {
         problemCatalog.value = problems
         catalogLastUpdatedEpochMillis.value = updatedAtEpochMillis
+    }
+    override suspend fun createActiveIpsum(ipsum: Ipsum): Ipsum {
+        if (activeIpsum.value != null) throw ActiveIpsumAlreadyExistsException()
+        val saved = ipsum.copy(id = 1)
+        ipsums.value += saved
+        activeIpsum.value = saved
+        return saved
     }
 }
 

@@ -13,6 +13,12 @@ import dev.lorem.app.domain.SynchronizeProblemHistory
 import dev.lorem.app.domain.repository.CodeforcesRepository
 import dev.lorem.app.domain.repository.LoremRepository
 import dev.lorem.app.domain.repository.UserLookupResult
+import dev.lorem.app.domain.RandomSource
+import dev.lorem.app.domain.RecommendIpsum
+import dev.lorem.app.domain.StartIpsum
+import dev.lorem.app.domain.StartIpsumResult
+import dev.lorem.app.domain.model.Ipsum
+import kotlin.random.Random
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -49,10 +55,18 @@ sealed interface CatalogSyncUiState {
     data class Error(val message: String, val savedProblemCount: Int) : CatalogSyncUiState
 }
 
+sealed interface StartIpsumUiState {
+    data object Idle : StartIpsumUiState
+    data object Loading : StartIpsumUiState
+    data class Success(val ipsumId: Long) : StartIpsumUiState
+    data class Error(val message: String) : StartIpsumUiState
+}
+
 class LoremViewModel(
     private val repository: LoremRepository,
     private val codeforcesRepository: CodeforcesRepository,
     private val nowMillis: () -> Long = System::currentTimeMillis,
+    randomSource: RandomSource = RandomSource { Random.Default.nextInt(it) },
 ) : ViewModel() {
     private val synchronizeProblemHistory = SynchronizeProblemHistory(
         loremRepository = repository,
@@ -60,6 +74,7 @@ class LoremViewModel(
         nowMillis = nowMillis,
     )
     private val synchronizeProblemCatalog = SynchronizeProblemCatalog(repository, codeforcesRepository, nowMillis)
+    private val startIpsum = StartIpsum(repository, RecommendIpsum(randomSource), nowMillis)
     val uiState: StateFlow<LoremUiState> = repository.profile
         .map<LocalProfile?, LoremUiState>(LoremUiState::Ready)
         .stateIn(
@@ -78,6 +93,8 @@ class LoremViewModel(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
     val catalogLastUpdatedEpochMillis: StateFlow<Long?> = repository.catalogLastUpdatedEpochMillis
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    val activeIpsum: StateFlow<Ipsum?> = repository.activeIpsum
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     private val mutableConfigurationState = MutableStateFlow(ConfigurationUiState())
     val configurationState: StateFlow<ConfigurationUiState> =
@@ -87,6 +104,8 @@ class LoremViewModel(
     val historySyncState: StateFlow<HistorySyncUiState> = mutableHistorySyncState.asStateFlow()
     private val mutableCatalogSyncState = MutableStateFlow<CatalogSyncUiState>(CatalogSyncUiState.Idle)
     val catalogSyncState: StateFlow<CatalogSyncUiState> = mutableCatalogSyncState.asStateFlow()
+    private val mutableStartIpsumState = MutableStateFlow<StartIpsumUiState>(StartIpsumUiState.Idle)
+    val startIpsumState: StateFlow<StartIpsumUiState> = mutableStartIpsumState.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -227,6 +246,22 @@ class LoremViewModel(
 
     private fun catalogError(message: String, savedProblemCount: Int) =
         CatalogSyncUiState.Error(message, savedProblemCount)
+
+    fun startNewIpsum() {
+        if (mutableStartIpsumState.value == StartIpsumUiState.Loading) return
+        mutableStartIpsumState.value = StartIpsumUiState.Loading
+        viewModelScope.launch {
+            mutableStartIpsumState.value = when (val result = startIpsum()) {
+                is StartIpsumResult.Success -> StartIpsumUiState.Success(result.ipsum.id)
+                StartIpsumResult.AlreadyActive -> StartIpsumUiState.Error("Já existe um Ipsum ativo. Continue-o antes de iniciar outro.")
+                StartIpsumResult.NoCandidate -> StartIpsumUiState.Error(
+                    "Nenhum problema inédito foi encontrado até 300 pontos da faixa. Atualize catálogo e histórico e tente novamente.",
+                )
+                StartIpsumResult.NoProfile -> StartIpsumUiState.Error("Configure um perfil antes de iniciar um Ipsum.")
+                StartIpsumResult.PersistenceFailure -> StartIpsumUiState.Error("Não foi possível salvar o Ipsum. Tente novamente.")
+            }
+        }
+    }
 
     companion object {
         const val INITIAL_UNRATED_RATING = 800

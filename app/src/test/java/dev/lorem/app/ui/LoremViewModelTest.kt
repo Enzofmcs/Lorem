@@ -5,6 +5,9 @@ import dev.lorem.app.domain.model.CodeforcesSubmission
 import dev.lorem.app.domain.model.LocalProfile
 import dev.lorem.app.domain.model.ProblemHistory
 import dev.lorem.app.domain.model.ProblemId
+import dev.lorem.app.domain.model.Ipsum
+import dev.lorem.app.domain.repository.ActiveIpsumAlreadyExistsException
+import dev.lorem.app.domain.RandomSource
 import dev.lorem.app.domain.repository.CodeforcesRepository
 import dev.lorem.app.domain.repository.ProblemCatalogResult
 import dev.lorem.app.domain.repository.SubmissionHistoryResult
@@ -193,6 +196,54 @@ class LoremViewModelTest {
 
         assertEquals(1, remote.historyCalls)
     }
+
+    @Test
+    fun `start persists timestamp and recommendation before reporting success`() = runTest {
+        val local = MemoryRepository(profile().copy(loremRating = 1200))
+        local.problemCatalog.value = listOf(problem(10, 1300))
+        val viewModel = LoremViewModel(
+            local,
+            CountingRepository(),
+            nowMillis = { 9876L },
+            randomSource = RandomSource { 0 },
+        )
+
+        viewModel.startNewIpsum()
+        advanceUntilIdle()
+
+        assertTrue(viewModel.startIpsumState.value is StartIpsumUiState.Success)
+        assertEquals(9876L, local.activeIpsum.value?.startedAtEpochMillis)
+        assertEquals(1300, local.activeIpsum.value?.selectedRating)
+    }
+
+    @Test
+    fun `start without candidate is recoverable and persists nothing`() = runTest {
+        val local = MemoryRepository(profile().copy(loremRating = 1200))
+        local.problemCatalog.value = listOf(problem(10, 1700))
+        val viewModel = LoremViewModel(local, CountingRepository(), randomSource = sequenceRandom(1))
+
+        viewModel.startNewIpsum()
+        advanceUntilIdle()
+
+        assertTrue((viewModel.startIpsumState.value as StartIpsumUiState.Error).message.contains("Nenhum problema"))
+        assertEquals(null, local.activeIpsum.value)
+    }
+
+    @Test
+    fun `second start reports existing active ipsum without replacing it`() = runTest {
+        val local = MemoryRepository(profile().copy(loremRating = 1200))
+        local.problemCatalog.value = listOf(problem(10, 1200), problem(11, 1200))
+        val viewModel = LoremViewModel(local, CountingRepository(), randomSource = sequenceRandom(1, 0))
+        viewModel.startNewIpsum()
+        advanceUntilIdle()
+        val first = local.activeIpsum.value
+
+        viewModel.startNewIpsum()
+        advanceUntilIdle()
+
+        assertEquals(first, local.activeIpsum.value)
+        assertTrue((viewModel.startIpsumState.value as StartIpsumUiState.Error).message.contains("Já existe"))
+    }
 }
 
 private class MemoryRepository(
@@ -203,6 +254,8 @@ private class MemoryRepository(
     override val problemHistory = MutableStateFlow(initialHistory)
     override val problemCatalog = MutableStateFlow<List<CodeforcesProblem>>(emptyList())
     override val catalogLastUpdatedEpochMillis = MutableStateFlow<Long?>(null)
+    override val ipsums = MutableStateFlow<List<Ipsum>>(emptyList())
+    override val activeIpsum = MutableStateFlow<Ipsum?>(null)
     private val histories = mutableMapOf<String, List<ProblemHistory>>()
     val savedOperations = mutableListOf<String>()
     init {
@@ -228,6 +281,13 @@ private class MemoryRepository(
     override suspend fun replaceProblemCatalog(problems: List<CodeforcesProblem>, updatedAtEpochMillis: Long) {
         problemCatalog.value = problems
         catalogLastUpdatedEpochMillis.value = updatedAtEpochMillis
+    }
+    override suspend fun createActiveIpsum(ipsum: Ipsum): Ipsum {
+        if (activeIpsum.value != null) throw ActiveIpsumAlreadyExistsException()
+        val saved = ipsum.copy(id = 1L)
+        ipsums.value += saved
+        activeIpsum.value = saved
+        return saved
     }
     private fun normalize(handle: String) = handle.trim().lowercase()
 }
@@ -260,3 +320,15 @@ private fun submission(id: Long, verdict: String?) = CodeforcesSubmission(
     verdict = verdict,
     createdAt = Instant.EPOCH,
 )
+
+private fun problem(id: Long, rating: Int) = CodeforcesProblem(
+    id = ProblemId(id, "A"),
+    name = "Problem $id",
+    rating = rating,
+    tags = setOf("implementation"),
+)
+
+private fun sequenceRandom(vararg values: Int): RandomSource {
+    var index = 0
+    return RandomSource { bound -> values[index++.coerceAtMost(values.lastIndex)].mod(bound) }
+}
