@@ -223,11 +223,11 @@ checklists; veja [`DECISIONS.md`](DECISIONS.md).
 
 #### Checklist
 
-- [ ] Revelar rating, categoria e tags.
-- [ ] Mostrar tempo total.
-- [ ] Mostrar quantidade e tipos de erros.
-- [ ] Mostrar se houve dica.
-- [ ] Exigir um motivo ao encerrar sem AC.
+- [x] Revelar rating, categoria e tags.
+- [x] Mostrar tempo total.
+- [x] Mostrar quantidade e tipos de erros.
+- [x] Mostrar se houve dica.
+- [x] Exigir um motivo ao encerrar sem AC.
 - [ ] Oferecer os motivos confirmados de fracasso.
 - [ ] Persistir o estado final de forma atomica.
 - [ ] Impedir encerramento ou pontuacao duplicados.
@@ -244,8 +244,8 @@ checklists; veja [`DECISIONS.md`](DECISIONS.md).
 
 #### Exemplos de aceite
 
-- [ ] Um AC apresenta todas as informacoes escondidas.
-- [ ] Um encerramento sem AC nao prossegue sem motivo.
+- [x] Um AC apresenta todas as informacoes escondidas.
+- [x] Um encerramento sem AC nao prossegue sem motivo.
 - [ ] Reabrir o resultado nao altera os dados.
 
 ---

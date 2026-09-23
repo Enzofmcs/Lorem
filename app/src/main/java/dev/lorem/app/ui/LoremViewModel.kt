@@ -347,8 +347,14 @@ class LoremViewModel(
     fun openIpsumResult(ipsumId: Long) {
         mutableIpsumResultState.value = IpsumResultUiState.Loading
         viewModelScope.launch {
-            mutableIpsumResultState.value = repository.getIpsumResult(ipsumId)?.let(IpsumResultUiState::Ready)
-                ?: IpsumResultUiState.Error("Resultado não encontrado.")
+            mutableIpsumResultState.value = runCatching { repository.getIpsumResult(ipsumId) }
+                .fold(
+                    onSuccess = {
+                        it?.let(IpsumResultUiState::Ready)
+                            ?: IpsumResultUiState.Error("Resultado não encontrado.")
+                    },
+                    onFailure = { IpsumResultUiState.Error("Não foi possível abrir o resultado salvo.") },
+                )
         }
     }
 

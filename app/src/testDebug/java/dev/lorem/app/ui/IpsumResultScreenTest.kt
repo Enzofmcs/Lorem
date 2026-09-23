@@ -49,4 +49,25 @@ class IpsumResultScreenTest {
             "WRONG_ANSWER (1), COMPILATION_ERROR (1)", "Alteração do Rating Lorem",
         ).forEach { composeRule.onNodeWithText(it, substring = true).performScrollTo().assertIsDisplayed() }
     }
+
+    @Test
+    fun `legacy final result without end time shows recoverable state instead of crashing`() {
+        val ipsum = Ipsum(
+            id = 2, ownerHandle = "tourist",
+            problem = CodeforcesProblem(ProblemId(101, "B"), "Legacy", 1200, setOf("math")),
+            initialLoremRating = 1200, category = IpsumCategory.CURRENT_LEVEL,
+            desiredRatingMin = 1200, desiredRatingMax = 1200, selectedRating = 1200,
+            fallbackDistance = 0, startedAtEpochMillis = 1_000,
+            endedAtEpochMillis = null, status = IpsumStatus.COMPLETED,
+        )
+
+        composeRule.setContent {
+            LoremTheme {
+                IpsumResultScreen(IpsumResultUiState.Ready(IpsumResult(ipsum, emptyList()))) {}
+            }
+        }
+
+        composeRule.onNodeWithText("Tempo total indisponível").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Fechar resultado").performScrollTo().assertIsDisplayed()
+    }
 }

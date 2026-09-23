@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.lorem.app.domain.model.IpsumStatus
+import dev.lorem.app.domain.model.totalTimeMillis
 import dev.lorem.app.ui.IpsumResultUiState
 
 @Composable
@@ -35,7 +36,8 @@ fun IpsumResultScreen(state: IpsumResultUiState, onClose: () -> Unit) {
                 Text("Rating do problema: ${ipsum.selectedRating}")
                 Text("Categoria: ${categoryLabel(ipsum.category.name)}")
                 Text("Tópicos: ${ipsum.problem.tags.sorted().joinToString()}")
-                Text("Tempo total: ${formatElapsed((ipsum.endedAtEpochMillis!! - ipsum.startedAtEpochMillis).coerceAtLeast(0))}")
+                ipsum.totalTimeMillis()?.let { Text("Tempo total: ${formatElapsed(it)}") }
+                    ?: Text("Tempo total indisponível", color = MaterialTheme.colorScheme.error)
                 Text("Dica usada: ${if (ipsum.hintRevealedAtEpochMillis != null) "sim" else "não"}")
                 Text("Erros antes do primeiro AC: ${ipsum.errorCount}")
                 Text("Tipos de erro: ${result.errorVerdicts.ifEmpty { listOf("nenhum") }.groupingBy { it }.eachCount().entries.joinToString { "${it.key} (${it.value})" }}")

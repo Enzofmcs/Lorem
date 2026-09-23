@@ -41,6 +41,10 @@ data class Ipsum(
 
 data class IpsumResult(val ipsum: Ipsum, val errorVerdicts: List<String>)
 
+fun Ipsum.totalTimeMillis(): Long? = endedAtEpochMillis?.let {
+    elapsedIpsumMillis(startedAtEpochMillis, it)
+}
+
 fun Ipsum.problemUrl(): String =
     "https://codeforces.com/contest/${problem.id.contestId}/problem/${problem.id.index}"
 
