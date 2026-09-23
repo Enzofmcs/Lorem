@@ -269,6 +269,14 @@ class LoremViewModel(
         }
     }
 
+    fun revealActiveIpsumHint() {
+        viewModelScope.launch {
+            val ipsum = repository.activeIpsum.first() ?: return@launch
+            if (ipsum.hintRevealedAtEpochMillis != null) return@launch
+            repository.revealIpsumHint(ipsum.id, nowMillis())
+        }
+    }
+
     companion object {
         const val INITIAL_UNRATED_RATING = 800
 

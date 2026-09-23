@@ -173,21 +173,21 @@ checklists; veja [`DECISIONS.md`](DECISIONS.md).
 
 #### Checklist
 
-- [ ] Mostrar titulo, identificador e link do problema.
-- [ ] Calcular o tempo pelo horario persistido, nao por um contador descartavel.
-- [ ] Restaurar o tempo correto apos rotacao, fechamento e retorno ao app.
-- [ ] Nao oferecer pausa.
-- [ ] Criar `Revelar topicos` com confirmacao.
-- [ ] Registrar uso e horario da dica apenas uma vez.
-- [ ] Mostrar tags somente depois da confirmacao.
-- [ ] Criar `Verificar submissoes`.
-- [ ] Criar `Encerrar sem AC` com confirmacao.
+- [x] Mostrar titulo, identificador e link do problema.
+- [x] Calcular o tempo pelo horario persistido, nao por um contador descartavel.
+- [x] Restaurar o tempo correto apos rotacao, fechamento e retorno ao app.
+- [x] Nao oferecer pausa.
+- [x] Criar `Revelar topicos` com confirmacao.
+- [x] Registrar uso e horario da dica apenas uma vez.
+- [x] Mostrar tags somente depois da confirmacao.
+- [x] Criar `Verificar submissoes`.
+- [x] Criar `Encerrar sem AC` com confirmacao.
 
 #### Exemplos de aceite
 
-- [ ] Reabrir o app dez minutos depois mostra aproximadamente dez minutos adicionais.
-- [ ] Consultar as tags fica registrado mesmo que o app seja fechado.
-- [ ] Tocar novamente na dica nao cria outro evento.
+- [x] Reabrir o app dez minutos depois mostra aproximadamente dez minutos adicionais.
+- [x] Consultar as tags fica registrado mesmo que o app seja fechado.
+- [x] Tocar novamente na dica nao cria outro evento.
 
 ---
 

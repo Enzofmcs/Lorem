@@ -44,10 +44,10 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
-- **Foco:** Historia 05 - Executar um Ipsum cronometrado.
-- **Ultima historia verificada:** Historia 04 - Recomendar e iniciar um Ipsum.
-- **Primeiro item pendente:** mostrar titulo, identificador e link do problema ativo.
-- **Proxima entrega demonstravel:** restaurar e acompanhar o tempo do Ipsum ativo.
+- **Foco:** Historia 06 - Detectar submissoes durante o Ipsum.
+- **Ultima historia verificada:** Historia 05 - Executar um Ipsum cronometrado.
+- **Primeiro item pendente:** consultar `user.status` sob demanda para o Ipsum ativo.
+- **Proxima entrega demonstravel:** reconhecer somente submissoes feitas durante o Ipsum.
 - **Bloqueios conhecidos:** nenhum.
 
 Progresso e aceite: [`docs/ROADMAP.md#historia-05---executar-um-ipsum-cronometrado`](docs/ROADMAP.md#historia-05---executar-um-ipsum-cronometrado).

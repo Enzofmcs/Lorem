@@ -50,4 +50,12 @@ class FakeLoremRepository(initialProfile: LocalProfile? = null) : LoremRepositor
         activeIpsum.value = saved
         return saved
     }
+
+    override suspend fun revealIpsumHint(ipsumId: Long, revealedAtEpochMillis: Long) {
+        val current = activeIpsum.value ?: return
+        if (current.id != ipsumId || current.hintRevealedAtEpochMillis != null) return
+        val updated = current.copy(hintRevealedAtEpochMillis = revealedAtEpochMillis)
+        activeIpsum.value = updated
+        storedIpsums.value = storedIpsums.value.map { if (it.id == ipsumId) updated else it }
+    }
 }
