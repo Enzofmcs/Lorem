@@ -36,6 +36,8 @@ fun HomeScreen(
     val attemptedCount = problemHistory.count(ProblemHistory::attempted)
     val solvedCount = problemHistory.count(ProblemHistory::hasAcceptedSubmission)
     val hasSynchronized = profile.lastSyncEpochMillis > 0L
+    val latestCatalogUpdate = (catalogSyncState as? CatalogSyncUiState.Success)
+        ?.updatedAtEpochMillis ?: catalogUpdatedAtEpochMillis
     Scaffold { innerPadding ->
         Column(
             modifier = Modifier
@@ -90,12 +92,12 @@ fun HomeScreen(
             }
 
             Text("Catálogo de problemas", style = MaterialTheme.typography.titleMedium)
-            if (catalogUpdatedAtEpochMillis != null) {
+            if (latestCatalogUpdate != null) {
                 Text("$problemCatalogCount problemas com rating disponíveis localmente.")
-                Text("Última atualização: ${formatSyncTime(catalogUpdatedAtEpochMillis)}")
+                Text("Última atualização: ${formatSyncTime(latestCatalogUpdate)}")
             }
             when (catalogSyncState) {
-                CatalogSyncUiState.Idle -> if (catalogUpdatedAtEpochMillis == null) {
+                CatalogSyncUiState.Idle -> if (latestCatalogUpdate == null) {
                     Text("Carregue o catálogo para habilitar recomendações locais.")
                 }
                 CatalogSyncUiState.Loading -> {
