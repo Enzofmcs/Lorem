@@ -1,6 +1,7 @@
 package dev.lorem.app.data.fake
 
 import dev.lorem.app.domain.repository.SubmissionHistoryResult
+import dev.lorem.app.domain.repository.ProblemCatalogResult
 import dev.lorem.app.domain.repository.UserLookupResult
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -9,7 +10,7 @@ import org.junit.Test
 class FakeCodeforcesRepositoryTest {
     @Test
     fun `fake problem has stable contest and index identity`() = runTest {
-        val problem = FakeCodeforcesRepository().problems().single()
+        val problem = (FakeCodeforcesRepository().problems() as ProblemCatalogResult.Success).problems.single()
 
         assertEquals(4L, problem.id.contestId)
         assertEquals("A", problem.id.index)

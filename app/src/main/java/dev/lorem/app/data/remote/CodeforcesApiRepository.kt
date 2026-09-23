@@ -5,6 +5,7 @@ import dev.lorem.app.domain.model.CodeforcesSubmission
 import dev.lorem.app.domain.model.ProblemId
 import dev.lorem.app.domain.repository.CodeforcesRepository
 import dev.lorem.app.domain.repository.CodeforcesUser
+import dev.lorem.app.domain.repository.ProblemCatalogResult
 import dev.lorem.app.domain.repository.SubmissionHistoryResult
 import dev.lorem.app.domain.repository.UserLookupResult
 import java.io.IOException
@@ -104,7 +105,60 @@ class CodeforcesApiRepository(
         }
     }
 
-    override suspend fun problems(): List<CodeforcesProblem> = emptyList()
+    override suspend fun problems(): ProblemCatalogResult = try {
+        gate.execute {
+            val response = httpClient.get("https://codeforces.com/api/problemset.problems")
+            when {
+                response.statusCode == 429 -> ProblemCatalogResult.RateLimited
+                response.statusCode !in 200..299 -> ProblemCatalogResult.HttpFailure(response.statusCode)
+                else -> parseProblemCatalog(response.body)
+            }
+        }
+    } catch (_: IOException) {
+        ProblemCatalogResult.NetworkFailure
+    }
+
+    private fun parseProblemCatalog(body: String): ProblemCatalogResult {
+        val json = try {
+            JSONObject(body)
+        } catch (_: Exception) {
+            return ProblemCatalogResult.InvalidResponse
+        }
+        if (json.optString("status") == "FAILED") {
+            return ProblemCatalogResult.Failed(
+                json.optString("comment", "Falha informada pelo Codeforces."),
+            )
+        }
+        if (json.optString("status") != "OK") return ProblemCatalogResult.InvalidResponse
+        val problems = json.optJSONObject("result")?.optJSONArray("problems")
+            ?: return ProblemCatalogResult.InvalidResponse
+        return ProblemCatalogResult.Success(problems.validProblems())
+    }
+
+    private fun JSONArray.validProblems(): List<CodeforcesProblem> = buildList {
+        for (position in 0 until length()) {
+            val problem = optJSONObject(position) ?: continue
+            val contestId = problem.optLong("contestId", -1L)
+            val index = problem.optString("index").takeIf(String::isNotBlank) ?: continue
+            val name = problem.optString("name").takeIf(String::isNotBlank) ?: continue
+            if (contestId <= 0) continue
+            val tags = problem.optJSONArray("tags")?.let { values ->
+                buildSet {
+                    for (tagPosition in 0 until values.length()) {
+                        values.optString(tagPosition).takeIf(String::isNotBlank)?.let(::add)
+                    }
+                }
+            }.orEmpty()
+            add(
+                CodeforcesProblem(
+                    id = ProblemId(contestId, index),
+                    name = name,
+                    rating = if (problem.has("rating")) problem.optInt("rating") else null,
+                    tags = tags,
+                ),
+            )
+        }
+    }
 
     private fun parseSubmissionPage(body: String): SubmissionPageResult {
         val json = try {

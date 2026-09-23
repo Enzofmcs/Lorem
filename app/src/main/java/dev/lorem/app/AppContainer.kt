@@ -14,6 +14,7 @@ class AppContainer(context: Context) {
     val loremRepository: LoremRepository = LocalLoremRepository(
         dataStore = context.profileDataStore,
         problemHistoryDao = database.problemHistoryDao(),
+        problemCatalogDao = database.problemCatalogDao(),
     )
     val codeforcesRepository: CodeforcesRepository = CodeforcesApiRepository(
         gate = TwoSecondCodeforcesRequestGate(),

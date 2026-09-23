@@ -26,10 +26,19 @@ sealed interface SubmissionHistoryResult {
     data object InvalidResponse : SubmissionHistoryResult
 }
 
+sealed interface ProblemCatalogResult {
+    data class Success(val problems: List<CodeforcesProblem>) : ProblemCatalogResult
+    data class Failed(val message: String) : ProblemCatalogResult
+    data object RateLimited : ProblemCatalogResult
+    data object NetworkFailure : ProblemCatalogResult
+    data class HttpFailure(val statusCode: Int) : ProblemCatalogResult
+    data object InvalidResponse : ProblemCatalogResult
+}
+
 interface CodeforcesRepository {
     suspend fun user(handle: String): UserLookupResult
 
     suspend fun submissionHistory(handle: String): SubmissionHistoryResult
 
-    suspend fun problems(): List<CodeforcesProblem>
+    suspend fun problems(): ProblemCatalogResult
 }

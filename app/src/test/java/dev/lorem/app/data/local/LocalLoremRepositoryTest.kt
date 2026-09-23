@@ -50,7 +50,7 @@ class LocalLoremRepositoryTest {
             produceFile = { temporaryFolder.newFile("legacy.preferences_pb") },
         )
         dataStore.edit { it[stringPreferencesKey("display_name")] = "Ada" }
-        val repository = LocalLoremRepository(dataStore, FakeProblemHistoryDao())
+        val repository = LocalLoremRepository(dataStore, FakeProblemHistoryDao(), FakeProblemCatalogDao())
 
         assertNull(repository.profile.first())
         repository.clearProfile()
@@ -60,7 +60,15 @@ class LocalLoremRepositoryTest {
     private fun repository(file: File, scope: CoroutineScope) = LocalLoremRepository(
         dataStore = PreferenceDataStoreFactory.create(scope = scope, produceFile = { file }),
         problemHistoryDao = FakeProblemHistoryDao(),
+        problemCatalogDao = FakeProblemCatalogDao(),
     )
+
+    private class FakeProblemCatalogDao : ProblemCatalogDao {
+        private val catalog = MutableStateFlow<List<ProblemCatalogEntity>>(emptyList())
+        override fun observeAll() = catalog
+        override suspend fun insertAll(problems: List<ProblemCatalogEntity>) { catalog.value += problems }
+        override suspend fun deleteAll() { catalog.value = emptyList() }
+    }
 
     private class FakeProblemHistoryDao : ProblemHistoryDao {
         private val history = MutableStateFlow<List<ProblemHistoryEntity>>(emptyList())

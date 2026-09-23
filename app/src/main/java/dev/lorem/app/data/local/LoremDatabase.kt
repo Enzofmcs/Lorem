@@ -8,19 +8,20 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
-    entities = [ProblemHistoryEntity::class],
-    version = 2,
+    entities = [ProblemHistoryEntity::class, ProblemCatalogEntity::class],
+    version = 3,
     exportSchema = false,
 )
 abstract class LoremDatabase : RoomDatabase() {
     abstract fun problemHistoryDao(): ProblemHistoryDao
+    abstract fun problemCatalogDao(): ProblemCatalogDao
 
     companion object {
         fun create(context: Context): LoremDatabase = Room.databaseBuilder(
             context,
             LoremDatabase::class.java,
             "lorem.db",
-        ).addMigrations(MIGRATION_1_2).build()
+        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3).build()
 
         private val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(db: SupportSQLiteDatabase) {
@@ -39,6 +40,23 @@ abstract class LoremDatabase : RoomDatabase() {
                 // Version 1 did not record an owner, so those rows cannot safely be attributed.
                 db.execSQL("DROP TABLE problem_history")
                 db.execSQL("ALTER TABLE problem_history_new RENAME TO problem_history")
+            }
+        }
+
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS problem_catalog (
+                        contestId INTEGER NOT NULL,
+                        problemIndex TEXT NOT NULL,
+                        name TEXT NOT NULL,
+                        rating INTEGER NOT NULL,
+                        tags TEXT NOT NULL,
+                        PRIMARY KEY(contestId, problemIndex)
+                    )
+                    """.trimIndent(),
+                )
             }
         }
     }

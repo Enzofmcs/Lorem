@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import dev.lorem.app.domain.model.LocalProfile
+import dev.lorem.app.domain.model.CodeforcesProblem
 import dev.lorem.app.domain.model.ProblemHistory
 import dev.lorem.app.domain.repository.LoremRepository
 import java.io.IOException
@@ -22,6 +23,7 @@ import kotlinx.coroutines.flow.map
 class LocalLoremRepository(
     private val dataStore: DataStore<Preferences>,
     private val problemHistoryDao: ProblemHistoryDao,
+    private val problemCatalogDao: ProblemCatalogDao,
 ) : LoremRepository {
     override val profile: Flow<LocalProfile?> = dataStore.data
         .catch { error ->
@@ -35,6 +37,13 @@ class LocalLoremRepository(
                 ?: flowOf(emptyList())
         }
         .map { history -> history.map { it.toDomain() } }
+
+    override val problemCatalog: Flow<List<CodeforcesProblem>> = problemCatalogDao.observeAll()
+        .map { problems -> problems.map { it.toDomain() } }
+
+    override val catalogLastUpdatedEpochMillis: Flow<Long?> = dataStore.data
+        .catch { error -> if (error is IOException) emit(emptyPreferences()) else throw error }
+        .map { it[CATALOG_LAST_UPDATED] }
 
     override suspend fun saveProfile(profile: LocalProfile) {
         require(profile.handle.isNotBlank()) { "handle must not be blank" }
@@ -70,6 +79,16 @@ class LocalLoremRepository(
         problemHistoryDao.upsertAll(history.map { it.toEntity(normalizedOwner) })
     }
 
+    override suspend fun replaceProblemCatalog(
+        problems: List<CodeforcesProblem>,
+        updatedAtEpochMillis: Long,
+    ) {
+        require(updatedAtEpochMillis > 0) { "updatedAtEpochMillis must be positive" }
+        val eligible = problems.filter { it.rating != null }.distinctBy { it.id }
+        problemCatalogDao.replaceAll(eligible.map(CodeforcesProblem::toCatalogEntity))
+        dataStore.edit { it[CATALOG_LAST_UPDATED] = updatedAtEpochMillis }
+    }
+
     private fun readProfile(preferences: Preferences): LocalProfile? {
         val handle = preferences[HANDLE]?.takeIf(String::isNotBlank) ?: return null
         val displayName = preferences[DISPLAY_NAME]?.takeIf(String::isNotBlank) ?: return null
@@ -94,5 +113,6 @@ class LocalLoremRepository(
         val LOREM_RATING = intPreferencesKey("profile_lorem_rating")
         val CONSOLIDATED_RATING = intPreferencesKey("profile_consolidated_rating")
         val LAST_SYNC = longPreferencesKey("profile_last_sync")
+        val CATALOG_LAST_UPDATED = longPreferencesKey("catalog_last_updated")
     }
 }

@@ -3,6 +3,7 @@ package dev.lorem.app.ui
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performScrollTo
 import dev.lorem.app.domain.model.LocalProfile
 import dev.lorem.app.domain.model.ProblemHistory
 import dev.lorem.app.domain.model.ProblemId
@@ -21,6 +22,34 @@ class HomeScreenTest {
     val composeRule = createComposeRule()
 
     @Test
+    fun `saved catalog remains visible when refresh is offline`() {
+        composeRule.setContent {
+            LoremTheme {
+                HomeScreen(
+                    profile = profile(lastSyncEpochMillis = 0L),
+                    syncState = HistorySyncUiState.Idle,
+                    problemHistory = emptyList(),
+                    onSynchronize = {},
+                    onNavigate = {},
+                    problemCatalogCount = 42,
+                    catalogUpdatedAtEpochMillis = 1_700_000_000_000L,
+                    catalogSyncState = CatalogSyncUiState.Error(
+                        "Sem conexão. O catálogo salvo continua disponível.",
+                        42,
+                    ),
+                    onSynchronizeCatalog = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("42 problemas com rating disponíveis localmente.")
+            .performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText(
+            "Sem conexão. O catálogo salvo continua disponível. Usando 42 problemas salvos.",
+        ).performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
     fun `restored synchronization displays persisted history instead of import prompt`() {
         composeRule.setContent {
             LoremTheme {
@@ -33,6 +62,10 @@ class HomeScreenTest {
                     ),
                     onSynchronize = {},
                     onNavigate = {},
+                    problemCatalogCount = 0,
+                    catalogUpdatedAtEpochMillis = null,
+                    catalogSyncState = CatalogSyncUiState.Idle,
+                    onSynchronizeCatalog = {},
                 )
             }
         }
@@ -54,6 +87,10 @@ class HomeScreenTest {
                     problemHistory = emptyList(),
                     onSynchronize = {},
                     onNavigate = {},
+                    problemCatalogCount = 0,
+                    catalogUpdatedAtEpochMillis = null,
+                    catalogSyncState = CatalogSyncUiState.Idle,
+                    onSynchronizeCatalog = {},
                 )
             }
         }

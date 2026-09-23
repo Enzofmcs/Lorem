@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import dev.lorem.app.domain.model.LocalProfile
 import dev.lorem.app.domain.model.ProblemHistory
 import dev.lorem.app.ui.HistorySyncUiState
+import dev.lorem.app.ui.CatalogSyncUiState
 import dev.lorem.app.ui.navigation.LoremDestination
 
 @Composable
@@ -26,6 +27,10 @@ fun HomeScreen(
     syncState: HistorySyncUiState,
     problemHistory: List<ProblemHistory>,
     onSynchronize: () -> Unit,
+    problemCatalogCount: Int,
+    catalogUpdatedAtEpochMillis: Long?,
+    catalogSyncState: CatalogSyncUiState,
+    onSynchronizeCatalog: () -> Unit,
     onNavigate: (String) -> Unit,
 ) {
     val attemptedCount = problemHistory.count(ProblemHistory::attempted)
@@ -84,6 +89,34 @@ fun HomeScreen(
                 Text(if (syncState is HistorySyncUiState.Error) "Tentar novamente" else "Sincronizar histórico")
             }
 
+            Text("Catálogo de problemas", style = MaterialTheme.typography.titleMedium)
+            if (catalogUpdatedAtEpochMillis != null) {
+                Text("$problemCatalogCount problemas com rating disponíveis localmente.")
+                Text("Última atualização: ${formatSyncTime(catalogUpdatedAtEpochMillis)}")
+            }
+            when (catalogSyncState) {
+                CatalogSyncUiState.Idle -> if (catalogUpdatedAtEpochMillis == null) {
+                    Text("Carregue o catálogo para habilitar recomendações locais.")
+                }
+                CatalogSyncUiState.Loading -> {
+                    CircularProgressIndicator()
+                    Text("Atualizando catálogo…")
+                }
+                is CatalogSyncUiState.Success -> Text(
+                    "Catálogo atualizado: ${catalogSyncState.problemCount} problemas elegíveis.",
+                )
+                is CatalogSyncUiState.Error -> {
+                    Text(catalogSyncUiMessage(catalogSyncState), color = MaterialTheme.colorScheme.error)
+                }
+            }
+            Button(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = onSynchronizeCatalog,
+                enabled = catalogSyncState != CatalogSyncUiState.Loading,
+            ) {
+                Text(if (catalogSyncState is CatalogSyncUiState.Error) "Tentar atualizar catálogo" else "Atualizar catálogo")
+            }
+
             LoremDestination.all.filterNot {
                 it == LoremDestination.Home || it == LoremDestination.Configuration
             }.forEach { destination ->
@@ -97,6 +130,13 @@ fun HomeScreen(
         }
     }
 }
+
+private fun catalogSyncUiMessage(state: CatalogSyncUiState.Error): String =
+    if (state.savedProblemCount > 0) {
+        "${state.message} Usando ${state.savedProblemCount} problemas salvos."
+    } else {
+        state.message
+    }
 
 private fun formatSyncTime(epochMillis: Long): String = java.time.Instant.ofEpochMilli(epochMillis)
     .atZone(java.time.ZoneId.systemDefault())

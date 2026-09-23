@@ -35,6 +35,42 @@ class ProblemHistoryPersistenceTest {
     val temporaryFolder = TemporaryFolder()
 
     @Test
+    fun `catalog and timestamp survive reopening while refresh preserves problem history`() = runTest {
+        val databaseFile = temporaryFolder.newFile("catalog.db")
+        val preferencesFile = temporaryFolder.newFile("catalog.preferences_pb")
+        val firstScope = CoroutineScope(StandardTestDispatcher(testScheduler))
+        val firstDatabase = database(databaseFile)
+        val firstRepository = repository(preferencesFile, firstScope, firstDatabase)
+        val history = history(99L, "A", accepted = true)
+        firstRepository.saveProfile(profile())
+        firstRepository.saveProblemHistory("tourist", listOf(history))
+        firstRepository.replaceProblemCatalog(
+            listOf(
+                problem(1L, "A", "First", 800, setOf("math")),
+                problem(2L, "B", "Unrated", null, setOf("graphs")),
+            ),
+            1_000L,
+        )
+        firstRepository.replaceProblemCatalog(
+            listOf(problem(1L, "A", "Updated", 900, setOf("implementation"))),
+            2_000L,
+        )
+        assertEquals(listOf(history), firstRepository.problemHistory.first())
+        firstDatabase.close()
+        firstScope.cancel()
+
+        val reopenedDatabase = database(databaseFile)
+        val reopened = repository(preferencesFile, backgroundScope, reopenedDatabase)
+        assertEquals(
+            listOf(problem(1L, "A", "Updated", 900, setOf("implementation"))),
+            reopened.problemCatalog.first(),
+        )
+        assertEquals(2_000L, reopened.catalogLastUpdatedEpochMillis.first())
+        assertEquals(listOf(history), reopened.problemHistory.first())
+        reopenedDatabase.close()
+    }
+
+    @Test
     fun `accepted and attempted entries survive reopening structured storage`() = runTest {
         val databaseFile = temporaryFolder.newFile("history.db")
         val preferencesFile = temporaryFolder.newFile("profile.preferences_pb")
@@ -152,6 +188,7 @@ class ProblemHistoryPersistenceTest {
             produceFile = { preferencesFile },
         ),
         problemHistoryDao = database.problemHistoryDao(),
+        problemCatalogDao = database.problemCatalogDao(),
     )
 
     private fun history(contestId: Long, index: String, accepted: Boolean) = ProblemHistory(
@@ -159,6 +196,14 @@ class ProblemHistoryPersistenceTest {
         attempted = true,
         hasAcceptedSubmission = accepted,
     )
+
+    private fun problem(
+        contestId: Long,
+        index: String,
+        name: String,
+        rating: Int?,
+        tags: Set<String>,
+    ) = CodeforcesProblem(ProblemId(contestId, index), name, rating, tags)
 
     private fun profile(handle: String = "tourist") = LocalProfile(
         handle = handle,
@@ -183,6 +228,6 @@ class ProblemHistoryPersistenceTest {
 
         override suspend fun submissionHistory(handle: String) = SubmissionHistoryResult.Success(submissions)
 
-        override suspend fun problems(): List<CodeforcesProblem> = error("Not used")
+        override suspend fun problems() = error("Not used")
     }
 }
