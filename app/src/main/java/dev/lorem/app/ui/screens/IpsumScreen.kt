@@ -9,6 +9,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -26,6 +27,9 @@ import androidx.compose.ui.unit.dp
 import dev.lorem.app.domain.model.Ipsum
 import dev.lorem.app.domain.model.elapsedIpsumMillis
 import dev.lorem.app.domain.model.problemUrl
+import dev.lorem.app.ui.SubmissionCheckUiState
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import kotlinx.coroutines.delay
 import java.util.Locale
 
@@ -34,11 +38,17 @@ fun IpsumScreen(
     ipsum: Ipsum?,
     onNavigateHome: () -> Unit = {},
     onRevealHint: () -> Unit = {},
+    submissionCheckState: SubmissionCheckUiState = SubmissionCheckUiState.Idle,
+    onVerifySubmissions: () -> Unit = {},
     nowMillis: () -> Long = System::currentTimeMillis,
 ) {
     var now by remember(ipsum?.id) { mutableLongStateOf(nowMillis()) }
     var dialog by remember { mutableStateOf<IpsumDialog?>(null) }
     val uriHandler = LocalUriHandler.current
+
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        if (ipsum != null) onVerifySubmissions()
+    }
 
     LaunchedEffect(ipsum?.id) {
         while (true) {
@@ -56,7 +66,9 @@ fun IpsumScreen(
             Text("Voltar para o início")
         }
         if (ipsum == null) {
-            Text("Carregando o Ipsum salvo…")
+            if (submissionCheckState !is SubmissionCheckUiState.Success || !submissionCheckState.completed) {
+                Text("Carregando o Ipsum salvo…")
+            }
         } else {
             Text(ipsum.problem.name, style = MaterialTheme.typography.titleLarge)
             Text("Problema ${ipsum.problem.id}")
@@ -79,12 +91,33 @@ fun IpsumScreen(
 
             Button(
                 modifier = Modifier.fillMaxWidth(),
-                onClick = { dialog = IpsumDialog.Verify },
-            ) { Text("Verificar submissões") }
+                enabled = submissionCheckState != SubmissionCheckUiState.Loading,
+                onClick = onVerifySubmissions,
+            ) {
+                if (submissionCheckState == SubmissionCheckUiState.Loading) {
+                    CircularProgressIndicator()
+                } else {
+                    Text("Verificar submissões")
+                }
+            }
             OutlinedButton(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = { dialog = IpsumDialog.EndWithoutAc },
             ) { Text("Encerrar sem AC") }
+        }
+        when (submissionCheckState) {
+            SubmissionCheckUiState.Idle -> Unit
+            SubmissionCheckUiState.Loading -> Text("Consultando submissões no Codeforces…")
+            is SubmissionCheckUiState.Error -> Text(submissionCheckState.message, color = MaterialTheme.colorScheme.error)
+            is SubmissionCheckUiState.Success -> Text(
+                if (submissionCheckState.completed) {
+                    "AC reconhecido. Ipsum encerrado com ${submissionCheckState.errorCount} erro(s)."
+                } else if (submissionCheckState.newSubmissionCount == 0) {
+                    "Nenhuma nova submissão definitiva encontrada."
+                } else {
+                    "Submissões atualizadas: ${submissionCheckState.errorCount} erro(s) antes do AC."
+                },
+            )
         }
     }
 
@@ -97,11 +130,6 @@ fun IpsumScreen(
                 TextButton(onClick = { dialog = null; onRevealHint() }) { Text("Revelar") }
             },
             dismissButton = { TextButton(onClick = { dialog = null }) { Text("Cancelar") } },
-        )
-        IpsumDialog.Verify -> BoundaryDialog(
-            title = "Verificar submissões",
-            message = "A consulta real ao Codeforces será implementada na próxima etapa.",
-            onDismiss = { dialog = null },
         )
         IpsumDialog.EndWithoutAc -> BoundaryDialog(
             title = "Encerrar sem AC?",
@@ -120,7 +148,7 @@ private fun BoundaryDialog(title: String, message: String, onDismiss: () -> Unit
     confirmButton = { TextButton(onClick = onDismiss) { Text("Entendi") } },
 )
 
-private enum class IpsumDialog { RevealHint, Verify, EndWithoutAc }
+private enum class IpsumDialog { RevealHint, EndWithoutAc }
 
 fun formatElapsed(elapsedMillis: Long): String {
     val totalSeconds = elapsedMillis.coerceAtLeast(0L) / 1_000

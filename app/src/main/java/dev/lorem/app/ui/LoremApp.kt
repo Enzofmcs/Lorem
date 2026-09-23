@@ -30,6 +30,7 @@ fun LoremApp(
     val catalogSyncState by viewModel.catalogSyncState.collectAsStateWithLifecycle()
     val activeIpsum by viewModel.activeIpsum.collectAsStateWithLifecycle()
     val startIpsumState by viewModel.startIpsumState.collectAsStateWithLifecycle()
+    val submissionCheckState by viewModel.submissionCheckState.collectAsStateWithLifecycle()
     when (val state = uiState) {
         LoremUiState.Loading -> Box(
             modifier = Modifier.fillMaxSize(),
@@ -54,6 +55,8 @@ fun LoremApp(
             onStartIpsum = viewModel::startNewIpsum,
             onIpsumNavigationHandled = viewModel::ipsumNavigationHandled,
             onRevealIpsumHint = viewModel::revealActiveIpsumHint,
+            submissionCheckState = submissionCheckState,
+            onVerifyIpsumSubmissions = viewModel::verifyActiveIpsumSubmissions,
         )
     }
 }

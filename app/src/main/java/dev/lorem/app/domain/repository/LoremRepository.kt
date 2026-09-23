@@ -4,6 +4,7 @@ import dev.lorem.app.domain.model.LocalProfile
 import dev.lorem.app.domain.model.CodeforcesProblem
 import dev.lorem.app.domain.model.ProblemHistory
 import dev.lorem.app.domain.model.Ipsum
+import dev.lorem.app.domain.model.IpsumSubmission
 import kotlinx.coroutines.flow.Flow
 
 interface LoremRepository {
@@ -29,6 +30,12 @@ interface LoremRepository {
 
     /** Records the first reveal only; subsequent and concurrent calls leave it unchanged. */
     suspend fun revealIpsumHint(ipsumId: Long, revealedAtEpochMillis: Long)
+
+    /** Atomically deduplicates definitive submissions and completes an active Ipsum at its first AC. */
+    suspend fun recordIpsumSubmissions(ipsumId: Long, submissions: List<IpsumSubmission>): IpsumUpdate =
+        IpsumUpdate(0, 0, false)
 }
+
+data class IpsumUpdate(val insertedCount: Int, val errorCount: Int, val completed: Boolean)
 
 class ActiveIpsumAlreadyExistsException(cause: Throwable? = null) : Exception(cause)

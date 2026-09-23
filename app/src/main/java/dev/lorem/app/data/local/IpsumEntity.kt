@@ -28,6 +28,8 @@ data class IpsumEntity(
     val fallbackDistance: Int,
     val startedAtEpochMillis: Long,
     val hintRevealedAtEpochMillis: Long?,
+    val endedAtEpochMillis: Long?,
+    val errorCount: Int,
     val status: String,
     val activeSlot: Int?,
 )
@@ -47,6 +49,8 @@ fun Ipsum.toEntity() = IpsumEntity(
     fallbackDistance = fallbackDistance,
     startedAtEpochMillis = startedAtEpochMillis,
     hintRevealedAtEpochMillis = hintRevealedAtEpochMillis,
+    endedAtEpochMillis = endedAtEpochMillis,
+    errorCount = errorCount,
     status = status.name,
     activeSlot = if (status == IpsumStatus.ACTIVE) 1 else null,
 )
@@ -68,5 +72,7 @@ fun IpsumEntity.toDomain() = Ipsum(
     fallbackDistance = fallbackDistance,
     startedAtEpochMillis = startedAtEpochMillis,
     hintRevealedAtEpochMillis = hintRevealedAtEpochMillis,
+    endedAtEpochMillis = endedAtEpochMillis,
+    errorCount = errorCount,
     status = IpsumStatus.valueOf(status),
 )

@@ -10,7 +10,9 @@ import dev.lorem.app.domain.model.IpsumCategory
 import dev.lorem.app.domain.model.IpsumStatus
 import dev.lorem.app.domain.model.ProblemId
 import dev.lorem.app.domain.repository.ActiveIpsumAlreadyExistsException
+import dev.lorem.app.domain.model.IpsumSubmission
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.async
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.CoroutineScope
 import org.junit.Assert.assertEquals
@@ -69,6 +71,39 @@ class IpsumPersistenceTest {
         repository.revealIpsumHint(saved.id, 3_000L)
 
         assertEquals(2_000L, repository.activeIpsum.first()?.hintRevealedAtEpochMillis)
+    }
+
+    @Test
+    fun `submissions completion and error count survive reopening and are idempotent`() = runTest {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val databaseFile = File(context.cacheDir, "ipsum-db-${System.nanoTime()}")
+        val preferences = File(context.cacheDir, "ipsum-state-${System.nanoTime()}.preferences_pb")
+        var database = Room.databaseBuilder(context, LoremDatabase::class.java, databaseFile.absolutePath).build()
+        var repository = repository(database, preferences, backgroundScope)
+        val saved = repository.createActiveIpsum(ipsum())
+        val values = listOf(
+            IpsumSubmission(10, saved.id, "WRONG_ANSWER", 2_000),
+            IpsumSubmission(11, saved.id, "COMPILATION_ERROR", 3_000),
+            IpsumSubmission(12, saved.id, "OK", 4_000),
+            IpsumSubmission(13, saved.id, "RUNTIME_ERROR", 5_000),
+        )
+        val attempts = listOf(
+            async { repository.recordIpsumSubmissions(saved.id, values) },
+            async { repository.recordIpsumSubmissions(saved.id, values) },
+        ).map { it.await() }
+        database.close()
+        database = Room.databaseBuilder(context, LoremDatabase::class.java, databaseFile.absolutePath).build()
+        repository = repository(database, preferences, backgroundScope)
+        val restored = database.ipsumDao().find(saved.id)!!.toDomain()
+
+        assertEquals(4, attempts.sumOf { it.insertedCount })
+        assertEquals(1, attempts.count { it.completed })
+        assertEquals(listOf(2, 2), attempts.map { it.errorCount })
+        assertEquals(IpsumStatus.COMPLETED, restored.status)
+        assertEquals(2, restored.errorCount)
+        assertEquals(4_000L, restored.endedAtEpochMillis)
+        assertEquals(null, repository.activeIpsum.first())
+        database.close()
     }
 
     private fun repository(database: LoremDatabase, file: File, scope: CoroutineScope) = LocalLoremRepository(

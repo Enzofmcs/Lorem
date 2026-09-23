@@ -44,13 +44,13 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
-- **Foco:** Historia 06 - Detectar submissoes durante o Ipsum.
-- **Ultima historia verificada:** Historia 05 - Executar um Ipsum cronometrado.
-- **Primeiro item pendente:** consultar `user.status` sob demanda para o Ipsum ativo.
-- **Proxima entrega demonstravel:** reconhecer somente submissoes feitas durante o Ipsum.
+- **Foco:** Historia 07 - Encerrar e apresentar o resultado.
+- **Ultima historia verificada:** Historia 06 - Detectar submissoes durante o Ipsum.
+- **Primeiro item pendente:** permitir encerramento manual sem AC.
+- **Proxima entrega demonstravel:** encerrar manualmente e apresentar o resultado do Ipsum.
 - **Bloqueios conhecidos:** nenhum.
 
-Progresso e aceite: [`docs/ROADMAP.md#historia-05---executar-um-ipsum-cronometrado`](docs/ROADMAP.md#historia-05---executar-um-ipsum-cronometrado).
+Progresso e aceite: [`docs/ROADMAP.md#historia-07---encerrar-e-apresentar-o-resultado`](docs/ROADMAP.md#historia-07---encerrar-e-apresentar-o-resultado).
 
 ## Politica de contexto
 

@@ -5,12 +5,14 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.runtime.mutableStateOf
 import dev.lorem.app.domain.model.CodeforcesProblem
 import dev.lorem.app.domain.model.Ipsum
 import dev.lorem.app.domain.model.IpsumCategory
 import dev.lorem.app.domain.model.IpsumStatus
 import dev.lorem.app.domain.model.ProblemId
 import dev.lorem.app.ui.screens.IpsumScreen
+import dev.lorem.app.ui.SubmissionCheckUiState
 import dev.lorem.app.ui.theme.LoremTheme
 import org.junit.Rule
 import org.junit.Test
@@ -39,10 +41,16 @@ class IpsumScreenTest {
     }
 
     @Test
-    fun `hint confirmation reveals only tags and essential actions explain their boundary`() {
+    fun `hint confirmation reveals only tags and verification is a real action`() {
         var revealRequested = false
+        var verifyRequested = false
         composeRule.setContent {
-            LoremTheme { IpsumScreen(ipsum(), onRevealHint = { revealRequested = true }, nowMillis = { 1L }) }
+            LoremTheme { IpsumScreen(
+                ipsum(),
+                onRevealHint = { revealRequested = true },
+                onVerifySubmissions = { verifyRequested = true },
+                nowMillis = { 1L },
+            ) }
         }
 
         composeRule.onNodeWithText("dynamic programming", substring = true).assertDoesNotExist()
@@ -54,10 +62,29 @@ class IpsumScreenTest {
 
         composeRule.onNodeWithText("Verificar submissões").performScrollTo().performClick()
         composeRule.waitForIdle()
-        composeRule.onNodeWithText("A consulta real ao Codeforces será implementada na próxima etapa.").assertIsDisplayed()
-        composeRule.onNodeWithText("Entendi").performClick()
+        assertTrue(verifyRequested)
         composeRule.onNodeWithText("Encerrar sem AC").performScrollTo().performClick()
         composeRule.onNodeWithText("Encerrar sem AC?").assertIsDisplayed()
+    }
+
+    @Test
+    fun `verification shows loading success and recoverable error states`() {
+        val state = mutableStateOf<SubmissionCheckUiState>(SubmissionCheckUiState.Loading)
+        val active = mutableStateOf<Ipsum?>(ipsum())
+        composeRule.setContent { LoremTheme { IpsumScreen(active.value, submissionCheckState = state.value) } }
+        composeRule.onNodeWithText("Consultando submissões no Codeforces…").performScrollTo().assertIsDisplayed()
+
+        composeRule.runOnIdle {
+            active.value = null
+            state.value = SubmissionCheckUiState.Success(2, 1, true)
+        }
+        composeRule.onNodeWithText("AC reconhecido. Ipsum encerrado com 1 erro(s).").assertIsDisplayed()
+
+        composeRule.runOnIdle {
+            active.value = ipsum()
+            state.value = SubmissionCheckUiState.Error("Sem conexão")
+        }
+        composeRule.onNodeWithText("Sem conexão").performScrollTo().assertIsDisplayed()
     }
 
     @Test

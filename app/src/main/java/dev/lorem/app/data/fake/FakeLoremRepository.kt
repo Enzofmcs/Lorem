@@ -6,6 +6,8 @@ import dev.lorem.app.domain.model.ProblemHistory
 import dev.lorem.app.domain.model.Ipsum
 import dev.lorem.app.domain.repository.ActiveIpsumAlreadyExistsException
 import dev.lorem.app.domain.repository.LoremRepository
+import dev.lorem.app.domain.model.IpsumSubmission
+import dev.lorem.app.domain.repository.IpsumUpdate
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -57,5 +59,21 @@ class FakeLoremRepository(initialProfile: LocalProfile? = null) : LoremRepositor
         val updated = current.copy(hintRevealedAtEpochMillis = revealedAtEpochMillis)
         activeIpsum.value = updated
         storedIpsums.value = storedIpsums.value.map { if (it.id == ipsumId) updated else it }
+    }
+
+    override suspend fun recordIpsumSubmissions(ipsumId: Long, submissions: List<IpsumSubmission>): IpsumUpdate {
+        val current = activeIpsum.value ?: return IpsumUpdate(0, 0, false)
+        val firstAc = submissions.firstOrNull { it.verdict == "OK" }
+        val errors = submissions.takeWhile { it.verdict != "OK" }.size
+        if (firstAc != null) {
+            val updated = current.copy(
+                status = dev.lorem.app.domain.model.IpsumStatus.COMPLETED,
+                endedAtEpochMillis = firstAc.createdAtEpochMillis,
+                errorCount = errors,
+            )
+            storedIpsums.value = storedIpsums.value.map { if (it.id == ipsumId) updated else it }
+            activeIpsum.value = null
+        }
+        return IpsumUpdate(submissions.size, errors, firstAc != null)
     }
 }

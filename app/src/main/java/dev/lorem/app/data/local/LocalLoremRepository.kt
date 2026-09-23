@@ -14,6 +14,8 @@ import dev.lorem.app.domain.model.Ipsum
 import dev.lorem.app.domain.repository.ActiveIpsumAlreadyExistsException
 import android.database.sqlite.SQLiteConstraintException
 import dev.lorem.app.domain.repository.LoremRepository
+import dev.lorem.app.domain.model.IpsumSubmission
+import dev.lorem.app.domain.repository.IpsumUpdate
 import java.io.IOException
 import java.util.Locale
 import kotlinx.coroutines.flow.Flow
@@ -115,6 +117,11 @@ class LocalLoremRepository(
         require(revealedAtEpochMillis > 0) { "revealedAtEpochMillis must be positive" }
         ipsumDao.revealHintOnce(ipsumId, revealedAtEpochMillis)
     }
+
+    override suspend fun recordIpsumSubmissions(
+        ipsumId: Long,
+        submissions: List<IpsumSubmission>,
+    ): IpsumUpdate = ipsumDao.record(ipsumId, submissions.map(IpsumSubmission::toEntity))
 
     private fun readProfile(preferences: Preferences): LocalProfile? {
         val handle = preferences[HANDLE]?.takeIf(String::isNotBlank) ?: return null
