@@ -6,6 +6,9 @@ import dev.lorem.app.domain.model.LocalProfile
 import dev.lorem.app.domain.model.ProblemHistory
 import dev.lorem.app.domain.model.ProblemId
 import dev.lorem.app.domain.model.Ipsum
+import dev.lorem.app.domain.model.IpsumFailureReason
+import dev.lorem.app.domain.model.IpsumResult
+import dev.lorem.app.domain.model.IpsumStatus
 import dev.lorem.app.domain.repository.ActiveIpsumAlreadyExistsException
 import dev.lorem.app.domain.RandomSource
 import dev.lorem.app.domain.repository.CodeforcesRepository
@@ -262,6 +265,27 @@ class LoremViewModelTest {
 
         assertEquals(1_000L, local.activeIpsum.value?.hintRevealedAtEpochMillis)
     }
+
+    @Test
+    fun `manual ending requires a reason and exposes the persisted result`() = runTest {
+        val local = MemoryRepository(profile())
+        local.problemCatalog.value = listOf(problem(10, 1200))
+        val viewModel = LoremViewModel(local, CountingRepository(), nowMillis = { 5_000L })
+        viewModel.startNewIpsum()
+        advanceUntilIdle()
+
+        viewModel.endActiveIpsum(null)
+        advanceUntilIdle()
+        assertTrue(viewModel.ipsumResultState.value is IpsumResultUiState.Error)
+        assertTrue(local.activeIpsum.value != null)
+
+        viewModel.endActiveIpsum(IpsumFailureReason.TIME_EXPIRED)
+        advanceUntilIdle()
+        val result = (viewModel.ipsumResultState.value as IpsumResultUiState.Ready).result.ipsum
+        assertEquals(IpsumFailureReason.TIME_EXPIRED, result.failureReason)
+        assertEquals(5_000L, result.endedAtEpochMillis)
+        assertEquals(IpsumStatus.PENDING, result.status)
+    }
 }
 
 private class MemoryRepository(
@@ -315,6 +339,24 @@ private class MemoryRepository(
             ipsums.value = ipsums.value.map { if (it.id == ipsumId) updated else it }
         }
     }
+    override suspend fun endIpsumWithoutAc(
+        ipsumId: Long,
+        reason: IpsumFailureReason,
+        endedAtEpochMillis: Long,
+    ): Boolean {
+        val current = activeIpsum.value?.takeIf { it.id == ipsumId } ?: return false
+        val ended = current.copy(
+            status = IpsumStatus.PENDING,
+            endedAtEpochMillis = endedAtEpochMillis,
+            failureReason = reason,
+        )
+        activeIpsum.value = null
+        ipsums.value = ipsums.value.map { if (it.id == ipsumId) ended else it }
+        return true
+    }
+    override suspend fun getIpsumResult(ipsumId: Long): IpsumResult? = ipsums.value
+        .firstOrNull { it.id == ipsumId && it.status != IpsumStatus.ACTIVE }
+        ?.let { IpsumResult(it, emptyList()) }
     private fun normalize(handle: String) = handle.trim().lowercase()
 }
 

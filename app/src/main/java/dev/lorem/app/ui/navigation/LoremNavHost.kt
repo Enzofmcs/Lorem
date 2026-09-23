@@ -18,6 +18,11 @@ import dev.lorem.app.ui.screens.IpsumScreen
 import dev.lorem.app.domain.model.Ipsum
 import dev.lorem.app.ui.StartIpsumUiState
 import dev.lorem.app.ui.SubmissionCheckUiState
+import dev.lorem.app.ui.IpsumResultUiState
+import dev.lorem.app.domain.model.IpsumFailureReason
+import dev.lorem.app.ui.screens.IpsumResultScreen
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 
 @Composable
 fun LoremNavHost(
@@ -34,12 +39,16 @@ fun LoremNavHost(
     catalogSyncState: CatalogSyncUiState,
     onSynchronizeCatalog: () -> Unit,
     activeIpsum: Ipsum?,
+    ipsums: List<Ipsum>,
     startIpsumState: StartIpsumUiState,
     onStartIpsum: () -> Unit,
     onIpsumNavigationHandled: () -> Unit,
     onRevealIpsumHint: () -> Unit,
     submissionCheckState: SubmissionCheckUiState,
     onVerifyIpsumSubmissions: () -> Unit,
+    onEndIpsum: (IpsumFailureReason?) -> Unit,
+    ipsumResultState: IpsumResultUiState,
+    onOpenIpsumResult: (Long) -> Unit,
     navController: NavHostController = rememberNavController(),
 ) {
     val profile = initialProfile ?: configurationState.savedProfile
@@ -63,6 +72,15 @@ fun LoremNavHost(
             onIpsumNavigationHandled()
         }
     }
+    LaunchedEffect(submissionCheckState, ipsumResultState) {
+        val completedId = (submissionCheckState as? SubmissionCheckUiState.Success)
+            ?.takeIf { it.completed }?.ipsumId
+        val manuallyEndedId = (ipsumResultState as? IpsumResultUiState.Ready)?.result?.ipsum?.id
+        val id = completedId ?: manuallyEndedId
+        if (id != null && navController.currentDestination?.route == LoremDestination.Ipsum.route) {
+            navController.navigate("${LoremDestination.Result.route}/$id") { launchSingleTop = true }
+        }
+    }
     NavHost(navController = navController, startDestination = startDestination) {
         composable(LoremDestination.Configuration.route) {
             ConfigurationScreen(
@@ -84,6 +102,7 @@ fun LoremNavHost(
                     catalogSyncState = catalogSyncState,
                     onSynchronizeCatalog = onSynchronizeCatalog,
                     hasActiveIpsum = activeIpsum != null,
+                    latestFinishedIpsumId = ipsums.lastOrNull { it.endedAtEpochMillis != null }?.id,
                     startIpsumState = startIpsumState,
                     onStartIpsum = onStartIpsum,
                     onNavigate = navController::navigate,
@@ -96,6 +115,7 @@ fun LoremNavHost(
                 onRevealHint = onRevealIpsumHint,
                 submissionCheckState = submissionCheckState,
                 onVerifySubmissions = onVerifyIpsumSubmissions,
+                onEndWithoutAc = onEndIpsum,
                 onNavigateHome = {
                     if (!navController.popBackStack(LoremDestination.Home.route, inclusive = false)) {
                         navController.navigate(LoremDestination.Home.route) { launchSingleTop = true }
@@ -103,8 +123,27 @@ fun LoremNavHost(
                 },
             )
         }
+        composable(
+            route = "${LoremDestination.Result.route}/{ipsumId}",
+            arguments = listOf(navArgument("ipsumId") { type = NavType.LongType }),
+        ) { entry ->
+            val ipsumId = entry.arguments?.getLong("ipsumId") ?: return@composable
+            LaunchedEffect(ipsumId) {
+                val loaded = (ipsumResultState as? IpsumResultUiState.Ready)?.result?.ipsum?.id
+                if (loaded != ipsumId) onOpenIpsumResult(ipsumId)
+            }
+            IpsumResultScreen(
+                state = ipsumResultState,
+                onClose = {
+                    if (!navController.popBackStack(LoremDestination.Home.route, false)) {
+                        navController.navigate(LoremDestination.Home.route) { launchSingleTop = true }
+                    }
+                },
+            )
+        }
         LoremDestination.all.filterNot {
-            it == LoremDestination.Configuration || it == LoremDestination.Home || it == LoremDestination.Ipsum
+            it == LoremDestination.Configuration || it == LoremDestination.Home ||
+                it == LoremDestination.Ipsum || it == LoremDestination.Result
         }.forEach { destination ->
             composable(destination.route) {
                 PlaceholderScreen(

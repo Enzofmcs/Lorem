@@ -16,6 +16,8 @@ import android.database.sqlite.SQLiteConstraintException
 import dev.lorem.app.domain.repository.LoremRepository
 import dev.lorem.app.domain.model.IpsumSubmission
 import dev.lorem.app.domain.repository.IpsumUpdate
+import dev.lorem.app.domain.model.IpsumFailureReason
+import dev.lorem.app.domain.model.IpsumResult
 import java.io.IOException
 import java.util.Locale
 import kotlinx.coroutines.flow.Flow
@@ -122,6 +124,23 @@ class LocalLoremRepository(
         ipsumId: Long,
         submissions: List<IpsumSubmission>,
     ): IpsumUpdate = ipsumDao.record(ipsumId, submissions.map(IpsumSubmission::toEntity))
+
+    override suspend fun endIpsumWithoutAc(
+        ipsumId: Long,
+        reason: IpsumFailureReason,
+        endedAtEpochMillis: Long,
+    ): Boolean {
+        require(endedAtEpochMillis > 0) { "endedAtEpochMillis must be positive" }
+        return ipsumDao.endWithoutAc(ipsumId, reason.name, endedAtEpochMillis)
+    }
+
+    override suspend fun getIpsumResult(ipsumId: Long): IpsumResult? {
+        val ipsum = ipsumDao.find(ipsumId)?.toDomain() ?: return null
+        if (ipsum.status == dev.lorem.app.domain.model.IpsumStatus.ACTIVE) return null
+        val ordered = ipsumDao.submissions(ipsumId)
+        val errors = ordered.takeWhile { it.verdict != "OK" }.map { it.verdict }
+        return IpsumResult(ipsum, errors)
+    }
 
     private fun readProfile(preferences: Preferences): LocalProfile? {
         val handle = preferences[HANDLE]?.takeIf(String::isNotBlank) ?: return null

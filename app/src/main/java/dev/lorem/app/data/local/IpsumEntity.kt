@@ -7,6 +7,7 @@ import dev.lorem.app.domain.model.CodeforcesProblem
 import dev.lorem.app.domain.model.Ipsum
 import dev.lorem.app.domain.model.IpsumCategory
 import dev.lorem.app.domain.model.IpsumStatus
+import dev.lorem.app.domain.model.IpsumFailureReason
 import dev.lorem.app.domain.model.ProblemId
 
 @Entity(
@@ -30,6 +31,7 @@ data class IpsumEntity(
     val hintRevealedAtEpochMillis: Long?,
     val endedAtEpochMillis: Long?,
     val errorCount: Int,
+    val failureReason: String?,
     val status: String,
     val activeSlot: Int?,
 )
@@ -51,6 +53,7 @@ fun Ipsum.toEntity() = IpsumEntity(
     hintRevealedAtEpochMillis = hintRevealedAtEpochMillis,
     endedAtEpochMillis = endedAtEpochMillis,
     errorCount = errorCount,
+    failureReason = failureReason?.name,
     status = status.name,
     activeSlot = if (status == IpsumStatus.ACTIVE) 1 else null,
 )
@@ -74,5 +77,6 @@ fun IpsumEntity.toDomain() = Ipsum(
     hintRevealedAtEpochMillis = hintRevealedAtEpochMillis,
     endedAtEpochMillis = endedAtEpochMillis,
     errorCount = errorCount,
+    failureReason = failureReason?.let(IpsumFailureReason::valueOf),
     status = IpsumStatus.valueOf(status),
 )

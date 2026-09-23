@@ -5,6 +5,8 @@ import dev.lorem.app.domain.model.CodeforcesProblem
 import dev.lorem.app.domain.model.ProblemHistory
 import dev.lorem.app.domain.model.Ipsum
 import dev.lorem.app.domain.model.IpsumSubmission
+import dev.lorem.app.domain.model.IpsumFailureReason
+import dev.lorem.app.domain.model.IpsumResult
 import kotlinx.coroutines.flow.Flow
 
 interface LoremRepository {
@@ -34,6 +36,10 @@ interface LoremRepository {
     /** Atomically deduplicates definitive submissions and completes an active Ipsum at its first AC. */
     suspend fun recordIpsumSubmissions(ipsumId: Long, submissions: List<IpsumSubmission>): IpsumUpdate =
         IpsumUpdate(0, 0, false)
+
+    suspend fun endIpsumWithoutAc(ipsumId: Long, reason: IpsumFailureReason, endedAtEpochMillis: Long): Boolean = false
+
+    suspend fun getIpsumResult(ipsumId: Long): IpsumResult? = null
 }
 
 data class IpsumUpdate(val insertedCount: Int, val errorCount: Int, val completed: Boolean)

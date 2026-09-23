@@ -33,6 +33,7 @@ fun HomeScreen(
     catalogSyncState: CatalogSyncUiState,
     onSynchronizeCatalog: () -> Unit,
     hasActiveIpsum: Boolean = false,
+    latestFinishedIpsumId: Long? = null,
     startIpsumState: StartIpsumUiState = StartIpsumUiState.Idle,
     onStartIpsum: () -> Unit = {},
     onNavigate: (String) -> Unit,
@@ -70,6 +71,12 @@ fun HomeScreen(
                 ) {
                     Text("Iniciar novo Ipsum")
                 }
+            }
+            if (latestFinishedIpsumId != null) {
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = { onNavigate("${LoremDestination.Result.route}/$latestFinishedIpsumId") },
+                ) { Text("Reabrir último resultado") }
             }
             when (startIpsumState) {
                 StartIpsumUiState.Idle, is StartIpsumUiState.Success -> Unit

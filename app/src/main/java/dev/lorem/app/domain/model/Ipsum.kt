@@ -12,6 +12,15 @@ enum class IpsumStatus {
     PENDING,
 }
 
+enum class IpsumFailureReason(val label: String) {
+    STATEMENT_NOT_UNDERSTOOD("Não entendi o enunciado."),
+    LOGIC_NOT_FOUND("Não encontrei a lógica."),
+    CONTENT_UNKNOWN("Não conhecia o conteúdo."),
+    IMPLEMENTATION_NOT_COMPLETED("Encontrei a solução, mas não consegui implementar."),
+    IMPLEMENTATION_ERROR("Tive erro de implementação."),
+    TIME_EXPIRED("Faltou tempo."),
+}
+
 data class Ipsum(
     val id: Long,
     val ownerHandle: String,
@@ -26,8 +35,15 @@ data class Ipsum(
     val hintRevealedAtEpochMillis: Long? = null,
     val endedAtEpochMillis: Long? = null,
     val errorCount: Int = 0,
+    val failureReason: IpsumFailureReason? = null,
     val status: IpsumStatus,
 )
+
+data class IpsumResult(val ipsum: Ipsum, val errorVerdicts: List<String>)
+
+fun Ipsum.totalTimeMillis(): Long? = endedAtEpochMillis?.let {
+    elapsedIpsumMillis(startedAtEpochMillis, it)
+}
 
 fun Ipsum.problemUrl(): String =
     "https://codeforces.com/contest/${problem.id.contestId}/problem/${problem.id.index}"

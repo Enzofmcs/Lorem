@@ -35,6 +35,17 @@ interface IpsumDao {
     @Query("UPDATE ipsums SET status = 'COMPLETED', activeSlot = NULL, endedAtEpochMillis = :endedAt, errorCount = :errorCount WHERE id = :ipsumId AND status = 'ACTIVE'")
     suspend fun completeOnce(ipsumId: Long, endedAt: Long, errorCount: Int): Int
 
+    @Query("UPDATE ipsums SET status = 'PENDING', activeSlot = NULL, endedAtEpochMillis = :endedAt, failureReason = :reason, errorCount = :errorCount WHERE id = :ipsumId AND status = 'ACTIVE'")
+    suspend fun endWithoutAcOnce(ipsumId: Long, reason: String, endedAt: Long, errorCount: Int): Int
+
+    @Transaction
+    suspend fun endWithoutAc(ipsumId: Long, reason: String, endedAt: Long): Boolean {
+        val current = find(ipsumId) ?: return false
+        if (current.status != IpsumStatus.ACTIVE.name) return false
+        val errors = submissions(ipsumId).count { it.verdict != "OK" }
+        return endWithoutAcOnce(ipsumId, reason, endedAt, errors) == 1
+    }
+
     @Transaction
     suspend fun record(ipsumId: Long, values: List<IpsumSubmissionEntity>): IpsumUpdate {
         val current = find(ipsumId) ?: return IpsumUpdate(0, 0, false)

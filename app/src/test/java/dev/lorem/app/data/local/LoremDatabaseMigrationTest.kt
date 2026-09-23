@@ -81,4 +81,29 @@ class LoremDatabaseMigrationTest {
         }
         helper.close()
     }
+
+    @Test
+    fun `migration 6 to 7 preserves final state and adds failure reason`() {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        val helper = FrameworkSQLiteOpenHelperFactory().create(
+            SupportSQLiteOpenHelper.Configuration.builder(context)
+                .name("migration-6-7-${System.nanoTime()}.db")
+                .callback(object : SupportSQLiteOpenHelper.Callback(6) {
+                    override fun onCreate(db: androidx.sqlite.db.SupportSQLiteDatabase) = Unit
+                    override fun onUpgrade(db: androidx.sqlite.db.SupportSQLiteDatabase, oldVersion: Int, newVersion: Int) = Unit
+                }).build(),
+        )
+        val sqlite = helper.writableDatabase
+        sqlite.execSQL("CREATE TABLE ipsums (id INTEGER PRIMARY KEY NOT NULL, status TEXT NOT NULL)")
+        sqlite.execSQL("INSERT INTO ipsums VALUES (1, 'COMPLETED')")
+
+        LoremDatabase.MIGRATION_6_7.migrate(sqlite)
+
+        sqlite.query("SELECT status, failureReason FROM ipsums").use {
+            it.moveToFirst()
+            assertEquals("COMPLETED", it.getString(0))
+            assertEquals(true, it.isNull(1))
+        }
+        helper.close()
+    }
 }

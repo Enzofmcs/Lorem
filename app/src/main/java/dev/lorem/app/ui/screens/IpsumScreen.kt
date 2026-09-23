@@ -12,6 +12,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -25,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import dev.lorem.app.domain.model.Ipsum
+import dev.lorem.app.domain.model.IpsumFailureReason
 import dev.lorem.app.domain.model.elapsedIpsumMillis
 import dev.lorem.app.domain.model.problemUrl
 import dev.lorem.app.ui.SubmissionCheckUiState
@@ -40,10 +42,12 @@ fun IpsumScreen(
     onRevealHint: () -> Unit = {},
     submissionCheckState: SubmissionCheckUiState = SubmissionCheckUiState.Idle,
     onVerifySubmissions: () -> Unit = {},
+    onEndWithoutAc: (IpsumFailureReason?) -> Unit = {},
     nowMillis: () -> Long = System::currentTimeMillis,
 ) {
     var now by remember(ipsum?.id) { mutableLongStateOf(nowMillis()) }
     var dialog by remember { mutableStateOf<IpsumDialog?>(null) }
+    var selectedReason by remember(ipsum?.id) { mutableStateOf<IpsumFailureReason?>(null) }
     val uriHandler = LocalUriHandler.current
 
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
@@ -132,8 +136,9 @@ fun IpsumScreen(
             dismissButton = { TextButton(onClick = { dialog = null }) { Text("Cancelar") } },
         )
         IpsumDialog.EndWithoutAc -> BoundaryDialog(
-            title = "Encerrar sem AC?",
-            message = "O Ipsum não será encerrado ainda. A escolha do motivo e o encerramento seguro serão implementados na próxima etapa de resultado.",
+            selectedReason = selectedReason,
+            onSelect = { selectedReason = it },
+            onConfirm = { onEndWithoutAc(selectedReason) },
             onDismiss = { dialog = null },
         )
         null -> Unit
@@ -141,11 +146,29 @@ fun IpsumScreen(
 }
 
 @Composable
-private fun BoundaryDialog(title: String, message: String, onDismiss: () -> Unit) = AlertDialog(
+private fun BoundaryDialog(
+    selectedReason: IpsumFailureReason?,
+    onSelect: (IpsumFailureReason) -> Unit,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) = AlertDialog(
     onDismissRequest = onDismiss,
-    title = { Text(title) },
-    text = { Text(message) },
-    confirmButton = { TextButton(onClick = onDismiss) { Text("Entendi") } },
+    title = { Text("Encerrar sem AC?") },
+    text = {
+        Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+            Text("Selecione exatamente um motivo:")
+            IpsumFailureReason.entries.forEach { reason ->
+                androidx.compose.foundation.layout.Row {
+                    RadioButton(selected = selectedReason == reason, onClick = { onSelect(reason) })
+                    Text(reason.label, modifier = Modifier.padding(top = 12.dp))
+                }
+            }
+        }
+    },
+    confirmButton = {
+        TextButton(enabled = selectedReason != null, onClick = { onConfirm(); onDismiss() }) { Text("Encerrar") }
+    },
+    dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } },
 )
 
 private enum class IpsumDialog { RevealHint, EndWithoutAc }
