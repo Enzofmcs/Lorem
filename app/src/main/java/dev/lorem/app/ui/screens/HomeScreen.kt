@@ -55,12 +55,21 @@ fun HomeScreen(
             Text("${profile.displayName} (@${profile.handle})")
             Text("Rating oficial: ${profile.officialRating ?: "não disponível"}")
             Text("Rating Lorem: ${profile.loremRating}")
-            Button(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = onStartIpsum,
-                enabled = !hasActiveIpsum && startIpsumState != StartIpsumUiState.Loading,
-            ) {
-                Text(if (hasActiveIpsum) "Ipsum já ativo" else "Iniciar novo Ipsum")
+            if (hasActiveIpsum) {
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = { onNavigate(LoremDestination.Ipsum.route) },
+                ) {
+                    Text("Voltar para o Ipsum ativo")
+                }
+            } else {
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onStartIpsum,
+                    enabled = startIpsumState != StartIpsumUiState.Loading,
+                ) {
+                    Text("Iniciar novo Ipsum")
+                }
             }
             when (startIpsumState) {
                 StartIpsumUiState.Idle, is StartIpsumUiState.Success -> Unit

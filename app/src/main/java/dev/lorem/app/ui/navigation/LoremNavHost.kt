@@ -35,6 +35,7 @@ fun LoremNavHost(
     activeIpsum: Ipsum?,
     startIpsumState: StartIpsumUiState,
     onStartIpsum: () -> Unit,
+    onIpsumNavigationHandled: () -> Unit,
     navController: NavHostController = rememberNavController(),
 ) {
     val profile = initialProfile ?: configurationState.savedProfile
@@ -52,9 +53,10 @@ fun LoremNavHost(
             onHomeNavigationHandled()
         }
     }
-    LaunchedEffect(activeIpsum?.id) {
-        if (activeIpsum != null) {
+    LaunchedEffect(startIpsumState) {
+        if (startIpsumState is StartIpsumUiState.Success) {
             navController.navigate(LoremDestination.Ipsum.route) { launchSingleTop = true }
+            onIpsumNavigationHandled()
         }
     }
     NavHost(navController = navController, startDestination = startDestination) {
@@ -85,7 +87,14 @@ fun LoremNavHost(
             }
         }
         composable(LoremDestination.Ipsum.route) {
-            IpsumScreen(activeIpsum)
+            IpsumScreen(
+                ipsum = activeIpsum,
+                onNavigateHome = {
+                    if (!navController.popBackStack(LoremDestination.Home.route, inclusive = false)) {
+                        navController.navigate(LoremDestination.Home.route) { launchSingleTop = true }
+                    }
+                },
+            )
         }
         LoremDestination.all.filterNot {
             it == LoremDestination.Configuration || it == LoremDestination.Home || it == LoremDestination.Ipsum

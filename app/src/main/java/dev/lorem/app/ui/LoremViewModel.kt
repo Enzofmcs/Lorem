@@ -263,6 +263,12 @@ class LoremViewModel(
         }
     }
 
+    fun ipsumNavigationHandled() {
+        if (mutableStartIpsumState.value is StartIpsumUiState.Success) {
+            mutableStartIpsumState.value = StartIpsumUiState.Idle
+        }
+    }
+
     companion object {
         const val INITIAL_UNRATED_RATING = 800
 
