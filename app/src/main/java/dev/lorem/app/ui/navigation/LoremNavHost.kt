@@ -31,7 +31,7 @@ fun LoremNavHost(
     onSynchronizeCatalog: () -> Unit,
     navController: NavHostController = rememberNavController(),
 ) {
-    val profile = configurationState.savedProfile ?: initialProfile
+    val profile = initialProfile ?: configurationState.savedProfile
     val startDestination = if (initialProfile == null) {
         LoremDestination.Configuration.route
     } else {
