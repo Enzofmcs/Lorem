@@ -52,6 +52,7 @@ fun LoremApp(
             activeIpsum = activeIpsum,
             startIpsumState = startIpsumState,
             onStartIpsum = viewModel::startNewIpsum,
+            onIpsumNavigationHandled = viewModel::ipsumNavigationHandled,
         )
     }
 }
