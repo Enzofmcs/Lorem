@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -23,6 +24,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import dev.lorem.app.domain.model.Ipsum
@@ -158,9 +161,18 @@ private fun BoundaryDialog(
         Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
             Text("Selecione exatamente um motivo:")
             IpsumFailureReason.entries.forEach { reason ->
-                androidx.compose.foundation.layout.Row {
-                    RadioButton(selected = selectedReason == reason, onClick = { onSelect(reason) })
-                    Text(reason.label, modifier = Modifier.padding(top = 12.dp))
+                androidx.compose.foundation.layout.Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .selectable(
+                            selected = selectedReason == reason,
+                            onClick = { onSelect(reason) },
+                            role = Role.RadioButton,
+                        ),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    RadioButton(selected = selectedReason == reason, onClick = null)
+                    Text(reason.label)
                 }
             }
         }

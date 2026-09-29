@@ -44,13 +44,13 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
-- **Foco:** Historia 07 - Encerrar e apresentar o resultado.
-- **Ultima historia verificada:** Historia 06 - Detectar submissoes durante o Ipsum.
-- **Primeiro item pendente:** permitir encerramento manual sem AC.
-- **Proxima entrega demonstravel:** encerrar manualmente e apresentar o resultado do Ipsum.
+- **Foco:** Historia 08 - Calcular o Rating Lorem.
+- **Ultima historia verificada:** Historia 07 - Encerrar e apresentar o resultado.
+- **Primeiro item pendente:** definir o resultado esperado ao comparar usuario e problema.
+- **Proxima entrega demonstravel:** calcular e explicar a primeira variacao do Rating Lorem.
 - **Bloqueios conhecidos:** nenhum.
 
-Progresso e aceite: [`docs/ROADMAP.md#historia-07---encerrar-e-apresentar-o-resultado`](docs/ROADMAP.md#historia-07---encerrar-e-apresentar-o-resultado).
+Progresso e aceite: [`docs/ROADMAP.md#historia-08---calcular-o-rating-lorem`](docs/ROADMAP.md#historia-08---calcular-o-rating-lorem).
 
 ## Politica de contexto
 
