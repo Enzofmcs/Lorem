@@ -6,13 +6,13 @@
 
 ## Estado atual
 
-**Foco atual:** Historia 07 - Encerrar e apresentar o resultado.
+**Foco atual:** Historia 08 - Calcular o Rating Lorem.
 
-**Ultima historia verificada:** Historia 06 - Detectar submissoes durante o Ipsum.
+**Ultima historia verificada:** Historia 07 - Encerrar e apresentar o resultado.
 
-**Primeiro item pendente:** permitir encerramento manual sem AC.
+**Primeiro item pendente:** definir o resultado esperado ao comparar usuario e problema.
 
-**Proxima entrega demonstravel:** encerrar manualmente e apresentar o resultado do Ipsum.
+**Proxima entrega demonstravel:** calcular e explicar a primeira variacao do Rating Lorem.
 
 **Bloqueios conhecidos:** nenhum.
 
@@ -228,25 +228,25 @@ checklists; veja [`DECISIONS.md`](DECISIONS.md).
 - [x] Mostrar quantidade e tipos de erros.
 - [x] Mostrar se houve dica.
 - [x] Exigir um motivo ao encerrar sem AC.
-- [ ] Oferecer os motivos confirmados de fracasso.
-- [ ] Persistir o estado final de forma atomica.
-- [ ] Impedir encerramento ou pontuacao duplicados.
-- [ ] Preparar o espaco para explicar a alteracao de rating.
+- [x] Oferecer os motivos confirmados de fracasso.
+- [x] Persistir o estado final de forma atomica.
+- [x] Impedir encerramento ou pontuacao duplicados.
+- [x] Preparar o espaco para explicar a alteracao de rating.
 
 #### Motivos de fracasso
 
-- [ ] Nao entendi o enunciado.
-- [ ] Nao encontrei a logica.
-- [ ] Nao conhecia o conteudo.
-- [ ] Encontrei a solucao, mas nao consegui implementar.
-- [ ] Tive erro de implementacao.
-- [ ] Faltou tempo.
+- [x] Nao entendi o enunciado.
+- [x] Nao encontrei a logica.
+- [x] Nao conhecia o conteudo.
+- [x] Encontrei a solucao, mas nao consegui implementar.
+- [x] Tive erro de implementacao.
+- [x] Faltou tempo.
 
 #### Exemplos de aceite
 
 - [x] Um AC apresenta todas as informacoes escondidas.
 - [x] Um encerramento sem AC nao prossegue sem motivo.
-- [ ] Reabrir o resultado nao altera os dados.
+- [x] Reabrir o resultado nao altera os dados.
 
 ---
 

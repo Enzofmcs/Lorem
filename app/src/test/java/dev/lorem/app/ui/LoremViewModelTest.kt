@@ -268,7 +268,7 @@ class LoremViewModelTest {
 
     @Test
     fun `manual ending requires a reason and exposes the persisted result`() = runTest {
-        val local = MemoryRepository(profile())
+        val local = MemoryRepository(profile().copy(loremRating = 1200))
         local.problemCatalog.value = listOf(problem(10, 1200))
         val viewModel = LoremViewModel(local, CountingRepository(), nowMillis = { 5_000L })
         viewModel.startNewIpsum()
@@ -286,6 +286,24 @@ class LoremViewModelTest {
         assertEquals(5_000L, result.endedAtEpochMillis)
         assertEquals(IpsumStatus.PENDING, result.status)
     }
+
+    @Test
+    fun `manual ending reports a recoverable error when persistence fails`() = runTest {
+        val local = MemoryRepository(profile().copy(loremRating = 1200)).apply {
+            problemCatalog.value = listOf(problem(10, 1200))
+            failManualEnding = true
+        }
+        val viewModel = LoremViewModel(local, CountingRepository(), nowMillis = { 5_000L })
+        viewModel.startNewIpsum()
+        advanceUntilIdle()
+
+        viewModel.endActiveIpsum(IpsumFailureReason.TIME_EXPIRED)
+        advanceUntilIdle()
+
+        val state = viewModel.ipsumResultState.value as IpsumResultUiState.Error
+        assertEquals("Não foi possível salvar o resultado. Tente novamente.", state.message)
+        assertTrue(local.activeIpsum.value != null)
+    }
 }
 
 private class MemoryRepository(
@@ -300,6 +318,7 @@ private class MemoryRepository(
     override val activeIpsum = MutableStateFlow<Ipsum?>(null)
     private val histories = mutableMapOf<String, List<ProblemHistory>>()
     val savedOperations = mutableListOf<String>()
+    var failManualEnding = false
     init {
         initialProfile?.let { histories[normalize(it.handle)] = initialHistory }
     }
@@ -344,6 +363,7 @@ private class MemoryRepository(
         reason: IpsumFailureReason,
         endedAtEpochMillis: Long,
     ): Boolean {
+        if (failManualEnding) error("persistence failed")
         val current = activeIpsum.value?.takeIf { it.id == ipsumId } ?: return false
         val ended = current.copy(
             status = IpsumStatus.PENDING,

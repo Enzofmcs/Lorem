@@ -335,12 +335,16 @@ class LoremViewModel(
                 mutableIpsumResultState.value = IpsumResultUiState.Error("Não há Ipsum ativo para encerrar.")
                 return@launch
             }
-            val ended = repository.endIpsumWithoutAc(ipsum.id, reason, nowMillis())
-            val result = repository.getIpsumResult(ipsum.id)
-            mutableIpsumResultState.value = result?.let(IpsumResultUiState::Ready)
-                ?: IpsumResultUiState.Error(
-                    if (ended) "Resultado não encontrado." else "O Ipsum já foi encerrado ou não pôde ser salvo.",
-                )
+            mutableIpsumResultState.value = runCatching {
+                val ended = repository.endIpsumWithoutAc(ipsum.id, reason, nowMillis())
+                repository.getIpsumResult(ipsum.id)?.let(IpsumResultUiState::Ready)
+                    ?: IpsumResultUiState.Error(
+                        if (ended) "Resultado não encontrado."
+                        else "O Ipsum já foi encerrado ou não pôde ser salvo.",
+                    )
+            }.getOrElse {
+                IpsumResultUiState.Error("Não foi possível salvar o resultado. Tente novamente.")
+            }
         }
     }
 
