@@ -76,7 +76,7 @@ fun HomeScreen(
                 Button(
                     modifier = Modifier.fillMaxWidth(),
                     onClick = { onNavigate("${LoremDestination.Result.route}/$latestFinishedIpsumId") },
-                ) { Text("Reabrir último resultado") }
+                ) { Text("Abrir Resultado") }
             }
             when (startIpsumState) {
                 StartIpsumUiState.Idle, is StartIpsumUiState.Success -> Unit
@@ -152,7 +152,8 @@ fun HomeScreen(
             }
 
             LoremDestination.all.filterNot {
-                it == LoremDestination.Home || it == LoremDestination.Configuration || it == LoremDestination.Ipsum
+                it == LoremDestination.Home || it == LoremDestination.Configuration ||
+                    it == LoremDestination.Ipsum || it == LoremDestination.Result
             }.forEach { destination ->
                 Button(
                     modifier = Modifier.fillMaxWidth(),

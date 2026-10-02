@@ -7,6 +7,7 @@ import androidx.compose.ui.test.performScrollTo
 import dev.lorem.app.domain.model.CodeforcesProblem
 import dev.lorem.app.domain.model.Ipsum
 import dev.lorem.app.domain.model.IpsumCategory
+import dev.lorem.app.domain.model.IpsumFailureReason
 import dev.lorem.app.domain.model.IpsumResult
 import dev.lorem.app.domain.model.IpsumStatus
 import dev.lorem.app.domain.model.ProblemId
@@ -69,5 +70,36 @@ class IpsumResultScreenTest {
 
         composeRule.onNodeWithText("Tempo total indisponível").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Fechar resultado").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun `pending result reveals failure reason and empty attempt details`() {
+        val ipsum = Ipsum(
+            id = 3, ownerHandle = "tourist",
+            problem = CodeforcesProblem(ProblemId(102, "C"), "Pending", 1300, setOf("greedy")),
+            initialLoremRating = 1200, category = IpsumCategory.CURRENT_LEVEL,
+            desiredRatingMin = 1200, desiredRatingMax = 1300, selectedRating = 1300,
+            fallbackDistance = 0, startedAtEpochMillis = 1_000,
+            endedAtEpochMillis = 61_000, errorCount = 0,
+            failureReason = IpsumFailureReason.CONTENT_UNKNOWN,
+            status = IpsumStatus.PENDING,
+        )
+
+        composeRule.setContent {
+            LoremTheme {
+                IpsumResultScreen(IpsumResultUiState.Ready(IpsumResult(ipsum, emptyList()))) {}
+            }
+        }
+
+        listOf(
+            "Pendente sem AC",
+            "Tempo total: 00:01:00",
+            "Dica usada: não",
+            "Erros antes do primeiro AC: 0",
+            "Tipos de erro: nenhum (1)",
+            "Motivo: Não conhecia o conteúdo.",
+        ).forEach { text ->
+            composeRule.onNodeWithText(text).performScrollTo().assertIsDisplayed()
+        }
     }
 }
