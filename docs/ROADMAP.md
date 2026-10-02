@@ -6,13 +6,13 @@
 
 ## Estado atual
 
-**Foco atual:** Historia 08 - Calcular o Rating Lorem.
+**Foco atual:** Historia 08 - validar manualmente a explicacao do Rating Lorem.
 
 **Ultima historia verificada:** Historia 07 - Encerrar e apresentar o resultado.
 
-**Primeiro item pendente:** definir o resultado esperado ao comparar usuario e problema.
+**Primeiro item pendente:** confirmar em dispositivo que a explicacao e compreensivel sem conhecer a formula.
 
-**Proxima entrega demonstravel:** calcular e explicar a primeira variacao do Rating Lorem.
+**Proxima entrega demonstravel:** validar visualmente um resultado com a variacao persistida e explicada.
 
 **Bloqueios conhecidos:** nenhum.
 
@@ -264,25 +264,25 @@ checklists; veja [`DECISIONS.md`](DECISIONS.md).
 
 #### Checklist
 
-- [ ] Resolver as decisoes DA-02 e DA-03.
-- [ ] Escrever uma tabela de cenarios antes da formula.
-- [ ] Definir o resultado esperado ao comparar usuario e problema.
-- [ ] Definir tempo esperado por diferenca de rating.
-- [ ] Definir penalidade da dica.
-- [ ] Definir ganho e perda maximos.
-- [ ] Implementar o calculo como funcao pura.
-- [ ] Salvar rating anterior, variacao e rating posterior.
-- [ ] Explicar a variacao na tela de resultado.
-- [ ] Garantir que AC posterior nao recalcule o Ipsum.
-- [ ] Criar testes unitarios para limites e cenarios comuns.
+- [x] Resolver as decisoes DA-02 e DA-03.
+- [x] Escrever uma tabela de cenarios antes da formula.
+- [x] Definir o resultado esperado ao comparar usuario e problema.
+- [x] Definir tempo esperado por diferenca de rating.
+- [x] Definir penalidade da dica.
+- [x] Definir ganho e perda maximos.
+- [x] Implementar o calculo como funcao pura.
+- [x] Salvar rating anterior, variacao e rating posterior.
+- [x] Explicar a variacao na tela de resultado.
+- [x] Garantir que AC posterior nao recalcule o Ipsum.
+- [x] Criar testes unitarios para limites e cenarios comuns.
 
 #### Propriedades que a formula precisa respeitar
 
-- [ ] No mesmo problema e tempo, AC sem dica vale mais que AC com dica.
-- [ ] No mesmo resultado, resolver um problema mais dificil vale mais.
-- [ ] No mesmo problema, ultrapassar muito o tempo esperado nao pode valer mais.
-- [ ] Nao resolver nao aumenta o rating.
-- [ ] O rating nunca e atualizado duas vezes pelo mesmo Ipsum.
+- [x] No mesmo problema e tempo, AC sem dica vale mais que AC com dica.
+- [x] No mesmo resultado, resolver um problema mais dificil vale mais.
+- [x] No mesmo problema, ultrapassar muito o tempo esperado nao pode valer mais.
+- [x] Nao resolver nao aumenta o rating.
+- [x] O rating nunca e atualizado duas vezes pelo mesmo Ipsum.
 - [ ] O usuario consegue entender a explicacao sem conhecer a formula.
 
 ---

@@ -33,7 +33,8 @@ class IpsumResultScreenTest {
             desiredRatingMin = 1300, desiredRatingMax = 1400, selectedRating = 1500,
             fallbackDistance = 100, startedAtEpochMillis = 1_000,
             hintRevealedAtEpochMillis = 2_000, endedAtEpochMillis = 3_662_000,
-            errorCount = 2, status = IpsumStatus.COMPLETED,
+            errorCount = 2, ratingDelta = 24, finalLoremRating = 1224,
+            expectedTimeMillis = 90 * 60_000L, status = IpsumStatus.COMPLETED,
         )
         composeRule.setContent {
             LoremTheme {
@@ -48,6 +49,8 @@ class IpsumResultScreenTest {
             "Rating do problema: 1500", "Categoria: Desafio", "Tópicos: dp, graphs",
             "Tempo total: 01:01:01", "Dica usada: sim", "Erros antes do primeiro AC: 2",
             "WRONG_ANSWER (1), COMPILATION_ERROR (1)", "Alteração do Rating Lorem",
+            "1200 + 24 = 1224", "mais difícil que seu nível anterior",
+            "tópicos foram revelados", "Tempo esperado: 01:30:00",
         ).forEach { composeRule.onNodeWithText(it, substring = true).performScrollTo().assertIsDisplayed() }
     }
 

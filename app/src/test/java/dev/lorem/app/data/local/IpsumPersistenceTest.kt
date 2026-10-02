@@ -2,6 +2,8 @@ package dev.lorem.app.data.local
 
 import android.content.Context
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import dev.lorem.app.domain.model.CodeforcesProblem
@@ -12,6 +14,7 @@ import dev.lorem.app.domain.model.ProblemId
 import dev.lorem.app.domain.repository.ActiveIpsumAlreadyExistsException
 import dev.lorem.app.domain.model.IpsumSubmission
 import dev.lorem.app.domain.model.IpsumFailureReason
+import dev.lorem.app.domain.model.LocalProfile
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.async
 import kotlinx.coroutines.test.runTest
@@ -79,8 +82,10 @@ class IpsumPersistenceTest {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val databaseFile = File(context.cacheDir, "ipsum-db-${System.nanoTime()}")
         val preferences = File(context.cacheDir, "ipsum-state-${System.nanoTime()}.preferences_pb")
+        val dataStore = PreferenceDataStoreFactory.create(scope = backgroundScope, produceFile = { preferences })
         var database = Room.databaseBuilder(context, LoremDatabase::class.java, databaseFile.absolutePath).build()
-        var repository = repository(database, preferences, backgroundScope)
+        var repository = repository(database, dataStore)
+        repository.saveProfile(profile())
         val saved = repository.createActiveIpsum(ipsum())
         val values = listOf(
             IpsumSubmission(10, saved.id, "WRONG_ANSWER", 2_000),
@@ -94,7 +99,7 @@ class IpsumPersistenceTest {
         ).map { it.await() }
         database.close()
         database = Room.databaseBuilder(context, LoremDatabase::class.java, databaseFile.absolutePath).build()
-        repository = repository(database, preferences, backgroundScope)
+        repository = repository(database, dataStore)
         val restored = database.ipsumDao().find(saved.id)!!.toDomain()
 
         assertEquals(4, attempts.sumOf { it.insertedCount })
@@ -103,6 +108,10 @@ class IpsumPersistenceTest {
         assertEquals(IpsumStatus.COMPLETED, restored.status)
         assertEquals(2, restored.errorCount)
         assertEquals(4_000L, restored.endedAtEpochMillis)
+        assertEquals(35, restored.ratingDelta)
+        assertEquals(1235, restored.finalLoremRating)
+        assertEquals(90 * 60_000L, restored.expectedTimeMillis)
+        assertEquals(1235, repository.profile.first()?.loremRating)
         assertEquals(
             listOf("WRONG_ANSWER", "COMPILATION_ERROR"),
             repository.getIpsumResult(saved.id)?.errorVerdicts,
@@ -116,8 +125,10 @@ class IpsumPersistenceTest {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val databaseFile = File(context.cacheDir, "manual-db-${System.nanoTime()}")
         val preferences = File(context.cacheDir, "manual-state-${System.nanoTime()}.preferences_pb")
+        val dataStore = PreferenceDataStoreFactory.create(scope = backgroundScope, produceFile = { preferences })
         var database = Room.databaseBuilder(context, LoremDatabase::class.java, databaseFile.absolutePath).build()
-        var repository = repository(database, preferences, backgroundScope)
+        var repository = repository(database, dataStore)
+        repository.saveProfile(profile())
         val saved = repository.createActiveIpsum(ipsum().copy(hintRevealedAtEpochMillis = 1_500L))
         repository.recordIpsumSubmissions(saved.id, listOf(
             IpsumSubmission(20, saved.id, "WRONG_ANSWER", 2_000),
@@ -129,7 +140,7 @@ class IpsumPersistenceTest {
         database.close()
 
         database = Room.databaseBuilder(context, LoremDatabase::class.java, databaseFile.absolutePath).build()
-        repository = repository(database, preferences, backgroundScope)
+        repository = repository(database, dataStore)
         val result = repository.getIpsumResult(saved.id)!!
 
         assertEquals(IpsumStatus.PENDING, result.ipsum.status)
@@ -137,6 +148,17 @@ class IpsumPersistenceTest {
         assertEquals(5_000L, result.ipsum.endedAtEpochMillis)
         assertEquals(1_500L, result.ipsum.hintRevealedAtEpochMillis)
         assertEquals(2, result.ipsum.errorCount)
+        assertEquals(-12, result.ipsum.ratingDelta)
+        assertEquals(1188, result.ipsum.finalLoremRating)
+        assertEquals(90 * 60_000L, result.ipsum.expectedTimeMillis)
+        assertEquals(1188, repository.profile.first()?.loremRating)
+        repository.getIpsumResult(saved.id)
+        repository.recordIpsumSubmissions(
+            saved.id,
+            listOf(IpsumSubmission(22, saved.id, "OK", 10_000L)),
+        )
+        assertEquals(1188, repository.profile.first()?.loremRating)
+        assertEquals(-12, repository.getIpsumResult(saved.id)?.ipsum?.ratingDelta)
         assertEquals(listOf("WRONG_ANSWER", "TIME_LIMIT_EXCEEDED"), result.errorVerdicts)
         assertEquals(null, repository.activeIpsum.first())
         database.close()
@@ -144,6 +166,13 @@ class IpsumPersistenceTest {
 
     private fun repository(database: LoremDatabase, file: File, scope: CoroutineScope) = LocalLoremRepository(
         dataStore = PreferenceDataStoreFactory.create(scope = scope, produceFile = { file }),
+        problemHistoryDao = database.problemHistoryDao(),
+        problemCatalogDao = database.problemCatalogDao(),
+        ipsumDao = database.ipsumDao(),
+    )
+
+    private fun repository(database: LoremDatabase, dataStore: DataStore<Preferences>) = LocalLoremRepository(
+        dataStore = dataStore,
         problemHistoryDao = database.problemHistoryDao(),
         problemCatalogDao = database.problemCatalogDao(),
         ipsumDao = database.ipsumDao(),
@@ -164,4 +193,6 @@ class IpsumPersistenceTest {
     )
 
     private fun problem(id: Long) = CodeforcesProblem(ProblemId(id, "A"), "Problem $id", 1500, setOf("dp"))
+
+    private fun profile() = LocalProfile("tourist", "Tourist", 1200, 1200, null, 1)
 }

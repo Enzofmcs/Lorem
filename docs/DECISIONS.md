@@ -17,16 +17,16 @@ Nao preencher silenciosamente. Registrar a escolha em **Registro de decisoes** e
 
 ### DA-02 - Formula exata do Rating Lorem
 
-- [ ] Definir expectativa pela diferenca usuario-problema.
-- [ ] Definir peso do tempo.
-- [ ] Definir penalidade por revelar tags.
-- [ ] Definir ganho e perda maximos.
-- [ ] Definir comportamento dos primeiros Ipsums de calibracao.
+- [x] Definir expectativa pela diferenca usuario-problema.
+- [x] Definir peso do tempo.
+- [x] Definir penalidade por revelar tags.
+- [x] Definir ganho e perda maximos.
+- [x] Nao aplicar regra especial de calibracao aos primeiros Ipsums.
 
 ### DA-03 - Tempo esperado
 
 - [ ] Tempo fixo para todos os problemas.
-- [ ] Tempo calculado pela diferenca de rating.
+- [x] Tempo calculado pela diferenca de rating.
 - [ ] Tempo apenas como estatistica, sem afetar rating.
 
 ### DA-04 - Criterios de consolidacao
@@ -69,5 +69,21 @@ Use o formato abaixo. Nao apagar decisoes antigas; marque quando forem substitui
 | D-009 | 2026-09-22 | O Rating Lorem inicial usa o rating oficial atual do Codeforces quando ele estiver disponivel; contas sem rating oficial iniciam em 800. | Aproveitar a melhor referencia publica existente sem impedir o uso por contas ainda nao ranqueadas e manter um ponto inicial coerente com a menor dificuldade dos problemas avaliados. | 01, 04, 08 |
 | D-010 | 2026-09-23 | A recomendacao normaliza o Rating Lorem para o multiplo de 100 mais proximo, com minimo 800; sem candidato na faixa da categoria, explora primeiro as camadas adjacentes mais proximas em passos de 100, ate 300 pontos, preservando variedade e sorteio entre empates, sem confirmacao. Persiste categoria e faixa originais, rating escolhido e distancia do fallback; sem candidato no limite, nao cria Ipsum e oferece erro recuperavel. | Tornar o fallback previsivel, auditavel e limitado sem interromper o fluxo simples do MVP. | 04, 12 |
 | D-011 | 2026-09-23 | As submissoes do Ipsum sao verificadas pelo botao e ao retornar para a tela/app, sem polling, `WorkManager`, servico ou trabalho permanente em segundo plano. | Manter atualizacao suficiente para o treino com menor complexidade, consumo e risco de consultas duplicadas. | 06 |
+| D-012 | 2026-10-02 | O Rating Lorem usa expectativa Elo pela diferenca usuario-problema. AC parte de `round(8 + 32 * (1 - expectativa))`; sem AC perde `round(8 + 24 * expectativa)`, independentemente de desistir cedo. O tempo esperado e `clamp(60 + diferenca/10, 30, 120)` minutos; AC depois do esperado perde gradualmente ate metade do ganho no dobro do tempo, sem bonus por rapidez. Revelar tags reduz o ganho em cerca de 25%, no minimo 2 pontos. Ganhos ficam entre 1 e 40 e perdas entre -1 e -32. Nao ha calibracao especial. | Produzir feedback previsivel que valoriza dificuldade, tempo e autonomia sem permitir bonus por demora nem dupla pontuacao. | 08 |
+
+### Tabela de cenarios da D-012
+
+Exemplos para Rating Lorem anterior 1200, sem calibracao:
+
+| Cenario | Rating do problema | Tempo esperado | Tempo gasto | Dica | Variacao |
+|---|---:|---:|---:|---|---:|
+| AC no nivel | 1200 | 60 min | 45 min | nao | +24 |
+| AC no nivel com dica | 1200 | 60 min | 45 min | sim | +18 |
+| AC mais dificil | 1600 | 100 min | 90 min | nao | +37 |
+| AC muito acima do esperado | 1200 | 60 min | 150 min | nao | +12 |
+| Sem AC, tentativa completa | 1200 | 60 min | 60 min | indiferente | -20 |
+| Sem AC, desistência precoce | 1200 | 60 min | 1 min | indiferente | -20 |
+| Sem AC em problema mais dificil | 1600 | 100 min | 100 min | indiferente | -10 |
+| Sem AC em problema mais facil | 800 | 30 min | 30 min | indiferente | -30 |
 
 ---

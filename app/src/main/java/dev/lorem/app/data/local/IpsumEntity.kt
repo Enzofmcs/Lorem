@@ -32,6 +32,9 @@ data class IpsumEntity(
     val endedAtEpochMillis: Long?,
     val errorCount: Int,
     val failureReason: String?,
+    val ratingDelta: Int?,
+    val finalLoremRating: Int?,
+    val expectedTimeMillis: Long?,
     val status: String,
     val activeSlot: Int?,
 )
@@ -54,6 +57,9 @@ fun Ipsum.toEntity() = IpsumEntity(
     endedAtEpochMillis = endedAtEpochMillis,
     errorCount = errorCount,
     failureReason = failureReason?.name,
+    ratingDelta = ratingDelta,
+    finalLoremRating = finalLoremRating,
+    expectedTimeMillis = expectedTimeMillis,
     status = status.name,
     activeSlot = if (status == IpsumStatus.ACTIVE) 1 else null,
 )
@@ -78,5 +84,8 @@ fun IpsumEntity.toDomain() = Ipsum(
     endedAtEpochMillis = endedAtEpochMillis,
     errorCount = errorCount,
     failureReason = failureReason?.let(IpsumFailureReason::valueOf),
+    ratingDelta = ratingDelta,
+    finalLoremRating = finalLoremRating,
+    expectedTimeMillis = expectedTimeMillis,
     status = IpsumStatus.valueOf(status),
 )

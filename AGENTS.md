@@ -44,10 +44,10 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
-- **Foco:** Historia 08 - Calcular o Rating Lorem.
+- **Foco:** Historia 08 - validar manualmente a explicacao do Rating Lorem.
 - **Ultima historia verificada:** Historia 07 - Encerrar e apresentar o resultado.
-- **Primeiro item pendente:** definir o resultado esperado ao comparar usuario e problema.
-- **Proxima entrega demonstravel:** calcular e explicar a primeira variacao do Rating Lorem.
+- **Primeiro item pendente:** confirmar em dispositivo que a explicacao da variacao e compreensivel sem conhecer a formula.
+- **Proxima entrega demonstravel:** validar visualmente um resultado com a variacao persistida e explicada.
 - **Bloqueios conhecidos:** nenhum.
 
 Progresso e aceite: [`docs/ROADMAP.md#historia-08---calcular-o-rating-lorem`](docs/ROADMAP.md#historia-08---calcular-o-rating-lorem).
