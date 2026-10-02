@@ -293,20 +293,37 @@ checklists; veja [`DECISIONS.md`](DECISIONS.md).
 
 #### Checklist
 
-- [ ] Criar aba `Resolvidos em Ipsums`.
-- [ ] Criar aba `Pendentes`.
-- [ ] Criar aba `Resolvidos fora de Ipsums`.
-- [ ] Mostrar problema, rating, tags, tempo, dica, erros, data e variacao.
-- [ ] Permitir abrir o problema no Codeforces.
-- [ ] Permitir filtrar por rating, tag e resultado.
-- [ ] Garantir que cada problema apareca em uma unica situacao atual.
-- [ ] Manter os dados originais do Ipsum depois de uma mudanca de aba.
+- [x] Criar aba `Resolvidos em Ipsums`.
+- [x] Criar aba `Pendentes`.
+- [x] Criar aba `Resolvidos fora de Ipsums`.
+- [x] Mostrar problema, rating, tags, tempo, dica, erros, data e variacao.
+- [x] Permitir abrir o problema no Codeforces.
+- [x] Permitir filtrar por rating, tag e resultado.
+- [x] Garantir que cada problema apareca em uma unica situacao atual.
+- [x] Manter os dados originais do Ipsum depois de uma mudanca de aba.
 
 #### Exemplos de aceite
 
-- [ ] AC durante o desafio aparece em `Resolvidos em Ipsums`.
-- [ ] Encerramento sem AC aparece em `Pendentes`.
-- [ ] Mudar o estado nao apaga tempo, dica ou erros originais.
+- [x] AC durante o desafio aparece em `Resolvidos em Ipsums`.
+- [x] Encerramento sem AC aparece em `Pendentes`.
+- [x] Mudar o estado nao apaga tempo, dica ou erros originais.
+
+#### Implementacao e verificacao em 2026-10-02
+
+- A tela provisoria foi substituida por uma tela alimentada por `LoremRepository.ipsums`,
+  com as tres situacoes mutuamente exclusivas, estado vazio, campos completos, link
+  do Codeforces e filtros combinaveis de rating, tag e resultado/situacao.
+- Como ainda nao existe evidencia persistida de AC posterior, `Resolvidos fora de
+  Ipsums` permanece vazio no fluxo real; a classificacao pura ja exige evidencia
+  explicita, sem consultar o historico geral nem alterar o Ipsum original.
+- Foram adicionados testes unitarios de classificacao, exclusividade, preservacao e
+  filtros, alem de testes Robolectric/Compose de campos, estados vazios, troca de aba,
+  limpeza de filtros e abertura do link.
+- Os testes direcionados passaram com Java 17 e Android SDK 35, comprovando os
+  criterios funcionais e permitindo marcar os checklists acima.
+- **PENDENTE DE TESTE MANUAL:** conferir em dispositivo a legibilidade da lista, a
+  combinacao dos filtros, a troca entre as tres situacoes e a abertura no Codeforces.
+- A validacao manual de compreensao da Historia 08 continua pendente e nao foi marcada.
 
 ---
 

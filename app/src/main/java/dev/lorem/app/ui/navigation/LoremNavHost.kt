@@ -21,6 +21,7 @@ import dev.lorem.app.ui.SubmissionCheckUiState
 import dev.lorem.app.ui.IpsumResultUiState
 import dev.lorem.app.domain.model.IpsumFailureReason
 import dev.lorem.app.ui.screens.IpsumResultScreen
+import dev.lorem.app.ui.screens.HistoryScreen
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 
@@ -123,6 +124,9 @@ fun LoremNavHost(
                 },
             )
         }
+        composable(LoremDestination.History.route) {
+            HistoryScreen(ipsums = ipsums)
+        }
         composable(
             route = "${LoremDestination.Result.route}/{ipsumId}",
             arguments = listOf(navArgument("ipsumId") { type = NavType.LongType }),
@@ -143,7 +147,8 @@ fun LoremNavHost(
         }
         LoremDestination.all.filterNot {
             it == LoremDestination.Configuration || it == LoremDestination.Home ||
-                it == LoremDestination.Ipsum || it == LoremDestination.Result
+                it == LoremDestination.Ipsum || it == LoremDestination.Result ||
+                it == LoremDestination.History
         }.forEach { destination ->
             composable(destination.route) {
                 PlaceholderScreen(

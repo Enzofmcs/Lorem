@@ -44,13 +44,13 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
-- **Foco:** Historia 08 - validar manualmente a explicacao do Rating Lorem.
-- **Ultima historia verificada:** Historia 07 - Encerrar e apresentar o resultado.
-- **Primeiro item pendente:** confirmar em dispositivo que a explicacao da variacao e compreensivel sem conhecer a formula.
-- **Proxima entrega demonstravel:** validar visualmente um resultado com a variacao persistida e explicada.
-- **Bloqueios conhecidos:** nenhum.
+- **Foco:** Historia 09 - validar manualmente Historico e pendencias.
+- **Ultima historia verificada:** Historia 09 - Historico e pendencias (evidencia automatizada).
+- **Primeiro item pendente:** conferir em dispositivo a legibilidade, os filtros e a abertura no Codeforces.
+- **Proxima entrega demonstravel:** revisar em dispositivo as tres situacoes, os filtros e a abertura no Codeforces.
+- **Bloqueios conhecidos:** nenhum; Historia 08 ainda aguarda validacao manual da explicacao.
 
-Progresso e aceite: [`docs/ROADMAP.md#historia-08---calcular-o-rating-lorem`](docs/ROADMAP.md#historia-08---calcular-o-rating-lorem).
+Progresso e aceite: [`docs/ROADMAP.md#historia-09---historico-e-pendencias`](docs/ROADMAP.md#historia-09---historico-e-pendencias).
 
 ## Politica de contexto
 
