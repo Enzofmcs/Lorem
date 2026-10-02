@@ -44,13 +44,13 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
-- **Foco:** Historia 08 - validar manualmente a explicacao do Rating Lorem.
-- **Ultima historia verificada:** Historia 07 - Encerrar e apresentar o resultado.
-- **Primeiro item pendente:** confirmar em dispositivo que a explicacao da variacao e compreensivel sem conhecer a formula.
-- **Proxima entrega demonstravel:** validar visualmente um resultado com a variacao persistida e explicada.
+- **Foco:** Historia 10 - Detectar AC posterior.
+- **Ultima historia verificada:** Historia 09 - Historico e pendencias.
+- **Primeiro item pendente:** detectar e persistir AC posterior sem confundir submissoes anteriores ao Ipsum.
+- **Proxima entrega demonstravel:** mover uma pendencia para `Resolvidos fora de Ipsums` sem recalcular o rating original.
 - **Bloqueios conhecidos:** nenhum.
 
-Progresso e aceite: [`docs/ROADMAP.md#historia-08---calcular-o-rating-lorem`](docs/ROADMAP.md#historia-08---calcular-o-rating-lorem).
+Progresso e aceite: [`docs/ROADMAP.md#historia-10---detectar-ac-posterior`](docs/ROADMAP.md#historia-10---detectar-ac-posterior).
 
 ## Politica de contexto
 
