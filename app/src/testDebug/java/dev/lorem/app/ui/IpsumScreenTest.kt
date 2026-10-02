@@ -11,6 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import dev.lorem.app.domain.model.CodeforcesProblem
 import dev.lorem.app.domain.model.Ipsum
 import dev.lorem.app.domain.model.IpsumCategory
+import dev.lorem.app.domain.model.IpsumFailureReason
 import dev.lorem.app.domain.model.IpsumStatus
 import dev.lorem.app.domain.model.ProblemId
 import dev.lorem.app.ui.screens.IpsumScreen
@@ -70,6 +71,34 @@ class IpsumScreenTest {
         composeRule.onNodeWithText("Encerrar").assertIsNotEnabled()
         composeRule.onNodeWithText("Não encontrei a lógica.").performClick()
         composeRule.onNodeWithText("Encerrar").assertIsEnabled()
+    }
+
+    @Test
+    fun `manual ending offers every confirmed reason and submits the selected one`() {
+        var submittedReason: IpsumFailureReason? = null
+        composeRule.setContent {
+            LoremTheme {
+                IpsumScreen(
+                    ipsum(),
+                    onEndWithoutAc = { submittedReason = it },
+                    nowMillis = { 1L },
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Encerrar sem AC").performScrollTo().performClick()
+        IpsumFailureReason.entries.forEach { reason ->
+            composeRule.onNodeWithText(reason.label).performScrollTo().assertIsDisplayed()
+        }
+        composeRule.onNodeWithText("Encerrar").assertIsNotEnabled()
+
+        composeRule.onNodeWithText(IpsumFailureReason.IMPLEMENTATION_ERROR.label)
+            .performScrollTo()
+            .performClick()
+        composeRule.onNodeWithText("Encerrar").assertIsEnabled().performClick()
+        composeRule.waitForIdle()
+
+        assertTrue(submittedReason == IpsumFailureReason.IMPLEMENTATION_ERROR)
     }
 
     @Test

@@ -7,12 +7,17 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
 import dev.lorem.app.domain.model.CodeforcesProblem
 import dev.lorem.app.domain.model.LocalProfile
 import dev.lorem.app.domain.model.ProblemHistory
 import dev.lorem.app.domain.model.Ipsum
+import dev.lorem.app.domain.model.IpsumCategory
+import dev.lorem.app.domain.model.IpsumResult
+import dev.lorem.app.domain.model.IpsumStatus
+import dev.lorem.app.domain.model.ProblemId
 import dev.lorem.app.domain.repository.ActiveIpsumAlreadyExistsException
 import dev.lorem.app.domain.repository.CodeforcesRepository
 import dev.lorem.app.domain.repository.ProblemCatalogResult
@@ -111,6 +116,34 @@ class MainActivityTest {
         assertEquals(original, local.profile.value)
     }
 
+    @Test
+    fun `open result from home loads the latest finished ipsum`() {
+        val finished = Ipsum(
+            id = 7L,
+            ownerHandle = "tourist",
+            problem = CodeforcesProblem(ProblemId(100L, "A"), "Finished problem", 1500, setOf("dp")),
+            initialLoremRating = 1200,
+            category = IpsumCategory.CHALLENGE,
+            desiredRatingMin = 1300,
+            desiredRatingMax = 1400,
+            selectedRating = 1500,
+            fallbackDistance = 100,
+            startedAtEpochMillis = 1_000L,
+            endedAtEpochMillis = 61_000L,
+            status = IpsumStatus.COMPLETED,
+        )
+        val local = MemoryLoremRepository(
+            initialProfile = LocalProfile("tourist", "Tourist", 1500, 1200, null, 1L),
+            initialIpsums = listOf(finished),
+        )
+        setApp(local, UserLookupResult.NetworkFailure)
+
+        composeRule.onNodeWithText("Abrir Resultado").performScrollTo().performClick()
+
+        composeRule.onNodeWithText("Resultado do Ipsum").assertIsDisplayed()
+        composeRule.onNodeWithText("Finished problem").assertIsDisplayed()
+    }
+
     private fun setApp(local: LoremRepository, result: UserLookupResult) {
         composeRule.setContent {
             LoremTheme {
@@ -121,12 +154,15 @@ class MainActivityTest {
     }
 }
 
-private class MemoryLoremRepository(initialProfile: LocalProfile? = null) : LoremRepository {
+private class MemoryLoremRepository(
+    initialProfile: LocalProfile? = null,
+    initialIpsums: List<Ipsum> = emptyList(),
+) : LoremRepository {
     override val profile = MutableStateFlow(initialProfile)
     override val problemHistory = MutableStateFlow<List<ProblemHistory>>(emptyList())
     override val problemCatalog = MutableStateFlow<List<CodeforcesProblem>>(emptyList())
     override val catalogLastUpdatedEpochMillis = MutableStateFlow<Long?>(null)
-    override val ipsums = MutableStateFlow<List<Ipsum>>(emptyList())
+    override val ipsums = MutableStateFlow(initialIpsums)
     override val activeIpsum = MutableStateFlow<Ipsum?>(null)
     override suspend fun saveProfile(profile: LocalProfile) { this.profile.value = profile }
     override suspend fun clearProfile() { profile.value = null }
@@ -149,6 +185,9 @@ private class MemoryLoremRepository(initialProfile: LocalProfile? = null) : Lore
             if (it.hintRevealedAtEpochMillis == null) it.copy(hintRevealedAtEpochMillis = revealedAtEpochMillis) else it
         }
     }
+    override suspend fun getIpsumResult(ipsumId: Long): IpsumResult? = ipsums.value
+        .firstOrNull { it.id == ipsumId && it.status != IpsumStatus.ACTIVE }
+        ?.let { IpsumResult(it, emptyList()) }
 }
 
 private class ResultCodeforcesRepository(

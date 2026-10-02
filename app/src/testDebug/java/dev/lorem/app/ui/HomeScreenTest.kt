@@ -13,6 +13,7 @@ import dev.lorem.app.ui.theme.LoremTheme
 import org.junit.Rule
 import org.junit.Test
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertEquals
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
@@ -45,6 +46,31 @@ class HomeScreenTest {
 
         composeRule.onNodeWithText("Iniciar novo Ipsum").performClick()
         assertTrue(started)
+    }
+
+    @Test
+    fun `open result action uses the latest finished ipsum route`() {
+        var route: String? = null
+        composeRule.setContent {
+            LoremTheme {
+                HomeScreen(
+                    profile = profile(0),
+                    syncState = HistorySyncUiState.Idle,
+                    problemHistory = emptyList(),
+                    onSynchronize = {},
+                    problemCatalogCount = 0,
+                    catalogUpdatedAtEpochMillis = null,
+                    catalogSyncState = CatalogSyncUiState.Idle,
+                    onSynchronizeCatalog = {},
+                    latestFinishedIpsumId = 42L,
+                    onNavigate = { route = it },
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Abrir Resultado").performScrollTo().performClick()
+
+        assertEquals("result/42", route)
     }
 
     @Test
