@@ -42,6 +42,12 @@ interface LoremRepository {
     suspend fun getIpsumResult(ipsumId: Long): IpsumResult? = null
 }
 
-data class IpsumUpdate(val insertedCount: Int, val errorCount: Int, val completed: Boolean)
+data class IpsumUpdate(
+    val insertedCount: Int,
+    val errorCount: Int,
+    val completed: Boolean,
+    val ratingBefore: Int? = null,
+    val ratingAfter: Int? = null,
+)
 
 class ActiveIpsumAlreadyExistsException(cause: Throwable? = null) : Exception(cause)

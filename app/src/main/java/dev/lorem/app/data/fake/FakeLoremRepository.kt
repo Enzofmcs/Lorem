@@ -8,6 +8,9 @@ import dev.lorem.app.domain.repository.ActiveIpsumAlreadyExistsException
 import dev.lorem.app.domain.repository.LoremRepository
 import dev.lorem.app.domain.model.IpsumSubmission
 import dev.lorem.app.domain.repository.IpsumUpdate
+import dev.lorem.app.domain.calculateLoremRating
+import dev.lorem.app.domain.model.IpsumFailureReason
+import dev.lorem.app.domain.model.IpsumResult
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -66,14 +69,52 @@ class FakeLoremRepository(initialProfile: LocalProfile? = null) : LoremRepositor
         val firstAc = submissions.firstOrNull { it.verdict == "OK" }
         val errors = submissions.takeWhile { it.verdict != "OK" }.size
         if (firstAc != null) {
+            val rating = calculateLoremRating(
+                current.initialLoremRating, current.selectedRating, true,
+                (firstAc.createdAtEpochMillis - current.startedAtEpochMillis).coerceAtLeast(0),
+                current.hintRevealedAtEpochMillis != null,
+            )
             val updated = current.copy(
                 status = dev.lorem.app.domain.model.IpsumStatus.COMPLETED,
                 endedAtEpochMillis = firstAc.createdAtEpochMillis,
                 errorCount = errors,
+                ratingDelta = rating.delta,
+                finalLoremRating = rating.ratingAfter,
+                expectedTimeMillis = rating.expectedTimeMillis,
             )
             storedIpsums.value = storedIpsums.value.map { if (it.id == ipsumId) updated else it }
             activeIpsum.value = null
+            storedProfile.value = storedProfile.value?.copy(loremRating = rating.ratingAfter)
         }
         return IpsumUpdate(submissions.size, errors, firstAc != null)
     }
+
+    override suspend fun endIpsumWithoutAc(
+        ipsumId: Long,
+        reason: IpsumFailureReason,
+        endedAtEpochMillis: Long,
+    ): Boolean {
+        val current = activeIpsum.value?.takeIf { it.id == ipsumId } ?: return false
+        val rating = calculateLoremRating(
+            current.initialLoremRating, current.selectedRating, false,
+            (endedAtEpochMillis - current.startedAtEpochMillis).coerceAtLeast(0),
+            current.hintRevealedAtEpochMillis != null,
+        )
+        val updated = current.copy(
+            status = dev.lorem.app.domain.model.IpsumStatus.PENDING,
+            endedAtEpochMillis = endedAtEpochMillis,
+            failureReason = reason,
+            ratingDelta = rating.delta,
+            finalLoremRating = rating.ratingAfter,
+            expectedTimeMillis = rating.expectedTimeMillis,
+        )
+        storedIpsums.value = storedIpsums.value.map { if (it.id == ipsumId) updated else it }
+        activeIpsum.value = null
+        storedProfile.value = storedProfile.value?.copy(loremRating = rating.ratingAfter)
+        return true
+    }
+
+    override suspend fun getIpsumResult(ipsumId: Long): IpsumResult? = storedIpsums.value
+        .firstOrNull { it.id == ipsumId && it.status != dev.lorem.app.domain.model.IpsumStatus.ACTIVE }
+        ?.let { IpsumResult(it, emptyList()) }
 }

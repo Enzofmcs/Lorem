@@ -117,12 +117,22 @@ class LocalLoremRepositoryTest {
         override suspend fun find(ipsumId: Long): IpsumEntity? = null
         override suspend fun insertSubmissions(submissions: List<IpsumSubmissionEntity>) = emptyList<Long>()
         override suspend fun submissions(ipsumId: Long) = emptyList<IpsumSubmissionEntity>()
-        override suspend fun completeOnce(ipsumId: Long, endedAt: Long, errorCount: Int) = 0
+        override suspend fun completeOnce(
+            ipsumId: Long,
+            endedAt: Long,
+            errorCount: Int,
+            ratingDelta: Int,
+            ratingAfter: Int,
+            expectedTimeMillis: Long,
+        ) = 0
         override suspend fun endWithoutAcOnce(
             ipsumId: Long,
             reason: String,
             endedAt: Long,
             errorCount: Int,
+            ratingDelta: Int,
+            ratingAfter: Int,
+            expectedTimeMillis: Long,
         ) = 0
     }
 }

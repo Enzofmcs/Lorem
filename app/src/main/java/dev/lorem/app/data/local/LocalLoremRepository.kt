@@ -123,7 +123,11 @@ class LocalLoremRepository(
     override suspend fun recordIpsumSubmissions(
         ipsumId: Long,
         submissions: List<IpsumSubmission>,
-    ): IpsumUpdate = ipsumDao.record(ipsumId, submissions.map(IpsumSubmission::toEntity))
+    ): IpsumUpdate {
+        val update = ipsumDao.record(ipsumId, submissions.map(IpsumSubmission::toEntity))
+        reconcileProfileRating(ipsumDao.find(ipsumId))
+        return update
+    }
 
     override suspend fun endIpsumWithoutAc(
         ipsumId: Long,
@@ -131,15 +135,29 @@ class LocalLoremRepository(
         endedAtEpochMillis: Long,
     ): Boolean {
         require(endedAtEpochMillis > 0) { "endedAtEpochMillis must be positive" }
-        return ipsumDao.endWithoutAc(ipsumId, reason.name, endedAtEpochMillis)
+        val ended = ipsumDao.endWithoutAc(ipsumId, reason.name, endedAtEpochMillis)
+        reconcileProfileRating(ipsumDao.find(ipsumId))
+        return ended
     }
 
     override suspend fun getIpsumResult(ipsumId: Long): IpsumResult? {
         val ipsum = ipsumDao.find(ipsumId)?.toDomain() ?: return null
         if (ipsum.status == dev.lorem.app.domain.model.IpsumStatus.ACTIVE) return null
+        reconcileProfileRating(ipsumDao.find(ipsumId))
         val ordered = ipsumDao.submissions(ipsumId)
         val errors = ordered.takeWhile { it.verdict != "OK" }.map { it.verdict }
         return IpsumResult(ipsum, errors)
+    }
+
+    /** Idempotently finishes a DataStore update if a process stopped after the Room transaction. */
+    private suspend fun reconcileProfileRating(entity: IpsumEntity?) {
+        val ratingAfter = entity?.finalLoremRating ?: return
+        dataStore.edit { preferences ->
+            val sameOwner = preferences[HANDLE]?.let(::normalizeHandle) == entity.ownerHandle
+            if (sameOwner && preferences[LOREM_RATING] == entity.initialLoremRating) {
+                preferences[LOREM_RATING] = ratingAfter
+            }
+        }
     }
 
     private fun readProfile(preferences: Preferences): LocalProfile? {

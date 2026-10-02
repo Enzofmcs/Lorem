@@ -7,6 +7,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import dev.lorem.app.domain.model.IpsumStatus
 import dev.lorem.app.domain.repository.IpsumUpdate
+import dev.lorem.app.domain.calculateLoremRating
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -32,18 +33,25 @@ interface IpsumDao {
     @Query("SELECT * FROM ipsum_submissions WHERE ipsumId = :ipsumId ORDER BY createdAtEpochMillis, submissionId")
     suspend fun submissions(ipsumId: Long): List<IpsumSubmissionEntity>
 
-    @Query("UPDATE ipsums SET status = 'COMPLETED', activeSlot = NULL, endedAtEpochMillis = :endedAt, errorCount = :errorCount WHERE id = :ipsumId AND status = 'ACTIVE'")
-    suspend fun completeOnce(ipsumId: Long, endedAt: Long, errorCount: Int): Int
+    @Query("UPDATE ipsums SET status = 'COMPLETED', activeSlot = NULL, endedAtEpochMillis = :endedAt, errorCount = :errorCount, ratingDelta = :ratingDelta, finalLoremRating = :ratingAfter, expectedTimeMillis = :expectedTimeMillis WHERE id = :ipsumId AND status = 'ACTIVE' AND ratingDelta IS NULL")
+    suspend fun completeOnce(ipsumId: Long, endedAt: Long, errorCount: Int, ratingDelta: Int, ratingAfter: Int, expectedTimeMillis: Long): Int
 
-    @Query("UPDATE ipsums SET status = 'PENDING', activeSlot = NULL, endedAtEpochMillis = :endedAt, failureReason = :reason, errorCount = :errorCount WHERE id = :ipsumId AND status = 'ACTIVE'")
-    suspend fun endWithoutAcOnce(ipsumId: Long, reason: String, endedAt: Long, errorCount: Int): Int
+    @Query("UPDATE ipsums SET status = 'PENDING', activeSlot = NULL, endedAtEpochMillis = :endedAt, failureReason = :reason, errorCount = :errorCount, ratingDelta = :ratingDelta, finalLoremRating = :ratingAfter, expectedTimeMillis = :expectedTimeMillis WHERE id = :ipsumId AND status = 'ACTIVE' AND ratingDelta IS NULL")
+    suspend fun endWithoutAcOnce(ipsumId: Long, reason: String, endedAt: Long, errorCount: Int, ratingDelta: Int, ratingAfter: Int, expectedTimeMillis: Long): Int
 
     @Transaction
     suspend fun endWithoutAc(ipsumId: Long, reason: String, endedAt: Long): Boolean {
         val current = find(ipsumId) ?: return false
         if (current.status != IpsumStatus.ACTIVE.name) return false
         val errors = submissions(ipsumId).count { it.verdict != "OK" }
-        return endWithoutAcOnce(ipsumId, reason, endedAt, errors) == 1
+        val rating = calculateLoremRating(
+            current.initialLoremRating, current.selectedRating, false,
+            (endedAt - current.startedAtEpochMillis).coerceAtLeast(0),
+            current.hintRevealedAtEpochMillis != null,
+        )
+        return endWithoutAcOnce(
+            ipsumId, reason, endedAt, errors, rating.delta, rating.ratingAfter, rating.expectedTimeMillis,
+        ) == 1
     }
 
     @Transaction
@@ -60,11 +68,21 @@ interface IpsumDao {
                 it.createdAtEpochMillis < firstAccepted.createdAtEpochMillis ||
                 it.createdAtEpochMillis == firstAccepted.createdAtEpochMillis && it.submissionId < firstAccepted.submissionId)
         }
-        val completed = firstAccepted != null && completeOnce(
-            ipsumId,
-            firstAccepted.createdAtEpochMillis,
-            errors,
+        val rating = firstAccepted?.let {
+            calculateLoremRating(
+                current.initialLoremRating, current.selectedRating, true,
+                (it.createdAtEpochMillis - current.startedAtEpochMillis).coerceAtLeast(0),
+                current.hintRevealedAtEpochMillis != null,
+            )
+        }
+        val completed = firstAccepted != null && rating != null && completeOnce(
+            ipsumId, firstAccepted.createdAtEpochMillis, errors,
+            rating.delta, rating.ratingAfter, rating.expectedTimeMillis,
         ) == 1
-        return IpsumUpdate(inserted, errors, completed)
+        return IpsumUpdate(
+            inserted, errors, completed,
+            ratingBefore = rating?.ratingBefore?.takeIf { completed },
+            ratingAfter = rating?.ratingAfter?.takeIf { completed },
+        )
     }
 }

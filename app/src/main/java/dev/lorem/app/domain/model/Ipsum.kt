@@ -36,6 +36,9 @@ data class Ipsum(
     val endedAtEpochMillis: Long? = null,
     val errorCount: Int = 0,
     val failureReason: IpsumFailureReason? = null,
+    val ratingDelta: Int? = null,
+    val finalLoremRating: Int? = null,
+    val expectedTimeMillis: Long? = null,
     val status: IpsumStatus,
 )
 
