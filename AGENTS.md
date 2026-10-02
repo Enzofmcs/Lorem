@@ -44,13 +44,13 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
-- **Foco:** Historia 09 - validar manualmente Historico e pendencias.
-- **Ultima historia verificada:** Historia 09 - Historico e pendencias (evidencia automatizada).
-- **Primeiro item pendente:** conferir em dispositivo a legibilidade, os filtros e a abertura no Codeforces.
-- **Proxima entrega demonstravel:** revisar em dispositivo as tres situacoes, os filtros e a abertura no Codeforces.
-- **Bloqueios conhecidos:** nenhum; Historia 08 ainda aguarda validacao manual da explicacao.
+- **Foco:** Historia 10 - Detectar AC posterior.
+- **Ultima historia verificada:** Historia 09 - Historico e pendencias.
+- **Primeiro item pendente:** detectar e persistir AC posterior sem confundir submissoes anteriores ao Ipsum.
+- **Proxima entrega demonstravel:** mover uma pendencia para `Resolvidos fora de Ipsums` sem recalcular o rating original.
+- **Bloqueios conhecidos:** nenhum.
 
-Progresso e aceite: [`docs/ROADMAP.md#historia-09---historico-e-pendencias`](docs/ROADMAP.md#historia-09---historico-e-pendencias).
+Progresso e aceite: [`docs/ROADMAP.md#historia-10---detectar-ac-posterior`](docs/ROADMAP.md#historia-10---detectar-ac-posterior).
 
 ## Politica de contexto
 

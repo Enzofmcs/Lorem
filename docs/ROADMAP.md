@@ -283,7 +283,7 @@ checklists; veja [`DECISIONS.md`](DECISIONS.md).
 - [x] No mesmo problema, ultrapassar muito o tempo esperado nao pode valer mais.
 - [x] Nao resolver nao aumenta o rating.
 - [x] O rating nunca e atualizado duas vezes pelo mesmo Ipsum.
-- [ ] O usuario consegue entender a explicacao sem conhecer a formula.
+- [x] O usuario consegue entender a explicacao sem conhecer a formula.
 
 ---
 
@@ -321,9 +321,11 @@ checklists; veja [`DECISIONS.md`](DECISIONS.md).
   limpeza de filtros e abertura do link.
 - Os testes direcionados passaram com Java 17 e Android SDK 35, comprovando os
   criterios funcionais e permitindo marcar os checklists acima.
-- **PENDENTE DE TESTE MANUAL:** conferir em dispositivo a legibilidade da lista, a
-  combinacao dos filtros, a troca entre as tres situacoes e a abertura no Codeforces.
-- A validacao manual de compreensao da Historia 08 continua pendente e nao foi marcada.
+- **CONFIRMADO PELO USUARIO EM DISPOSITIVO:** legibilidade da lista, combinacao dos
+  filtros, troca entre as tres situacoes, limpeza e abertura no Codeforces funcionam
+  como esperado.
+- A explicacao do Rating Lorem da Historia 08 tambem foi confirmada como compreensivel
+  pelo usuario e seu ultimo criterio foi marcado.
 
 ---
 
