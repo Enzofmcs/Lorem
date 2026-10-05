@@ -335,20 +335,31 @@ checklists; veja [`DECISIONS.md`](DECISIONS.md).
 
 #### Checklist
 
-- [ ] Criar a acao `Atualizar pendencias`.
-- [ ] Consultar novas submissoes sem baixar desnecessariamente todo o historico.
-- [ ] Comparar apenas com os problemas pendentes.
-- [ ] Mover o problema para `Resolvidos fora de Ipsums` ao encontrar AC posterior.
-- [ ] Registrar a data do AC posterior.
-- [ ] Nao alterar o rating original.
-- [ ] Tornar a operacao idempotente.
-- [ ] Exibir resultado da sincronizacao.
+- [x] Criar a acao `Atualizar pendencias`.
+- [x] Consultar novas submissoes sem baixar desnecessariamente todo o historico.
+- [x] Comparar apenas com os problemas pendentes.
+- [x] Mover o problema para `Resolvidos fora de Ipsums` ao encontrar AC posterior.
+- [x] Registrar a data do AC posterior.
+- [x] Nao alterar o rating original.
+- [x] Tornar a operacao idempotente.
+- [x] Exibir resultado da sincronizacao.
 
 #### Exemplos de aceite
 
-- [ ] Um pendente com AC novo muda de lista uma unica vez.
-- [ ] Um novo WA permanece pendente.
-- [ ] Atualizar repetidamente nao altera rating nem duplica registros.
+- [x] Um pendente com AC novo muda de lista uma unica vez.
+- [x] Um novo WA permanece pendente.
+- [x] Atualizar repetidamente nao altera rating nem duplica registros.
+
+#### Implementacao e verificacao em 2026-10-02
+
+- A consulta limitada para no encerramento mais antigo das pendencias e valida cada
+  submissao por `contestId + index`, veredito e instante estritamente posterior.
+- A migracao 8-9 persiste o estado `SOLVED_OUTSIDE` e o primeiro AC posterior; a
+  transicao condicional preserva integralmente o resultado e o Rating Lorem.
+- Testes direcionados cobrem regras temporais, identidade, falhas remotas, paginacao,
+  persistencia, idempotencia, migracao e estados da tela.
+- PENDENTE DE TESTE MANUAL: validar a jornada real com um AC posterior no Codeforces,
+  inclusive a data exibida, rating preservado e repeticao sem alteracoes.
 
 ---
 

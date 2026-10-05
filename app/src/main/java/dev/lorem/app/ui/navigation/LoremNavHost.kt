@@ -19,6 +19,7 @@ import dev.lorem.app.domain.model.Ipsum
 import dev.lorem.app.ui.StartIpsumUiState
 import dev.lorem.app.ui.SubmissionCheckUiState
 import dev.lorem.app.ui.IpsumResultUiState
+import dev.lorem.app.ui.PendingUpdateUiState
 import dev.lorem.app.domain.model.IpsumFailureReason
 import dev.lorem.app.ui.screens.IpsumResultScreen
 import dev.lorem.app.ui.screens.HistoryScreen
@@ -50,6 +51,8 @@ fun LoremNavHost(
     onEndIpsum: (IpsumFailureReason?) -> Unit,
     ipsumResultState: IpsumResultUiState,
     onOpenIpsumResult: (Long) -> Unit,
+    pendingUpdateState: PendingUpdateUiState,
+    onUpdatePendingIpsums: () -> Unit,
     navController: NavHostController = rememberNavController(),
 ) {
     val profile = initialProfile ?: configurationState.savedProfile
@@ -125,7 +128,11 @@ fun LoremNavHost(
             )
         }
         composable(LoremDestination.History.route) {
-            HistoryScreen(ipsums = ipsums)
+            HistoryScreen(
+                ipsums = ipsums,
+                updateState = pendingUpdateState,
+                onUpdatePending = onUpdatePendingIpsums,
+            )
         }
         composable(
             route = "${LoremDestination.Result.route}/{ipsumId}",

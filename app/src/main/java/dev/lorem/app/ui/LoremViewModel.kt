@@ -19,6 +19,8 @@ import dev.lorem.app.domain.StartIpsum
 import dev.lorem.app.domain.StartIpsumResult
 import dev.lorem.app.domain.VerifyIpsumResult
 import dev.lorem.app.domain.VerifyIpsumSubmissions
+import dev.lorem.app.domain.UpdatePendingIpsums
+import dev.lorem.app.domain.UpdatePendingIpsumsResult
 import dev.lorem.app.domain.model.Ipsum
 import dev.lorem.app.domain.model.IpsumFailureReason
 import dev.lorem.app.domain.model.IpsumResult
@@ -80,6 +82,13 @@ sealed interface IpsumResultUiState {
     data class Error(val message: String) : IpsumResultUiState
 }
 
+sealed interface PendingUpdateUiState {
+    data object Idle : PendingUpdateUiState
+    data object Loading : PendingUpdateUiState
+    data class Success(val movedCount: Int) : PendingUpdateUiState
+    data class Error(val message: String) : PendingUpdateUiState
+}
+
 class LoremViewModel(
     private val repository: LoremRepository,
     private val codeforcesRepository: CodeforcesRepository,
@@ -94,6 +103,7 @@ class LoremViewModel(
     private val synchronizeProblemCatalog = SynchronizeProblemCatalog(repository, codeforcesRepository, nowMillis)
     private val startIpsum = StartIpsum(repository, RecommendIpsum(randomSource), nowMillis)
     private val verifyIpsumSubmissions = VerifyIpsumSubmissions(repository, codeforcesRepository)
+    private val updatePendingIpsumsUseCase = UpdatePendingIpsums(repository, codeforcesRepository)
     val uiState: StateFlow<LoremUiState> = repository.profile
         .map<LocalProfile?, LoremUiState>(LoremUiState::Ready)
         .stateIn(
@@ -131,6 +141,8 @@ class LoremViewModel(
     val submissionCheckState: StateFlow<SubmissionCheckUiState> = mutableSubmissionCheckState.asStateFlow()
     private val mutableIpsumResultState = MutableStateFlow<IpsumResultUiState>(IpsumResultUiState.Idle)
     val ipsumResultState: StateFlow<IpsumResultUiState> = mutableIpsumResultState.asStateFlow()
+    private val mutablePendingUpdateState = MutableStateFlow<PendingUpdateUiState>(PendingUpdateUiState.Idle)
+    val pendingUpdateState: StateFlow<PendingUpdateUiState> = mutablePendingUpdateState.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -359,6 +371,23 @@ class LoremViewModel(
                     },
                     onFailure = { IpsumResultUiState.Error("Não foi possível abrir o resultado salvo.") },
                 )
+        }
+    }
+
+    fun updatePendingIpsums() {
+        if (mutablePendingUpdateState.value == PendingUpdateUiState.Loading) return
+        mutablePendingUpdateState.value = PendingUpdateUiState.Loading
+        viewModelScope.launch {
+            mutablePendingUpdateState.value = when (val result = updatePendingIpsumsUseCase()) {
+                is UpdatePendingIpsumsResult.Success -> PendingUpdateUiState.Success(result.movedCount)
+                UpdatePendingIpsumsResult.NoActiveProfile -> PendingUpdateUiState.Error("Nenhum perfil ativo para atualizar.")
+                is UpdatePendingIpsumsResult.Failed -> PendingUpdateUiState.Error("Codeforces recusou a consulta: ${result.message}")
+                UpdatePendingIpsumsResult.RateLimited -> PendingUpdateUiState.Error("Limite do Codeforces atingido. Aguarde e tente novamente.")
+                UpdatePendingIpsumsResult.NetworkFailure -> PendingUpdateUiState.Error("Sem conexão com o Codeforces. Tente novamente.")
+                is UpdatePendingIpsumsResult.HttpFailure -> PendingUpdateUiState.Error("Falha HTTP ${result.statusCode}. Tente novamente.")
+                UpdatePendingIpsumsResult.InvalidResponse -> PendingUpdateUiState.Error("O Codeforces enviou uma resposta inválida. Tente novamente.")
+                UpdatePendingIpsumsResult.PersistenceFailure -> PendingUpdateUiState.Error("Não foi possível salvar a atualização. Tente novamente.")
+            }
         }
     }
 

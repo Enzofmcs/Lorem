@@ -33,6 +33,7 @@ fun LoremApp(
     val submissionCheckState by viewModel.submissionCheckState.collectAsStateWithLifecycle()
     val ipsums by viewModel.ipsums.collectAsStateWithLifecycle()
     val ipsumResultState by viewModel.ipsumResultState.collectAsStateWithLifecycle()
+    val pendingUpdateState by viewModel.pendingUpdateState.collectAsStateWithLifecycle()
     when (val state = uiState) {
         LoremUiState.Loading -> Box(
             modifier = Modifier.fillMaxSize(),
@@ -63,6 +64,8 @@ fun LoremApp(
             onEndIpsum = viewModel::endActiveIpsum,
             ipsumResultState = ipsumResultState,
             onOpenIpsumResult = viewModel::openIpsumResult,
+            pendingUpdateState = pendingUpdateState,
+            onUpdatePendingIpsums = viewModel::updatePendingIpsums,
         )
     }
 }

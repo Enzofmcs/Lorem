@@ -39,6 +39,13 @@ interface IpsumDao {
     @Query("UPDATE ipsums SET status = 'PENDING', activeSlot = NULL, endedAtEpochMillis = :endedAt, failureReason = :reason, errorCount = :errorCount, ratingDelta = :ratingDelta, finalLoremRating = :ratingAfter, expectedTimeMillis = :expectedTimeMillis WHERE id = :ipsumId AND status = 'ACTIVE' AND ratingDelta IS NULL")
     suspend fun endWithoutAcOnce(ipsumId: Long, reason: String, endedAt: Long, errorCount: Int, ratingDelta: Int, ratingAfter: Int, expectedTimeMillis: Long): Int
 
+    @Query("UPDATE ipsums SET status = 'SOLVED_OUTSIDE', solvedOutsideAtEpochMillis = :acceptedAt WHERE id = :ipsumId AND status = 'PENDING' AND solvedOutsideAtEpochMillis IS NULL")
+    suspend fun markSolvedOutsideOnce(ipsumId: Long, acceptedAt: Long): Int
+
+    @Transaction
+    suspend fun markSolvedOutside(values: Map<Long, Long>): Int =
+        values.entries.sumOf { (id, acceptedAt) -> markSolvedOutsideOnce(id, acceptedAt) }
+
     @Transaction
     suspend fun endWithoutAc(ipsumId: Long, reason: String, endedAt: Long): Boolean {
         val current = find(ipsumId) ?: return false

@@ -40,6 +40,9 @@ interface LoremRepository {
     suspend fun endIpsumWithoutAc(ipsumId: Long, reason: IpsumFailureReason, endedAtEpochMillis: Long): Boolean = false
 
     suspend fun getIpsumResult(ipsumId: Long): IpsumResult? = null
+
+    /** Conditionally moves still-pending Ipsums and returns the number actually changed. */
+    suspend fun markIpsumsSolvedOutside(firstAcceptedAtByIpsumId: Map<Long, Long>): Int = 0
 }
 
 data class IpsumUpdate(

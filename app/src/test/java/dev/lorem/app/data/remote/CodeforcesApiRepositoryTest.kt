@@ -130,6 +130,20 @@ class CodeforcesApiRepositoryTest {
     }
 
     @Test
+    fun `bounded history stops on temporal boundary and excludes older submissions`() = runTest {
+        val client = RecordingHttpClient(
+            HttpResponse(200, ok(submission(1, 10, "A", creationTimeSeconds = 30), submission(2, 10, "A", creationTimeSeconds = 20))),
+            HttpResponse(200, ok(submission(3, 10, "A", creationTimeSeconds = 10), submission(4, 10, "A", creationTimeSeconds = 5))),
+        )
+
+        val result = historyRepository(client, pageSize = 2)
+            .submissionHistorySince("tourist", 10_000) as SubmissionHistoryResult.Success
+
+        assertEquals(listOf(1L, 2L), result.submissions.map { it.id })
+        assertEquals(2, client.urls.size)
+    }
+
+    @Test
     fun `full last page requests and accepts an empty terminating page`() = runTest {
         val client = RecordingHttpClient(
             HttpResponse(200, ok(submission(1, 10, "A"), submission(2, 20, "B"))),

@@ -164,6 +164,32 @@ class IpsumPersistenceTest {
         database.close()
     }
 
+    @Test
+    fun `upsolve transition is persistent idempotent and preserves original result`() = runTest {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val database = Room.inMemoryDatabaseBuilder(context, LoremDatabase::class.java).build()
+        val repository = repository(
+            database,
+            File(context.cacheDir, "upsolve-${System.nanoTime()}.preferences_pb"),
+            backgroundScope,
+        )
+        repository.saveProfile(profile())
+        val saved = repository.createActiveIpsum(ipsum().copy(hintRevealedAtEpochMillis = 1_500))
+        repository.recordIpsumSubmissions(saved.id, listOf(IpsumSubmission(30, saved.id, "WRONG_ANSWER", 2_000)))
+        repository.endIpsumWithoutAc(saved.id, IpsumFailureReason.LOGIC_NOT_FOUND, 5_000)
+        val original = repository.getIpsumResult(saved.id)!!.ipsum
+
+        assertEquals(1, repository.markIpsumsSolvedOutside(mapOf(saved.id to 8_000)))
+        assertEquals(0, repository.markIpsumsSolvedOutside(mapOf(saved.id to 9_000)))
+        val updated = repository.getIpsumResult(saved.id)!!.ipsum
+
+        assertEquals(IpsumStatus.SOLVED_OUTSIDE, updated.status)
+        assertEquals(8_000L, updated.solvedOutsideAtEpochMillis)
+        assertEquals(original.copy(status = IpsumStatus.SOLVED_OUTSIDE, solvedOutsideAtEpochMillis = 8_000), updated)
+        assertEquals(original.finalLoremRating, repository.profile.first()?.loremRating)
+        database.close()
+    }
+
     private fun repository(database: LoremDatabase, file: File, scope: CoroutineScope) = LocalLoremRepository(
         dataStore = PreferenceDataStoreFactory.create(scope = scope, produceFile = { file }),
         problemHistoryDao = database.problemHistoryDao(),

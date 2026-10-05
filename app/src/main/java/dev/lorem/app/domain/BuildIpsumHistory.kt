@@ -2,7 +2,6 @@ package dev.lorem.app.domain
 
 import dev.lorem.app.domain.model.Ipsum
 import dev.lorem.app.domain.model.IpsumStatus
-import dev.lorem.app.domain.model.ProblemId
 
 enum class IpsumHistorySituation(val label: String) {
     SOLVED_IN_IPSUM("Resolvidos em Ipsums"),
@@ -23,22 +22,18 @@ data class IpsumHistoryItem(
 /**
  * Builds the current, mutually exclusive view of finished Ipsums.
  *
- * [solvedOutsideIpsum] must contain only persisted evidence produced by the later
- * upsolve synchronization. Until that evidence exists, callers pass an empty set.
+ * The upsolve situation is derived only from evidence persisted on the Ipsum.
  */
-fun buildIpsumHistory(
-    ipsums: List<Ipsum>,
-    solvedOutsideIpsum: Set<ProblemId> = emptySet(),
-): List<IpsumHistoryItem> = ipsums
+fun buildIpsumHistory(ipsums: List<Ipsum>): List<IpsumHistoryItem> = ipsums
     .asSequence()
     .filter { it.status != IpsumStatus.ACTIVE }
     .groupBy { it.problem.id }
-    .mapNotNull { (problemId, attempts) ->
+    .mapNotNull { (_, attempts) ->
         val latest = attempts.maxWithOrNull(
             compareBy<Ipsum> { it.endedAtEpochMillis ?: Long.MIN_VALUE }.thenBy { it.id },
         ) ?: return@mapNotNull null
         val situation = when {
-            latest.status == IpsumStatus.PENDING && problemId in solvedOutsideIpsum ->
+            latest.status == IpsumStatus.SOLVED_OUTSIDE && latest.solvedOutsideAtEpochMillis != null ->
                 IpsumHistorySituation.SOLVED_OUTSIDE_IPSUM
             latest.status == IpsumStatus.COMPLETED -> IpsumHistorySituation.SOLVED_IN_IPSUM
             latest.status == IpsumStatus.PENDING -> IpsumHistorySituation.PENDING

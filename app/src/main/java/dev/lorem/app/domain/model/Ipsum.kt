@@ -10,6 +10,7 @@ enum class IpsumStatus {
     ACTIVE,
     COMPLETED,
     PENDING,
+    SOLVED_OUTSIDE,
 }
 
 enum class IpsumFailureReason(val label: String) {
@@ -39,6 +40,7 @@ data class Ipsum(
     val ratingDelta: Int? = null,
     val finalLoremRating: Int? = null,
     val expectedTimeMillis: Long? = null,
+    val solvedOutsideAtEpochMillis: Long? = null,
     val status: IpsumStatus,
 )
 
