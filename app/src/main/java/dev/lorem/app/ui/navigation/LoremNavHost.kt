@@ -23,6 +23,8 @@ import dev.lorem.app.ui.PendingUpdateUiState
 import dev.lorem.app.domain.model.IpsumFailureReason
 import dev.lorem.app.ui.screens.IpsumResultScreen
 import dev.lorem.app.ui.screens.HistoryScreen
+import dev.lorem.app.ui.StatisticsUiState
+import dev.lorem.app.ui.screens.StatisticsScreen
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 
@@ -53,6 +55,7 @@ fun LoremNavHost(
     onOpenIpsumResult: (Long) -> Unit,
     pendingUpdateState: PendingUpdateUiState,
     onUpdatePendingIpsums: () -> Unit,
+    statisticsState: StatisticsUiState = StatisticsUiState.Loading,
     navController: NavHostController = rememberNavController(),
 ) {
     val profile = initialProfile ?: configurationState.savedProfile
@@ -134,6 +137,20 @@ fun LoremNavHost(
                 onUpdatePending = onUpdatePendingIpsums,
             )
         }
+        composable(LoremDestination.Statistics.route) {
+            // A cached StateFlow snapshot must not show the previous account on a profile switch.
+            val visibleState = if (statisticsState is StatisticsUiState.Ready &&
+                !statisticsState.statistics.ownerHandle.trim().equals(profile?.handle?.trim(), ignoreCase = true)
+            ) StatisticsUiState.Loading else statisticsState
+            StatisticsScreen(
+                state = visibleState,
+                onNavigateHome = {
+                    if (!navController.popBackStack(LoremDestination.Home.route, false)) {
+                        navController.navigate(LoremDestination.Home.route) { launchSingleTop = true }
+                    }
+                },
+            )
+        }
         composable(
             route = "${LoremDestination.Result.route}/{ipsumId}",
             arguments = listOf(navArgument("ipsumId") { type = NavType.LongType }),
@@ -155,7 +172,7 @@ fun LoremNavHost(
         LoremDestination.all.filterNot {
             it == LoremDestination.Configuration || it == LoremDestination.Home ||
                 it == LoremDestination.Ipsum || it == LoremDestination.Result ||
-                it == LoremDestination.History
+                it == LoremDestination.History || it == LoremDestination.Statistics
         }.forEach { destination ->
             composable(destination.route) {
                 PlaceholderScreen(

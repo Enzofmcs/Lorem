@@ -21,6 +21,8 @@ import dev.lorem.app.domain.VerifyIpsumResult
 import dev.lorem.app.domain.VerifyIpsumSubmissions
 import dev.lorem.app.domain.UpdatePendingIpsums
 import dev.lorem.app.domain.UpdatePendingIpsumsResult
+import dev.lorem.app.domain.IpsumStatistics
+import dev.lorem.app.domain.buildIpsumStatistics
 import dev.lorem.app.domain.model.Ipsum
 import dev.lorem.app.domain.model.IpsumFailureReason
 import dev.lorem.app.domain.model.IpsumResult
@@ -32,6 +34,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 sealed interface LoremUiState {
@@ -89,11 +95,18 @@ sealed interface PendingUpdateUiState {
     data class Error(val message: String) : PendingUpdateUiState
 }
 
+sealed interface StatisticsUiState {
+    data object Loading : StatisticsUiState
+    data object NoProfile : StatisticsUiState
+    data class Ready(val statistics: IpsumStatistics) : StatisticsUiState
+}
+
 class LoremViewModel(
     private val repository: LoremRepository,
     private val codeforcesRepository: CodeforcesRepository,
     private val nowMillis: () -> Long = System::currentTimeMillis,
     randomSource: RandomSource = RandomSource { Random.Default.nextInt(it) },
+    statisticsDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : ViewModel() {
     private val synchronizeProblemHistory = SynchronizeProblemHistory(
         loremRepository = repository,
@@ -126,6 +139,13 @@ class LoremViewModel(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
     val ipsums: StateFlow<List<Ipsum>> = repository.ipsums
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    val statisticsState: StateFlow<StatisticsUiState> = combine(
+        repository.profile, repository.ipsums, repository.problemCatalog,
+    ) { profile, attempts, catalog ->
+        if (profile == null) StatisticsUiState.NoProfile
+        else StatisticsUiState.Ready(buildIpsumStatistics(profile, attempts, catalog))
+    }.flowOn(statisticsDispatcher)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), StatisticsUiState.Loading)
 
     private val mutableConfigurationState = MutableStateFlow(ConfigurationUiState())
     val configurationState: StateFlow<ConfigurationUiState> =

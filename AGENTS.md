@@ -44,13 +44,16 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
-- **Foco:** Historia 10 - validacao manual do AC posterior.
-- **Ultima historia verificada:** Historia 09 - Historico e pendencias; Historia 10 verificada automaticamente.
-- **Primeiro item pendente:** smoke test em dispositivo da atualizacao de pendencias com dados reais do Codeforces.
-- **Proxima entrega demonstravel:** confirmar a jornada real e entao iniciar a Historia 11.
-- **Bloqueios conhecidos:** nenhum.
+- **Foco:** Historia 11 - Estatisticas confiaveis; implementacao e regressao completas; conferencia manual pendente.
+- **Ultima historia verificada:** Historia 09; Historias 10 e 11 com verificacoes automatizadas, sem confirmacao manual final.
+- **Primeiro item pendente:** smoke test em dispositivo do AC posterior (Historia 10) e conferencia visual das estatisticas (Historia 11).
+- **Proxima entrega demonstravel:** conferir os indicadores contra o historico real e validar as jornadas manuais das Historias 10 e 11.
+- **Bloqueios conhecidos:** nenhum para a implementacao; testes manuais ainda nao confirmados.
 
-Progresso e aceite: [`docs/ROADMAP.md#historia-10---detectar-ac-posterior`](docs/ROADMAP.md#historia-10---detectar-ac-posterior).
+A implementacao da Historia 11 foi autorizada pelo usuario sem esperar a confirmacao
+manual da Historia 10. Isso nao encerra nem comprova essa pendencia anterior.
+
+Progresso e aceite: [`docs/ROADMAP.md#historia-11---estatisticas-confiaveis`](docs/ROADMAP.md#historia-11---estatisticas-confiaveis).
 
 ## Politica de contexto
 
