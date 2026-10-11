@@ -64,7 +64,18 @@ class CodeforcesApiRepository(
         UserLookupResult.NetworkFailure
     }
 
-    override suspend fun submissionHistory(handle: String): SubmissionHistoryResult {
+    override suspend fun submissionHistory(handle: String): SubmissionHistoryResult =
+        submissionHistory(handle, null)
+
+    override suspend fun submissionHistorySince(
+        handle: String,
+        sinceEpochMillis: Long,
+    ): SubmissionHistoryResult = submissionHistory(handle, sinceEpochMillis)
+
+    private suspend fun submissionHistory(
+        handle: String,
+        sinceEpochMillis: Long?,
+    ): SubmissionHistoryResult {
         val submissions = mutableListOf<CodeforcesSubmission>()
         val encodedHandle = URLEncoder.encode(handle.trim(), Charsets.UTF_8.name())
         var from = FIRST_SUBMISSION_INDEX
@@ -90,8 +101,13 @@ class CodeforcesApiRepository(
                         return SubmissionHistoryResult.InvalidResponse
                     }
                     is SubmissionPageResult.Success -> {
-                        submissions += page.submissions
-                        if (page.receivedCount < submissionPageSize) {
+                        submissions += page.submissions.filter {
+                            sinceEpochMillis == null || it.createdAt.toEpochMilli() > sinceEpochMillis
+                        }
+                        val reachedBoundary = sinceEpochMillis != null && page.submissions.any {
+                            it.createdAt.toEpochMilli() <= sinceEpochMillis
+                        }
+                        if (reachedBoundary || page.receivedCount < submissionPageSize) {
                             return SubmissionHistoryResult.Success(submissions)
                         }
                     }

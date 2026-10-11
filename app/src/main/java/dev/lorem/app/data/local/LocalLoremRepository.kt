@@ -149,6 +149,9 @@ class LocalLoremRepository(
         return IpsumResult(ipsum, errors)
     }
 
+    override suspend fun markIpsumsSolvedOutside(firstAcceptedAtByIpsumId: Map<Long, Long>): Int =
+        ipsumDao.markSolvedOutside(firstAcceptedAtByIpsumId)
+
     /** Idempotently finishes a DataStore update if a process stopped after the Room transaction. */
     private suspend fun reconcileProfileRating(entity: IpsumEntity?) {
         val ratingAfter = entity?.finalLoremRating ?: return

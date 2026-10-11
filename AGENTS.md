@@ -44,10 +44,10 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
-- **Foco:** Historia 10 - Detectar AC posterior.
-- **Ultima historia verificada:** Historia 09 - Historico e pendencias.
-- **Primeiro item pendente:** detectar e persistir AC posterior sem confundir submissoes anteriores ao Ipsum.
-- **Proxima entrega demonstravel:** mover uma pendencia para `Resolvidos fora de Ipsums` sem recalcular o rating original.
+- **Foco:** Historia 10 - validacao manual do AC posterior.
+- **Ultima historia verificada:** Historia 09 - Historico e pendencias; Historia 10 verificada automaticamente.
+- **Primeiro item pendente:** smoke test em dispositivo da atualizacao de pendencias com dados reais do Codeforces.
+- **Proxima entrega demonstravel:** confirmar a jornada real e entao iniciar a Historia 11.
 - **Bloqueios conhecidos:** nenhum.
 
 Progresso e aceite: [`docs/ROADMAP.md#historia-10---detectar-ac-posterior`](docs/ROADMAP.md#historia-10---detectar-ac-posterior).

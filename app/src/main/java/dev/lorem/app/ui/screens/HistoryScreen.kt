@@ -14,6 +14,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,6 +32,7 @@ import dev.lorem.app.domain.filterIpsumHistory
 import dev.lorem.app.domain.model.Ipsum
 import dev.lorem.app.domain.model.problemUrl
 import dev.lorem.app.domain.model.totalTimeMillis
+import dev.lorem.app.ui.PendingUpdateUiState
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -39,6 +41,8 @@ import java.time.format.DateTimeFormatter
 fun HistoryScreen(
     ipsums: List<Ipsum>,
     onOpenProblem: ((String) -> Unit)? = null,
+    updateState: PendingUpdateUiState = PendingUpdateUiState.Idle,
+    onUpdatePending: () -> Unit = {},
 ) {
     val uriHandler = LocalUriHandler.current
     val openProblem = onOpenProblem ?: uriHandler::openUri
@@ -56,6 +60,26 @@ fun HistoryScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text("Histórico e pendências", style = MaterialTheme.typography.headlineMedium)
+        Button(
+            modifier = Modifier.testTag("update-pending"),
+            enabled = updateState != PendingUpdateUiState.Loading,
+            onClick = onUpdatePending,
+        ) {
+            if (updateState == PendingUpdateUiState.Loading) CircularProgressIndicator()
+            else Text("Atualizar pendências")
+        }
+        when (updateState) {
+            is PendingUpdateUiState.Success -> Text(
+                if (updateState.movedCount == 0) "Nenhuma pendência foi alterada."
+                else "${updateState.movedCount} pendência(s) movida(s).",
+                modifier = Modifier.testTag("update-pending-result"),
+            )
+            is PendingUpdateUiState.Error -> Text(
+                updateState.message,
+                modifier = Modifier.testTag("update-pending-error"),
+            )
+            PendingUpdateUiState.Idle, PendingUpdateUiState.Loading -> Unit
+        }
         Text("Situação atual", style = MaterialTheme.typography.titleMedium)
         Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), Arrangement.spacedBy(8.dp)) {
             IpsumHistorySituation.entries.forEach { option ->
@@ -119,6 +143,9 @@ private fun HistoryItem(item: IpsumHistoryItem, onOpenProblem: (String) -> Unit)
             Text("Erros: ${ipsum.errorCount}")
             Text("Data do Ipsum: ${formatHistoryDate(ipsum.startedAtEpochMillis)}")
             Text("Resultado atual: ${item.situation.label}")
+            if (item.situation == IpsumHistorySituation.SOLVED_OUTSIDE_IPSUM) {
+                Text("AC posterior: ${formatHistoryDate(requireNotNull(ipsum.solvedOutsideAtEpochMillis))}")
+            }
             Text("Variação do Rating Lorem: ${ipsum.ratingDelta?.let(::formatDelta) ?: "indisponível"}")
             Button(onClick = { onOpenProblem(ipsum.problemUrl()) }) { Text("Abrir no Codeforces") }
         }

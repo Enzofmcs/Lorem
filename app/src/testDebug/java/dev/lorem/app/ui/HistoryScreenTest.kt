@@ -8,6 +8,8 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.runtime.mutableStateOf
 import dev.lorem.app.domain.IpsumHistorySituation
 import dev.lorem.app.domain.model.CodeforcesProblem
 import dev.lorem.app.domain.model.Ipsum
@@ -69,6 +71,39 @@ class HistoryScreenTest {
         composeRule.onNodeWithText("Pending").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Limpar filtros").performScrollTo().performClick()
         composeRule.onNodeWithText("Solved").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun `update action shows loading unchanged changed and recoverable error states`() {
+        var clicks = 0
+        val state = mutableStateOf<PendingUpdateUiState>(PendingUpdateUiState.Loading)
+        composeRule.setContent {
+            LoremTheme {
+                HistoryScreen(emptyList(), updateState = state.value, onUpdatePending = { clicks++ })
+            }
+        }
+        composeRule.onNodeWithTag("update-pending").assertIsNotEnabled()
+
+        composeRule.runOnIdle { state.value = PendingUpdateUiState.Success(0) }
+        composeRule.onNodeWithText("Nenhuma pendência foi alterada.").assertIsDisplayed()
+        composeRule.onNodeWithTag("update-pending").performClick()
+        assertEquals(1, clicks)
+
+        composeRule.runOnIdle { state.value = PendingUpdateUiState.Success(2) }
+        composeRule.onNodeWithText("2 pendência(s) movida(s).").assertIsDisplayed()
+        composeRule.runOnIdle { state.value = PendingUpdateUiState.Error("Tente novamente.") }
+        composeRule.onNodeWithText("Tente novamente.").assertIsDisplayed()
+    }
+
+    @Test
+    fun `solved outside item shows persisted first AC date`() {
+        val upsolved = ipsum(3, "C", "Upsolved", IpsumStatus.SOLVED_OUTSIDE)
+            .copy(solvedOutsideAtEpochMillis = 120_000)
+        setContent(listOf(upsolved))
+
+        composeRule.onNodeWithTag("situation-${IpsumHistorySituation.SOLVED_OUTSIDE_IPSUM.name}")
+            .performScrollTo().performClick()
+        composeRule.onNodeWithText("AC posterior:", substring = true).performScrollTo().assertIsDisplayed()
     }
 
     private fun setContent(ipsums: List<Ipsum>, onOpen: (String) -> Unit = {}) {

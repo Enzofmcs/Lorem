@@ -40,5 +40,9 @@ interface CodeforcesRepository {
 
     suspend fun submissionHistory(handle: String): SubmissionHistoryResult
 
+    /** Returns submissions newer than [sinceEpochMillis], stopping pagination at that boundary. */
+    suspend fun submissionHistorySince(handle: String, sinceEpochMillis: Long): SubmissionHistoryResult =
+        submissionHistory(handle)
+
     suspend fun problems(): ProblemCatalogResult
 }

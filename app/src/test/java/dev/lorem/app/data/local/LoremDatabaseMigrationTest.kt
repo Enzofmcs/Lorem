@@ -133,4 +133,30 @@ class LoremDatabaseMigrationTest {
         }
         helper.close()
     }
+
+    @Test
+    fun `migration 8 to 9 preserves pending row and adds nullable upsolve time`() {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        val helper = FrameworkSQLiteOpenHelperFactory().create(
+            SupportSQLiteOpenHelper.Configuration.builder(context)
+                .name("migration-8-9-${System.nanoTime()}.db")
+                .callback(object : SupportSQLiteOpenHelper.Callback(8) {
+                    override fun onCreate(db: androidx.sqlite.db.SupportSQLiteDatabase) = Unit
+                    override fun onUpgrade(db: androidx.sqlite.db.SupportSQLiteDatabase, oldVersion: Int, newVersion: Int) = Unit
+                }).build(),
+        )
+        val sqlite = helper.writableDatabase
+        sqlite.execSQL("CREATE TABLE ipsums (id INTEGER PRIMARY KEY NOT NULL, status TEXT NOT NULL, ratingDelta INTEGER)")
+        sqlite.execSQL("INSERT INTO ipsums VALUES (1, 'PENDING', -12)")
+
+        LoremDatabase.MIGRATION_8_9.migrate(sqlite)
+
+        sqlite.query("SELECT status, ratingDelta, solvedOutsideAtEpochMillis FROM ipsums").use {
+            it.moveToFirst()
+            assertEquals("PENDING", it.getString(0))
+            assertEquals(-12, it.getInt(1))
+            assertEquals(true, it.isNull(2))
+        }
+        helper.close()
+    }
 }

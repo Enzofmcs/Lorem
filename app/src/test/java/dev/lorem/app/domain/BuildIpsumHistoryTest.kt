@@ -15,10 +15,11 @@ class BuildIpsumHistoryTest {
     fun `classifies finished Ipsums once and ignores active attempts`() {
         val solved = ipsum(1, ProblemId(100, "A"), IpsumStatus.COMPLETED)
         val pending = ipsum(2, ProblemId(200, "B"), IpsumStatus.PENDING)
-        val upsolved = ipsum(3, ProblemId(300, "C"), IpsumStatus.PENDING)
+        val upsolved = ipsum(3, ProblemId(300, "C"), IpsumStatus.SOLVED_OUTSIDE)
+            .copy(solvedOutsideAtEpochMillis = 100_000)
         val active = ipsum(4, ProblemId(400, "D"), IpsumStatus.ACTIVE)
 
-        val result = buildIpsumHistory(listOf(solved, pending, upsolved, active), setOf(upsolved.problem.id))
+        val result = buildIpsumHistory(listOf(solved, pending, upsolved, active))
 
         assertEquals(3, result.size)
         assertEquals(IpsumHistorySituation.SOLVED_IN_IPSUM, result.single { it.ipsum.id == 1L }.situation)
@@ -29,16 +30,17 @@ class BuildIpsumHistoryTest {
 
     @Test
     fun `upsolve classification preserves the original Ipsum data`() {
-        val original = ipsum(7, ProblemId(777, "F"), IpsumStatus.PENDING).copy(
+        val original = ipsum(7, ProblemId(777, "F"), IpsumStatus.SOLVED_OUTSIDE).copy(
             hintRevealedAtEpochMillis = 2_000,
             endedAtEpochMillis = 65_000,
             errorCount = 4,
             failureReason = IpsumFailureReason.IMPLEMENTATION_ERROR,
             ratingDelta = -17,
             finalLoremRating = 1183,
+            solvedOutsideAtEpochMillis = 80_000,
         )
 
-        val item = buildIpsumHistory(listOf(original), setOf(original.problem.id)).single()
+        val item = buildIpsumHistory(listOf(original)).single()
 
         assertSame(original, item.ipsum)
         assertEquals(IpsumHistorySituation.SOLVED_OUTSIDE_IPSUM, item.situation)

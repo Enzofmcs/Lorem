@@ -134,5 +134,6 @@ class LocalLoremRepositoryTest {
             ratingAfter: Int,
             expectedTimeMillis: Long,
         ) = 0
+        override suspend fun markSolvedOutsideOnce(ipsumId: Long, acceptedAt: Long) = 0
     }
 }
