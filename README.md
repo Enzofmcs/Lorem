@@ -112,3 +112,14 @@ Validação final: **147 testes debug e 116 release sem falhas**, lint sem erros
 Consulte o [roadmap concluído](docs/ROADMAP.md) e o [roteiro de demonstração](docs/DEMO.md).
 Testes manuais são opcionais e não bloqueiam conclusão ou avanço; nenhuma conferência
 em dispositivo foi alegada nesta sessão.
+
+## Próximas histórias
+
+O planejamento de 13/10/2026 acrescenta **15–17 — Sincronização automática** e
+**18–21 — Redesign**. As Histórias 00–14 e suas evidências permanecem preservadas;
+as novas histórias ainda precisam ser implementadas e verificadas.
+
+A proposta combina WorkManager em segundo plano, consulta frequente durante o
+Ipsum visível e temas claro/escuro em azul profundo e verde. Consulte o
+[roadmap](docs/ROADMAP.md#historia-15---base-segura-para-sincronizacao-automatica),
+[estratégia de sincronização](docs/SYNC.md) e [direção visual](docs/DESIGN.md).

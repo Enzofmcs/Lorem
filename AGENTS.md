@@ -44,16 +44,18 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
-- **Foco:** entrega das Historias 12-14 concluida; fluxo completo pronto para demonstracao.
+- **Foco:** planejamento de automacao e redesign concluido; proxima implementacao: Historia 15 - Base segura para sincronizacao automatica.
 - **Ultima historia verificada:** Historia 14 - Fluxo completo e robustez, automaticamente em 2026-10-13.
-- **Primeiro item pendente:** nenhum item funcional do plano.
-- **Proxima entrega demonstravel:** APK debug e jornada do roteiro `docs/DEMO.md`.
+- **Primeiro item pendente:** coordenar sincronizacao incremental, workers e consultas de tela preservando perfil e rating.
+- **Proxima entrega demonstravel:** sincronizacao automatica (15-17), seguida de redesign (18-21); bloco 00-14 preservado.
 - **Bloqueios conhecidos:** nenhum; teste manual e opcional (D-014).
 
 Regressao final: 147 testes debug e 116 release sem falhas, lint sem erros
 (apenas aviso preexistente de icone) e `assembleDebug` concluido.
 Progresso e aceite: [`docs/ROADMAP.md`](docs/ROADMAP.md).
 Roteiro: [`docs/DEMO.md`](docs/DEMO.md).
+Planejamento: [sincronizacao](docs/SYNC.md), [design](docs/DESIGN.md) e
+[Historia 15](docs/ROADMAP.md#historia-15---base-segura-para-sincronizacao-automatica).
 
 ## Politica de contexto
 

@@ -43,6 +43,7 @@ Competidores de nivel iniciante-intermediario ou intermediario que ja utilizam o
 
 - Um perfil local ligado a um handle publico do Codeforces.
 - Consulta ao catalogo de problemas e ao historico de submissoes.
+- Preparacao e atualizacao automatica dos dados publicos do Codeforces, conforme planejamento D-018 e Historias 15-17; sem sincronizacao de dados pessoais entre dispositivos.
 - Exclusao de qualquer exercicio ja tentado ou resolvido pelo usuario.
 - Recomendacao automatica de um exercicio.
 - Apenas um Ipsum ativo por vez.
@@ -56,6 +57,7 @@ Competidores de nivel iniciante-intermediario ou intermediario que ja utilizam o
 - Estatisticas por rating, tempo, resultado, dica e tags oficiais do Codeforces.
 - Recomendacao que favorece variedade e pontos fracos.
 - Indicacao de consolidacao da faixa de rating.
+- Interface Compose com temas claro/escuro e navegacao organizada, conforme proposta D-019 e Historias 18-21.
 
 ### Fora do escopo
 
