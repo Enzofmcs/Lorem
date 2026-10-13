@@ -9,7 +9,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [ProblemHistoryEntity::class, ProblemCatalogEntity::class, IpsumEntity::class, IpsumSubmissionEntity::class],
-    version = 9,
+    version = 10,
     exportSchema = false,
 )
 abstract class LoremDatabase : RoomDatabase() {
@@ -22,7 +22,7 @@ abstract class LoremDatabase : RoomDatabase() {
             context,
             LoremDatabase::class.java,
             "lorem.db",
-        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9).build()
+        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10).build()
 
         private val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(db: SupportSQLiteDatabase) {
@@ -128,6 +128,12 @@ abstract class LoremDatabase : RoomDatabase() {
         internal val MIGRATION_8_9 = object : Migration(8, 9) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE ipsums ADD COLUMN solvedOutsideAtEpochMillis INTEGER")
+            }
+        }
+
+        internal val MIGRATION_9_10 = object : Migration(9, 10) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE ipsums ADD COLUMN recommendationFactors TEXT")
             }
         }
     }

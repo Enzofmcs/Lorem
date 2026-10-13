@@ -2,6 +2,10 @@ package dev.lorem.app.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -24,6 +28,7 @@ import dev.lorem.app.domain.model.IpsumFailureReason
 import dev.lorem.app.ui.screens.IpsumResultScreen
 import dev.lorem.app.ui.screens.HistoryScreen
 import dev.lorem.app.ui.StatisticsUiState
+import dev.lorem.app.ui.ConsolidationUiState
 import dev.lorem.app.ui.screens.StatisticsScreen
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
@@ -56,13 +61,25 @@ fun LoremNavHost(
     pendingUpdateState: PendingUpdateUiState,
     onUpdatePendingIpsums: () -> Unit,
     statisticsState: StatisticsUiState = StatisticsUiState.Loading,
+    consolidationState: ConsolidationUiState? = null,
     navController: NavHostController = rememberNavController(),
 ) {
     val profile = initialProfile ?: configurationState.savedProfile
+    val ownedIpsums = ipsums.filter { it.ownerHandle.trim().equals(profile?.handle?.trim(), true) }
+    val consolidation = consolidationState?.takeIf { it.ownerHandle.trim().equals(profile?.handle?.trim(), true) }?.progress
     val startDestination = if (initialProfile == null) {
         LoremDestination.Configuration.route
     } else {
         LoremDestination.Home.route
+    }
+    var resumedActive by remember { mutableStateOf(false) }
+    LaunchedEffect(activeIpsum?.id) {
+        if (!resumedActive && activeIpsum != null) {
+            resumedActive = true
+            if (navController.currentDestination?.route == LoremDestination.Home.route) {
+                navController.navigate(LoremDestination.Ipsum.route) { launchSingleTop = true }
+            }
+        }
     }
     LaunchedEffect(configurationState.navigateHome) {
         if (configurationState.navigateHome) {
@@ -109,10 +126,11 @@ fun LoremNavHost(
                     catalogSyncState = catalogSyncState,
                     onSynchronizeCatalog = onSynchronizeCatalog,
                     hasActiveIpsum = activeIpsum != null,
-                    latestFinishedIpsumId = ipsums.lastOrNull { it.endedAtEpochMillis != null }?.id,
+                    latestFinishedIpsumId = ownedIpsums.lastOrNull { it.endedAtEpochMillis != null }?.id,
                     startIpsumState = startIpsumState,
                     onStartIpsum = onStartIpsum,
                     onNavigate = navController::navigate,
+                    consolidation = consolidation,
                 )
             }
         }
@@ -132,9 +150,14 @@ fun LoremNavHost(
         }
         composable(LoremDestination.History.route) {
             HistoryScreen(
-                ipsums = ipsums,
+                ipsums = ownedIpsums,
                 updateState = pendingUpdateState,
                 onUpdatePending = onUpdatePendingIpsums,
+                onNavigateHome = {
+                    if (!navController.popBackStack(LoremDestination.Home.route, false)) {
+                        navController.navigate(LoremDestination.Home.route) { launchSingleTop = true }
+                    }
+                },
             )
         }
         composable(LoremDestination.Statistics.route) {
@@ -144,6 +167,7 @@ fun LoremNavHost(
             ) StatisticsUiState.Loading else statisticsState
             StatisticsScreen(
                 state = visibleState,
+                consolidation = consolidation,
                 onNavigateHome = {
                     if (!navController.popBackStack(LoremDestination.Home.route, false)) {
                         navController.navigate(LoremDestination.Home.route) { launchSingleTop = true }
@@ -156,12 +180,15 @@ fun LoremNavHost(
             arguments = listOf(navArgument("ipsumId") { type = NavType.LongType }),
         ) { entry ->
             val ipsumId = entry.arguments?.getLong("ipsumId") ?: return@composable
-            LaunchedEffect(ipsumId) {
-                val loaded = (ipsumResultState as? IpsumResultUiState.Ready)?.result?.ipsum?.id
+            LaunchedEffect(ipsumId, profile?.handle) {
+                val loaded = (ipsumResultState as? IpsumResultUiState.Ready)?.result?.ipsum
+                    ?.takeIf { it.ownerHandle.trim().equals(profile?.handle?.trim(), true) }?.id
                 if (loaded != ipsumId) onOpenIpsumResult(ipsumId)
             }
             IpsumResultScreen(
-                state = ipsumResultState,
+                state = if (ipsumResultState is IpsumResultUiState.Ready &&
+                    !ipsumResultState.result.ipsum.ownerHandle.trim().equals(profile?.handle?.trim(), true)
+                ) IpsumResultUiState.Loading else ipsumResultState,
                 onClose = {
                     if (!navController.popBackStack(LoremDestination.Home.route, false)) {
                         navController.navigate(LoremDestination.Home.route) { launchSingleTop = true }

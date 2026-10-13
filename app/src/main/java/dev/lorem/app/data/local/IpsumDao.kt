@@ -21,7 +21,7 @@ interface IpsumDao {
     @Insert
     suspend fun insert(ipsum: IpsumEntity): Long
 
-    @Query("UPDATE ipsums SET hintRevealedAtEpochMillis = :revealedAt WHERE id = :ipsumId AND hintRevealedAtEpochMillis IS NULL")
+    @Query("UPDATE ipsums SET hintRevealedAtEpochMillis = :revealedAt WHERE id = :ipsumId AND hintRevealedAtEpochMillis IS NULL AND status = 'ACTIVE'")
     suspend fun revealHintOnce(ipsumId: Long, revealedAt: Long): Int
 
     @Query("SELECT * FROM ipsums WHERE id = :ipsumId")

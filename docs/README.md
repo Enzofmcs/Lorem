@@ -7,5 +7,6 @@ Abra somente o documento necessario para a tarefa:
 - [`DECISIONS.md`](DECISIONS.md): decisoes abertas e confirmadas.
 - [`TESTING.md`](TESTING.md): estrategia de verificacao proporcional ao risco.
 - [`SESSIONS.md`](SESSIONS.md): cinco sessoes recentes e continuidade do trabalho.
+- [`DEMO.md`](DEMO.md): roteiro do fluxo completo, reproducao automatizada e limites da avaliacao do TCC.
 
 O guia obrigatorio e compacto de cada sessao permanece em [`../AGENTS.md`](../AGENTS.md).

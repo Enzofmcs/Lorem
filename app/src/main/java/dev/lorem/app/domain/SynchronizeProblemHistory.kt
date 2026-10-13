@@ -29,7 +29,7 @@ class SynchronizeProblemHistory(
                 val history = buildProblemHistory(result.submissions)
                 try {
                     loremRepository.saveProblemHistory(profile.handle, history)
-                    loremRepository.saveProfile(profile.copy(lastSyncEpochMillis = nowMillis()))
+                    loremRepository.markHistorySynchronized(profile.handle, nowMillis())
                     ProblemHistorySyncResult.Success(history.size)
                 } catch (error: Exception) {
                     if (error is CancellationException) throw error

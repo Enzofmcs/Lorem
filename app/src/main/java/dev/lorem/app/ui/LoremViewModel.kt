@@ -15,6 +15,8 @@ import dev.lorem.app.domain.repository.LoremRepository
 import dev.lorem.app.domain.repository.UserLookupResult
 import dev.lorem.app.domain.RandomSource
 import dev.lorem.app.domain.RecommendIpsum
+import dev.lorem.app.domain.ConsolidationProgress
+import dev.lorem.app.domain.calculateConsolidatedRating
 import dev.lorem.app.domain.StartIpsum
 import dev.lorem.app.domain.StartIpsumResult
 import dev.lorem.app.domain.VerifyIpsumResult
@@ -101,6 +103,8 @@ sealed interface StatisticsUiState {
     data class Ready(val statistics: IpsumStatistics) : StatisticsUiState
 }
 
+data class ConsolidationUiState(val ownerHandle: String, val progress: ConsolidationProgress)
+
 class LoremViewModel(
     private val repository: LoremRepository,
     private val codeforcesRepository: CodeforcesRepository,
@@ -146,6 +150,9 @@ class LoremViewModel(
         else StatisticsUiState.Ready(buildIpsumStatistics(profile, attempts, catalog))
     }.flowOn(statisticsDispatcher)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), StatisticsUiState.Loading)
+    val consolidationState: StateFlow<ConsolidationUiState?> = combine(repository.profile, repository.ipsums) { profile, attempts ->
+        profile?.let { ConsolidationUiState(it.handle, calculateConsolidatedRating(attempts, it.consolidatedRating, it.handle, it.loremRating)) }
+    }.flowOn(statisticsDispatcher).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     private val mutableConfigurationState = MutableStateFlow(ConfigurationUiState())
     val configurationState: StateFlow<ConfigurationUiState> =
@@ -217,11 +224,24 @@ class LoremViewModel(
             lastSyncEpochMillis = savedProfile?.lastSyncEpochMillis?.takeIf { sameOwner } ?: 0L,
         )
         try {
-            repository.saveProfile(profile)
+            if (!sameOwner && repository.activeIpsum.first() != null) {
+                showError("Encerre o Ipsum ativo antes de trocar o handle.")
+                return
+            }
+            if (sameOwner) repository.updateProfileMetadata(user.handle, user.displayName, user.rating)
+            else repository.saveProfile(profile)
+            if (!sameOwner) {
+                mutableHistorySyncState.value = HistorySyncUiState.Idle
+                mutableSubmissionCheckState.value = SubmissionCheckUiState.Idle
+                mutableIpsumResultState.value = IpsumResultUiState.Idle
+                mutablePendingUpdateState.value = PendingUpdateUiState.Idle
+                mutableStartIpsumState.value = StartIpsumUiState.Idle
+            }
+            val persisted = repository.profile.first() ?: profile
             mutableConfigurationState.value = mutableConfigurationState.value.copy(
                 handle = profile.handle,
                 isLoading = false,
-                savedProfile = profile,
+                savedProfile = persisted,
                 navigateHome = true,
             )
         } catch (_: Exception) {
@@ -245,7 +265,10 @@ class LoremViewModel(
         if (mutableHistorySyncState.value == HistorySyncUiState.Loading) return
         mutableHistorySyncState.value = HistorySyncUiState.Loading
         viewModelScope.launch {
-            mutableHistorySyncState.value = when (val result = synchronizeProblemHistory()) {
+            val owner = repository.profile.first()?.handle
+            val result = synchronizeProblemHistory()
+            if (!isCurrentOwner(owner)) return@launch
+            mutableHistorySyncState.value = when (result) {
                 is ProblemHistorySyncResult.Success -> HistorySyncUiState.Success(result.problemCount)
                 ProblemHistorySyncResult.NoActiveProfile -> HistorySyncUiState.Error("Nenhum perfil ativo para sincronizar.")
                 is ProblemHistorySyncResult.Failed -> HistorySyncUiState.Error(
@@ -306,6 +329,8 @@ class LoremViewModel(
 
     fun startNewIpsum() {
         if (mutableStartIpsumState.value == StartIpsumUiState.Loading) return
+        mutableIpsumResultState.value = IpsumResultUiState.Idle
+        mutableSubmissionCheckState.value = SubmissionCheckUiState.Idle
         mutableStartIpsumState.value = StartIpsumUiState.Loading
         viewModelScope.launch {
             mutableStartIpsumState.value = when (val result = startIpsum()) {
@@ -315,6 +340,7 @@ class LoremViewModel(
                     "Nenhum problema inédito foi encontrado até 300 pontos da faixa. Atualize catálogo e histórico e tente novamente.",
                 )
                 StartIpsumResult.NoProfile -> StartIpsumUiState.Error("Configure um perfil antes de iniciar um Ipsum.")
+                StartIpsumResult.NeedsHistorySync -> StartIpsumUiState.Error("Sincronize seu histórico do Codeforces antes de iniciar o primeiro Ipsum.")
                 StartIpsumResult.PersistenceFailure -> StartIpsumUiState.Error("Não foi possível salvar o Ipsum. Tente novamente.")
             }
         }
@@ -398,7 +424,10 @@ class LoremViewModel(
         if (mutablePendingUpdateState.value == PendingUpdateUiState.Loading) return
         mutablePendingUpdateState.value = PendingUpdateUiState.Loading
         viewModelScope.launch {
-            mutablePendingUpdateState.value = when (val result = updatePendingIpsumsUseCase()) {
+            val owner = repository.profile.first()?.handle
+            val result = updatePendingIpsumsUseCase()
+            if (!isCurrentOwner(owner)) return@launch
+            mutablePendingUpdateState.value = when (result) {
                 is UpdatePendingIpsumsResult.Success -> PendingUpdateUiState.Success(result.movedCount)
                 UpdatePendingIpsumsResult.NoActiveProfile -> PendingUpdateUiState.Error("Nenhum perfil ativo para atualizar.")
                 is UpdatePendingIpsumsResult.Failed -> PendingUpdateUiState.Error("Codeforces recusou a consulta: ${result.message}")
@@ -410,6 +439,9 @@ class LoremViewModel(
             }
         }
     }
+
+    private suspend fun isCurrentOwner(ownerHandle: String?): Boolean =
+        repository.profile.first()?.handle?.trim().equals(ownerHandle?.trim(), ignoreCase = true)
 
     companion object {
         const val INITIAL_UNRATED_RATING = 800

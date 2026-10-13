@@ -43,6 +43,7 @@ fun HistoryScreen(
     onOpenProblem: ((String) -> Unit)? = null,
     updateState: PendingUpdateUiState = PendingUpdateUiState.Idle,
     onUpdatePending: () -> Unit = {},
+    onNavigateHome: () -> Unit = {},
 ) {
     val uriHandler = LocalUriHandler.current
     val openProblem = onOpenProblem ?: uriHandler::openUri
@@ -60,6 +61,7 @@ fun HistoryScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text("Histórico e pendências", style = MaterialTheme.typography.headlineMedium)
+        Button(onClick = onNavigateHome) { Text("Voltar ao Início") }
         Button(
             modifier = Modifier.testTag("update-pending"),
             enabled = updateState != PendingUpdateUiState.Loading,

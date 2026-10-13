@@ -44,16 +44,16 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
-- **Foco:** Historia 12 - Recomendacao orientada por variedade.
-- **Ultima historia verificada:** Historia 11 - Estatisticas confiaveis; Historias 10 e 11 confirmadas manualmente pelo usuario em 2026-10-13.
-- **Primeiro item pendente:** calcular exposicao, AC, falha e uso de dica por tag para orientar a recomendacao.
-- **Proxima entrega demonstravel:** recomendar um problema inedito adequado ao rating com prioridade de variedade e necessidade por tag.
-- **Bloqueios conhecidos:** nenhum.
+- **Foco:** entrega das Historias 12-14 concluida; fluxo completo pronto para demonstracao.
+- **Ultima historia verificada:** Historia 14 - Fluxo completo e robustez, automaticamente em 2026-10-13.
+- **Primeiro item pendente:** nenhum item funcional do plano.
+- **Proxima entrega demonstravel:** APK debug e jornada do roteiro `docs/DEMO.md`.
+- **Bloqueios conhecidos:** nenhum; teste manual e opcional (D-014).
 
-Confirmacao manual e encerramento das Historias 10 e 11 registrados em
-[`docs/SESSIONS.md`](docs/SESSIONS.md).
-
-Progresso e aceite: [`docs/ROADMAP.md#historia-12---recomendacao-orientada-por-variedade`](docs/ROADMAP.md#historia-12---recomendacao-orientada-por-variedade).
+Regressao final: 147 testes debug e 116 release sem falhas, lint sem erros
+(apenas aviso preexistente de icone) e `assembleDebug` concluido.
+Progresso e aceite: [`docs/ROADMAP.md`](docs/ROADMAP.md).
+Roteiro: [`docs/DEMO.md`](docs/DEMO.md).
 
 ## Politica de contexto
 
@@ -92,8 +92,11 @@ Progresso e aceite: [`docs/ROADMAP.md#historia-12---recomendacao-orientada-por-v
 - Durante o desenvolvimento, prefira o teste direcionado; use a regressao completa
   nos marcos ou quando o risco justificar.
 - Nao repita comando falho sem diagnosticar a causa nem repita build sem mudanca relevante.
-- Nao alegue teste manual que nao executou. Registre `PENDENTE DE TESTE MANUAL`,
-  forneca passos numerados e aguarde confirmacao antes de marcar o criterio.
+- Pela D-014, testes manuais sao opcionais e nao bloqueiam conclusao ou passagem
+  para a proxima historia. Avance com criterios obrigatorios comprovados e
+  verificacoes automatizadas proporcionais ao risco.
+- Nao alegue teste manual que nao executou. Registre `TESTE MANUAL OPCIONAL - NAO
+  EXECUTADO` fora do checklist obrigatorio, sem aguardar confirmacao para avancar.
 - Nao marque `[x]` sem evidencia: `[ ]` significa nao comprovado e `BLOQUEADO:` exige
   informacao, decisao ou recurso externo.
 - Nunca conclua uma historia com criterio obrigatorio pendente.
@@ -105,7 +108,7 @@ Progresso e aceite: [`docs/ROADMAP.md#historia-12---recomendacao-orientada-por-v
 3. Registre decisoes novas ou substituidas em `docs/DECISIONS.md`.
 4. Acrescente a sessao e mantenha o historico curto em `docs/SESSIONS.md`.
 5. Atualize o estado acima se o foco mudou.
-6. Informe o que mudou, como foi verificado, testes manuais pendentes e proximo passo.
+6. Informe o que mudou, como foi verificado, conferencias manuais opcionais e proximo passo.
 
 ## Mapa da documentacao
 
@@ -114,6 +117,7 @@ Progresso e aceite: [`docs/ROADMAP.md#historia-12---recomendacao-orientada-por-v
 - [`docs/DECISIONS.md`](docs/DECISIONS.md): decisoes abertas e registro historico.
 - [`docs/TESTING.md`](docs/TESTING.md): estrategia proporcional a risco e comandos.
 - [`docs/SESSIONS.md`](docs/SESSIONS.md): registro curto das sessoes recentes.
+- [`docs/DEMO.md`](docs/DEMO.md): demonstracao reproduzivel e avaliacao do TCC.
 
 ## Prompt padrao para futuras sessoes
 
@@ -124,5 +128,6 @@ Inspecione primeiro os arquivos diretamente relacionados. Implemente a menor mud
 funcional correta. Use TESTING.md: testes direcionados durante o desenvolvimento e
 verificacoes completas nos marcos adequados. Nao reduza testes de logica critica para
 economizar creditos. Ao terminar, atualize o progresso e informe o que mudou, como foi
-verificado, o que requer teste manual e o proximo passo.
+verificado, conferencias manuais opcionais e o proximo passo. Testes manuais nao
+bloqueiam o avanco entre historias.
 ```

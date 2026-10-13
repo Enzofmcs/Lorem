@@ -24,7 +24,8 @@ class UpdatePendingIpsums(
     suspend operator fun invoke(): UpdatePendingIpsumsResult {
         val profile = loremRepository.profile.first() ?: return UpdatePendingIpsumsResult.NoActiveProfile
         val pending = loremRepository.ipsums.first().filter {
-            it.status == IpsumStatus.PENDING && it.endedAtEpochMillis != null
+            it.status == IpsumStatus.PENDING && it.endedAtEpochMillis != null &&
+                it.ownerHandle.trim().equals(profile.handle.trim(), ignoreCase = true)
         }
         if (pending.isEmpty()) return UpdatePendingIpsumsResult.Success(0)
         val oldestEnd = pending.minOf { requireNotNull(it.endedAtEpochMillis) }

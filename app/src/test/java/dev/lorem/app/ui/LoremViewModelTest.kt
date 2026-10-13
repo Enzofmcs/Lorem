@@ -267,7 +267,7 @@ class LoremViewModelTest {
 
     @Test
     fun `start persists timestamp and recommendation before reporting success`() = runTest {
-        val local = MemoryRepository(profile().copy(loremRating = 1200))
+        val local = MemoryRepository(profile(lastSync = 1L).copy(loremRating = 1200))
         local.problemCatalog.value = listOf(problem(10, 1300))
         val viewModel = LoremViewModel(
             local,
@@ -286,7 +286,7 @@ class LoremViewModelTest {
 
     @Test
     fun `start without candidate is recoverable and persists nothing`() = runTest {
-        val local = MemoryRepository(profile().copy(loremRating = 1200))
+        val local = MemoryRepository(profile(lastSync = 1L).copy(loremRating = 1200))
         local.problemCatalog.value = listOf(problem(10, 1700))
         val viewModel = LoremViewModel(local, CountingRepository(), randomSource = sequenceRandom(1))
 
@@ -299,7 +299,7 @@ class LoremViewModelTest {
 
     @Test
     fun `second start reports existing active ipsum without replacing it`() = runTest {
-        val local = MemoryRepository(profile().copy(loremRating = 1200))
+        val local = MemoryRepository(profile(lastSync = 1L).copy(loremRating = 1200))
         local.problemCatalog.value = listOf(problem(10, 1200), problem(11, 1200))
         val viewModel = LoremViewModel(local, CountingRepository(), randomSource = sequenceRandom(1, 0))
         viewModel.startNewIpsum()
@@ -315,7 +315,7 @@ class LoremViewModelTest {
 
     @Test
     fun `repeated hint requests retain the first reveal time`() = runTest {
-        val local = MemoryRepository(profile().copy(loremRating = 1200))
+        val local = MemoryRepository(profile(lastSync = 1L).copy(loremRating = 1200))
         local.problemCatalog.value = listOf(problem(10, 1200))
         var now = 1_000L
         val viewModel = LoremViewModel(local, CountingRepository(), nowMillis = { now })
@@ -333,7 +333,7 @@ class LoremViewModelTest {
 
     @Test
     fun `manual ending requires a reason and exposes the persisted result`() = runTest {
-        val local = MemoryRepository(profile().copy(loremRating = 1200))
+        val local = MemoryRepository(profile(lastSync = 1L).copy(loremRating = 1200))
         local.problemCatalog.value = listOf(problem(10, 1200))
         val viewModel = LoremViewModel(local, CountingRepository(), nowMillis = { 5_000L })
         viewModel.startNewIpsum()
@@ -354,7 +354,7 @@ class LoremViewModelTest {
 
     @Test
     fun `manual ending reports a recoverable error when persistence fails`() = runTest {
-        val local = MemoryRepository(profile().copy(loremRating = 1200)).apply {
+        val local = MemoryRepository(profile(lastSync = 1L).copy(loremRating = 1200)).apply {
             problemCatalog.value = listOf(problem(10, 1200))
             failManualEnding = true
         }
@@ -368,6 +368,39 @@ class LoremViewModelTest {
         val state = viewModel.ipsumResultState.value as IpsumResultUiState.Error
         assertEquals("Não foi possível salvar o resultado. Tente novamente.", state.message)
         assertTrue(local.activeIpsum.value != null)
+    }
+
+    @Test
+    fun `first recommendation requires imported history instead of treating missing history as empty`() = runTest {
+        val local = MemoryRepository(profile().copy(loremRating = 1200))
+        local.problemCatalog.value = listOf(problem(10, 1200))
+        val viewModel = LoremViewModel(local, CountingRepository())
+        viewModel.startNewIpsum()
+        advanceUntilIdle()
+        assertTrue((viewModel.startIpsumState.value as StartIpsumUiState.Error).message.contains("Sincronize"))
+        assertEquals(null, local.activeIpsum.value)
+    }
+
+    @Test
+    fun `old history response cannot replace synchronization state after switching accounts`() = runTest {
+        val local = MemoryRepository(profile(lastSync = 1L))
+        val response = kotlinx.coroutines.CompletableDeferred<SubmissionHistoryResult>()
+        val remote = object : CodeforcesRepository {
+            override suspend fun user(handle: String) = UserLookupResult.Success(CodeforcesUser("other", "Other", 1200))
+            override suspend fun submissionHistory(handle: String) = response.await()
+            override suspend fun problems() = ProblemCatalogResult.Success(emptyList())
+        }
+        val viewModel = LoremViewModel(local, remote)
+        viewModel.synchronizeHistory()
+        advanceUntilIdle()
+        viewModel.updateHandle("other")
+        viewModel.confirmHandle()
+        advanceUntilIdle()
+        response.complete(SubmissionHistoryResult.Success(listOf(submission(1, "OK"))))
+        advanceUntilIdle()
+        assertEquals("other", local.profile.value?.handle)
+        assertEquals(HistorySyncUiState.Idle, viewModel.historySyncState.value)
+        assertEquals(emptyList<ProblemHistory>(), local.problemHistory.value)
     }
 }
 

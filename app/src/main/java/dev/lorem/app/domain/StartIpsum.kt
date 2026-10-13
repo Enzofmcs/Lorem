@@ -11,6 +11,7 @@ sealed interface StartIpsumResult {
     data object AlreadyActive : StartIpsumResult
     data object NoCandidate : StartIpsumResult
     data object NoProfile : StartIpsumResult
+    data object NeedsHistorySync : StartIpsumResult
     data object PersistenceFailure : StartIpsumResult
 }
 
@@ -22,11 +23,13 @@ class StartIpsum(
     suspend operator fun invoke(): StartIpsumResult {
         val profile = repository.profile.first() ?: return StartIpsumResult.NoProfile
         if (repository.activeIpsum.first() != null) return StartIpsumResult.AlreadyActive
+        if (profile.lastSyncEpochMillis <= 0L) return StartIpsumResult.NeedsHistorySync
         val recommendation = recommender.recommend(
             loremRating = profile.loremRating,
             catalog = repository.problemCatalog.first(),
             history = repository.problemHistory.first(),
             ipsums = repository.ipsums.first(),
+            ownerHandle = profile.handle,
         ) ?: return StartIpsumResult.NoCandidate
         val ipsum = Ipsum(
             id = 0,
@@ -40,6 +43,7 @@ class StartIpsum(
             fallbackDistance = recommendation.fallbackDistance,
             startedAtEpochMillis = nowMillis(),
             status = IpsumStatus.ACTIVE,
+            recommendationFactors = recommendation.factors,
         )
         return try {
             StartIpsumResult.Success(repository.createActiveIpsum(ipsum))
