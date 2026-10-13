@@ -22,7 +22,7 @@ A base Android de módulo único implementa o fluxo individual e as estatística
 - estatísticas de AC, dica, tempo, erros e desempenho por rating e tag, com evolução do rating persistido;
 - injeção manual e estado de UI exposto por `ViewModel`/`StateFlow`.
 
-As Histórias 10 e 11 ainda aguardam conferência manual em dispositivo. As definições dos indicadores e o conjunto de referência estão no [roadmap](docs/ROADMAP.md#historia-11---estatisticas-confiaveis).
+As Histórias 10 e 11 foram concluídas após a confirmação do usuário de todos os testes manuais em dispositivo em 13/10/2026. As definições dos indicadores e o conjunto de referência estão no [roadmap](docs/ROADMAP.md#historia-11---estatisticas-confiaveis).
 
 ## Escopo resumido
 
@@ -93,4 +93,4 @@ Na raiz do projeto:
 
 ## Próximos passos
 
-Confira as estatísticas e o AC posterior em dispositivo antes de encerrar as Histórias 10 e 11. A implementação seguinte é a **História 12 — Recomendação orientada por variedade**; consulte o [roadmap](docs/ROADMAP.md#historia-12---recomendacao-orientada-por-variedade).
+A próxima entrega é a **História 12 — Recomendação orientada por variedade**; consulte o [roadmap](docs/ROADMAP.md#historia-12---recomendacao-orientada-por-variedade).

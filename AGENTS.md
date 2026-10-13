@@ -44,16 +44,16 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
-- **Foco:** Historia 11 - Estatisticas confiaveis; implementacao e regressao completas; conferencia manual pendente.
-- **Ultima historia verificada:** Historia 09; Historias 10 e 11 com verificacoes automatizadas, sem confirmacao manual final.
-- **Primeiro item pendente:** smoke test em dispositivo do AC posterior (Historia 10) e conferencia visual das estatisticas (Historia 11).
-- **Proxima entrega demonstravel:** conferir os indicadores contra o historico real e validar as jornadas manuais das Historias 10 e 11.
-- **Bloqueios conhecidos:** nenhum para a implementacao; testes manuais ainda nao confirmados.
+- **Foco:** Historia 12 - Recomendacao orientada por variedade.
+- **Ultima historia verificada:** Historia 11 - Estatisticas confiaveis; Historias 10 e 11 confirmadas manualmente pelo usuario em 2026-10-13.
+- **Primeiro item pendente:** calcular exposicao, AC, falha e uso de dica por tag para orientar a recomendacao.
+- **Proxima entrega demonstravel:** recomendar um problema inedito adequado ao rating com prioridade de variedade e necessidade por tag.
+- **Bloqueios conhecidos:** nenhum.
 
-A implementacao da Historia 11 foi autorizada pelo usuario sem esperar a confirmacao
-manual da Historia 10. Isso nao encerra nem comprova essa pendencia anterior.
+Confirmacao manual e encerramento das Historias 10 e 11 registrados em
+[`docs/SESSIONS.md`](docs/SESSIONS.md).
 
-Progresso e aceite: [`docs/ROADMAP.md#historia-11---estatisticas-confiaveis`](docs/ROADMAP.md#historia-11---estatisticas-confiaveis).
+Progresso e aceite: [`docs/ROADMAP.md#historia-12---recomendacao-orientada-por-variedade`](docs/ROADMAP.md#historia-12---recomendacao-orientada-por-variedade).
 
 ## Politica de contexto
 

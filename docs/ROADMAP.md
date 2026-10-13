@@ -6,15 +6,15 @@
 
 ## Estado atual
 
-**Foco atual:** Historia 11 - Estatisticas confiaveis, implementada e verificada automaticamente; conferencia manual pendente.
+**Foco atual:** Historia 12 - Recomendacao orientada por variedade.
 
-**Ultima historia verificada:** Historia 09; Historias 10 e 11 verificadas automaticamente, sem confirmacao manual final.
+**Ultima historia verificada:** Historia 11; Historias 10 e 11 concluidas com confirmacao manual do usuario em 2026-10-13.
 
-**Primeiro item pendente:** smoke test em dispositivo do AC posterior e conferencia visual das estatisticas.
+**Primeiro item pendente:** calcular exposicao, AC, falha e uso de dica por tag para orientar a recomendacao.
 
-**Proxima entrega demonstravel:** estatisticas auditaveis contra o historico real, com validacao manual das Historias 10 e 11.
+**Proxima entrega demonstravel:** recomendacao inedita que preserve rating e priorize variedade e necessidade por tag.
 
-**Bloqueios conhecidos:** nenhum para a implementacao; confirmacoes manuais pendentes.
+**Bloqueios conhecidos:** nenhum.
 
 ## Como atualizar
 
@@ -358,8 +358,10 @@ checklists; veja [`DECISIONS.md`](DECISIONS.md).
   transicao condicional preserva integralmente o resultado e o Rating Lorem.
 - Testes direcionados cobrem regras temporais, identidade, falhas remotas, paginacao,
   persistencia, idempotencia, migracao e estados da tela.
-- PENDENTE DE TESTE MANUAL: validar a jornada real com um AC posterior no Codeforces,
-  inclusive a data exibida, rating preservado e repeticao sem alteracoes.
+- CONFIRMADO PELO USUARIO EM 2026-10-13: todos os itens do checklist manual da
+  Historia 10 passaram, incluindo AC posterior real, mudanca unica de situacao,
+  data correta, preservacao de rating/tempo/dica/erros, repeticao idempotente,
+  persistencia ao reabrir e manutencao da pendencia quando ha somente novo WA.
 
 ---
 
@@ -439,8 +441,9 @@ nao uma nova especificacao da formula D-012.
   identidade da tentativa e preservacao de indicadores apos upsolve.
 - Testes de ViewModel e Robolectric/Compose conferem atualizacoes locais, troca
   de perfil, estados vazios, todos os indicadores, secoes e jornada de navegacao.
-- A Historia 10 continua PENDENTE DE TESTE MANUAL; implementar a Historia 11 foi
-  autorizado pelo usuario e nao constitui confirmacao da jornada real de upsolve.
+- Na implementacao de 2026-10-11, a jornada manual da Historia 10 ainda estava
+  pendente. O usuario confirmou todos os itens manuais das Historias 10 e 11
+  em 2026-10-13, permitindo o encerramento de ambas.
 
 #### Comandos e resultados desta sessao
 
@@ -463,9 +466,15 @@ em diretorios temporarios, sem alterar dependencias do projeto.
   `MissingApplicationIcon`. APK debug gerado com sucesso.
 - `git diff --check` e validacao dos links/ancoras Markdown alterados: passaram.
 
-#### PENDENTE DE TESTE MANUAL - conferencia em dispositivo
+#### Conferencia em dispositivo - confirmada em 2026-10-13
 
-- [ ] Confirmar legibilidade, navegacao e indicadores com o historico real.
+- [x] Confirmar legibilidade, navegacao e indicadores com o historico real.
+
+**CONFIRMADO PELO USUARIO:** todos os itens do checklist manual passaram,
+incluindo navegacao, Rating Lorem e evolucao, totais/taxas, grupos com/sem dica,
+tempo e erros, grupos por rating/tag, multiplas tags, rankings, amostras vazias,
+exclusao de Ipsum ativo, leitura e rotacao, uso offline e preservacao dos
+indicadores originais apos AC posterior.
 
 1. Na Home, abra `Estatisticas`. Confira Rating Lorem atual contra o perfil e
    quantidade de encerrados contra o Historico; um Ipsum ativo nao deve entrar.
@@ -481,8 +490,9 @@ em diretorios temporarios, sem alterar dependencias do projeto.
    pendentes deve diminuir e AC posterior aumentar, mantendo taxa de AC no Ipsum,
    tempo medio, erros, dica e evolucao do rating. Repetir nao deve alterar os dados.
 
-A implementacao e os criterios funcionais acima estao comprovados automaticamente;
-a historia nao sera encerrada formalmente ate a confirmacao manual registrada.
+A implementacao e os criterios funcionais estao comprovados automaticamente.
+Com a confirmacao manual do usuario registrada em 2026-10-13, as Historias 10 e 11
+estao concluidas. O proximo foco e a Historia 12.
 
 ---
 
