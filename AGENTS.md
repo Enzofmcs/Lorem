@@ -44,13 +44,16 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
-- **Foco:** Historia 10 - validacao manual do AC posterior.
-- **Ultima historia verificada:** Historia 09 - Historico e pendencias; Historia 10 verificada automaticamente.
-- **Primeiro item pendente:** smoke test em dispositivo da atualizacao de pendencias com dados reais do Codeforces.
-- **Proxima entrega demonstravel:** confirmar a jornada real e entao iniciar a Historia 11.
+- **Foco:** Historia 12 - Recomendacao orientada por variedade.
+- **Ultima historia verificada:** Historia 11 - Estatisticas confiaveis; Historias 10 e 11 confirmadas manualmente pelo usuario em 2026-10-13.
+- **Primeiro item pendente:** calcular exposicao, AC, falha e uso de dica por tag para orientar a recomendacao.
+- **Proxima entrega demonstravel:** recomendar um problema inedito adequado ao rating com prioridade de variedade e necessidade por tag.
 - **Bloqueios conhecidos:** nenhum.
 
-Progresso e aceite: [`docs/ROADMAP.md#historia-10---detectar-ac-posterior`](docs/ROADMAP.md#historia-10---detectar-ac-posterior).
+Confirmacao manual e encerramento das Historias 10 e 11 registrados em
+[`docs/SESSIONS.md`](docs/SESSIONS.md).
+
+Progresso e aceite: [`docs/ROADMAP.md#historia-12---recomendacao-orientada-por-variedade`](docs/ROADMAP.md#historia-12---recomendacao-orientada-por-variedade).
 
 ## Politica de contexto
 

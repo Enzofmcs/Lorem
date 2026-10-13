@@ -6,13 +6,13 @@
 
 ## Estado atual
 
-**Foco atual:** Historia 08 - validar manualmente a explicacao do Rating Lorem.
+**Foco atual:** Historia 12 - Recomendacao orientada por variedade.
 
-**Ultima historia verificada:** Historia 07 - Encerrar e apresentar o resultado.
+**Ultima historia verificada:** Historia 11; Historias 10 e 11 concluidas com confirmacao manual do usuario em 2026-10-13.
 
-**Primeiro item pendente:** confirmar em dispositivo que a explicacao e compreensivel sem conhecer a formula.
+**Primeiro item pendente:** calcular exposicao, AC, falha e uso de dica por tag para orientar a recomendacao.
 
-**Proxima entrega demonstravel:** validar visualmente um resultado com a variacao persistida e explicada.
+**Proxima entrega demonstravel:** recomendacao inedita que preserve rating e priorize variedade e necessidade por tag.
 
 **Bloqueios conhecidos:** nenhum.
 
@@ -358,8 +358,10 @@ checklists; veja [`DECISIONS.md`](DECISIONS.md).
   transicao condicional preserva integralmente o resultado e o Rating Lorem.
 - Testes direcionados cobrem regras temporais, identidade, falhas remotas, paginacao,
   persistencia, idempotencia, migracao e estados da tela.
-- PENDENTE DE TESTE MANUAL: validar a jornada real com um AC posterior no Codeforces,
-  inclusive a data exibida, rating preservado e repeticao sem alteracoes.
+- CONFIRMADO PELO USUARIO EM 2026-10-13: todos os itens do checklist manual da
+  Historia 10 passaram, incluindo AC posterior real, mudanca unica de situacao,
+  data correta, preservacao de rating/tempo/dica/erros, repeticao idempotente,
+  persistencia ao reabrir e manutencao da pendencia quando ha somente novo WA.
 
 ---
 
@@ -369,23 +371,128 @@ checklists; veja [`DECISIONS.md`](DECISIONS.md).
 
 #### Checklist
 
-- [ ] Mostrar Rating Lorem atual e evolucao.
-- [ ] Mostrar total de Ipsums e taxa de AC.
-- [ ] Mostrar taxa de AC sem dica e com dica.
-- [ ] Mostrar tempo medio geral e por rating.
-- [ ] Mostrar erros antes do AC.
-- [ ] Mostrar desempenho por faixa de rating.
-- [ ] Mostrar desempenho por tag.
-- [ ] Mostrar tags mais e menos praticadas.
-- [ ] Mostrar tags com maior taxa de falha.
-- [ ] Distinguir AC no Ipsum de AC posterior.
-- [ ] Validar cada agregado contra o historico.
+- [x] Mostrar Rating Lorem atual e evolucao.
+- [x] Mostrar total de Ipsums e taxa de AC.
+- [x] Mostrar taxa de AC sem dica e com dica.
+- [x] Mostrar tempo medio geral e por rating.
+- [x] Mostrar erros antes do AC.
+- [x] Mostrar desempenho por faixa de rating.
+- [x] Mostrar desempenho por tag.
+- [x] Mostrar tags mais e menos praticadas.
+- [x] Mostrar tags com maior taxa de falha.
+- [x] Distinguir AC no Ipsum de AC posterior.
+- [x] Validar cada agregado contra o historico.
 
 #### Exemplos de aceite
 
-- [ ] Com um conjunto pequeno de dados conhecido, todos os totais podem ser conferidos manualmente.
-- [ ] Problemas com varias tags contribuem uma vez para cada tag, sem duplicar o total de Ipsums.
-- [ ] Resolver fora do Ipsum atualiza pendencias, mas nao a taxa de AC durante Ipsums.
+- [x] Com um conjunto pequeno de dados conhecido, todos os totais podem ser conferidos manualmente.
+- [x] Problemas com varias tags contribuem uma vez para cada tag, sem duplicar o total de Ipsums.
+- [x] Resolver fora do Ipsum atualiza pendencias, mas nao a taxa de AC durante Ipsums.
+
+#### Contrato dos indicadores (D-013)
+
+- Uma tentativa encerrada por `id`, do handle atual (sem diferenciar maiusculas),
+  incluindo `COMPLETED`, `PENDING` e `SOLVED_OUTSIDE`; ativos nao entram nem revelam
+  suas tags, rating ou categoria pela tela de estatisticas.
+- Taxa geral: AC no Ipsum / encerrados. Com/sem dica: AC no grupo / encerrados no
+  respectivo grupo. Sem denominador, mostrar `Sem dados`, nunca 0% observado.
+- Tempo medio: fim original - inicio, incluindo fracassos; tempos ausentes ou
+  invalidos ficam fora da media, com a quantidade de tempos validos exibida.
+- Erros: total e media anteriores ao AC somente em `COMPLETED`.
+- Evolucao: ordenar encerramentos por data e id; mostrar rating anterior, delta e
+  posterior persistidos, omitindo avaliacoes incompletas com aviso de quantidade.
+- Por rating: agrupar pelo rating selecionado do problema (passos oficiais de 100).
+- Por tag: cada tag oficial recebe uma contribuicao da tentativa; totais gerais
+  nao somam os grupos. Tags do catalogo local sem exposicao aparecem com zero
+  tentativas e taxa indisponivel. Sem catalogo, usar as tags do historico encerrado.
+- Mais/menos praticadas: ordenar por tentativas, com desempate alfabetico. Maior
+  taxa de falha: (encerrados - AC no Ipsum) / encerrados, excluindo tags sem falha
+  ou sem amostra; desempatar por maior amostra e nome. Mostrar amostra junto da taxa.
+- Upsolve preserva taxa de AC, falha, tempo, dica, erros e rating originais.
+
+#### Conjunto conhecido para conferir o aceite
+
+| Ipsum | Resultado | Dica | Tempo | Rating do problema | Tags |
+|---|---|---|---:|---:|---|
+| A | AC no Ipsum | nao | 30 min | 1200 | dp, graphs |
+| B | AC no Ipsum | sim | 45 min | 1200 | graphs |
+| C | Pendente | nao | 60 min | 1400 | dp |
+| D | AC posterior | nao | 25 min | 1400 | dp, math |
+
+Esperado: 4 encerrados, 2 AC no Ipsum (50%), sem dica 1/3 (33,3%),
+com dica 1/1 (100%), tempo medio 40 min, 1 pendente e 1 AC posterior.
+Com erros 1 e 2 nos AC, o total antes do AC e 3 e a media e 1,5.
+Rating 1200: 2/2 AC e 37,5 min; rating 1400: 0/2 AC e 42,5 min.
+`dp`: 1/3 AC; `graphs`: 2/2; `math`: 0/1. Uma tag `greedy` do catalogo
+sem tentativa tem exposicao zero e nao entra entre as tags com falha.
+Os snapshots de rating da fixture sao dados armazenados para testar agregacao,
+nao uma nova especificacao da formula D-012.
+
+#### Implementacao e verificacao em 2026-10-11
+
+- Agregador puro `buildIpsumStatistics`, derivado dos dados locais e do perfil atual,
+  com snapshots de rating, grupos por rating/tag e rankings auditaveis.
+- `StatisticsScreen` substitui a rota provisoria por resumo, evolucao cronologica,
+  visoes por rating/tag, amostras, estados vazio/carregando e retorno ao Inicio.
+- O `StateFlow` combina perfil, Ipsums e catalogo; a troca de handle exclui dados
+  anteriores e a navegacao protege contra um snapshot em cache do outro perfil.
+- Testes de dominio conferem o conjunto conhecido, multiplas tags, repeticao,
+  grupos com/sem dica, desempates, tempos ausentes, rating antigo incompleto,
+  identidade da tentativa e preservacao de indicadores apos upsolve.
+- Testes de ViewModel e Robolectric/Compose conferem atualizacoes locais, troca
+  de perfil, estados vazios, todos os indicadores, secoes e jornada de navegacao.
+- Na implementacao de 2026-10-11, a jornada manual da Historia 10 ainda estava
+  pendente. O usuario confirmou todos os itens manuais das Historias 10 e 11
+  em 2026-10-13, permitindo o encerramento de ambas.
+
+#### Comandos e resultados desta sessao
+
+Ambiente: Java 17.0.12, Gradle 8.11.1 e SDK Android 35; caches e ferramentas
+em diretorios temporarios, sem alterar dependencias do projeto.
+
+- `./gradlew testDebugUnitTest --tests dev.lorem.app.domain.BuildIpsumStatisticsTest --console=plain`:
+  passou na primeira verificacao do agregador.
+- `./gradlew testDebugUnitTest --tests dev.lorem.app.domain.BuildIpsumStatisticsTest --tests dev.lorem.app.ui.LoremViewModelTest --tests dev.lorem.app.ui.StatisticsScreenTest --tests dev.lorem.app.MainActivityTest --max-workers=2 --console=plain`:
+  primeira tentativa falhou porque o diretorio de cache temporario do Robolectric
+  nao existia; criado o diretorio, 36/37 passaram. A falha restante era a assertiva
+  de visibilidade da Home que preserva a rolagem ao voltar; ajustado o teste para
+  rolar ate o titulo antes de conferir a exibicao.
+- `./gradlew testDebugUnitTest --tests dev.lorem.app.MainActivityTest --max-workers=2 --console=plain`:
+  6/7 passaram durante o ajuste da assertiva acima.
+- `./gradlew testDebugUnitTest --tests 'dev.lorem.app.MainActivityTest.statistics route uses saved training history offline and returns to home' --max-workers=2 --console=plain`:
+  passou depois da correcao do teste de navegacao.
+- `./gradlew test lint assembleDebug --max-workers=2 --console=plain`: passou;
+  125 testes debug e 97 release, sem falhas. Lint: zero erros e o aviso preexistente
+  `MissingApplicationIcon`. APK debug gerado com sucesso.
+- `git diff --check` e validacao dos links/ancoras Markdown alterados: passaram.
+
+#### Conferencia em dispositivo - confirmada em 2026-10-13
+
+- [x] Confirmar legibilidade, navegacao e indicadores com o historico real.
+
+**CONFIRMADO PELO USUARIO:** todos os itens do checklist manual passaram,
+incluindo navegacao, Rating Lorem e evolucao, totais/taxas, grupos com/sem dica,
+tempo e erros, grupos por rating/tag, multiplas tags, rankings, amostras vazias,
+exclusao de Ipsum ativo, leitura e rotacao, uso offline e preservacao dos
+indicadores originais apos AC posterior.
+
+1. Na Home, abra `Estatisticas`. Confira Rating Lorem atual contra o perfil e
+   quantidade de encerrados contra o Historico; um Ipsum ativo nao deve entrar.
+2. No Resumo, confira AC, grupos com/sem dica, amostras de tempo e erros. Na evolucao,
+   compare rating anterior, variacao e posterior com os Resultados dos Ipsums.
+3. Em `Por rating`, confira os grupos, taxas e tempos. Em `Por tag`, confira um
+   problema com varias tags: ele conta uma vez em cada tag e uma vez no total geral.
+4. Confira tags sem pratica e amostras pequenas. Sem tentativas, a taxa deve dizer
+   `Sem dados`; 0% deve representar tentativas reais sem AC.
+5. Volte ao Inicio, feche/reabra o app sem internet e confira os mesmos dados locais.
+   Rotacione o dispositivo e confira leitura, rolagem e troca entre as tres secoes.
+6. Apos um AC posterior real, use `Atualizar pendencias` no Historico. Nas estatisticas,
+   pendentes deve diminuir e AC posterior aumentar, mantendo taxa de AC no Ipsum,
+   tempo medio, erros, dica e evolucao do rating. Repetir nao deve alterar os dados.
+
+A implementacao e os criterios funcionais estao comprovados automaticamente.
+Com a confirmacao manual do usuario registrada em 2026-10-13, as Historias 10 e 11
+estao concluidas. O proximo foco e a Historia 12.
 
 ---
 

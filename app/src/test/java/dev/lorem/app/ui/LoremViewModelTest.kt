@@ -1,6 +1,7 @@
 package dev.lorem.app.ui
 
 import dev.lorem.app.domain.model.CodeforcesProblem
+import dev.lorem.app.StatisticsFixtures
 import dev.lorem.app.domain.model.CodeforcesSubmission
 import dev.lorem.app.domain.model.LocalProfile
 import dev.lorem.app.domain.model.ProblemHistory
@@ -18,6 +19,8 @@ import dev.lorem.app.domain.repository.CodeforcesUser
 import dev.lorem.app.domain.repository.LoremRepository
 import dev.lorem.app.domain.repository.UserLookupResult
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -32,6 +35,68 @@ import org.junit.Test
 class LoremViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
+
+    @Test
+    fun `statistics react to local closure rating catalog and upsolve without remote calls`() = runTest {
+        val local = MemoryRepository(StatisticsFixtures.profile)
+        val remote = CountingRepository()
+        val viewModel = LoremViewModel(local, remote, statisticsDispatcher = UnconfinedTestDispatcher(testScheduler))
+        assertEquals(StatisticsUiState.Loading, viewModel.statisticsState.value)
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.statisticsState.collect {} }
+        advanceUntilIdle()
+        assertEquals(0, (viewModel.statisticsState.value as StatisticsUiState.Ready).statistics.overall.total)
+
+        val pending = StatisticsFixtures.finished.map {
+            if (it.status == IpsumStatus.SOLVED_OUTSIDE) it.copy(status = IpsumStatus.PENDING,
+                solvedOutsideAtEpochMillis = null) else it
+        }
+        local.ipsums.value = pending
+        local.problemCatalog.value = StatisticsFixtures.catalog
+        local.saveProfile(StatisticsFixtures.profile.copy(loremRating = 1300))
+        advanceUntilIdle()
+        val before = (viewModel.statisticsState.value as StatisticsUiState.Ready).statistics
+        assertEquals(4, before.overall.total)
+        assertEquals(1300, before.currentRating)
+        assertEquals(0, before.byTag.single { it.tag == "greedy" }.attempts.total)
+
+        local.ipsums.value = StatisticsFixtures.finished
+        advanceUntilIdle()
+        val after = (viewModel.statisticsState.value as StatisticsUiState.Ready).statistics
+        assertEquals(1, after.overall.solvedOutside)
+        assertEquals(1, after.overall.pending)
+        assertEquals(before.overall.acRate, after.overall.acRate)
+        assertEquals(before.ratingEvolution, after.ratingEvolution)
+        assertEquals(before.overall.averageTimeMillis, after.overall.averageTimeMillis)
+        assertEquals(0, remote.calls)
+        assertEquals(0, remote.historyCalls)
+    }
+
+    @Test
+    fun `statistics exclude cached attempts immediately on owner switch and clear on unlink`() = runTest {
+        val local = MemoryRepository(StatisticsFixtures.profile)
+        local.ipsums.value = StatisticsFixtures.finished
+        val viewModel = LoremViewModel(local, CountingRepository(),
+            statisticsDispatcher = UnconfinedTestDispatcher(testScheduler))
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.statisticsState.collect {} }
+        advanceUntilIdle()
+        assertEquals(4, (viewModel.statisticsState.value as StatisticsUiState.Ready).statistics.overall.total)
+
+        local.saveProfile(StatisticsFixtures.profile.copy(handle = "other", loremRating = 800))
+        advanceUntilIdle()
+        val switched = (viewModel.statisticsState.value as StatisticsUiState.Ready).statistics
+        assertEquals("other", switched.ownerHandle)
+        assertEquals(800, switched.currentRating)
+        assertEquals(0, switched.overall.total)
+        assertTrue(switched.ratingEvolution.isEmpty())
+        assertTrue(switched.byTag.isEmpty())
+
+        local.ipsums.value = listOf(StatisticsFixtures.finished.first().copy(ownerHandle = "other"))
+        advanceUntilIdle()
+        assertEquals(1, (viewModel.statisticsState.value as StatisticsUiState.Ready).statistics.overall.total)
+        local.clearProfile()
+        advanceUntilIdle()
+        assertEquals(StatisticsUiState.NoProfile, viewModel.statisticsState.value)
+    }
 
     @Test
     fun `repeated confirmations are ignored while lookup is active`() = runTest {

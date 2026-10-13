@@ -1,14 +1,14 @@
 # Lorem
 
-Lorem é um aplicativo Android de treino individual para programação competitiva. O produto recomenda exercícios inéditos do Codeforces adequados ao nível do usuário e acompanhará sua evolução.
+Lorem é um aplicativo Android de treino individual para programação competitiva. O produto recomenda exercícios inéditos do Codeforces adequados ao nível do usuário e acompanha sua evolução.
 
-Um **Ipsum** é a tentativa oficial e cronometrada de resolver um problema recomendado. Recomendação, cronômetro persistente e detecção de submissões durante a tentativa já estão implementados; o resultado e a avaliação serão desenvolvidos incrementalmente.
+Um **Ipsum** é a tentativa oficial e cronometrada de resolver um problema recomendado. Recomendação, cronômetro persistente, detecção de submissões, resultado, Rating Lorem, histórico, upsolve e estatísticas locais já estão implementados.
 
 > O [`AGENTS.md`](AGENTS.md) é o guia operacional compacto. A fonte de verdade detalhada está dividida por assunto em [`docs/`](docs/README.md). Este README apresenta apenas a visão técnica de entrada.
 
 ## Estado atual
 
-A base Android de módulo único concluiu a recomendação e o início da História 04:
+A base Android de módulo único implementa o fluxo individual e as estatísticas da História 11:
 
 - Kotlin, Jetpack Compose e Material 3;
 - navegação que restaura o Ipsum ativo;
@@ -17,9 +17,12 @@ A base Android de módulo único concluiu a recomendação e o início da Histó
 - consulta real ao `user.info`, centralizada por um limitador de requisições;
 - catálogo e histórico locais em Room, com recomendação inédita e fallback auditável;
 - persistência de um único Ipsum ativo antes da navegação;
+- encerramento, resultado e atualização única do Rating Lorem;
+- histórico e detecção de AC posterior, preservando a avaliação original;
+- estatísticas de AC, dica, tempo, erros e desempenho por rating e tag, com evolução do rating persistido;
 - injeção manual e estado de UI exposto por `ViewModel`/`StateFlow`.
 
-Ainda não há encerramento manual, tela completa de resultado ou cálculo do rating após Ipsums.
+As Histórias 10 e 11 foram concluídas após a confirmação do usuário de todos os testes manuais em dispositivo em 13/10/2026. As definições dos indicadores e o conjunto de referência estão no [roadmap](docs/ROADMAP.md#historia-11---estatisticas-confiaveis).
 
 ## Escopo resumido
 
@@ -90,4 +93,4 @@ Na raiz do projeto:
 
 ## Próximos passos
 
-A próxima entrega é a **História 07 — Encerrar e apresentar o resultado**. Consulte o checklist em [`docs/ROADMAP.md`](docs/ROADMAP.md#historia-07---encerrar-e-apresentar-o-resultado) para os itens pendentes.
+A próxima entrega é a **História 12 — Recomendação orientada por variedade**; consulte o [roadmap](docs/ROADMAP.md#historia-12---recomendacao-orientada-por-variedade).

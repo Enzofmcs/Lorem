@@ -5,9 +5,12 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
 import dev.lorem.app.domain.model.CodeforcesProblem
@@ -41,6 +44,22 @@ import org.robolectric.annotation.Config
 class MainActivityTest {
     @get:Rule
     val composeRule = createComposeRule()
+
+    @Test
+    fun `statistics route uses saved training history offline and returns to home`() {
+        val local = MemoryLoremRepository(StatisticsFixtures.profile, StatisticsFixtures.finished)
+        setApp(local, UserLookupResult.NetworkFailure)
+        composeRule.onNodeWithText("Abrir Estatísticas").performScrollTo().performClick()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithText("Rating Lorem atual: 1202").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithTag("statistics-list")
+            .performScrollToNode(hasText("Taxa de AC no Ipsum: 50,0% (2/4)"))
+        composeRule.onNodeWithText("Taxa de AC no Ipsum: 50,0% (2/4)").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithTag("statistics-list").performScrollToNode(hasText("Voltar ao Início"))
+        composeRule.onNodeWithText("Voltar ao Início").performScrollTo().performClick()
+        composeRule.onNodeWithText("Início").performScrollTo().assertIsDisplayed()
+    }
 
     @Test
     fun `valid handle persists profile and opens home`() {
