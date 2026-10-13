@@ -11,6 +11,18 @@ evitaveis que comprometem regras centrais do Lorem custam mais do que testes
 direcionados. Classifique primeiro o risco real da mudanca; se houver duvida entre
 dois niveis, use o mais alto.
 
+## Conclusao e avanco entre historias
+
+Por orientacao do usuario em 2026-10-13 (D-014), testes manuais sao opcionais e nao
+sao requisito para concluir uma historia ou iniciar a seguinte. Criterios
+funcionais obrigatorios continuam exigindo evidencia automatizada proporcional ao
+risco; falhas nesses criterios continuam bloqueando a conclusao.
+
+Separe verificacoes automatizadas de conferencias em dispositivo. Uma conferencia
+nao executada deve aparecer como `TESTE MANUAL OPCIONAL - NAO EXECUTADO`, sem marcar
+que houve validacao humana e sem aguardar confirmacao para avancar. Essa regra
+substitui a exigencia antiga de aguardar smoke tests manuais.
+
 ## Nivel 1 - alteracao simples ou visual
 
 Exemplos: texto, layout, espacamento, navegacao simples, estado visual, botao e
@@ -18,9 +30,11 @@ mensagem de erro.
 
 - Nao execute automaticamente toda a suite nem `lint + test + assembleDebug`.
 - Faca somente a compilacao minima se houver risco de erro de compilacao.
-- Quando a validacao visual for mais eficiente, forneca um smoke test manual curto.
+- Verifique comportamento funcional relevante com os testes Compose/Robolectric
+  existentes quando apropriado; nao crie teste que apenas replique texto ou layout.
+- Pode fornecer um smoke test manual curto como conferencia visual opcional.
 - Nunca afirme que executou um teste manual que depende do usuario; registre
-  `PENDENTE DE TESTE MANUAL`.
+  `TESTE MANUAL OPCIONAL - NAO EXECUTADO`, sem bloquear o avanco.
 
 ## Nivel 2 - logica isolada
 
@@ -75,7 +89,7 @@ documental nao exige build Android, lint ou testes do aplicativo.
 - Registre exatamente os comandos executados e seus resultados.
 - Economia operacional nunca justifica ignorar risco tecnico importante.
 
-## Smoke tests manuais delegaveis
+## Smoke tests manuais opcionais
 
 Podem ser delegados, quando apropriado: abertura do app, presenca de botao ou texto,
 navegacao, aparencia, mensagem de erro, digitacao basica, revelar tags, iniciar ou
@@ -89,9 +103,10 @@ Forneca passos numerados e resultados observaveis, por exemplo:
 3. Aguarde Z.
 4. Confirme que W aparece e que nao ocorre comportamento indevido.
 
-Marque `PENDENTE DE TESTE MANUAL` e aguarde a confirmacao do usuario antes de marcar
-o criterio como comprovado. Teste manual complementa, mas nao substitui teste
-automatizado de regra critica.
+Registre `TESTE MANUAL OPCIONAL - NAO EXECUTADO` enquanto nao houver execucao ou
+confirmacao. Mantenha essa conferencia fora do checklist obrigatorio e avance sem
+aguarda-la. Teste manual complementa, mas nao substitui teste automatizado de regra
+critica; nunca registre uma conferencia nao executada como aprovada.
 
 ## Regras que permanecem prioritarias
 
@@ -114,12 +129,16 @@ Nao remova esses testes por economia.
 
 ## Matriz minima do produto
 
-- [ ] **Regras puras:** identidade, deduplicacao, filtros, sorteio, fallback, tags,
+- [x] **Regras puras:** identidade, deduplicacao, filtros, sorteio, fallback, tags,
   tempo, submissoes, rating, consolidacao e estatisticas.
-- [ ] **Integracao:** `OK`/`FAILED`, limite da API, falta de rede, atualizacao
+- [x] **Integracao:** `OK`/`FAILED`, limite da API, falta de rede, atualizacao
   idempotente e persistencia.
-- [ ] **Jornada manual:** primeiro acesso, handle invalido, retomada, dica, WA seguido
-  de AC, falha, AC posterior, historico e estatisticas.
+- [x] **Jornada automatizada:** primeiro acesso, handle invalido, retomada, dica, WA
+  seguido de AC, falha, AC posterior, historico e estatisticas, usando fakes isolados,
+  Compose/Robolectric e persistencia real nos cenarios apropriados.
+
+Conferencia em dispositivo e ensaio humano de demonstracao sao opcionais e nao
+integram a matriz obrigatoria.
 
 ## Ambiente e comandos completos
 
@@ -134,3 +153,15 @@ Nos marcos de Nivel 5:
 ```
 
 No Windows sem WSL, execute os mesmos comandos em um terminal com o ambiente exigido.
+
+## Evidencia do marco final em 2026-10-13
+
+`./gradlew test lint assembleDebug --max-workers=2 --console=plain` passou:
+147 testes debug e 116 release, zero falhas/erros; lint sem erros, com o aviso
+preexistente `MissingApplicationIcon`. APK debug gerado.
+
+As jornadas `CompleteAppJourneyTest` e `FullTrainingJourneyTest` usam Room/DataStore
+reais e Codeforces falso apenas no escopo de teste. Cobrem primeiro acesso,
+importacao obrigatoria, dica, WA/AC, resultado, nova recomendacao, pendencia/upsolve,
+estatisticas, recuperacao e isolamento por perfil. A suite original da Historia 11
+foi preservada. O roteiro humano de `DEMO.md` continua opcional.

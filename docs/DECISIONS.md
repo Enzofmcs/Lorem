@@ -31,11 +31,37 @@ Nao preencher silenciosamente. Registrar a escolha em **Registro de decisoes** e
 
 ### DA-04 - Criterios de consolidacao
 
-- [ ] Quantidade minima de tentativas.
-- [ ] Taxa minima de AC.
-- [ ] Quantidade minima de AC sem dica.
-- [ ] Diversidade minima de tags.
-- [ ] Janela de desempenho recente.
+Resolvida pela D-015, aprovada na conversa em 2026-10-13:
+
+- [x] Minimo de 8 tentativas na faixa.
+- [x] Minimo de 70% de AC durante o Ipsum.
+- [x] Minimo de 5 ACs sem dica.
+- [x] Nos ACs sem dica, 3 tags oficiais distintas em 3 conjuntos de tags diferentes.
+- [x] Janela dos 20 Ipsums encerrados mais recentes, ordenados por encerramento e ID.
+- [x] Faixa consolidada e um marco permanente: nao diminui com falhas posteriores.
+
+Faixas `[F, F + 99]`, de 800 em diante, em passos de 100, pelo rating do problema.
+Problemas sem tags contam para tentativas e AC, mas nao para diversidade. AC
+posterior preserva o insucesso original. A maior faixa que cumpriu os criterios em
+uma janela fica consolidada; sem evidencia, `null`. A proxima faixa e a consolidada
++ 100; sem marco, avaliar a faixa atual do rating estimado (minimo 800).
+
+A proposta anterior de reduzir consolidacao ao sair evidencia da janela foi
+substituida: o Rating Lorem ja acompanha quedas de desempenho. Reavaliar janelas
+historicas permite recuperar um marco mesmo apos interrupcao da persistencia.
+
+#### Cenarios da D-015 antes da implementacao
+
+| Evidencia na faixa em uma janela | Resultado esperado |
+|---|---|
+| 8 tentativas, 6 ACs, 5 sem dica, 3 tags em 3 conjuntos | Consolidar a faixa (75% AC). |
+| 7 tentativas com todos os demais requisitos | Nao consolidar; falta amostra. |
+| 8 tentativas, 5 ACs | Nao consolidar; taxa 62,5%. |
+| 10 tentativas, 7 ACs e demais requisitos | Consolidar; fronteira exata de 70%. |
+| 8 tentativas, 6 ACs, somente 4 sem dica | Nao consolidar; falta autonomia. |
+| 3 tags sempre no mesmo conjunto | Nao consolidar; falta variedade de conjuntos. |
+| Faixa ja alcancada seguida de 20 fracassos | Preservar o marco e avaliar progresso recente separadamente. |
+| AC posterior em uma tentativa originalmente sem AC | Nao promover sucesso nem mudar a consolidacao por esse AC. |
 
 ### DA-05 - Limite do fallback de recomendacao
 
@@ -71,6 +97,10 @@ Use o formato abaixo. Nao apagar decisoes antigas; marque quando forem substitui
 | D-011 | 2026-09-23 | As submissoes do Ipsum sao verificadas pelo botao e ao retornar para a tela/app, sem polling, `WorkManager`, servico ou trabalho permanente em segundo plano. | Manter atualizacao suficiente para o treino com menor complexidade, consumo e risco de consultas duplicadas. | 06 |
 | D-012 | 2026-10-02 | O Rating Lorem usa expectativa Elo pela diferenca usuario-problema. AC parte de `round(8 + 32 * (1 - expectativa))`; sem AC perde `round(8 + 24 * expectativa)`, independentemente de desistir cedo. O tempo esperado e `clamp(60 + diferenca/10, 30, 120)` minutos; AC depois do esperado perde gradualmente ate metade do ganho no dobro do tempo, sem bonus por rapidez. Revelar tags reduz o ganho em cerca de 25%, no minimo 2 pontos. Ganhos ficam entre 1 e 40 e perdas entre -1 e -32. Nao ha calibracao especial. | Produzir feedback previsivel que valoriza dificuldade, tempo e autonomia sem permitir bonus por demora nem dupla pontuacao. | 08 |
 | D-013 | 2026-10-11 | As estatisticas usam uma tentativa encerrada por id do Ipsum e por perfil, excluem ativos e contam AC somente em `COMPLETED`. Taxas com/sem dica usam o respectivo grupo como denominador. Tempo medio inclui tentativas sem AC, usa o intervalo original ate o encerramento e informa a amostra de tempos validos. Erros antes do AC usam somente `COMPLETED`. Rating evolui pelos snapshots persistidos, sem reconstruir avaliacoes ausentes. Rating do problema usa `selectedRating`; cada tag oficial recebe uma contribuicao por tentativa e o catalogo salvo inclui exposicao zero. AC posterior altera somente a situacao atual. Sem amostra, a metrica fica indisponivel; ordenacoes empatadas usam nome da tag. | Formalizar as definicoes do planejamento aprovado para que indicadores sejam auditaveis e nao confundam upsolve com desempenho durante o desafio. | 11 |
+| D-014 | 2026-10-13 | Testes manuais passam a ser opcionais e nao bloqueiam conclusao nem avanco entre historias. Criterios obrigatorios exigem evidencia automatizada proporcional ao risco; conferencias humanas nao executadas ficam separadas, sem alegar aprovacao. Substitui a exigencia operacional de aguardar confirmacao manual. | Orientacao explicita do usuario nesta conversa. | 12-14 e futuras sessoes |
+| D-015 | 2026-10-13 | Consolidar a maior faixa de 100 pontos com 8 tentativas, 70% de AC, 5 ACs sem dica e 3 tags em 3 conjuntos distintos numa janela de 20 Ipsums encerrados. Preservar permanentemente a maior faixa alcancada; avaliar janelas historicas para recuperar marcos. | Plano aprovado pelo usuario com ajuste: quedas recentes ja reduzem o Rating Lorem, enquanto a faixa registra consistencia demonstrada. | 13-14 |
+| D-016 | 2026-10-13 | Dentro da primeira camada elegivel de rating, candidatos com tags oficiais usam prioridade lexicografica: mais tags ineditas, menor exposicao total, maior media de falha com amostra, maior uso de dica com amostra e menor sobreposicao com o ultimo Ipsum encerrado; sortear empates. Exposicao deduplica historico remoto e snapshots por problema. Persistir fatores e revela-los somente apos o encerramento. | Executar o plano da Historia 12 preservando as restricoes da D-010 e o contrato da D-013. | 12, 14 |
+| D-017 | 2026-10-13 | O primeiro Ipsum exige uma importacao bem-sucedida do historico do perfil; ausencia de sincronizacao nao representa historico vazio. Depois disso, recomendacao e estatisticas podem usar dados locais. | Preservar o ineditismo confirmado pela D-002 no primeiro acesso e permitir recuperacao sem rede com dados existentes. | 04, 14 |
 
 ### Tabela de cenarios da D-012
 

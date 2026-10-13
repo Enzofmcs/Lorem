@@ -32,11 +32,23 @@ fun IpsumResultScreen(state: IpsumResultUiState, onClose: () -> Unit) {
             is IpsumResultUiState.Ready -> {
                 val result = state.result
                 val ipsum = result.ipsum
-                Text(if (ipsum.status == IpsumStatus.COMPLETED) "Resolvido no Ipsum" else "Pendente sem AC")
+                Text(when (ipsum.status) {
+                    IpsumStatus.COMPLETED -> "Resolvido no Ipsum"
+                    IpsumStatus.SOLVED_OUTSIDE -> "Resolvido fora do Ipsum; tentativa original sem AC"
+                    else -> "Pendente sem AC"
+                })
+                ipsum.solvedOutsideAtEpochMillis?.let { Text("AC posterior: ${formatSyncTime(it)}; o rating original foi preservado.") }
                 Text(ipsum.problem.name, style = MaterialTheme.typography.titleLarge)
                 Text("Rating do problema: ${ipsum.selectedRating}")
                 Text("Categoria: ${categoryLabel(ipsum.category.name)}")
                 Text("Tópicos: ${ipsum.problem.tags.sorted().joinToString()}")
+                ipsum.recommendationFactors?.let { factors ->
+                    Text("Por que este problema?", style = MaterialTheme.typography.titleMedium)
+                    Text("A dificuldade foi escolhida para seu nível; os tópicos favorecem variedade, prática e autonomia.")
+                    val unseen = factors.tags.filter { it.exposure == 0 }.map { it.tag }
+                    if (unseen.isNotEmpty()) Text("Tópicos novos na sua prática: ${unseen.joinToString()}")
+                    if (factors.recentOverlap == 0) Text("Os tópicos variam em relação ao último Ipsum encerrado.")
+                }
                 ipsum.totalTimeMillis()?.let { Text("Tempo total: ${formatElapsed(it)}") }
                     ?: Text("Tempo total indisponível", color = MaterialTheme.colorScheme.error)
                 Text("Dica usada: ${if (ipsum.hintRevealedAtEpochMillis != null) "sim" else "não"}")

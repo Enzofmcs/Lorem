@@ -38,6 +38,7 @@ data class IpsumEntity(
     val solvedOutsideAtEpochMillis: Long?,
     val status: String,
     val activeSlot: Int?,
+    val recommendationFactors: String? = null,
 )
 
 fun Ipsum.toEntity() = IpsumEntity(
@@ -64,6 +65,7 @@ fun Ipsum.toEntity() = IpsumEntity(
     solvedOutsideAtEpochMillis = solvedOutsideAtEpochMillis,
     status = status.name,
     activeSlot = if (status == IpsumStatus.ACTIVE) 1 else null,
+    recommendationFactors = recommendationFactors?.toStoredJson(),
 )
 
 fun IpsumEntity.toDomain() = Ipsum(
@@ -91,4 +93,5 @@ fun IpsumEntity.toDomain() = Ipsum(
     expectedTimeMillis = expectedTimeMillis,
     solvedOutsideAtEpochMillis = solvedOutsideAtEpochMillis,
     status = IpsumStatus.valueOf(status),
+    recommendationFactors = recommendationFactors?.toRecommendationFactors(),
 )

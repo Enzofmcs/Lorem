@@ -8,6 +8,7 @@ import dev.lorem.app.domain.model.IpsumSubmission
 import dev.lorem.app.domain.model.IpsumFailureReason
 import dev.lorem.app.domain.model.IpsumResult
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 
 interface LoremRepository {
     val profile: Flow<LocalProfile?>
@@ -20,6 +21,22 @@ interface LoremRepository {
     suspend fun saveProfile(profile: LocalProfile)
 
     suspend fun clearProfile()
+
+    /** Update only the synchronization timestamp of the account queried. */
+    suspend fun markHistorySynchronized(ownerHandle: String, atEpochMillis: Long) {
+        val current = profile.first() ?: return
+        if (current.handle.trim().equals(ownerHandle.trim(), true)) {
+            saveProfile(current.copy(lastSyncEpochMillis = atEpochMillis))
+        }
+    }
+
+    /** Metadata refresh must preserve training progress that changed during the remote request. */
+    suspend fun updateProfileMetadata(ownerHandle: String, displayName: String, officialRating: Int?) {
+        val current = profile.first() ?: return
+        if (current.handle.trim().equals(ownerHandle.trim(), true)) {
+            saveProfile(current.copy(handle = ownerHandle.trim(), displayName = displayName, officialRating = officialRating))
+        }
+    }
 
     /** Persists history only for the Codeforces account identified by [ownerHandle]. */
     suspend fun saveProblemHistory(ownerHandle: String, history: List<ProblemHistory>)

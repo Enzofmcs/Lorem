@@ -21,6 +21,7 @@ import dev.lorem.app.ui.HistorySyncUiState
 import dev.lorem.app.ui.CatalogSyncUiState
 import dev.lorem.app.ui.navigation.LoremDestination
 import dev.lorem.app.ui.StartIpsumUiState
+import dev.lorem.app.domain.ConsolidationProgress
 
 @Composable
 fun HomeScreen(
@@ -37,6 +38,7 @@ fun HomeScreen(
     startIpsumState: StartIpsumUiState = StartIpsumUiState.Idle,
     onStartIpsum: () -> Unit = {},
     onNavigate: (String) -> Unit,
+    consolidation: ConsolidationProgress? = null,
 ) {
     val attemptedCount = problemHistory.count(ProblemHistory::attempted)
     val solvedCount = problemHistory.count(ProblemHistory::hasAcceptedSubmission)
@@ -89,6 +91,7 @@ fun HomeScreen(
             ) {
                 Text("Abrir ${LoremDestination.Configuration.title}")
             }
+            consolidation?.let { ConsolidationCard(it, compact = true) }
 
             Text("Histórico do Codeforces", style = MaterialTheme.typography.titleMedium)
             if (hasSynchronized) {
@@ -173,6 +176,6 @@ private fun catalogSyncUiMessage(state: CatalogSyncUiState.Error): String =
         state.message
     }
 
-private fun formatSyncTime(epochMillis: Long): String = java.time.Instant.ofEpochMilli(epochMillis)
+internal fun formatSyncTime(epochMillis: Long): String = java.time.Instant.ofEpochMilli(epochMillis)
     .atZone(java.time.ZoneId.systemDefault())
     .format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))

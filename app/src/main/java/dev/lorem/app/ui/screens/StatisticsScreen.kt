@@ -28,6 +28,7 @@ import dev.lorem.app.domain.AcRate
 import dev.lorem.app.domain.AttemptStatistics
 import dev.lorem.app.domain.IpsumStatistics
 import dev.lorem.app.domain.TagStatistics
+import dev.lorem.app.domain.ConsolidationProgress
 import dev.lorem.app.ui.StatisticsUiState
 import java.time.Instant
 import java.time.ZoneId
@@ -39,7 +40,7 @@ private enum class StatisticsSection(val label: String) {
 }
 
 @Composable
-fun StatisticsScreen(state: StatisticsUiState, onNavigateHome: () -> Unit = {}) {
+fun StatisticsScreen(state: StatisticsUiState, onNavigateHome: () -> Unit = {}, consolidation: ConsolidationProgress? = null) {
     Scaffold { padding ->
         when (state) {
             StatisticsUiState.Loading -> Column(Modifier.padding(padding).padding(16.dp)) {
@@ -50,13 +51,13 @@ fun StatisticsScreen(state: StatisticsUiState, onNavigateHome: () -> Unit = {}) 
                 Text("Vincule um handle para visualizar suas estatísticas.")
                 Button(onClick = onNavigateHome) { Text("Voltar ao Início") }
             }
-            is StatisticsUiState.Ready -> StatisticsContent(state.statistics, padding, onNavigateHome)
+            is StatisticsUiState.Ready -> StatisticsContent(state.statistics, padding, onNavigateHome, consolidation)
         }
     }
 }
 
 @Composable
-private fun StatisticsContent(stats: IpsumStatistics, padding: PaddingValues, onNavigateHome: () -> Unit) {
+private fun StatisticsContent(stats: IpsumStatistics, padding: PaddingValues, onNavigateHome: () -> Unit, consolidation: ConsolidationProgress?) {
     var sectionName by rememberSaveable(stats.ownerHandle) { mutableStateOf(StatisticsSection.SUMMARY.name) }
     val section = StatisticsSection.valueOf(sectionName)
     LazyColumn(
@@ -88,6 +89,7 @@ private fun StatisticsContent(stats: IpsumStatistics, padding: PaddingValues, on
         }
         when (section) {
             StatisticsSection.SUMMARY -> {
+                if (consolidation != null) item { ConsolidationCard(consolidation) }
                 item { AttemptCard("Seu desempenho", stats.overall, "statistics-overall") }
                 item {
                     Text("Evolução do Rating Lorem", style = MaterialTheme.typography.titleLarge)

@@ -70,8 +70,8 @@ class MainActivityTest {
         composeRule.onNodeWithText("Validar e abrir Início").performClick()
         composeRule.waitUntil(5_000) { local.profile.value != null }
 
-        composeRule.onNodeWithText("Início").assertIsDisplayed()
-        composeRule.onNodeWithText("Gennady (@tourist)").assertIsDisplayed()
+        composeRule.onNodeWithText("Início").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Gennady (@tourist)").performScrollTo().assertIsDisplayed()
         assertEquals(4009, local.profile.value?.loremRating)
     }
 
@@ -102,7 +102,7 @@ class MainActivityTest {
         val local = MemoryLoremRepository(original)
         setApp(local, UserLookupResult.Success(CodeforcesUser("new", "New User", 1500)))
 
-        composeRule.onNodeWithText("Abrir Configuração").performClick()
+        composeRule.onNodeWithText("Abrir Configuração").performScrollTo().performClick()
         composeRule.onNodeWithText("Handle do Codeforces").performTextReplacement("new")
         composeRule.onNodeWithText("Atualizar handle").performClick()
 
@@ -116,7 +116,7 @@ class MainActivityTest {
         composeRule.onNodeWithText("Trocar").performClick()
         composeRule.waitUntil(5_000) { local.profile.value?.handle == "new" }
 
-        composeRule.onNodeWithText("New User (@new)").assertIsDisplayed()
+        composeRule.onNodeWithText("New User (@new)").performScrollTo().assertIsDisplayed()
         assertEquals(1500, local.profile.value?.officialRating)
     }
 
@@ -126,7 +126,7 @@ class MainActivityTest {
         val local = MemoryLoremRepository(original)
         setApp(local, UserLookupResult.UserNotFound)
 
-        composeRule.onNodeWithText("Abrir Configuração").performClick()
+        composeRule.onNodeWithText("Abrir Configuração").performScrollTo().performClick()
         composeRule.onNodeWithText("Handle do Codeforces").performTextReplacement("missing")
         composeRule.onNodeWithText("Atualizar handle").performClick()
         composeRule.onNodeWithText("Trocar").performClick()

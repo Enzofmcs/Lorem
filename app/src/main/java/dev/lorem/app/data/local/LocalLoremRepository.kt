@@ -18,6 +18,7 @@ import dev.lorem.app.domain.model.IpsumSubmission
 import dev.lorem.app.domain.repository.IpsumUpdate
 import dev.lorem.app.domain.model.IpsumFailureReason
 import dev.lorem.app.domain.model.IpsumResult
+import dev.lorem.app.domain.calculateConsolidatedRating
 import java.io.IOException
 import java.util.Locale
 import kotlinx.coroutines.flow.Flow
@@ -25,6 +26,11 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class LocalLoremRepository(
@@ -33,11 +39,15 @@ class LocalLoremRepository(
     private val problemCatalogDao: ProblemCatalogDao,
     private val ipsumDao: IpsumDao,
 ) : LoremRepository {
+    private val profileMutation = Mutex()
     override val profile: Flow<LocalProfile?> = dataStore.data
         .catch { error ->
             if (error is IOException) emit(emptyPreferences()) else throw error
         }
-        .map(::readProfile)
+        .map { preferences ->
+            val current = readProfile(preferences)
+            if (current == null) null else reconcileTrainingProgress(current)
+        }.flowOn(Dispatchers.IO)
 
     override val problemHistory: Flow<List<ProblemHistory>> = profile
         .flatMapLatest { profile ->
@@ -58,23 +68,52 @@ class LocalLoremRepository(
     }.map { values -> values.map(IpsumEntity::toDomain) }
     override val activeIpsum: Flow<Ipsum?> = ipsumDao.observeActive().map { it?.toDomain() }
 
-    override suspend fun saveProfile(profile: LocalProfile) {
+    override suspend fun saveProfile(profile: LocalProfile) = profileMutation.withLock {
         require(profile.handle.isNotBlank()) { "handle must not be blank" }
         require(profile.displayName.isNotBlank()) { "displayName must not be blank" }
+        val active = ipsumDao.observeActive().first()
+        check(active == null || active.ownerHandle == normalizeHandle(profile.handle)) {
+            "End the active Ipsum before changing accounts"
+        }
         dataStore.edit { preferences ->
+            val sameOwner = preferences[HANDLE]?.let(::normalizeHandle) == normalizeHandle(profile.handle)
+            if (!sameOwner) {
+                preferences.remove(LAST_RATED_IPSUM)
+            }
             preferences.remove(LEGACY_DISPLAY_NAME)
             preferences[HANDLE] = profile.handle.trim()
             preferences[DISPLAY_NAME] = profile.displayName.trim()
             profile.officialRating?.let { preferences[OFFICIAL_RATING] = it }
                 ?: preferences.remove(OFFICIAL_RATING)
             preferences[LOREM_RATING] = profile.loremRating
-            profile.consolidatedRating?.let { preferences[CONSOLIDATED_RATING] = it }
+            val consolidated = if (sameOwner) listOfNotNull(preferences[CONSOLIDATED_RATING], profile.consolidatedRating).maxOrNull()
+                else profile.consolidatedRating
+            consolidated?.let { preferences[CONSOLIDATED_RATING] = it }
                 ?: preferences.remove(CONSOLIDATED_RATING)
             preferences[LAST_SYNC] = profile.lastSyncEpochMillis
         }
+        Unit
     }
 
-    override suspend fun clearProfile() {
+    override suspend fun markHistorySynchronized(ownerHandle: String, atEpochMillis: Long) {
+        dataStore.edit { preferences ->
+            if (preferences[HANDLE]?.let(::normalizeHandle) == normalizeHandle(ownerHandle)) {
+                preferences[LAST_SYNC] = maxOf(preferences[LAST_SYNC] ?: 0L, atEpochMillis)
+            }
+        }
+    }
+
+    override suspend fun updateProfileMetadata(ownerHandle: String, displayName: String, officialRating: Int?) {
+        dataStore.edit { preferences ->
+            if (preferences[HANDLE]?.let(::normalizeHandle) == normalizeHandle(ownerHandle)) {
+                preferences[HANDLE] = ownerHandle.trim()
+                preferences[DISPLAY_NAME] = displayName
+                officialRating?.let { preferences[OFFICIAL_RATING] = it } ?: preferences.remove(OFFICIAL_RATING)
+            }
+        }
+    }
+
+    override suspend fun clearProfile() = profileMutation.withLock {
         dataStore.edit { preferences ->
             preferences.remove(LEGACY_DISPLAY_NAME)
             preferences.remove(HANDLE)
@@ -83,7 +122,9 @@ class LocalLoremRepository(
             preferences.remove(LOREM_RATING)
             preferences.remove(CONSOLIDATED_RATING)
             preferences.remove(LAST_SYNC)
+            preferences.remove(LAST_RATED_IPSUM)
         }
+        Unit
     }
 
     override suspend fun saveProblemHistory(ownerHandle: String, history: List<ProblemHistory>) {
@@ -102,10 +143,12 @@ class LocalLoremRepository(
         dataStore.edit { it[CATALOG_LAST_UPDATED] = updatedAtEpochMillis }
     }
 
-    override suspend fun createActiveIpsum(ipsum: Ipsum): Ipsum {
+    override suspend fun createActiveIpsum(ipsum: Ipsum): Ipsum = profileMutation.withLock {
         require(ipsum.id == 0L) { "new Ipsum must not have an id" }
         require(ipsum.startedAtEpochMillis > 0) { "startedAtEpochMillis must be positive" }
-        return try {
+        val current = readProfile(dataStore.data.first())
+        check(current == null || normalizeHandle(current.handle) == normalizeHandle(ipsum.ownerHandle)) { "Profile changed while selecting an Ipsum" }
+        try {
             ipsum.copy(
                 id = ipsumDao.insert(ipsum.copy(ownerHandle = normalizeHandle(ipsum.ownerHandle)).toEntity()),
                 ownerHandle = normalizeHandle(ipsum.ownerHandle),
@@ -125,7 +168,7 @@ class LocalLoremRepository(
         submissions: List<IpsumSubmission>,
     ): IpsumUpdate {
         val update = ipsumDao.record(ipsumId, submissions.map(IpsumSubmission::toEntity))
-        reconcileProfileRating(ipsumDao.find(ipsumId))
+        refreshTrainingProgress()
         return update
     }
 
@@ -136,14 +179,16 @@ class LocalLoremRepository(
     ): Boolean {
         require(endedAtEpochMillis > 0) { "endedAtEpochMillis must be positive" }
         val ended = ipsumDao.endWithoutAc(ipsumId, reason.name, endedAtEpochMillis)
-        reconcileProfileRating(ipsumDao.find(ipsumId))
+        refreshTrainingProgress()
         return ended
     }
 
     override suspend fun getIpsumResult(ipsumId: Long): IpsumResult? {
         val ipsum = ipsumDao.find(ipsumId)?.toDomain() ?: return null
+        val owner = readProfile(dataStore.data.first())?.handle ?: return null
+        if (normalizeHandle(owner) != normalizeHandle(ipsum.ownerHandle)) return null
         if (ipsum.status == dev.lorem.app.domain.model.IpsumStatus.ACTIVE) return null
-        reconcileProfileRating(ipsumDao.find(ipsumId))
+        refreshTrainingProgress()
         val ordered = ipsumDao.submissions(ipsumId)
         val errors = ordered.takeWhile { it.verdict != "OK" }.map { it.verdict }
         return IpsumResult(ipsum, errors)
@@ -152,15 +197,29 @@ class LocalLoremRepository(
     override suspend fun markIpsumsSolvedOutside(firstAcceptedAtByIpsumId: Map<Long, Long>): Int =
         ipsumDao.markSolvedOutside(firstAcceptedAtByIpsumId)
 
-    /** Idempotently finishes a DataStore update if a process stopped after the Room transaction. */
-    private suspend fun reconcileProfileRating(entity: IpsumEntity?) {
-        val ratingAfter = entity?.finalLoremRating ?: return
-        dataStore.edit { preferences ->
-            val sameOwner = preferences[HANDLE]?.let(::normalizeHandle) == entity.ownerHandle
-            if (sameOwner && preferences[LOREM_RATING] == entity.initialLoremRating) {
-                preferences[LOREM_RATING] = ratingAfter
+    private suspend fun refreshTrainingProgress() {
+        readProfile(dataStore.data.first())?.let { reconcileTrainingProgress(it) }
+    }
+
+    /** Recover Room -> DataStore interruption without replaying an old result after a rating cycle. */
+    private suspend fun reconcileTrainingProgress(current: LocalProfile): LocalProfile? {
+        val owner = normalizeHandle(current.handle)
+        val attempts = ipsumDao.observeForOwner(owner).first().map(IpsumEntity::toDomain)
+        val latest = attempts.filter { it.finalLoremRating != null && it.endedAtEpochMillis != null }.maxByOrNull { it.id }
+        val consolidated = calculateConsolidatedRating(attempts, current.consolidatedRating, owner).consolidatedRating
+        val updated = dataStore.edit { preferences ->
+            if (preferences[HANDLE]?.let(::normalizeHandle) == owner) {
+                if (latest != null && (preferences[LAST_RATED_IPSUM] ?: 0L) < latest.id &&
+                    (preferences[LOREM_RATING] == latest.initialLoremRating || preferences[LOREM_RATING] == latest.finalLoremRating)) {
+                    preferences[LOREM_RATING] = requireNotNull(latest.finalLoremRating)
+                    preferences[LAST_RATED_IPSUM] = latest.id
+                }
+                if (consolidated != null && consolidated > (preferences[CONSOLIDATED_RATING] ?: 0)) {
+                    preferences[CONSOLIDATED_RATING] = consolidated
+                }
             }
         }
+        return readProfile(updated)
     }
 
     private fun readProfile(preferences: Preferences): LocalProfile? {
@@ -186,6 +245,7 @@ class LocalLoremRepository(
         val OFFICIAL_RATING = intPreferencesKey("profile_official_rating")
         val LOREM_RATING = intPreferencesKey("profile_lorem_rating")
         val CONSOLIDATED_RATING = intPreferencesKey("profile_consolidated_rating")
+        val LAST_RATED_IPSUM = longPreferencesKey("profile_last_rated_ipsum")
         val LAST_SYNC = longPreferencesKey("profile_last_sync")
         val CATALOG_LAST_UPDATED = longPreferencesKey("catalog_last_updated")
     }

@@ -6,15 +6,15 @@
 
 ## Estado atual
 
-**Foco atual:** Historia 12 - Recomendacao orientada por variedade.
+**Foco atual:** entrega das Historias 12-14 concluida; fluxo completo pronto para demonstracao.
 
-**Ultima historia verificada:** Historia 11; Historias 10 e 11 concluidas com confirmacao manual do usuario em 2026-10-13.
+**Ultima historia verificada:** Historia 14 - Fluxo completo e robustez; Historias 12-14 verificadas automaticamente em 2026-10-13.
 
-**Primeiro item pendente:** calcular exposicao, AC, falha e uso de dica por tag para orientar a recomendacao.
+**Primeiro item pendente:** nenhum item funcional do escopo planejado.
 
-**Proxima entrega demonstravel:** recomendacao inedita que preserve rating e priorize variedade e necessidade por tag.
+**Proxima entrega demonstravel:** jornada completa pelo APK debug e roteiro `DEMO.md`.
 
-**Bloqueios conhecidos:** nenhum.
+**Bloqueios conhecidos:** nenhum. Conferencia em dispositivo e opcional (D-014).
 
 ## Como atualizar
 
@@ -24,13 +24,47 @@
 - Nunca conclua a historia enquanto algum criterio obrigatorio estiver pendente.
 - Atualize somente itens para os quais exista evidencia automatizada ou confirmacao
   manual registrada em [`SESSIONS.md`](SESSIONS.md).
+- Pela D-014, testes manuais sao opcionais: nao impedem concluir a historia ou
+  iniciar a seguinte. Mantenha conferencias humanas fora dos criterios obrigatorios
+  e nao as marque como executadas sem evidencia. Verificacoes automatizadas
+  obrigatorias continuam bloqueando a conclusao quando falharem.
 
 ## Dependencias entre historias
 
-O caminho principal e sequencial: **00 -> 01 -> 02 -> ... -> 14**. Consulte historias
-anteriores somente quando o item atual depender de contrato ou evidencia nelas. As
-historias 08 e 13 tambem dependem das decisoes abertas explicitamente citadas em seus
-checklists; veja [`DECISIONS.md`](DECISIONS.md).
+As Historias **00-14 estao concluidas**. O bloco **12 -> 13 -> 14** foi implementado
+e verificado nesta sessao.
+Consulte historias anteriores somente para os contratos e evidencias necessarios.
+A DA-04 da Historia 13 foi definida nesta conversa pela D-015; a implementacao deve
+preservar a maior faixa alcancada. Veja [`DECISIONS.md`](DECISIONS.md).
+
+## Plano das historias restantes
+
+**Plano executado em 2026-10-13:** Historias 12, 13 e 14 concluidas com 147 testes
+debug e 116 release sem falhas, lint sem erros e APK debug gerado.
+
+Replanejamento em 2026-10-13, conferido contra `main` em
+`9e434b0d76f5fddcae84d24486eddcdd19d7d3ac`. A [PR #28](https://github.com/Enzofmcs/Lorem/pull/28)
+implementou a Historia 11 e foi integrada. Seu aceite e as confirmacoes das
+Historias 10/11 permanecem registrados abaixo, sem reabrir ou refazer esses itens.
+
+Base reutilizavel: `buildIpsumStatistics`, `IpsumStatistics`, `AttemptStatistics`,
+`TagStatistics`, `StatisticsUiState`, tela com Resumo/Por rating/Por tag e
+`StatisticsFixtures`. A D-013 continua sendo o contrato desses indicadores.
+
+| Ordem | Historia | Base e dependencias | Entrega demonstravel | Verificacao para concluir |
+|---|---|---|---|---|
+| 1 | 12 - Variedade (concluida) | Metricas por tag da 11; filtros, categoria, fallback e `RandomSource` existentes. | Recomendacao tambem considera falha, dica e recencia, preservando rating e ineditismo. | Perfis artificiais, exposicao deduplicada, sorteio controlado, sigilo, persistencia e migracao dos fatores. |
+| 2 | 13 - Consolidacao (concluida) | Historico original, campo `consolidatedRating` e DA-04 definida pela D-015. | Maior faixa alcancada preservada, separada do rating estimado, com faltantes da proxima faixa. | Limites, diversidade, janelas, recuperacao, isolamento por perfil e escritas concorrentes. |
+| 3 | 14 - Robustez (concluida) | Fluxos 00-13 integrados e testes existentes. | Jornada completa reproduzivel com dados locais, falhas e recuperacao. | Jornada automatizada, Room/DataStore/migracoes e invariantes; regressao final `test lint assembleDebug`. |
+
+Implemente cada historia em pequenas entregas verticais, na ordem indicada. Durante
+as iteracoes, use testes direcionados de `TESTING.md`; ao encerrar uma historia
+relevante ou marco, execute a regressao de Nivel 5. Testes manuais e ensaio humano
+sao opcionais e nao bloqueiam avanco (D-014).
+
+**Continuidade:** nao ha historia funcional pendente neste plano. Para demonstracao
+e avaliacao do TCC, consultar [`DEMO.md`](DEMO.md). Os passos abaixo registram o
+planejamento executado e as evidencias de cada historia.
 
 ## Sumario rapido
 
@@ -500,23 +534,93 @@ estao concluidas. O proximo foco e a Historia 12.
 
 **Historia:** Como usuario, quero praticar estilos variados sem escolher manualmente os topicos.
 
+**Dependencias:** Historias 04 e 11 concluidas; D-010, D-005 e D-013. **Risco:** Nivel 4 (recomendacao).
+
+#### Base existente e ordem de selecao
+
+`RecommendIpsum` ja sorteia a categoria, filtra ineditismo, busca a primeira camada
+de rating disponivel ate 300 pontos e favorece tags ineditas/pouco praticadas.
+Estender essa selecao; preservar `RandomSource`, `StartIpsum` e os contratos atuais.
+
+1. Excluir problemas sem rating, tentados no Codeforces ou usados em qualquer Ipsum.
+2. Sortear a categoria com 1/3 de chance e buscar a primeira camada elegivel de
+   rating conforme D-010. Uma necessidade de tag nunca justifica ampliar o fallback.
+3. Dentro dessa camada, ordenar por necessidade: tags nunca praticadas, menor
+   exposicao, maior taxa de fracasso original e maior uso de dica, nessa ordem.
+   Preferir um vetor de prioridades explicito a pesos arbitrarios que invertam a ordem.
+4. Entre candidatos equivalentes, favorecer menor sobreposicao de tags com o ultimo
+   Ipsum encerrado e sortear os empates restantes. Nao remover o unico candidato
+   valido por repeticao de tag; problemas sem tags nao ganham prioridade artificial.
+
+Exposicao usa problemas unicos da uniao do historico Codeforces e dos Ipsums, com
+tags oficiais do catalogo/snapshot e identidade `contestId + index`. Desempenho e
+uso de dica usam os Ipsums encerrados da Historia 11, pois o historico importado
+nao contem tempo, dica ou resultado de um Ipsum. Uma taxa sem amostra nao indica
+fraqueza. AC posterior nao melhora artificialmente a taxa de sucesso original.
+
+#### Passos de implementacao
+
+1. Reutilizar `buildIpsumStatistics(profile, ipsums, catalog)` e `TagStatistics`:
+   `attempts.total`, `accepted`, `failures` e `hintCount` ja estao disponiveis. Derivar
+   taxas com amostra; complementar a exposicao remota deduplicada por problema, com
+   casos de catalogo incompleto e o mesmo problema presente nas duas fontes. Nao
+   introduzir outro agregador de estatisticas nem alterar a D-013.
+2. Usar comparacao lexicografica entre candidatos com tags: quantidade de tags
+   ineditas (maior), exposicao total dessas tags (menor), media das taxas de falha
+   com amostra (maior), media de uso de dica com amostra (maior) e sobreposicao com
+   o ultimo Ipsum encerrado (menor). Sem amostra nao ha prioridade de fraqueza;
+   candidatos sem tags ficam apos os candidatos com tags da mesma camada, sem
+   receber vantagem por soma vazia. Sortear os empates finais. Preservar categoria,
+   primeira camada de rating disponivel e limites de fallback.
+3. Integrar falha, dica e desempate de recencia ao `RecommendIpsum`; testar perfis
+   artificiais e sorteio injetado, sem depender de estatistica aleatoria nos testes.
+4. Incluir fatores resumidos na recomendacao persistida por `StartIpsum`: tags,
+   exposicao, fracasso, dica e desempate, alem da categoria/faixa/fallback ja salvos. Se exigir
+   novos campos Room, criar migracao com valores compativeis para Ipsums antigos.
+5. Disponibilizar os fatores para depuracao ou apos o encerramento, com testes que
+   garantam sigilo enquanto ativo. Regressar filtros, fallback, unico ativo e
+   persistencia; concluir com as verificacoes de marco da historia.
+
+#### Cenarios de verificacao
+
+- Empate de exposicao: maior falha prevalece; empatada a falha, maior uso de dica.
+- Grafos nunca praticados prevalecem sobre tags dominadas na mesma camada de rating.
+- Problema fraco ja tentado, pendente ou usado em Ipsum continua excluido.
+- Necessidade forte a 400 pontos nao ultrapassa o limite de fallback de 300.
+- Multiplas tags e ausencia de tags nao criam duplicidade nem prioridade indevida.
+- Sorteios controlados alcancam mais de um candidato equivalente; menor sobreposicao
+  evita repeticao quando ha alternativa equivalente. Um unico elegivel ainda funciona.
+
 #### Checklist
 
-- [ ] Calcular exposicao, AC, falha e uso de dica por tag.
-- [ ] Criar uma pontuacao simples de necessidade por tag.
-- [ ] Priorizar problemas que atendam tags necessarias.
-- [ ] Manter rating e ineditismo como restricoes anteriores a tag.
-- [ ] Evitar repetir excessivamente a mesma tag.
-- [ ] Manter algum sorteio entre bons candidatos.
-- [ ] Registrar os fatores da recomendacao para depuracao.
-- [ ] Nao revelar a justificativa antes do fim do Ipsum.
-- [ ] Testar com perfis artificiais de historico.
+- [x] Calcular exposicao, AC, falha e uso de dica por tag.
+- [x] Criar uma pontuacao simples de necessidade por tag.
+- [x] Priorizar problemas que atendam tags necessarias.
+- [x] Manter rating e ineditismo como restricoes anteriores a tag.
+- [x] Evitar repetir excessivamente a mesma tag.
+- [x] Manter algum sorteio entre bons candidatos.
+- [x] Registrar os fatores da recomendacao para depuracao.
+- [x] Nao revelar a justificativa antes do fim do Ipsum.
+- [x] Testar com perfis artificiais de historico.
 
 #### Exemplos de aceite
 
-- [ ] Um usuario sem pratica de grafos recebe prioridade de grafos quando houver candidato adequado.
-- [ ] Uma tag fraca nao permite selecionar problema ja tentado.
-- [ ] Varias recomendacoes nao produzem sempre o mesmo problema ou a mesma tag.
+- [x] Um usuario sem pratica de grafos recebe prioridade de grafos quando houver candidato adequado.
+- [x] Uma tag fraca nao permite selecionar problema ja tentado.
+- [x] Com alternativas equivalentes, recencia e sorteio controlado permitem variar problemas e tags; sem alternativa, o unico candidato valido continua selecionavel.
+
+#### Implementacao
+
+- `TagNeed`/`RecommendationFactors` usam os agregados da Historia 11, exposicao por
+  problema unico, taxas somente com amostra e desempate por recencia/sorteio.
+- Categoria, filtros de identidade, faixa e fallback da D-010 continuam anteriores
+  a necessidade por tag. Dados de outro handle nao influenciam a recomendacao.
+- `StartIpsum` salva os fatores em Room; migracao 9-10 adiciona um campo nullable
+  compativel com registros antigos. Resultado revela a explicacao, mantendo-a
+  ausente da tela ativa mesmo apos revelar a dica.
+- `RecommendVarietyTest` verifica exposicao deduplicada, snapshots fora do catalogo,
+  falha, dica, recencia, sorteio, tags ausentes, exclusoes, fallback e perfis.
+
 
 ---
 
@@ -524,24 +628,76 @@ estao concluidas. O proximo foco e a Historia 12.
 
 **Historia:** Como usuario, quero que meu nivel represente consistencia e variedade, nao acertos isolados.
 
+**Dependencias:** Historia 11; manter compatibilidade com a 12. **Risco:** Nivel 4
+(regra de dominio e persistencia do perfil).
+
+**Regra definida (DA-04 / D-015):** em uma janela dos 20 encerrados mais recentes,
+uma faixa `[F, F + 99]` exige 8 tentativas, 70% de AC no Ipsum, 5 ACs sem dica e,
+nesses ACs sem dica, 3 tags oficiais em 3 conjuntos de tags distintos. Faixas comecam
+em 800, em passos de 100. AC posterior permanece insucesso original.
+
+**A maior faixa alcancada e permanente.** Perda de consistencia reduz o Rating Lorem
+conforme D-012, mas nao reduz a consolidacao. Sem evidencia de marco, manter `null`.
+A proxima faixa e a consolidada + 100; sem marco, usar a faixa do rating estimado
+arredondada para baixo em passos de 100, com minimo 800. A avaliacao pode reconhecer
+uma faixa superior quando ela satisfizer todos os criterios, sem exigir treinar
+faixas inferiores ja distantes do nivel atual.
+
+#### Passos de implementacao
+
+1. Criar tabela de cenarios da D-015 antes do calculo: 7/8 tentativas, 69%/70% AC,
+   4/5 ACs sem dica, 2/3 tags e conjuntos, AC isolado e repeticao de estilo. Incluir
+   perda de evidencia recente preservando o marco e AC posterior sem promove-lo.
+2. Implementar uma funcao pura (`CalculateConsolidatedRating`) que retorna faixa
+   alcancada e requisitos cumpridos/faltantes da proxima faixa. Reutilizar os modelos
+   originais e o contrato da 11; nao substituir seus agregados. Avaliar cada janela
+   historica de ate 20 encerrados para recuperar marcos cuja escrita foi interrompida;
+   a janela recente calcula o progresso atual. Nao contar ativo ou upsolve como AC.
+3. Manter Rating Lorem estimado e consolidacao separados. Nao recalcular ratings
+   antigos nem usar o rating estimado para substituir evidencia de consolidacao.
+   O resultado e o maximo entre a faixa persistida e a maior faixa comprovada;
+   ausencia de evidencia recente nao apaga o marco.
+4. Recalcular apos mudancas relevantes no historico/perfil e persistir pelo campo
+   `consolidatedRating` existente. Garantir idempotencia, dono correto e recuperacao
+   apos reinicio; evitar que uma escrita de consolidacao sobrescreva rating mais
+   recente ou que observar/salvar o perfil cause um ciclo de atualizacoes.
+5. Mostrar na Home/Estatisticas rating estimado, faixa ou dados insuficientes e
+   faltantes objetivos (tentativas, ACs, autonomia e diversidade). Cobrir dados
+   vazios, limites, multitag, ordem temporal, avanco e preservacao apos falhas.
+   Reutilizar `StatisticsScreen`/`StatisticsUiState` e Home para mostrar o progresso;
+   encerrar o marco C com `test lint assembleDebug`.
+
 #### Checklist
 
-- [ ] Resolver a decisao DA-04.
-- [ ] Definir faixas em passos de 100 pontos.
-- [ ] Definir quantidade minima de Ipsums na faixa.
-- [ ] Definir desempenho minimo.
-- [ ] Definir quantidade minima de AC sem dica.
-- [ ] Definir diversidade minima de tags.
-- [ ] Considerar desempenho recente sem apagar o historico.
-- [ ] Calcular `rating estimado` e `faixa consolidada` separadamente.
-- [ ] Mostrar o que falta para consolidar a proxima faixa.
-- [ ] Criar testes para avanco, permanencia e perda de consistencia.
+- [x] Resolver a decisao DA-04 (D-015, definida nesta conversa).
+- [x] Definir faixas em passos de 100 pontos.
+- [x] Definir quantidade minima de Ipsums na faixa.
+- [x] Definir desempenho minimo.
+- [x] Definir quantidade minima de AC sem dica.
+- [x] Definir diversidade minima de tags.
+- [x] Considerar desempenho recente sem apagar o historico.
+- [x] Calcular `rating estimado` e `faixa consolidada` separadamente.
+- [x] Mostrar o que falta para consolidar a proxima faixa.
+- [x] Criar testes para avanco e permanencia da faixa, inclusive apos perda de consistencia.
 
 #### Exemplo de aceite
 
-- [ ] O app pode mostrar `Rating estimado: 1518`, `Faixa consolidada: 1400` e explicar objetivamente o que falta.
-- [ ] Um unico AC dificil nao consolida uma nova faixa.
-- [ ] Diversos ACs do mesmo estilo nao simulam variedade suficiente.
+- [x] O app pode mostrar `Rating estimado: 1518`, `Faixa consolidada: 1400` e explicar objetivamente o que falta.
+- [x] Um unico AC dificil nao consolida uma nova faixa.
+- [x] Diversos ACs do mesmo estilo nao simulam variedade suficiente.
+
+#### Implementacao
+
+- `calculateConsolidatedRating` avalia janelas ordenadas do historico original,
+  recupera a maior faixa comprovada e nunca reduz um marco persistido. A janela
+  recente produz contagens/faltantes da proxima faixa, conforme D-015.
+- A reconciliacao local grava apenas o campo de consolidacao e os campos de rating
+  necessarios; preserva dono, rating mais recente e o marco apos reinicio.
+- Home mostra resumo sem deslocar a acao principal; Estatisticas mostra os requisitos
+  completos. Os indicadores da Historia 11 e seu conjunto conhecido foram preservados.
+- `CalculateConsolidatedRatingTest` cobre fronteiras, falta de amostra/autonomia,
+  variedade, upsolve, ordenacao, identidade, perfil e permanencia apos fracassos.
+
 
 ---
 
@@ -549,31 +705,63 @@ estao concluidas. O proximo foco e a Historia 12.
 
 **Historia:** Como usuario e autor do TCC, quero demonstrar o Lorem do inicio ao fim sem improvisacao.
 
+**Dependencias:** Historias 00-13 concluidas. **Risco:** Nivel 4 nas recuperacoes e
+Nivel 5 no encerramento do produto.
+
+#### Passos de implementacao e verificacao
+
+1. Mapear os criterios abaixo aos testes existentes e acrescentar somente lacunas.
+   Reutilizar `MainActivityTest`, `StatisticsScreenTest`, `LoremViewModelTest`,
+   `StatisticsFixtures`, `IpsumPersistenceTest`, `LoremDatabaseMigrationTest` e testes
+   da API/gate. Preservar a suite e o conjunto conhecido da Historia 11 (media 40 min,
+   4 encerrados); um fake sozinho nao comprova persistencia nem migracao real.
+2. Automatizar duas jornadas com Codeforces falso e tempo/sorteio controlados:
+   perfil -> sincronizacao -> recomendacao -> dica opcional -> WA -> AC -> resultado
+   -> historico -> estatisticas -> proxima recomendacao; e encerramento sem AC ->
+   pendencia -> AC posterior -> atualizacao idempotente. Validar consolidacao com
+   um historico conhecido suficiente e inspecionar os dados, alem da navegacao.
+3. Testar recuperacao com armazenamento real: recriacao da tela, nova instancia do
+   repositorio sobre o mesmo banco/DataStore e restauracao de app com Ipsum ativo.
+   Confirmar cronometro por timestamps e resultado/rating aplicado uma unica vez,
+   incluindo interrupcao entre a transacao Room e reconciliacao do perfil.
+4. Exercitar `FAILED`, falta de rede, limite da API, pagina incompleta, ausencia de
+   candidatos, cliques concorrentes e troca de handle. Auditar escritas de perfil:
+   `SynchronizeProblemHistory` hoje salva uma copia capturada antes da consulta;
+   sincronizacao tardia nao pode sobrescrever novo rating ou consolidacao. Usar
+   atualizacao atomica dos campos necessarios e testar a concorrencia. Sem rede,
+   preservar historico/estatisticas e requisitos de ineditismo; permitir recuperacao.
+5. Verificar estados vazios/carregando, rotulos acessiveis e acoes com Compose/lint;
+   executar `./gradlew test`, `./gradlew lint` e `./gradlew assembleDebug`. Resolver
+   erros relevantes e registrar comandos/resultados reais, sem duplicar execucoes.
+6. Documentar roteiro de demonstracao reproduzivel e limites da avaliacao do TCC
+   conforme `SPEC.md`. Ensaio humano e conferencia em dispositivo ficam opcionais,
+   separados do aceite; concluir o marco D quando as evidencias obrigatorias passarem.
+
 #### Checklist funcional
 
-- [ ] Perfil novo completa o fluxo inicial.
-- [ ] Historico remoto impede repeticoes.
-- [ ] Catalogo funciona apos sincronizacao.
-- [ ] Ipsum sobrevive a rotacao e reinicio do processo.
-- [ ] Dica fica registrada.
-- [ ] Submissoes sao detectadas corretamente.
-- [ ] Resultado altera o rating uma vez.
-- [ ] Pendencia pode virar AC externo.
-- [ ] Estatisticas batem com o historico.
-- [ ] Recomendacao considera variedade.
-- [ ] Consolidacao explica o progresso.
+- [x] Perfil novo completa o fluxo inicial.
+- [x] Historico remoto impede repeticoes.
+- [x] Catalogo funciona apos sincronizacao.
+- [x] Ipsum sobrevive a rotacao e reinicio do processo.
+- [x] Dica fica registrada.
+- [x] Submissoes sao detectadas corretamente.
+- [x] Resultado altera o rating uma vez.
+- [x] Pendencia pode virar AC externo.
+- [x] Estatisticas batem com o historico.
+- [x] Recomendacao considera variedade.
+- [x] Consolidacao explica o progresso.
 
 #### Checklist de qualidade
 
-- [ ] Estados de carregamento e vazio.
-- [ ] Mensagens de erro recuperaveis.
-- [ ] Funcionamento razoavel sem internet usando dados locais.
-- [ ] Protecao contra cliques repetidos.
-- [ ] Acessibilidade basica e textos legiveis.
-- [ ] Testes unitarios das regras centrais.
-- [ ] Testes de integracao usando repositorio falso.
-- [ ] Build, testes e lint sem erros relevantes.
-- [ ] Roteiro de demonstracao ensaiado.
+- [x] Estados de carregamento e vazio.
+- [x] Mensagens de erro recuperaveis.
+- [x] Funcionamento razoavel sem internet usando dados locais.
+- [x] Protecao contra cliques repetidos.
+- [x] Acessibilidade basica e textos legiveis.
+- [x] Testes unitarios das regras centrais.
+- [x] Testes de integracao usando repositorio falso.
+- [x] Build, testes e lint sem erros relevantes.
+- [x] Roteiro de demonstracao documentado e jornada correspondente verificada automaticamente.
 
 #### Fluxo final de demonstracao
 
@@ -581,6 +769,55 @@ estao concluidas. O proximo foco e a Historia 12.
 handle -> sincronizacao -> recomendacao -> Ipsum -> dica opcional
 -> submissao -> resultado -> historico -> estatisticas -> proxima recomendacao
 ```
+
+#### Implementacao e mapa de evidencias
+
+| Criterio | Evidencia automatizada |
+|---|---|
+| Primeiro acesso e importacao antes de recomendar | `CompleteAppJourneyTest`, `LoremViewModelTest`, `MainActivityTest`. |
+| WA, dica, AC, resultado e proxima recomendacao | `CompleteAppJourneyTest` e `FullTrainingJourneyTest`, com armazenamento real e Codeforces isolado no teste. |
+| Pendencia, upsolve e indicadores preservados | As mesmas jornadas, `UpdatePendingIpsumsTest`, `IpsumPersistenceTest` e os testes da Historia 11. |
+| Restauracao e rating aplicado uma vez | Reabertura do banco/repositorio e simulacao de interrupcao Room -> DataStore em `FullTrainingJourneyTest`; marcador do ultimo Ipsum avaliado impede reaplicar resultado antigo apos um ciclo de rating. |
+| Faixa permanente e isolamento de perfil | `CalculateConsolidatedRatingTest`, `FullTrainingJourneyTest`, `LoremViewModelTest` e protecoes de snapshots em navegacao. |
+| Apenas um ativo e dica imutavel apos encerramento | Inicios concorrentes, indice unico, gravacao condicional da dica e testes de persistencia/jornada. |
+| Falha e retorno do Codeforces | Suites de API/gate, sincronizacao, verificacao de submissoes e pendencias; jornada com erro de rede. |
+| Navegacao, estado salvo e acessibilidade basica | Compose/Robolectric, controles Material com semantica, restauracao de estado de tentativa ativa e lint. |
+
+- A sincronizacao atualiza somente o timestamp do dono consultado; metadados do
+  perfil preservam rating/consolidacao atuais. Respostas tardias do perfil anterior
+  nao substituem estados da interface do perfil novo.
+- Iniciar novo Ipsum limpa estados de resultado/verificacao anteriores. Retomada
+  automatica restaura o ativo, e Historico oferece retorno ao Inicio.
+- Roteiro reproduzivel e limites do TCC: [`DEMO.md`](DEMO.md). Ensaio em dispositivo
+  continua opcional; nao foi executado nesta sessao.
+
+
+---
+
+## Verificacao final das Historias 12-14 em 2026-10-13
+
+Ambiente: Java 17, Gradle 8.11.1 e SDK Android 35. Verificacoes executadas:
+
+- `./gradlew :app:compileDebugKotlin --max-workers=2 --console=plain`: passou.
+- `./gradlew :app:testDebugUnitTest --tests dev.lorem.app.domain.RecommendIpsumTest --tests dev.lorem.app.domain.RecommendVarietyTest --max-workers=2 --console=plain`: passou.
+- `./gradlew :app:testDebugUnitTest --tests dev.lorem.app.data.local.FullTrainingJourneyTest --max-workers=2 --console=plain`: 6 testes passaram, incluindo inicios concorrentes e dica apos encerramento.
+- `./gradlew test lint assembleDebug --max-workers=2 --console=plain`: passou com o
+  ultimo codigo; 147 testes debug e 116 release, zero falhas/erros. Lint: zero erros
+  e somente o aviso preexistente `MissingApplicationIcon`. APK gerado em
+  `app/build/outputs/apk/debug/app-debug.apk`.
+- `git diff --check` e validacao de 50 links locais/ancoras: passaram, incluindo
+  preservacao da base/contrato da Historia 11, IDs de decisoes e cinco sessoes.
+
+As iteracoes direcionadas tambem cobriram limites de consolidacao, persistencia e
+migracao, ViewModel, navegacao e a jornada Compose. Falhas de fixtures (Ipsum ativo
+com avaliacao ja preenchida e builder de teste sem migracao) foram corrigidas;
+esperas da UI passaram a aguardar dados/semantica e continuacoes do looper Android.
+O caso de fronteira da taxa respeita o marco permanente: uma janela anterior ja
+qualificada nao pode ser anulada por um resultado posterior abaixo de 70%.
+
+**TESTE MANUAL OPCIONAL - NAO EXECUTADO:** nenhum teste em dispositivo foi alegado
+nesta sessao. Isso nao bloqueia conclusao nem avanco, conforme D-014. As confirmacoes
+anteriores das Historias 10/11 permanecem preservadas.
 
 ---
 
