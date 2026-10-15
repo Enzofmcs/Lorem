@@ -8,7 +8,7 @@ Um **Ipsum** é a tentativa oficial e cronometrada de resolver um problema recom
 
 ## Estado atual
 
-A base Android de módulo único implementa as Histórias 00–14:
+A base Android de módulo único implementa as Histórias 00–16:
 
 - Kotlin, Jetpack Compose e Material 3;
 - navegação que restaura o Ipsum ativo;
@@ -22,6 +22,9 @@ A base Android de módulo único implementa as Histórias 00–14:
 - estatísticas de AC, dica, tempo, erros e desempenho por rating e tag, com evolução do rating persistido;
 - recomendação por necessidade e recência de tags, com fatores persistidos;
 - consolidação permanente e requisitos objetivos para avançar de faixa;
+- preparação automática e manutenção com WorkManager, com progresso, retomada e retries;
+- importação incremental e proteção por versão do vínculo do perfil;
+- atualização antes da recomendação e uso de cache após a primeira importação;
 - injeção manual e estado de UI exposto por `ViewModel`/`StateFlow`.
 
 As Histórias 10 e 11 foram concluídas após a confirmação do usuário de todos os testes manuais em dispositivo em 13/10/2026. As definições dos indicadores e o conjunto de referência estão no [roadmap](docs/ROADMAP.md#historia-11---estatisticas-confiaveis).
@@ -95,31 +98,32 @@ Na raiz do projeto:
 
 ## Entrega atual
 
-As **Histórias 00–14 estão implementadas**. A recomendação considera exposição,
-falha, dica e recência por tags oficiais, preservando rating e ineditismo. A maior
-faixa consolidada permanece registrada, enquanto o Rating Lorem estimado acompanha
-o desempenho atual. Home e Estatísticas explicam o progresso da próxima faixa.
+As **Histórias 00–16 estão implementadas**. Conectar um perfil agenda a importação
+completa do histórico e catálogo. WorkManager mantém histórico/pendências a cada
+15 minutos desejados e catálogo/metadados a cada 24 horas, sujeito ao Android.
+Reabrir o app preserva a agenda e recupera dados ausentes ou vencidos.
 
-O primeiro Ipsum exige sincronizar o histórico do perfil. Metadados e sincronização
-preservam rating/consolidação; a retomada recupera o Ipsum ativo e o encerramento
-mantém os dados originais imutáveis. A migração Room 9–10 preserva os resultados
-anteriores e acrescenta os fatores da recomendação.
+A preparação mostra progresso por etapa e retoma importações interrompidas. O
+primeiro Ipsum exige histórico importado; depois, falha de atualização permite
+treinar com cache indicado na tela. Rating Lorem, consolidação e avaliações
+originais permanecem preservados. A verificação do ativo no worker e o polling
+serão integrados pela História 17.
 
-Validação final: **147 testes debug e 116 release sem falhas**, lint sem erros
+Validação final: **174 testes debug e 143 release sem falhas**, lint sem erros
 (apenas aviso preexistente de ícone) e `assembleDebug` concluído. O APK está em
 `app/build/outputs/apk/debug/app-debug.apk`.
 
-Consulte o [roadmap concluído](docs/ROADMAP.md) e o [roteiro de demonstração](docs/DEMO.md).
-Testes manuais são opcionais e não bloqueiam conclusão ou avanço; nenhuma conferência
-em dispositivo foi alegada nesta sessão.
+Consulte o [roadmap](docs/ROADMAP.md) e o [roteiro de demonstração](docs/DEMO.md).
+**TESTE MANUAL OPCIONAL - NAO EXECUTADO** nesta sessão, conforme D-014.
 
 ## Próximas histórias
 
 O planejamento de 13/10/2026 acrescenta **15–17 — Sincronização automática** e
 **18–21 — Redesign**. As Histórias 00–14 e suas evidências permanecem preservadas;
-a História 15 está implementada e verificada: coordenador compartilhado, importação
-incremental retomável e proteção por versão de vínculo. As Histórias 16–21 seguem
-com implementação pendente. A próxima entrega é WorkManager (História 16).
+as Histórias 15 e 16 estão implementadas e verificadas: coordenador compartilhado,
+importação incremental retomável, proteção por vínculo e WorkManager. As Histórias
+17–21 seguem com implementação pendente. A próxima entrega é a detecção automática
+de submissões (História 17).
 
 A proposta combina WorkManager em segundo plano, consulta frequente durante o
 Ipsum visível e temas claro/escuro em azul profundo e verde. Consulte o

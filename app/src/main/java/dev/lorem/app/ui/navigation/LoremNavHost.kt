@@ -62,6 +62,8 @@ fun LoremNavHost(
     onUpdatePendingIpsums: () -> Unit,
     statisticsState: StatisticsUiState = StatisticsUiState.Loading,
     consolidationState: ConsolidationUiState? = null,
+    preparationState: dev.lorem.app.ui.PreparationUiState? = null,
+    dataSourceNotice: String? = null,
     navController: NavHostController = rememberNavController(),
 ) {
     val profile = initialProfile ?: configurationState.savedProfile
@@ -131,12 +133,15 @@ fun LoremNavHost(
                     onStartIpsum = onStartIpsum,
                     onNavigate = navController::navigate,
                     consolidation = consolidation,
+                    preparation = preparationState?.takeIf { state -> state.owner?.handle == dev.lorem.app.domain.sync.ProfileLink.of(it.handle, 0).handle },
+                    dataSourceNotice = dataSourceNotice,
                 )
             }
         }
         composable(LoremDestination.Ipsum.route) {
             IpsumScreen(
                 ipsum = activeIpsum,
+                dataSourceNotice = dataSourceNotice,
                 onRevealHint = onRevealIpsumHint,
                 submissionCheckState = submissionCheckState,
                 onVerifySubmissions = onVerifyIpsumSubmissions,

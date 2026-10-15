@@ -266,6 +266,81 @@ class LoremViewModelTest {
     }
 
     @Test
+    fun `refresh before selection excludes a problem attempted since the last import`() = runTest {
+        val local = MemoryRepository(profile(lastSync = 1L).copy(loremRating = 1200))
+        local.problemCatalog.value = listOf(problem(10, 1200), problem(11, 1200))
+        val remote = CountingRepository(historyResults = listOf(SubmissionHistoryResult.Success(listOf(
+            CodeforcesSubmission(99, ProblemId(10, "A"), "WRONG_ANSWER", Instant.ofEpochSecond(10)),
+        ))))
+        val model = LoremViewModel(local, remote, nowMillis = { 20_000 }, randomSource = RandomSource { 0 })
+        model.startNewIpsum()
+        model.startNewIpsum()
+        advanceUntilIdle()
+        assertEquals(1, remote.historyCalls)
+        assertEquals(ProblemId(11, "A"), local.activeIpsum.value!!.problem.id)
+        assertEquals(1, local.ipsums.value.size)
+        assertEquals(null, model.dataSourceNotice.value)
+    }
+
+    @Test
+    fun `offline cache remains usable after the first successful import and reports saved data`() = runTest {
+        val local = MemoryRepository(profile(lastSync = 1L).copy(loremRating = 1200))
+        local.problemCatalog.value = listOf(problem(10, 1200))
+        val remote = CountingRepository(historyResults = listOf(SubmissionHistoryResult.NetworkFailure))
+        val model = LoremViewModel(local, remote, randomSource = RandomSource { 0 })
+        model.startNewIpsum()
+        advanceUntilIdle()
+        assertTrue(model.startIpsumState.value is StartIpsumUiState.Success)
+        assertTrue(model.dataSourceNotice.value!!.contains("Usando dados salvos"))
+        assertEquals(1L, local.profile.value!!.lastSyncEpochMillis)
+    }
+
+    @Test
+    fun `slow preflight times out and cancels unused synchronization before using cache`() = runTest {
+        val local = MemoryRepository(profile(lastSync = 1L).copy(loremRating = 1200))
+        local.problemCatalog.value = listOf(problem(10, 1200))
+        var cancelled = false
+        val remote = object : CodeforcesRepository {
+            override suspend fun user(handle: String) = UserLookupResult.NetworkFailure
+            override suspend fun problems() = ProblemCatalogResult.NetworkFailure
+            override suspend fun submissionHistory(handle: String): SubmissionHistoryResult {
+                try { kotlinx.coroutines.awaitCancellation() } finally { cancelled = true }
+            }
+        }
+        val model = LoremViewModel(local, remote, randomSource = RandomSource { 0 })
+        model.startNewIpsum()
+        advanceUntilIdle()
+        assertTrue(cancelled)
+        assertTrue(model.startIpsumState.value is StartIpsumUiState.Success)
+        assertTrue(model.dataSourceNotice.value!!.contains("Usando dados salvos"))
+        assertEquals(1L, local.profile.value!!.lastSyncEpochMillis)
+    }
+
+    @Test
+    fun `profile changed during preflight cannot start a recommendation for either owner`() = runTest {
+        val local = MemoryRepository(profile(lastSync = 1L).copy(loremRating = 1200))
+        local.problemCatalog.value = listOf(problem(10, 1200))
+        val response = kotlinx.coroutines.CompletableDeferred<SubmissionHistoryResult>()
+        val entered = kotlinx.coroutines.CompletableDeferred<Unit>()
+        val remote = object : CodeforcesRepository {
+            override suspend fun user(handle: String) = UserLookupResult.NetworkFailure
+            override suspend fun problems() = ProblemCatalogResult.NetworkFailure
+            override suspend fun submissionHistory(handle: String): SubmissionHistoryResult {
+                entered.complete(Unit)
+                return response.await()
+            }
+        }
+        val model = LoremViewModel(local, remote)
+        model.startNewIpsum()
+        entered.await()
+        local.saveProfile(profile(lastSync = 1L).copy(handle = "other"))
+        response.complete(SubmissionHistoryResult.Success(emptyList()))
+        advanceUntilIdle()
+        assertEquals(null, local.activeIpsum.value)
+        assertTrue((model.startIpsumState.value as StartIpsumUiState.Error).message.contains("perfil mudou"))
+    }
+
+    @Test
     fun `start persists timestamp and recommendation before reporting success`() = runTest {
         val local = MemoryRepository(profile(lastSync = 1L).copy(loremRating = 1200))
         local.problemCatalog.value = listOf(problem(10, 1300))

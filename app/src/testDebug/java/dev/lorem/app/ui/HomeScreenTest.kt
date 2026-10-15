@@ -125,12 +125,12 @@ class HomeScreenTest {
         composeRule.onNodeWithText("Histórico salvo neste dispositivo.").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Problemas tentados: 2").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Problemas resolvidos: 1").performScrollTo().assertIsDisplayed()
-        composeRule.onNodeWithText("Sincronize para importar seu histórico do Codeforces.")
+        composeRule.onNodeWithText("O histórico será importado automaticamente quando houver conexão.")
             .assertDoesNotExist()
     }
 
     @Test
-    fun `profile never synchronized displays import prompt`() {
+    fun `profile never synchronized explains automatic preparation`() {
         composeRule.setContent {
             LoremTheme {
                 HomeScreen(
@@ -147,7 +147,7 @@ class HomeScreenTest {
             }
         }
 
-        composeRule.onNodeWithText("Sincronize para importar seu histórico do Codeforces.")
+        composeRule.onNodeWithText("O histórico será importado automaticamente quando houver conexão.")
             .assertIsDisplayed()
     }
 

@@ -39,6 +39,8 @@ fun HomeScreen(
     onStartIpsum: () -> Unit = {},
     onNavigate: (String) -> Unit,
     consolidation: ConsolidationProgress? = null,
+    preparation: dev.lorem.app.ui.PreparationUiState? = null,
+    dataSourceNotice: String? = null,
 ) {
     val attemptedCount = problemHistory.count(ProblemHistory::attempted)
     val solvedCount = problemHistory.count(ProblemHistory::hasAcceptedSubmission)
@@ -93,6 +95,9 @@ fun HomeScreen(
             }
             consolidation?.let { ConsolidationCard(it, compact = true) }
 
+            preparation?.let { PreparationStatus(it) }
+            dataSourceNotice?.let { Text(it) }
+
             Text("Histórico do Codeforces", style = MaterialTheme.typography.titleMedium)
             if (hasSynchronized) {
                 Text("Histórico salvo neste dispositivo.")
@@ -103,7 +108,7 @@ fun HomeScreen(
 
             when (syncState) {
                 HistorySyncUiState.Idle -> if (!hasSynchronized) {
-                    Text("Sincronize para importar seu histórico do Codeforces.")
+                    Text("O histórico será importado automaticamente quando houver conexão.")
                 }
                 HistorySyncUiState.Loading -> {
                     CircularProgressIndicator()
@@ -133,7 +138,7 @@ fun HomeScreen(
             }
             when (catalogSyncState) {
                 CatalogSyncUiState.Idle -> if (latestCatalogUpdate == null) {
-                    Text("Carregue o catálogo para habilitar recomendações locais.")
+                    Text("O catálogo será preparado automaticamente quando houver conexão.")
                 }
                 CatalogSyncUiState.Loading -> {
                     CircularProgressIndicator()

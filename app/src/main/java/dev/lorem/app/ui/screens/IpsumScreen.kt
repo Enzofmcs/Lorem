@@ -47,6 +47,7 @@ fun IpsumScreen(
     onVerifySubmissions: () -> Unit = {},
     onEndWithoutAc: (IpsumFailureReason?) -> Unit = {},
     nowMillis: () -> Long = System::currentTimeMillis,
+    dataSourceNotice: String? = null,
 ) {
     var now by remember(ipsum?.id) { mutableLongStateOf(nowMillis()) }
     var dialog by remember { mutableStateOf<IpsumDialog?>(null) }
@@ -68,6 +69,7 @@ fun IpsumScreen(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        dataSourceNotice?.let { Text(it) }
         Text("Ipsum ativo", style = MaterialTheme.typography.headlineMedium)
         Button(modifier = Modifier.fillMaxWidth(), onClick = onNavigateHome) {
             Text("Voltar para o início")

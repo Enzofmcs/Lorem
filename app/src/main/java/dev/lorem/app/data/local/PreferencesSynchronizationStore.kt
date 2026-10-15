@@ -18,6 +18,7 @@ class PreferencesSynchronizationStore(private val dataStore: DataStore<Preferenc
     override suspend fun write(key: String, state: SynchronizationState) {
         val json = JSONObject().apply {
             put("running", state.running)
+            put("retryNotBefore", state.retryNotBeforeEpochMillis)
             state.lastSuccessEpochMillis?.let { put("success", it) }
             state.failure?.let { put("failure", it) }
             put("from", state.nextFrom)
@@ -39,6 +40,7 @@ class PreferencesSynchronizationStore(private val dataStore: DataStore<Preferenc
         val pending = json.optJSONObject("pending") ?: JSONObject()
         return SynchronizationState(
             running = json.optBoolean("running"),
+            retryNotBeforeEpochMillis = json.optLong("retryNotBefore"),
             lastSuccessEpochMillis = if (json.has("success")) json.getLong("success") else null,
             failure = if (json.has("failure")) json.getString("failure") else null,
             nextFrom = json.optInt("from", 1),

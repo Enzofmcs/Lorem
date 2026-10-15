@@ -167,11 +167,19 @@ class LocalLoremRepository(
     }
 
     override suspend fun createActiveIpsum(ipsum: Ipsum): Ipsum = profileMutation.withLock {
+        createActiveIpsumUnlocked(ipsum)
+    }
+
+    override suspend fun createActiveIpsumForLink(ipsum: Ipsum, link: ProfileLink): Ipsum = withProfileLink(link) {
+        createActiveIpsumUnlocked(ipsum)
+    }
+
+    private suspend fun createActiveIpsumUnlocked(ipsum: Ipsum): Ipsum {
         require(ipsum.id == 0L) { "new Ipsum must not have an id" }
         require(ipsum.startedAtEpochMillis > 0) { "startedAtEpochMillis must be positive" }
         val current = readProfile(dataStore.data.first())
         check(current == null || normalizeHandle(current.handle) == normalizeHandle(ipsum.ownerHandle)) { "Profile changed while selecting an Ipsum" }
-        try {
+        return try {
             ipsum.copy(
                 id = ipsumDao.insert(ipsum.copy(ownerHandle = normalizeHandle(ipsum.ownerHandle)).toEntity()),
                 ownerHandle = normalizeHandle(ipsum.ownerHandle),

@@ -12,8 +12,9 @@ O Lorem consulta somente dados publicos; as submissoes sao feitas no Codeforces.
 
 ## Jornada com AC no Ipsum
 
-1. Valide o handle em Configuracao. Na Home, sincronize o historico e atualize o
-   catalogo. O primeiro Ipsum exige importacao bem-sucedida do historico.
+1. Valide o handle em Configuracao. Na Home, aguarde a preparacao automatica do
+   historico e catalogo; acompanhe cada etapa. O primeiro Ipsum exige importacao
+   bem-sucedida do historico. Use os botoes de recuperacao somente se necessario.
 2. Inicie um Ipsum. Confira o problema e o cronometro; rating, categoria e fatores
    da recomendacao permanecem ocultos. Abra o problema no Codeforces.
 3. Opcionalmente, confirme `Revelar topicos`. O uso da dica fica registrado uma vez.

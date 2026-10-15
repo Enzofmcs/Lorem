@@ -5,6 +5,9 @@ import dev.lorem.app.domain.model.IpsumStatus
 import dev.lorem.app.domain.repository.ActiveIpsumAlreadyExistsException
 import dev.lorem.app.domain.repository.LoremRepository
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.CancellationException
+import dev.lorem.app.domain.sync.ProfileLink
+import dev.lorem.app.domain.sync.ProfileLinkChanged
 
 sealed interface StartIpsumResult {
     data class Success(val ipsum: Ipsum) : StartIpsumResult
@@ -20,7 +23,9 @@ class StartIpsum(
     private val recommender: RecommendIpsum,
     private val nowMillis: () -> Long,
 ) {
-    suspend operator fun invoke(): StartIpsumResult {
+    suspend operator fun invoke(expectedLink: ProfileLink? = null): StartIpsumResult {
+        val link = expectedLink ?: repository.profileLink.first() ?: return StartIpsumResult.NoProfile
+        if (repository.profileLink.first() != link) throw ProfileLinkChanged()
         val profile = repository.profile.first() ?: return StartIpsumResult.NoProfile
         if (repository.activeIpsum.first() != null) return StartIpsumResult.AlreadyActive
         if (profile.lastSyncEpochMillis <= 0L) return StartIpsumResult.NeedsHistorySync
@@ -46,10 +51,11 @@ class StartIpsum(
             recommendationFactors = recommendation.factors,
         )
         return try {
-            StartIpsumResult.Success(repository.createActiveIpsum(ipsum))
+            StartIpsumResult.Success(repository.createActiveIpsumForLink(ipsum, link))
         } catch (_: ActiveIpsumAlreadyExistsException) {
             StartIpsumResult.AlreadyActive
-        } catch (_: Exception) {
+        } catch (error: Exception) {
+            if (error is CancellationException) throw error
             StartIpsumResult.PersistenceFailure
         }
     }

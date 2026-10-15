@@ -11,11 +11,13 @@ interface CodeforcesRequestGate {
 class TwoSecondCodeforcesRequestGate(
     private val nowMillis: () -> Long = { System.nanoTime() / 1_000_000L },
     private val wait: suspend (Long) -> Unit = { delay(it) },
+    private val beforeRequest: suspend () -> Unit = {},
 ) : CodeforcesRequestGate {
     private val mutex = Mutex()
     private var lastStartedAt: Long? = null
 
     override suspend fun <T> execute(request: suspend () -> T): T = mutex.withLock {
+        beforeRequest()
         lastStartedAt?.let { previous ->
             val remaining = MINIMUM_INTERVAL_MILLIS - (nowMillis() - previous)
             if (remaining > 0) wait(remaining)
