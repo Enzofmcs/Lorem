@@ -1,5 +1,12 @@
 package dev.lorem.app.ui
 
+import dev.lorem.app.domain.sync.ProfileLinkChanged
+import dev.lorem.app.domain.sync.SyncDataset
+import dev.lorem.app.domain.sync.SynchronizationState
+import dev.lorem.app.domain.sync.syncKey
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.withTimeoutOrNull
 import dev.lorem.app.domain.sync.ProfileLink
 import dev.lorem.app.domain.sync.SynchronizationCoordinator
 import kotlinx.coroutines.CancellationException
@@ -104,6 +111,13 @@ sealed interface StatisticsUiState {
 
 data class ConsolidationUiState(val ownerHandle: String, val progress: ConsolidationProgress)
 
+data class PreparationUiState(
+    val owner: ProfileLink?,
+    val history: SynchronizationState = SynchronizationState(),
+    val catalog: SynchronizationState = SynchronizationState(),
+)
+
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class LoremViewModel(
     private val repository: LoremRepository,
     private val codeforcesRepository: CodeforcesRepository,
@@ -115,6 +129,15 @@ class LoremViewModel(
     private val coordinator = synchronizationCoordinator ?: SynchronizationCoordinator(
         repository, codeforcesRepository, viewModelScope, nowMillis = nowMillis,
     )
+    val preparationState: StateFlow<PreparationUiState?> = repository.profileLink.distinctUntilChanged().flatMapLatest { link ->
+        combine(coordinator.store.observe(syncKey(SyncDataset.CATALOG, null)),
+            if (link == null) kotlinx.coroutines.flow.flowOf(SynchronizationState())
+            else coordinator.store.observe(syncKey(SyncDataset.HISTORY, link))) { catalog, history ->
+            PreparationUiState(link, history, catalog)
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    private val mutableDataSourceNotice = MutableStateFlow<String?>(null)
+    val dataSourceNotice = mutableDataSourceNotice.asStateFlow()
     private val startIpsum = StartIpsum(repository, RecommendIpsum(randomSource), nowMillis)
     val uiState: StateFlow<LoremUiState> = repository.profile
         .map<LocalProfile?, LoremUiState>(LoremUiState::Ready)
@@ -172,6 +195,7 @@ class LoremViewModel(
             repository.profileLink.collect { link ->
                 if (link != previous) {
                     mutableConfigurationState.value = mutableConfigurationState.value.copy(isLoading = false)
+                    mutableDataSourceNotice.value = null
                     mutableHistorySyncState.value = HistorySyncUiState.Idle
                     mutableSubmissionCheckState.value = SubmissionCheckUiState.Idle
                     mutablePendingUpdateState.value = PendingUpdateUiState.Idle
@@ -347,15 +371,29 @@ class LoremViewModel(
         mutableSubmissionCheckState.value = SubmissionCheckUiState.Idle
         mutableStartIpsumState.value = StartIpsumUiState.Loading
         viewModelScope.launch {
-            mutableStartIpsumState.value = when (val result = startIpsum()) {
-                is StartIpsumResult.Success -> StartIpsumUiState.Success(result.ipsum.id)
-                StartIpsumResult.AlreadyActive -> StartIpsumUiState.Error("Já existe um Ipsum ativo. Continue-o antes de iniciar outro.")
-                StartIpsumResult.NoCandidate -> StartIpsumUiState.Error(
-                    "Nenhum problema inédito foi encontrado até 300 pontos da faixa. Atualize catálogo e histórico e tente novamente.",
-                )
-                StartIpsumResult.NoProfile -> StartIpsumUiState.Error("Configure um perfil antes de iniciar um Ipsum.")
-                StartIpsumResult.NeedsHistorySync -> StartIpsumUiState.Error("Sincronize seu histórico do Codeforces antes de iniciar o primeiro Ipsum.")
-                StartIpsumResult.PersistenceFailure -> StartIpsumUiState.Error("Não foi possível salvar o Ipsum. Tente novamente.")
+            val owner = repository.profileLink.first()
+            try {
+                val profile = repository.profile.first()
+                if (owner != null && profile != null && profile.lastSyncEpochMillis > 0 && repository.activeIpsum.first() == null) {
+                    // A bounded attempt keeps offline training usable. A successful initial import remains mandatory.
+                    val refreshed = withTimeoutOrNull(12_000) { coordinator.synchronizeHistory(owner) }
+                    if (!isCurrentOwner(owner)) throw ProfileLinkChanged()
+                    mutableDataSourceNotice.value = if (refreshed is ProblemHistorySyncResult.Success) null else
+                        "Usando dados salvos · última sincronização: ${dev.lorem.app.ui.screens.formatSyncTime(profile.lastSyncEpochMillis)}"
+                }
+                mutableStartIpsumState.value = when (val result = startIpsum(owner)) {
+                    is StartIpsumResult.Success -> StartIpsumUiState.Success(result.ipsum.id)
+                    StartIpsumResult.AlreadyActive -> StartIpsumUiState.Error("Já existe um Ipsum ativo. Continue-o antes de iniciar outro.")
+                    StartIpsumResult.NoCandidate -> StartIpsumUiState.Error(
+                        "Nenhum problema inédito foi encontrado até 300 pontos da faixa. Atualize catálogo e histórico e tente novamente.",
+                    )
+                    StartIpsumResult.NoProfile -> StartIpsumUiState.Error("Configure um perfil antes de iniciar um Ipsum.")
+                    StartIpsumResult.NeedsHistorySync -> StartIpsumUiState.Error("Sincronize seu histórico do Codeforces antes de iniciar o primeiro Ipsum.")
+                    StartIpsumResult.PersistenceFailure -> StartIpsumUiState.Error("Não foi possível salvar o Ipsum. Tente novamente.")
+                }
+            } catch (_: ProfileLinkChanged) {
+                mutableDataSourceNotice.value = null
+                mutableStartIpsumState.value = StartIpsumUiState.Error("O perfil mudou durante a preparação. Tente novamente.")
             }
         }
     }

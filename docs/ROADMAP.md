@@ -6,13 +6,13 @@
 
 ## Estado atual
 
-**Foco atual:** Historia 15 concluida; proxima implementacao: Historia 16 - WorkManager.
+**Foco atual:** Historia 16 concluida; proxima implementacao: Historia 17 - deteccao automatica.
 
-**Ultima historia verificada:** Historia 15 - Base segura para sincronizacao automatica, automaticamente em 2026-10-15. Historias 00-14 preservadas.
+**Ultima historia verificada:** Historia 16 - WorkManager, automaticamente em 2026-10-15. Historias 00-15 preservadas.
 
-**Primeiro item pendente:** preparacao e manutencao em segundo plano com WorkManager (Historia 16).
+**Primeiro item pendente:** polling do Ipsum visivel e verificacao do ativo no worker (Historia 17).
 
-**Proxima entrega demonstravel:** preparacao/manutencao automatica e acompanhamento de submissoes (Historias 16-17); depois redesign (18-21).
+**Proxima entrega demonstravel:** acompanhamento de submissoes (Historia 17), apos preparacao/manutencao automatica ja implementadas; depois redesign (18-21).
 
 **Bloqueios conhecidos:** nenhum. Conferencia em dispositivo e opcional (D-014).
 
@@ -75,7 +75,7 @@ As Historias 00-14 e suas evidencias permanecem concluidas.
 Ordem proposta: **15 -> 16 -> 17**, seguida de **18 -> 19 -> 20 -> 21**.
 A 18 pode iniciar independentemente da automacao; 19 integra 16/17 e a 21 nao depende
 da 20. [SYNC.md](SYNC.md) e [DESIGN.md](DESIGN.md) detalham os planos.
-A Historia 15 foi implementada e verificada em 2026-10-15; Historias 16-21 continuam planejadas e com aceite pendente.
+As Historias 15 e 16 foram implementadas e verificadas em 2026-10-15; Historias 17-21 continuam planejadas e com aceite pendente.
 
 ## Sumario rapido
 
@@ -923,7 +923,7 @@ alegada. Isso nao bloqueia a conclusao (D-014). Proximo passo: Historia 16.
 
 **Historia:** Como usuário, quero abrir o Lorem pronto para treinar, com dados do Codeforces atualizados automaticamente.
 
-**Status:** planejada; implementacao e aceite pendentes.
+**Status:** implementada e verificada automaticamente em 2026-10-15.
 
 **GitHub:** [#31 — História 16 — Sincronização em segundo plano com WorkManager](https://github.com/Enzofmcs/Lorem/issues/31).
 
@@ -935,20 +935,78 @@ alegada. Isso nao bloqueia a conclusao (D-014). Proximo passo: Historia 16.
 
 #### Criterios de aceite
 
-- [ ] Validar o primeiro handle inicia automaticamente importação completa do histórico e catálogo, com estado/progresso por etapa e retomada de importações longas.
-- [ ] Existe um trabalho periódico único por perfil para histórico/pendências e um global para catálogo; reabrir o app não reinicia nem adia a agenda.
-- [ ] Workers exigem rede conectada; catálogo periódico também exige bateria não baixa. Troca/remoção de perfil cancela os trabalhos do dono anterior.
-- [ ] Falhas temporárias e rate limit usam retry/backoff exponencial a partir de 30 segundos, respeitando Retry-After quando disponível; erro permanente não entra em loop imediato.
-- [ ] Retorno ao app recupera dados ausentes/vencidos e estados abandonados após morte do processo, usando cache local e o coordenador compartilhado.
-- [ ] Antes de novo Ipsum, tentar atualizar submissões recentes com rede e revalidar o perfil; sem rede, preservar a política D-017 de cache após a primeira importação bem-sucedida, indicando dados locais. Histórico nunca importado bloqueia criação.
-- [ ] Histórico/pendências/metadados atualizam sem redefinir Rating Lorem; nenhum trabalho gera notificação ou abre uma tela espontaneamente.
-- [ ] Agenda persiste após encerramento normal do processo e reinício do aparelho; reabertura recupera atraso após parada forçada, sem prometer intervalo exato.
+- [x] Validar o primeiro handle inicia automaticamente importação completa do histórico e catálogo, com estado/progresso por etapa e retomada de importações longas.
+- [x] Existe um trabalho periódico único por perfil para histórico/pendências e um global para catálogo; reabrir o app não reinicia nem adia a agenda.
+- [x] Workers exigem rede conectada; catálogo periódico também exige bateria não baixa. Troca/remoção de perfil cancela os trabalhos do dono anterior.
+- [x] Falhas temporárias e rate limit usam retry/backoff exponencial a partir de 30 segundos, respeitando Retry-After quando disponível; erro permanente não entra em loop imediato.
+- [x] Retorno ao app recupera dados ausentes/vencidos e estados abandonados após morte do processo, usando cache local e o coordenador compartilhado.
+- [x] Antes de novo Ipsum, tentar atualizar submissões recentes com rede e revalidar o perfil; sem rede, preservar a política D-017 de cache após a primeira importação bem-sucedida, indicando dados locais. Histórico nunca importado bloqueia criação.
+- [x] Histórico/pendências/metadados atualizam sem redefinir Rating Lorem; nenhum trabalho gera notificação ou abre uma tela espontaneamente.
+- [x] Agenda persiste após encerramento normal do processo e reinício do aparelho; reabertura recupera atraso após parada forçada, sem prometer intervalo exato.
 
-#### Verificacao planejada
+#### Verificacao e evidencias
 
 Nível 4: work-testing para unicidade, constraints, sucesso parcial, retries, cancelamento e retomada; integração com dados reais em dispositivo. Verificações em dispositivo de offline, reinício e parada forçada/reabertura são opcionais (D-014). Executar regressão de marco. Conferencias em dispositivo sao opcionais conforme D-014; criterios funcionais exigem evidencia automatizada proporcional ao risco.
 
 **Exemplo de aceite:** Após conectar um perfil, o usuário não precisa apertar botões de sincronização. Um upsolve é reconhecido no próximo trabalho elegível, preservando o rating original.
+
+#### Implementacao
+
+- `SynchronizationWorker`/`SynchronizationWorkerFactory` usam injecao manual do
+  `AppContainer`, com o mesmo coordenador, cliente e gate. `LoremApplication`
+  fornece a configuracao do WorkManager; apenas seu initializer automatico foi
+  removido do Startup. O manifest mesclado preserva permissao/receiver de boot.
+- A observacao do vinculo agenda preparacao por perfil e catalogo global. Periodicos
+  usam `KEEP`, 15 min/24 h, rede conectada e bateria nao baixa no catalogo periodico.
+  Recuperacao no `onStart` agenda somente conjuntos ausentes, vencidos ou com falha.
+  A agenda do catalogo sobrevive a troca/remoção de perfil; trabalhos antigos sao
+  cancelados por tag, inclusive quando deixados por outro processo.
+- Metadados vencem em 24 h; cada etapa conserva sucesso/progresso/falha separados.
+  Falha temporaria, HTTP 408/429/5xx e persistencia recebem retry exponencial de
+  30 s; erros permanentes retornam failure, sem loop imediato. `Retry-After`
+  (segundos ou data HTTP) e persistido globalmente e respeitado pelo gate.
+- Cancelamento do ultimo consumidor interrompe a operacao compartilhada e aguarda
+  seu checkpoint; outro consumidor mantem a importacao viva. Retomada nao descarta
+  dados parciais nem marca importacao incompleta como pronta.
+- Antes da recomendacao, tenta atualizar o historico com orcamento de 12 s. Se a
+  primeira importacao ja terminou, falha/timeout permite usar cache com aviso e
+  ultimo sucesso. O vinculo e revalidado e conferido atomicamente ao criar o Ipsum,
+  inclusive em A -> B -> A. Nenhum worker inicia tela ou notificacao.
+- O Inicio observa etapas/progresso persistidos e oferece recuperacao manual.
+  A consulta de Ipsum ativo no worker e o polling continuam na Historia 17.
+
+`SynchronizationWorkTest` usa `work-testing`, Room e DataStore reais para nove
+cenarios: preparacao/sucesso parcial, retries/permanentes/Retry-After persistido,
+A -> B -> A, estados abandonados/TTL, cancelamento com retomada de 1.500 registros,
+consumidores concorrentes, criacao atomica, upsolve idempotente e agenda/constraints.
+A observacao do perfil e testada sem clique manual; `TestDriver` libera constraints.
+A agenda preserva id/proximo disparo; backoff exponencial de 30 s e conferido no
+WorkSpec. ViewModel testa ineditismo apos refresh, duplo clique, cache offline,
+timeout e troca de perfil; API/gate cobrem rate limit JSON/HTTP e Retry-After.
+
+Comandos executados com Java 17, Gradle 8.11.1 e SDK 35:
+
+```bash
+./gradlew compileDebugKotlin --max-workers=2 --console=plain
+./gradlew testDebugUnitTest --tests 'dev.lorem.app.data.sync.SynchronizationWorkTest' --tests 'dev.lorem.app.data.remote.CodeforcesRetryAfterTest' --tests 'dev.lorem.app.ui.LoremViewModelTest' --tests 'dev.lorem.app.data.local.SynchronizationPersistenceTest' --max-workers=2 --console=plain
+./gradlew test lint assembleDebug --max-workers=2 --console=plain
+./gradlew lint assembleDebug --max-workers=2 --console=plain
+```
+
+Regressao final: **174 testes debug e 143 release**, zero falhas/erros; lint sem
+erros (aviso preexistente `MissingApplicationIcon`) e APK debug gerado. A primeira
+passagem completa encontrou somente a assercao do texto antigo de sincronizacao
+manual em `HomeScreenTest`; ela foi atualizada para a preparacao automatica e a
+regressao foi repetida. As suites anteriores de rating, consolidacao, migracoes e
+jornadas completas permanecem preservadas. A ultima conferencia de lint/APK passou
+apos explicitar `exported=false` no provider do Startup. `git diff --check` e 80
+links/ancoras locais conferidos.
+
+**TESTE MANUAL OPCIONAL - NAO EXECUTADO**, conforme D-014. Conferencia sugerida:
+conectar perfil e aguardar preparo sem botoes; interromper/reabrir uma importacao;
+fazer upsolve e aguardar ciclo elegivel; conferir cache offline, reboot e parada
+forcada/reabertura. A persistencia e os receivers usam o contrato do WorkManager;
+nao foi alegada execucao desses cenarios em aparelho nem periodicidade exata.
 
 ---
 

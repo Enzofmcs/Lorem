@@ -1,8 +1,8 @@
 # Sincronização automática com o Codeforces
 
-Plano de implementação de 13/10/2026 para as Histórias 15–17. A base de
-coordenação da História 15 está implementada; agendamento e polling das Histórias
-16–17 continuam planejados. A solicitação de atualização automática
+Plano de implementação de 13/10/2026 para as Histórias 15–17. A coordenação da História 15 e o
+agendamento da História 16 estão implementados e verificados. O polling e a
+consulta do ativo no worker continuam planejados na História 17. A solicitação de atualização automática
 substitui a restrição de produto da D-011; veja D-018 em [DECISIONS.md](DECISIONS.md).
 
 ## Estratégia
@@ -62,7 +62,7 @@ requisição a cada dois segundos**, incluindo paginação, workers, botões e p
 ## Base implementada na História 15
 
 `AppContainer.synchronizationCoordinator` é a entrada compartilhada para UI e os
-futuros workers/polling. Reutiliza uma única instância de `CodeforcesApiRepository`
+workers e futuro polling. Reutiliza uma única instância de `CodeforcesApiRepository`
 e seu gate de dois segundos, com relógio monotônico. Operações iguais do mesmo
 vínculo compartilham a execução; o lock de coordenação não envolve a importação
 inteira e cada página libera o gate para consultas do Ipsum.
@@ -116,6 +116,47 @@ obrigatória; depois, falta de rede permite usar cache, indicando dados salvos e
 último sucesso. Sem histórico importado, explicar a preparação pendente e oferecer
 nova tentativa. Catálogo salvo pode ser usado durante uma falha de atualização.
 Um Ipsum em andamento mantém cronômetro e ações locais offline.
+
+## WorkManager implementado na História 16
+
+O `SynchronizationScheduler` observa alterações do vínculo, agenda preparação de
+histórico/pendências/metadados por perfil e catálogo global, e mantém os periódicos
+com `KEEP`. `MainActivity.onStart` recupera conjuntos ausentes, vencidos ou com
+falha, sem substituir ou adiar a agenda. A observação cancela trabalhos de vínculos
+antigos encontrados no banco do WorkManager, inclusive após recriação do processo.
+Catálogo continua global. O Android determina a execução efetiva por suas constraints.
+
+`SynchronizationWorkerFactory` injeta o `BackgroundSynchronization` do AppContainer.
+`LoremApplication` implementa `Configuration.Provider`; o initializer automático do
+WorkManager é removido sem remover os demais inicializadores do AndroidX Startup.
+A biblioteca mantém os serviços/receivers e a permissão de boot necessários.
+Não há foreground worker, notificação ou navegação disparada por esse trabalho.
+
+Cada etapa conserva seu sucesso e validade (15 min para histórico/pendências,
+24 h para metadados/catálogo); retry não refaz uma etapa ainda válida. Falhas
+parciais não impedem as outras etapas, exceto durante `Retry-After`. Rede,
+HTTP 408/429/5xx e falha de persistência usam backoff exponencial de 30 s;
+resposta inválida/erro permanente termina a tentativa, com recuperação manual ou
+em outro ciclo elegível. A API reconhece também rate limit em respostas `FAILED`.
+`Retry-After` em segundos/data HTTP gera um prazo global em DataStore; workers
+adiam a tentativa e todas as chamadas passam pelo mesmo gate antes de sair à rede.
+
+No início do processo, estados abandonados são liberados preservando o cursor.
+Operações com consumidores ativos são preservadas. Cancelar o último consumidor
+cancela o trabalho compartilhado e aguarda sua gravação de interrupção; se outro
+consumidor continua esperando, a importação permanece ativa. O worker pode retomar
+lotes depois de interrupção pelo Android sem perder evidências já gravadas.
+
+O Início observa histórico/catálogo persistidos com progresso e falha por etapa.
+Antes de um novo Ipsum com importação inicial já concluída, o ViewModel tenta
+atualizar o histórico com orçamento de 12 s; falha/timeout conserva o cache e exibe
+“Usando dados salvos” com o último sucesso. O perfil é revalidado após a rede e seu
+vínculo é conferido sob o mesmo mutex da criação em Room, inclusive em A → B → A.
+Histórico nunca importado continua bloqueando a criação, conforme D-017.
+
+`SynchronizationWorkTest`, API/gate e ViewModel cobrem o comportamento; consulte
+[as evidências da História 16](ROADMAP.md#historia-16---sincronizacao-em-segundo-plano-com-workmanager).
+A verificação do Ipsum ativo pelo worker e o loop de 15 s pertencem à História 17.
 
 ## Experiência
 

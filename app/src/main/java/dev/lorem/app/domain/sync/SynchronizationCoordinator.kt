@@ -17,7 +17,8 @@ class SynchronizationCoordinator(
 ) {
     private data class Operation(val dataset: SyncDataset, val link: ProfileLink?, val ipsumId: Long? = null, val lookupHandle: String? = null)
     private val mutex = Mutex()
-    private val work = mutableMapOf<Operation, Deferred<Any>>()
+    private data class SharedWork(val job: Deferred<Any>, var callers: Int = 0)
+    private val work = mutableMapOf<Operation, SharedWork>()
 
     init {
         scope.launch(start = CoroutineStart.UNDISPATCHED) {
@@ -26,30 +27,77 @@ class SynchronizationCoordinator(
                     val obsolete = work.filterKeys { it.dataset != SyncDataset.CATALOG && it.link != current }
                     obsolete.forEach { (operation, job) ->
                         work.remove(operation)
-                        job.cancel(ProfileLinkChanged())
+                        job.job.cancel(ProfileLinkChanged())
                     }
                 }
             }
         }
     }
 
+    private suspend fun <T : Any> acquire(operation: Operation, action: suspend () -> T): SharedWork {
+        while (true) {
+            val (shared, stopping) = mutex.withLock {
+                val previous = work[operation]
+                if (previous != null && previous.job.isCancelled && !previous.job.isCompleted) {
+                    null to previous.job
+                } else {
+                    val entry = previous?.takeIf { !it.job.isCompleted } ?: SharedWork(scope.async(start = CoroutineStart.LAZY) {
+                        action()
+                    }).also { work[operation] = it }
+                    entry.callers++
+                    entry to null
+                }
+            }
+            if (shared != null) return shared
+            stopping?.join()
+        }
+    }
+
     @Suppress("UNCHECKED_CAST")
     private suspend fun <T : Any> single(operation: Operation, action: suspend () -> T): T {
-        val deferred = mutex.withLock {
-            work[operation]?.takeIf { !it.isCompleted } ?: scope.async(start = CoroutineStart.LAZY) {
-                action()
-            }.also { work[operation] = it }
-        }
-        try { return deferred.await() as T }
+        val shared = acquire(operation, action)
+        try { return shared.job.await() as T }
         finally {
             withContext(NonCancellable) {
-                mutex.withLock { if (deferred.isCompleted && work[operation] === deferred) work.remove(operation) }
+                val lastCaller = mutex.withLock {
+                    shared.callers--
+                    (shared.callers == 0).also { if (it && !shared.job.isCompleted) shared.job.cancel() }
+                }
+                if (lastCaller) {
+                    shared.job.join() // Finish durable cancellation/checkpoint cleanup before retrying.
+                    mutex.withLock { if (work[operation] === shared) work.remove(operation) }
+                }
             }
         }
     }
 
-    suspend fun synchronizeHistory(): ProblemHistorySyncResult {
-        val link = repository.profileLink.first() ?: return ProblemHistorySyncResult.NoActiveProfile
+    private suspend fun currentLink(expected: ProfileLink?): ProfileLink? {
+        val current = repository.profileLink.first()
+        if (expected != null && current != expected) throw ProfileLinkChanged()
+        return current
+    }
+
+    /** Only at process startup; never reset a dataset owned by a live operation. */
+    suspend fun recoverInterrupted() = mutex.withLock {
+        val link = repository.profileLink.first()
+        val keys = mutableListOf(syncKey(SyncDataset.CATALOG, null))
+        if (link != null) {
+            keys += listOf(SyncDataset.HISTORY, SyncDataset.PROFILE, SyncDataset.PENDING).map { syncKey(it, link) }
+            repository.activeIpsum.first()?.let { keys += syncKey(SyncDataset.SUBMISSIONS, link, it.id) }
+        }
+        for (key in keys) {
+            if (work.keys.any { it.lookupHandle == null && syncKey(it.dataset, it.link, it.ipsumId) == key }) continue
+            val state = store.read(key)
+            if (state.running) {
+                val recovered = state.copy(running = false, failure = "Interrompido; retomada disponível")
+                if (key == syncKey(SyncDataset.CATALOG, null)) store.write(key, recovered)
+                else if (link != null) repository.withProfileLink(link) { store.write(key, recovered) }
+            }
+        }
+    }
+
+    suspend fun synchronizeHistory(expectedLink: ProfileLink? = null): ProblemHistorySyncResult {
+        val link = currentLink(expectedLink) ?: return ProblemHistorySyncResult.NoActiveProfile
         return single(Operation(SyncDataset.HISTORY, link)) {
             SynchronizeProblemHistory(repository, codeforces, store = store, nowMillis = nowMillis)(link)
         }
@@ -72,8 +120,8 @@ class SynchronizationCoordinator(
         }
     }
 
-    suspend fun updatePendingIpsums(): UpdatePendingIpsumsResult {
-        val link = repository.profileLink.first() ?: return UpdatePendingIpsumsResult.NoActiveProfile
+    suspend fun updatePendingIpsums(expectedLink: ProfileLink? = null): UpdatePendingIpsumsResult {
+        val link = currentLink(expectedLink) ?: return UpdatePendingIpsumsResult.NoActiveProfile
         return single(Operation(SyncDataset.PENDING, link)) {
             track(SyncDataset.PENDING, link, { it is UpdatePendingIpsumsResult.Success }, { UpdatePendingIpsumsResult.PersistenceFailure }) {
                 UpdatePendingIpsums(repository, codeforces)(link)
@@ -90,8 +138,8 @@ class SynchronizationCoordinator(
         }
     }
 
-    suspend fun refreshProfile(): UserLookupResult {
-        val link = repository.profileLink.first() ?: throw ProfileLinkChanged()
+    suspend fun refreshProfile(expectedLink: ProfileLink? = null): UserLookupResult {
+        val link = currentLink(expectedLink) ?: throw ProfileLinkChanged()
         return single(Operation(SyncDataset.PROFILE, link)) {
             track(SyncDataset.PROFILE, link, { it is UserLookupResult.Success },
                 { UserLookupResult.ApiFailure("Não foi possível salvar os metadados do perfil.") }) {

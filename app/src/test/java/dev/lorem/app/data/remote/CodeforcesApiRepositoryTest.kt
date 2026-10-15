@@ -14,6 +14,18 @@ import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class CodeforcesApiRepositoryTest {
+    @Test fun `API call limits retry across endpoints while permanent user HTTP failures stay distinct`() = runTest {
+        val limited = repository("""{"status":"FAILED","comment":"Call limit exceeded"}""")
+        assertEquals(UserLookupResult.RateLimited, limited.user("tourist"))
+        assertEquals(SubmissionHistoryResult.RateLimited, limited.submissionPage("tourist", 1, 1000))
+        assertEquals(SubmissionHistoryResult.RateLimited, limited.submissionHistorySince("tourist", 0))
+        assertEquals(ProblemCatalogResult.RateLimited, limited.problems())
+        val denied = CodeforcesApiRepository(immediateGate, CodeforcesHttpClient { HttpResponse(403, "") })
+        assertTrue(denied.user("tourist") is UserLookupResult.ApiFailure)
+        val temporary = CodeforcesApiRepository(immediateGate, CodeforcesHttpClient { HttpResponse(503, "") })
+        assertEquals(UserLookupResult.NetworkFailure, temporary.user("tourist"))
+    }
+
     @Test
     fun `checkpoint page uses requested offset and preserves raw size when identities are missing`() = runTest {
         var requested = ""

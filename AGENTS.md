@@ -44,18 +44,18 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
-- **Foco:** Historia 15 concluida; proxima implementacao: Historia 16 - WorkManager.
-- **Ultima historia verificada:** Historia 15 - Base segura para sincronizacao automatica, automaticamente em 2026-10-15.
-- **Primeiro item pendente:** agendar preparacao e manutencao em segundo plano com WorkManager (Historia 16).
-- **Proxima entrega demonstravel:** sincronizacao automatica (16-17), seguida de redesign (18-21); Historias 00-15 preservadas.
+- **Foco:** Historia 16 concluida; proxima implementacao: Historia 17 - deteccao automatica.
+- **Ultima historia verificada:** Historia 16 - Sincronizacao em segundo plano com WorkManager, automaticamente em 2026-10-15.
+- **Primeiro item pendente:** polling do Ipsum visivel e verificacao do ativo no worker (Historia 17).
+- **Proxima entrega demonstravel:** acompanhamento automatico de submissoes (17), seguido de redesign (18-21); Historias 00-16 preservadas.
 - **Bloqueios conhecidos:** nenhum; teste manual e opcional (D-014).
 
-Regressao da Historia 15: 158 testes debug e 127 release sem falhas, lint sem erros
+Regressao da Historia 16: 174 testes debug e 143 release sem falhas, lint sem erros
 (apenas aviso preexistente de icone) e `assembleDebug` concluido.
 Progresso e aceite: [`docs/ROADMAP.md`](docs/ROADMAP.md).
 Roteiro: [`docs/DEMO.md`](docs/DEMO.md).
 Planejamento: [sincronizacao](docs/SYNC.md), [design](docs/DESIGN.md) e
-[Historia 16](docs/ROADMAP.md#historia-16---sincronizacao-em-segundo-plano-com-workmanager).
+[Historia 17](docs/ROADMAP.md#historia-17---deteccao-automatica-de-submissoes-e-status-de-atualizacao).
 
 ## Politica de contexto
 

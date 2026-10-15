@@ -18,6 +18,7 @@ enum class SyncDataset { HISTORY, CATALOG, PROFILE, SUBMISSIONS, PENDING }
 /** Each dataset has its own evidence of success. A checkpoint is never readiness. */
 data class SynchronizationState(
     val running: Boolean = false,
+    val retryNotBeforeEpochMillis: Long = 0,
     val lastSuccessEpochMillis: Long? = null,
     val failure: String? = null,
     val nextFrom: Int = 1,

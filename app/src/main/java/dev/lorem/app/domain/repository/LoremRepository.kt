@@ -65,6 +65,9 @@ interface LoremRepository {
     /** The persistence layer must reject insertion when any active Ipsum already exists. */
     suspend fun createActiveIpsum(ipsum: Ipsum): Ipsum
 
+    suspend fun createActiveIpsumForLink(ipsum: Ipsum, link: ProfileLink): Ipsum =
+        withProfileLink(link) { createActiveIpsum(ipsum) }
+
     /** Records the first reveal only; subsequent and concurrent calls leave it unchanged. */
     suspend fun revealIpsumHint(ipsumId: Long, revealedAtEpochMillis: Long)
 

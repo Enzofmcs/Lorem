@@ -23,7 +23,7 @@ fun interface CodeforcesHttpClient {
     suspend fun get(url: String): HttpResponse
 }
 
-data class HttpResponse(val statusCode: Int, val body: String)
+data class HttpResponse(val statusCode: Int, val body: String, val retryAfter: String? = null)
 
 class UrlConnectionCodeforcesHttpClient : CodeforcesHttpClient {
     override suspend fun get(url: String): HttpResponse = withContext(Dispatchers.IO) {
@@ -34,7 +34,10 @@ class UrlConnectionCodeforcesHttpClient : CodeforcesHttpClient {
             connection.requestMethod = "GET"
             val status = connection.responseCode
             val stream = if (status in 200..299) connection.inputStream else connection.errorStream
-            HttpResponse(status, stream?.bufferedReader()?.use { it.readText() }.orEmpty())
+            HttpResponse(
+                status, stream?.bufferedReader()?.use { it.readText() }.orEmpty(),
+                connection.getHeaderField("Retry-After"),
+            )
         } finally {
             connection.disconnect()
         }
@@ -45,6 +48,7 @@ class CodeforcesApiRepository(
     private val gate: CodeforcesRequestGate,
     private val httpClient: CodeforcesHttpClient = UrlConnectionCodeforcesHttpClient(),
     private val submissionPageSize: Int = DEFAULT_SUBMISSION_PAGE_SIZE,
+    private val onRetryAfter: suspend (String?) -> Unit = {},
 ) : CodeforcesRepository {
     init {
         require(submissionPageSize > 0) { "submissionPageSize must be positive" }
@@ -53,10 +57,11 @@ class CodeforcesApiRepository(
     override suspend fun user(handle: String): UserLookupResult = try {
         gate.execute {
             val encoded = URLEncoder.encode(handle.trim(), Charsets.UTF_8.name())
-            val response = httpClient.get("https://codeforces.com/api/user.info?handles=$encoded")
+            val response = request("https://codeforces.com/api/user.info?handles=$encoded")
             when {
                 response.statusCode == 429 -> UserLookupResult.RateLimited
-                response.statusCode !in 200..299 -> UserLookupResult.NetworkFailure
+                response.statusCode in 500..599 || response.statusCode == 408 -> UserLookupResult.NetworkFailure
+                response.statusCode !in 200..299 -> UserLookupResult.ApiFailure("Falha HTTP ${response.statusCode}")
                 else -> parseUserResponse(response.body)
             }
         }
@@ -72,14 +77,14 @@ class CodeforcesApiRepository(
         val encoded = URLEncoder.encode(handle.trim(), Charsets.UTF_8.name())
         return try {
             val response = gate.execute {
-                httpClient.get("https://codeforces.com/api/user.status?handle=$encoded&from=$from&count=$count")
+                request("https://codeforces.com/api/user.status?handle=$encoded&from=$from&count=$count")
             }
             when {
                 response.statusCode == 429 -> SubmissionHistoryResult.RateLimited
                 response.statusCode !in 200..299 -> SubmissionHistoryResult.HttpFailure(response.statusCode)
                 else -> when (val page = parseSubmissionPage(response.body)) {
                     is SubmissionPageResult.Success -> SubmissionHistoryResult.Success(page.submissions, page.receivedCount)
-                    is SubmissionPageResult.Failed -> SubmissionHistoryResult.Failed(page.message)
+                    is SubmissionPageResult.Failed -> submissionFailure(page.message)
                     SubmissionPageResult.InvalidResponse -> SubmissionHistoryResult.InvalidResponse
                 }
             }
@@ -102,7 +107,7 @@ class CodeforcesApiRepository(
         return try {
             while (true) {
                 val response = gate.execute {
-                    httpClient.get(
+                    request(
                         "https://codeforces.com/api/user.status" +
                             "?handle=$encodedHandle&from=$from&count=$submissionPageSize",
                     )
@@ -115,7 +120,7 @@ class CodeforcesApiRepository(
                 }
 
                 when (val page = parseSubmissionPage(response.body)) {
-                    is SubmissionPageResult.Failed -> return SubmissionHistoryResult.Failed(page.message)
+                    is SubmissionPageResult.Failed -> return submissionFailure(page.message)
                     SubmissionPageResult.InvalidResponse -> {
                         return SubmissionHistoryResult.InvalidResponse
                     }
@@ -142,7 +147,7 @@ class CodeforcesApiRepository(
 
     override suspend fun problems(): ProblemCatalogResult = try {
         gate.execute {
-            val response = httpClient.get("https://codeforces.com/api/problemset.problems")
+            val response = request("https://codeforces.com/api/problemset.problems")
             when {
                 response.statusCode == 429 -> ProblemCatalogResult.RateLimited
                 response.statusCode !in 200..299 -> ProblemCatalogResult.HttpFailure(response.statusCode)
@@ -153,6 +158,14 @@ class CodeforcesApiRepository(
         ProblemCatalogResult.NetworkFailure
     }
 
+    private fun submissionFailure(message: String): SubmissionHistoryResult =
+        if (message.contains("limit", ignoreCase = true)) SubmissionHistoryResult.RateLimited
+        else SubmissionHistoryResult.Failed(message)
+
+    private suspend fun request(url: String): HttpResponse = httpClient.get(url).also { response ->
+        if (response.statusCode == 429 || response.statusCode == 503) onRetryAfter(response.retryAfter)
+    }
+
     private fun parseProblemCatalog(body: String): ProblemCatalogResult {
         val json = try {
             JSONObject(body)
@@ -160,9 +173,9 @@ class CodeforcesApiRepository(
             return ProblemCatalogResult.InvalidResponse
         }
         if (json.optString("status") == "FAILED") {
-            return ProblemCatalogResult.Failed(
-                json.optString("comment", "Falha informada pelo Codeforces."),
-            )
+            val comment = json.optString("comment", "Falha informada pelo Codeforces.")
+            return if (comment.contains("limit", ignoreCase = true)) ProblemCatalogResult.RateLimited
+                else ProblemCatalogResult.Failed(comment)
         }
         if (json.optString("status") != "OK") return ProblemCatalogResult.InvalidResponse
         val problems = json.optJSONObject("result")?.optJSONArray("problems")
