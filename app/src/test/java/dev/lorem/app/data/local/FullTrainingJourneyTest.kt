@@ -149,7 +149,7 @@ class FullTrainingJourneyTest {
             env.remote.waitingStatusStarted!!.await()
             env.repository.saveProfile(trainingProfile(handle = "other"))
             env.remote.waitingStatus!!.complete(SubmissionHistoryResult.Success(emptyList()))
-            assertTrue(oldAccountSync.await() is ProblemHistorySyncResult.Success)
+            assertTrue(runCatching { oldAccountSync.await() }.exceptionOrNull() is dev.lorem.app.domain.sync.ProfileLinkChanged)
             env.repository.markHistorySynchronized("tourist", 12345)
             env.repository.updateProfileMetadata("tourist", "Wrong", 9999)
             assertEquals("other", env.repository.profile.first()!!.handle)

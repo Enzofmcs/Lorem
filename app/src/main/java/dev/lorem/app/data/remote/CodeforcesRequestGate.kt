@@ -9,7 +9,7 @@ interface CodeforcesRequestGate {
 }
 
 class TwoSecondCodeforcesRequestGate(
-    private val nowMillis: () -> Long = System::currentTimeMillis,
+    private val nowMillis: () -> Long = { System.nanoTime() / 1_000_000L },
     private val wait: suspend (Long) -> Unit = { delay(it) },
 ) : CodeforcesRequestGate {
     private val mutex = Mutex()

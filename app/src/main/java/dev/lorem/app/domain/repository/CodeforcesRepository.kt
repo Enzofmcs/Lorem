@@ -18,7 +18,10 @@ sealed interface UserLookupResult {
 }
 
 sealed interface SubmissionHistoryResult {
-    data class Success(val submissions: List<CodeforcesSubmission>) : SubmissionHistoryResult
+    data class Success(
+        val submissions: List<CodeforcesSubmission>,
+        val receivedCount: Int = submissions.size,
+    ) : SubmissionHistoryResult
     data class Failed(val message: String) : SubmissionHistoryResult
     data object RateLimited : SubmissionHistoryResult
     data object NetworkFailure : SubmissionHistoryResult
@@ -39,6 +42,13 @@ interface CodeforcesRepository {
     suspend fun user(handle: String): UserLookupResult
 
     suspend fun submissionHistory(handle: String): SubmissionHistoryResult
+
+    /** One request/page. receivedCount includes entries without a usable problem identity. */
+    suspend fun submissionPage(handle: String, from: Int, count: Int): SubmissionHistoryResult =
+        when (val result = submissionHistory(handle)) {
+            is SubmissionHistoryResult.Success -> SubmissionHistoryResult.Success(result.submissions.drop(from - 1).take(count))
+            else -> result
+        }
 
     /** Returns submissions newer than [sinceEpochMillis], stopping pagination at that boundary. */
     suspend fun submissionHistorySince(handle: String, sinceEpochMillis: Long): SubmissionHistoryResult =

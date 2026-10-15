@@ -51,7 +51,7 @@ class CompleteAppJourneyTest {
         val env = environment()
         var now = 1_000_000L
         val vm = model(env) { now }
-        compose.setContent { LoremTheme { LoremApp(env.repository, env.remote, vm) } }
+        compose.setContent { LoremTheme { LoremApp(env.repository, env.remote, viewModel = vm) } }
         await { compose.onAllNodesWithText("Handle do Codeforces").fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithText("Handle do Codeforces").performTextInput("tourist")
         click("Validar e abrir Início")
@@ -132,7 +132,7 @@ class CompleteAppJourneyTest {
         env.remote.submissions = SubmissionHistoryResult.NetworkFailure
         val vm = model(env) { 5_000_000 }
         val restoration = StateRestorationTester(compose)
-        restoration.setContent { LoremTheme { LoremApp(env.repository, env.remote, vm) } }
+        restoration.setContent { LoremTheme { LoremApp(env.repository, env.remote, viewModel = vm) } }
         await { vm.activeIpsum.value != null }
         compose.onNodeWithText("Ipsum ativo").assertIsDisplayed()
         compose.onNodeWithText("Tópicos: implementation").performScrollTo().assertIsDisplayed()

@@ -117,7 +117,9 @@ em dispositivo foi alegada nesta sessão.
 
 O planejamento de 13/10/2026 acrescenta **15–17 — Sincronização automática** e
 **18–21 — Redesign**. As Histórias 00–14 e suas evidências permanecem preservadas;
-as novas histórias ainda precisam ser implementadas e verificadas.
+a História 15 está implementada e verificada: coordenador compartilhado, importação
+incremental retomável e proteção por versão de vínculo. As Histórias 16–21 seguem
+com implementação pendente. A próxima entrega é WorkManager (História 16).
 
 A proposta combina WorkManager em segundo plano, consulta frequente durante o
 Ipsum visível e temas claro/escuro em azul profundo e verde. Consulte o

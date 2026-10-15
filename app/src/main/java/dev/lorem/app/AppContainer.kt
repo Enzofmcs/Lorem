@@ -1,5 +1,10 @@
 package dev.lorem.app
 
+import dev.lorem.app.domain.sync.SynchronizationCoordinator
+import dev.lorem.app.data.local.PreferencesSynchronizationStore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.Dispatchers
 import android.content.Context
 import dev.lorem.app.data.local.LocalLoremRepository
 import dev.lorem.app.data.local.LoremDatabase
@@ -10,6 +15,7 @@ import dev.lorem.app.domain.repository.CodeforcesRepository
 import dev.lorem.app.domain.repository.LoremRepository
 
 class AppContainer(context: Context) {
+    private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val database = LoremDatabase.create(context)
     val loremRepository: LoremRepository = LocalLoremRepository(
         dataStore = context.profileDataStore,
@@ -19,5 +25,9 @@ class AppContainer(context: Context) {
     )
     val codeforcesRepository: CodeforcesRepository = CodeforcesApiRepository(
         gate = TwoSecondCodeforcesRequestGate(),
+    )
+    val synchronizationCoordinator = SynchronizationCoordinator(
+        loremRepository, codeforcesRepository, applicationScope,
+        PreferencesSynchronizationStore(context.profileDataStore),
     )
 }

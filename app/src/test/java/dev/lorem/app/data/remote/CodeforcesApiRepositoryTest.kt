@@ -14,6 +14,20 @@ import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class CodeforcesApiRepositoryTest {
+    @Test
+    fun `checkpoint page uses requested offset and preserves raw size when identities are missing`() = runTest {
+        var requested = ""
+        val client = CodeforcesHttpClient { url ->
+            requested = url
+            HttpResponse(200, """{"status":"OK","result":[{"id":1},${submission(2, 10, "A", "TESTING", 100)}]}""")
+        }
+        val page = CodeforcesApiRepository(immediateGate, client).submissionPage(" a+b ", 45, 2)
+            as SubmissionHistoryResult.Success
+        assertTrue(requested.contains("handle=a%2Bb&from=45&count=2"))
+        assertEquals(2, page.receivedCount)
+        assertEquals(listOf(2L), page.submissions.map { it.id })
+        assertEquals("TESTING", page.submissions.single().verdict)
+    }
     private val immediateGate = object : CodeforcesRequestGate {
         override suspend fun <T> execute(request: suspend () -> T): T = request()
     }

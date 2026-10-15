@@ -9,6 +9,9 @@ import dev.lorem.app.domain.model.IpsumFailureReason
 import dev.lorem.app.domain.model.IpsumResult
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import dev.lorem.app.domain.sync.ProfileLink
+import dev.lorem.app.domain.sync.ProfileLinkChanged
 
 interface LoremRepository {
     val profile: Flow<LocalProfile?>
@@ -18,7 +21,22 @@ interface LoremRepository {
     val ipsums: Flow<List<Ipsum>>
     val activeIpsum: Flow<Ipsum?>
 
+    val profileLink: Flow<ProfileLink?>
+        get() = profile.map { it?.let { ProfileLink.of(it.handle, 0) } }
+
+    /** Implementations serialize this check and the write with account replacement. */
+    suspend fun <T> withProfileLink(link: ProfileLink, write: suspend () -> T): T {
+        if (profileLink.first() != link) throw ProfileLinkChanged()
+        return write()
+    }
+
     suspend fun saveProfile(profile: LocalProfile)
+
+    suspend fun saveProfileIfCurrent(expected: ProfileLink?, profile: LocalProfile): Boolean {
+        if (profileLink.first() != expected) return false
+        saveProfile(profile)
+        return true
+    }
 
     suspend fun clearProfile()
 

@@ -92,7 +92,7 @@ private class Remote(
 }
 
 private class RecordingLoremRepository : LoremRepository {
-    override val profile = MutableStateFlow<LocalProfile?>(null)
+    override val profile = MutableStateFlow<LocalProfile?>(LocalProfile("tourist", "Tourist", 800, 800, null, 0))
     override val problemHistory = MutableStateFlow<List<ProblemHistory>>(emptyList())
     override val problemCatalog = MutableStateFlow<List<CodeforcesProblem>>(emptyList())
     override val catalogLastUpdatedEpochMillis = MutableStateFlow<Long?>(null)
