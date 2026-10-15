@@ -16,6 +16,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 class FakeLoremRepository(initialProfile: LocalProfile? = null) : LoremRepository {
     private val storedProfile = MutableStateFlow(initialProfile)
+    private var linkVersion = 0L
+    override val profileLink = MutableStateFlow(initialProfile?.let { dev.lorem.app.domain.sync.ProfileLink.of(it.handle, linkVersion) })
     private val storedProblemHistory = MutableStateFlow<List<ProblemHistory>>(emptyList())
     private val storedProblemCatalog = MutableStateFlow<List<CodeforcesProblem>>(emptyList())
     private val storedCatalogUpdatedAt = MutableStateFlow<Long?>(null)
@@ -29,18 +31,23 @@ class FakeLoremRepository(initialProfile: LocalProfile? = null) : LoremRepositor
     override val activeIpsum = MutableStateFlow<Ipsum?>(null)
 
     override suspend fun saveProfile(profile: LocalProfile) {
+        val normalized = dev.lorem.app.domain.sync.ProfileLink.of(profile.handle, linkVersion)
+        if (profileLink.value?.handle != normalized.handle) linkVersion++
         storedProfile.value = profile
+        profileLink.value = normalized.copy(version = linkVersion)
     }
 
     override suspend fun clearProfile() {
+        linkVersion++
         storedProfile.value = null
+        profileLink.value = null
     }
 
     override suspend fun saveProblemHistory(ownerHandle: String, history: List<ProblemHistory>) {
         storedProblemHistory.value = (storedProblemHistory.value + history)
-            .associateBy(ProblemHistory::problemId)
-            .values
-            .toList()
+            .groupBy(ProblemHistory::problemId).map { (id, values) ->
+                ProblemHistory(id, values.any { it.attempted }, values.any { it.hasAcceptedSubmission })
+            }
     }
 
     override suspend fun replaceProblemCatalog(problems: List<CodeforcesProblem>, updatedAtEpochMillis: Long) {

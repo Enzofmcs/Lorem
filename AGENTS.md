@@ -44,18 +44,18 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
-- **Foco:** planejamento de automacao e redesign concluido; proxima implementacao: Historia 15 - Base segura para sincronizacao automatica.
-- **Ultima historia verificada:** Historia 14 - Fluxo completo e robustez, automaticamente em 2026-10-13.
-- **Primeiro item pendente:** coordenar sincronizacao incremental, workers e consultas de tela preservando perfil e rating.
-- **Proxima entrega demonstravel:** sincronizacao automatica (15-17), seguida de redesign (18-21); bloco 00-14 preservado.
+- **Foco:** Historia 15 concluida; proxima implementacao: Historia 16 - WorkManager.
+- **Ultima historia verificada:** Historia 15 - Base segura para sincronizacao automatica, automaticamente em 2026-10-15.
+- **Primeiro item pendente:** agendar preparacao e manutencao em segundo plano com WorkManager (Historia 16).
+- **Proxima entrega demonstravel:** sincronizacao automatica (16-17), seguida de redesign (18-21); Historias 00-15 preservadas.
 - **Bloqueios conhecidos:** nenhum; teste manual e opcional (D-014).
 
-Regressao final: 147 testes debug e 116 release sem falhas, lint sem erros
+Regressao da Historia 15: 158 testes debug e 127 release sem falhas, lint sem erros
 (apenas aviso preexistente de icone) e `assembleDebug` concluido.
 Progresso e aceite: [`docs/ROADMAP.md`](docs/ROADMAP.md).
 Roteiro: [`docs/DEMO.md`](docs/DEMO.md).
 Planejamento: [sincronizacao](docs/SYNC.md), [design](docs/DESIGN.md) e
-[Historia 15](docs/ROADMAP.md#historia-15---base-segura-para-sincronizacao-automatica).
+[Historia 16](docs/ROADMAP.md#historia-16---sincronizacao-em-segundo-plano-com-workmanager).
 
 ## Politica de contexto
 

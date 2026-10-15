@@ -1,5 +1,8 @@
 package dev.lorem.app.ui
 
+import dev.lorem.app.domain.sync.ProfileLink
+import dev.lorem.app.domain.sync.SynchronizationCoordinator
+import kotlinx.coroutines.CancellationException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -7,9 +10,7 @@ import dev.lorem.app.domain.model.LocalProfile
 import dev.lorem.app.domain.model.ProblemHistory
 import dev.lorem.app.domain.ProblemHistorySyncResult
 import dev.lorem.app.domain.ProblemCatalogSyncResult
-import dev.lorem.app.domain.SynchronizeProblemCatalog
 import dev.lorem.app.domain.model.CodeforcesProblem
-import dev.lorem.app.domain.SynchronizeProblemHistory
 import dev.lorem.app.domain.repository.CodeforcesRepository
 import dev.lorem.app.domain.repository.LoremRepository
 import dev.lorem.app.domain.repository.UserLookupResult
@@ -20,8 +21,6 @@ import dev.lorem.app.domain.calculateConsolidatedRating
 import dev.lorem.app.domain.StartIpsum
 import dev.lorem.app.domain.StartIpsumResult
 import dev.lorem.app.domain.VerifyIpsumResult
-import dev.lorem.app.domain.VerifyIpsumSubmissions
-import dev.lorem.app.domain.UpdatePendingIpsums
 import dev.lorem.app.domain.UpdatePendingIpsumsResult
 import dev.lorem.app.domain.IpsumStatistics
 import dev.lorem.app.domain.buildIpsumStatistics
@@ -111,16 +110,12 @@ class LoremViewModel(
     private val nowMillis: () -> Long = System::currentTimeMillis,
     randomSource: RandomSource = RandomSource { Random.Default.nextInt(it) },
     statisticsDispatcher: CoroutineDispatcher = Dispatchers.Default,
+    synchronizationCoordinator: SynchronizationCoordinator? = null,
 ) : ViewModel() {
-    private val synchronizeProblemHistory = SynchronizeProblemHistory(
-        loremRepository = repository,
-        codeforcesRepository = codeforcesRepository,
-        nowMillis = nowMillis,
+    private val coordinator = synchronizationCoordinator ?: SynchronizationCoordinator(
+        repository, codeforcesRepository, viewModelScope, nowMillis = nowMillis,
     )
-    private val synchronizeProblemCatalog = SynchronizeProblemCatalog(repository, codeforcesRepository, nowMillis)
     private val startIpsum = StartIpsum(repository, RecommendIpsum(randomSource), nowMillis)
-    private val verifyIpsumSubmissions = VerifyIpsumSubmissions(repository, codeforcesRepository)
-    private val updatePendingIpsumsUseCase = UpdatePendingIpsums(repository, codeforcesRepository)
     val uiState: StateFlow<LoremUiState> = repository.profile
         .map<LocalProfile?, LoremUiState>(LoremUiState::Ready)
         .stateIn(
@@ -173,6 +168,19 @@ class LoremViewModel(
 
     init {
         viewModelScope.launch {
+            var previous = repository.profileLink.first()
+            repository.profileLink.collect { link ->
+                if (link != previous) {
+                    mutableConfigurationState.value = mutableConfigurationState.value.copy(isLoading = false)
+                    mutableHistorySyncState.value = HistorySyncUiState.Idle
+                    mutableSubmissionCheckState.value = SubmissionCheckUiState.Idle
+                    mutablePendingUpdateState.value = PendingUpdateUiState.Idle
+                    mutableIpsumResultState.value = IpsumResultUiState.Idle
+                    previous = link
+                }
+            }
+        }
+        viewModelScope.launch {
             repository.profile.collect { profile ->
                 if (profile != null && mutableConfigurationState.value.handle.isBlank()) {
                     mutableConfigurationState.value = mutableConfigurationState.value.copy(
@@ -199,8 +207,9 @@ class LoremViewModel(
         if (handle.isBlank() || state.isLoading) return
         mutableConfigurationState.value = state.copy(isLoading = true, errorMessage = null)
         viewModelScope.launch {
-            when (val result = codeforcesRepository.user(handle)) {
-                is UserLookupResult.Success -> persist(result)
+            val link = repository.profileLink.first()
+            when (val result = coordinator.lookupUser(handle)) {
+                is UserLookupResult.Success -> persist(result, link)
                 UserLookupResult.UserNotFound -> showError("Usuário não encontrado no Codeforces.")
                 is UserLookupResult.ApiFailure -> showError("Codeforces recusou a consulta: ${result.message}")
                 UserLookupResult.RateLimited -> showError("Limite do Codeforces atingido. Aguarde e tente novamente.")
@@ -209,7 +218,7 @@ class LoremViewModel(
         }
     }
 
-    private suspend fun persist(result: UserLookupResult.Success) {
+    private suspend fun persist(result: UserLookupResult.Success, link: ProfileLink?) {
         val user = result.user
         val savedProfile = repository.profile.first()
         val sameOwner = savedProfile?.handle?.trim()?.equals(user.handle.trim(), ignoreCase = true) == true
@@ -228,8 +237,12 @@ class LoremViewModel(
                 showError("Encerre o Ipsum ativo antes de trocar o handle.")
                 return
             }
-            if (sameOwner) repository.updateProfileMetadata(user.handle, user.displayName, user.rating)
-            else repository.saveProfile(profile)
+            if (sameOwner && link != null) repository.withProfileLink(link) {
+                repository.updateProfileMetadata(user.handle, user.displayName, user.rating)
+            } else if (!repository.saveProfileIfCurrent(link, profile)) {
+                showError("O perfil mudou durante a consulta. Tente novamente.")
+                return
+            }
             if (!sameOwner) {
                 mutableHistorySyncState.value = HistorySyncUiState.Idle
                 mutableSubmissionCheckState.value = SubmissionCheckUiState.Idle
@@ -244,7 +257,8 @@ class LoremViewModel(
                 savedProfile = persisted,
                 navigateHome = true,
             )
-        } catch (_: Exception) {
+        } catch (error: Exception) {
+            if (error is CancellationException) throw error
             showError("Não foi possível salvar o perfil. Tente novamente.")
         }
     }
@@ -265,8 +279,8 @@ class LoremViewModel(
         if (mutableHistorySyncState.value == HistorySyncUiState.Loading) return
         mutableHistorySyncState.value = HistorySyncUiState.Loading
         viewModelScope.launch {
-            val owner = repository.profile.first()?.handle
-            val result = synchronizeProblemHistory()
+            val owner = repository.profileLink.first()
+            val result = coordinator.synchronizeHistory()
             if (!isCurrentOwner(owner)) return@launch
             mutableHistorySyncState.value = when (result) {
                 is ProblemHistorySyncResult.Success -> HistorySyncUiState.Success(result.problemCount)
@@ -297,7 +311,7 @@ class LoremViewModel(
         if (mutableCatalogSyncState.value == CatalogSyncUiState.Loading) return
         mutableCatalogSyncState.value = CatalogSyncUiState.Loading
         viewModelScope.launch {
-            mutableCatalogSyncState.value = when (val result = synchronizeProblemCatalog()) {
+            mutableCatalogSyncState.value = when (val result = coordinator.synchronizeCatalog()) {
                 is ProblemCatalogSyncResult.Success -> CatalogSyncUiState.Success(
                     result.eligibleProblemCount,
                     result.updatedAtEpochMillis,
@@ -364,8 +378,13 @@ class LoremViewModel(
         if (mutableSubmissionCheckState.value == SubmissionCheckUiState.Loading) return
         mutableSubmissionCheckState.value = SubmissionCheckUiState.Loading
         viewModelScope.launch {
+            val owner = repository.profileLink.first()
             val ipsumId = repository.activeIpsum.first()?.id
-            mutableSubmissionCheckState.value = when (val result = verifyIpsumSubmissions()) {
+            val result = coordinator.verifyActiveIpsum()
+            if (!isCurrentOwner(owner)) return@launch
+            val activeId = repository.activeIpsum.first()?.id
+            if (activeId != null && activeId != ipsumId) return@launch
+            mutableSubmissionCheckState.value = when (result) {
                 is VerifyIpsumResult.Success -> SubmissionCheckUiState.Success(
                     result.newSubmissionCount, result.errorCount, result.completed, ipsumId,
                 )
@@ -424,8 +443,8 @@ class LoremViewModel(
         if (mutablePendingUpdateState.value == PendingUpdateUiState.Loading) return
         mutablePendingUpdateState.value = PendingUpdateUiState.Loading
         viewModelScope.launch {
-            val owner = repository.profile.first()?.handle
-            val result = updatePendingIpsumsUseCase()
+            val owner = repository.profileLink.first()
+            val result = coordinator.updatePendingIpsums()
             if (!isCurrentOwner(owner)) return@launch
             mutablePendingUpdateState.value = when (result) {
                 is UpdatePendingIpsumsResult.Success -> PendingUpdateUiState.Success(result.movedCount)
@@ -440,8 +459,8 @@ class LoremViewModel(
         }
     }
 
-    private suspend fun isCurrentOwner(ownerHandle: String?): Boolean =
-        repository.profile.first()?.handle?.trim().equals(ownerHandle?.trim(), ignoreCase = true)
+    private suspend fun isCurrentOwner(link: ProfileLink?): Boolean =
+        repository.profileLink.first() == link
 
     companion object {
         const val INITIAL_UNRATED_RATING = 800
@@ -449,11 +468,12 @@ class LoremViewModel(
         fun factory(
             repository: LoremRepository,
             codeforcesRepository: CodeforcesRepository,
+            synchronizationCoordinator: SynchronizationCoordinator? = null,
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 require(modelClass.isAssignableFrom(LoremViewModel::class.java))
-                return LoremViewModel(repository, codeforcesRepository) as T
+                return LoremViewModel(repository, codeforcesRepository, synchronizationCoordinator = synchronizationCoordinator) as T
             }
         }
     }

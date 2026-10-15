@@ -6,13 +6,13 @@
 
 ## Estado atual
 
-**Foco atual:** planejamento de automacao e redesign concluido; proxima implementacao: Historia 15.
+**Foco atual:** Historia 15 concluida; proxima implementacao: Historia 16 - WorkManager.
 
-**Ultima historia verificada:** Historia 14 - Fluxo completo e robustez; Historias 12-14 verificadas automaticamente em 2026-10-13.
+**Ultima historia verificada:** Historia 15 - Base segura para sincronizacao automatica, automaticamente em 2026-10-15. Historias 00-14 preservadas.
 
-**Primeiro item pendente:** coordenacao segura para sincronizacao automatica (Historia 15).
+**Primeiro item pendente:** preparacao e manutencao em segundo plano com WorkManager (Historia 16).
 
-**Proxima entrega demonstravel:** preparacao e manutencao automatica do Codeforces (Historias 15-17); depois redesign (18-21).
+**Proxima entrega demonstravel:** preparacao/manutencao automatica e acompanhamento de submissoes (Historias 16-17); depois redesign (18-21).
 
 **Bloqueios conhecidos:** nenhum. Conferencia em dispositivo e opcional (D-014).
 
@@ -75,7 +75,7 @@ As Historias 00-14 e suas evidencias permanecem concluidas.
 Ordem proposta: **15 -> 16 -> 17**, seguida de **18 -> 19 -> 20 -> 21**.
 A 18 pode iniciar independentemente da automacao; 19 integra 16/17 e a 21 nao depende
 da 20. [SYNC.md](SYNC.md) e [DESIGN.md](DESIGN.md) detalham os planos.
-As novas historias estao planejadas; todos os criterios de implementacao continuam pendentes.
+A Historia 15 foi implementada e verificada em 2026-10-15; Historias 16-21 continuam planejadas e com aceite pendente.
 
 ## Sumario rapido
 
@@ -843,7 +843,7 @@ anteriores das Historias 10/11 permanecem preservadas.
 
 **Historia:** Como usuário, quero que atualizações simultâneas preservem meu histórico, perfil e Rating Lorem.
 
-**Status:** planejada; implementacao e aceite pendentes.
+**Status:** concluida; criterios verificados automaticamente em 2026-10-15.
 
 **GitHub:** [#30 — História 15 — Base segura para sincronização automática](https://github.com/Enzofmcs/Lorem/issues/30).
 
@@ -855,20 +855,67 @@ anteriores das Historias 10/11 permanecem preservadas.
 
 #### Criterios de aceite
 
-- [ ] UI, workers e polling compartilham cliente e gate; o total de chamadas, incluindo paginação, nunca excede uma requisição a cada dois segundos.
-- [ ] Disparos da mesma operação/perfil são unificados; consultas do Ipsum podem prosseguir entre páginas da importação sem duplicar trabalhos.
-- [ ] Primeira importação completa e retomável; atualizações seguintes mesclam dados incrementais sem perder tentativa ou AC já salvo, usando contestId + index.
-- [ ] Checkpoint só avança após persistência; sobreposição e deduplicação por id toleram timestamps iguais, novas submissões entre páginas e veredictos ainda não definitivos.
-- [ ] Trocar/remover perfil cancela trabalhos antigos e invalida resultados por handle normalizado e versão do vínculo, inclusive na troca A → B → A.
-- [ ] Reutilizar markHistorySynchronized e updateProfileMetadata existentes: atualizações não regravam snapshots de Rating Lorem/faixa/handle; validar também a nova concorrência entre workers, consultas e troca de vínculo.
-- [ ] Último sucesso, progresso inicial e falha são persistidos por conjunto de dados; falha parcial/cancelamento preserva cache e não marca preparo como concluído.
-- [ ] Consulta, encerramento e upsolve concorrentes são idempotentes; rating é aplicado uma vez e AC posterior mantém a avaliação original.
+- [x] UI, workers e polling compartilham cliente e gate; o total de chamadas, incluindo paginação, nunca excede uma requisição a cada dois segundos.
+- [x] Disparos da mesma operação/perfil são unificados; consultas do Ipsum podem prosseguir entre páginas da importação sem duplicar trabalhos.
+- [x] Primeira importação completa e retomável; atualizações seguintes mesclam dados incrementais sem perder tentativa ou AC já salvo, usando contestId + index.
+- [x] Checkpoint só avança após persistência; sobreposição e deduplicação por id toleram timestamps iguais, novas submissões entre páginas e veredictos ainda não definitivos.
+- [x] Trocar/remover perfil cancela trabalhos antigos e invalida resultados por handle normalizado e versão do vínculo, inclusive na troca A → B → A.
+- [x] Reutilizar markHistorySynchronized e updateProfileMetadata existentes: atualizações não regravam snapshots de Rating Lorem/faixa/handle; validar também a nova concorrência entre workers, consultas e troca de vínculo.
+- [x] Último sucesso, progresso inicial e falha são persistidos por conjunto de dados; falha parcial/cancelamento preserva cache e não marca preparo como concluído.
+- [x] Consulta, encerramento e upsolve concorrentes são idempotentes; rating é aplicado uma vez e AC posterior mantém a avaliação original.
 
 #### Verificacao planejada
 
 Nível 4: testes direcionados de API, domínio e Room/DataStore para paginação, cancelamento, recuperação, troca de perfil, gate e concorrência com rating. Cobrir migração se houver mudança de esquema; regressão de marco conforme TESTING.md. Conferencias em dispositivo sao opcionais conforme D-014; criterios funcionais exigem evidencia automatizada proporcional ao risco.
 
 **Exemplo de aceite:** Uma importação disputa com AC e troca de handle: o perfil correto permanece salvo, as proteções atuais de rating/consolidação são preservadas e não há dupla avaliação.
+
+#### Implementacao e evidencias em 2026-10-15
+
+- `AppContainer.synchronizationCoordinator` unifica operacoes por conjunto/vinculo,
+  usando o cliente e gate compartilhados. UI usa a mesma entrada que os futuros
+  workers/polling. Gate monotônico; teste concorrente intercala paginas e consulta
+  do Ipsum mantendo intervalos de pelo menos dois segundos.
+- Importacao em lotes com sobreposicao, cursor depois da persistencia em Room,
+  varredura adicional do inicio e atualizacoes incrementais por watermark. IDs
+  provisórios ampliam o limite temporal ate receberem veredicto definitivo;
+  evidencias de tentativa/AC nunca regridem. Histórico vazio exige sucesso real.
+- Handle normalizado e versao do vinculo persistidos em DataStore; troca/remocao
+  cancela operacoes e cada gravacao confere o vinculo sob o lock de troca de perfil.
+  Inclusive validacao do handle e reconciliacao Room -> DataStore rejeitam A -> B -> A.
+- Estado, ultimo sucesso, falha e progresso sao separados por conjunto/vinculo.
+  Consultas tambem usam id do Ipsum: uma resposta antiga nao atualiza a tentativa
+  seguinte. Esquema Room preservado; chaves novas de DataStore aceitam vinculo
+  legado com versao zero, sem apagar perfil, rating, consolidacao ou historico.
+- `SynchronizationPersistenceTest` (8 cenarios, Room/DataStore reais) comprova
+  retomada apos reabertura, falha de pagina/gravacao, cancelamento, timestamps
+  iguais, veredicto provisório, A -> B -> A, sucesso parcial, rating concorrente,
+  encerramento/upsolve e isolamento entre tentativas. Testes da API, gate e
+  ViewModel cobrem limites, disparos duplicados e respostas atrasadas na UI.
+- Regressao preserva jornadas, migracoes, estatisticas D-013, rating D-012 e faixa
+  permanente D-015. Agendamento e polling continuam para as Historias 16 e 17.
+
+Comandos executados com Java 17, SDK 35 e Gradle 8.11.1 instalado em
+`/workspace/toolchains/gradle-8.11.1/bin/gradle`; `JAVA_HOME`, `GRADLE_USER_HOME` e
+`ANDROID_HOME` apontam para os toolchains desta sessao. O init script externo
+configura proxy e diretorio de cache para os testes Robolectric, sem alterar o app.
+
+```bash
+/workspace/toolchains/gradle-8.11.1/bin/gradle :app:compileDebugKotlin --max-workers=2 --console=plain
+/workspace/toolchains/gradle-8.11.1/bin/gradle :app:testDebugUnitTest --tests dev.lorem.app.data.local.SynchronizationPersistenceTest --tests dev.lorem.app.data.remote.CodeforcesRequestGateTest --tests dev.lorem.app.data.remote.CodeforcesApiRepositoryTest --tests dev.lorem.app.domain.VerifyIpsumSubmissionsTest --tests dev.lorem.app.domain.UpdatePendingIpsumsTest --tests dev.lorem.app.ui.LoremViewModelTest --max-workers=2 --console=plain --init-script /workspace/toolchains/test-runtime.init.gradle
+/workspace/toolchains/gradle-8.11.1/bin/gradle :app:testDebugUnitTest --tests dev.lorem.app.data.local.SynchronizationPersistenceTest --tests dev.lorem.app.ui.LoremViewModelTest --max-workers=2 --console=plain --init-script /workspace/toolchains/test-runtime.init.gradle
+/workspace/toolchains/gradle-8.11.1/bin/gradle test lint assembleDebug --max-workers=2 --console=plain --init-script /workspace/toolchains/test-runtime.init.gradle
+```
+
+Resultado final: **158 testes debug e 127 release sem falhas**, lint sem erros (apenas
+`MissingApplicationIcon` preexistente), APK debug gerado. Testes direcionados passaram;
+a ultima regressao inclui o caso adicional de resposta do Ipsum anterior e a
+protecao correspondente no ViewModel. As iteracoes iniciais corrigiram chamadas
+Kotlin com lambda final e fixtures antigas sem perfil ativo; nenhum teste funcional
+permaneceu falhando. `git diff --check` e links locais/ancoras conferidos.
+
+**TESTE MANUAL OPCIONAL - NAO EXECUTADO:** nenhuma conferencia em dispositivo foi
+alegada. Isso nao bloqueia a conclusao (D-014). Proximo passo: Historia 16.
 
 ---
 

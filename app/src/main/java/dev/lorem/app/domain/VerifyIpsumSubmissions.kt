@@ -1,5 +1,8 @@
 package dev.lorem.app.domain
 
+import dev.lorem.app.domain.sync.ProfileLinkChanged
+import dev.lorem.app.domain.sync.ProfileLink
+import kotlinx.coroutines.CancellationException
 import dev.lorem.app.domain.model.IpsumSubmission
 import dev.lorem.app.domain.repository.CodeforcesRepository
 import dev.lorem.app.domain.repository.LoremRepository
@@ -21,9 +24,13 @@ class VerifyIpsumSubmissions(
     private val loremRepository: LoremRepository,
     private val codeforcesRepository: CodeforcesRepository,
 ) {
-    suspend operator fun invoke(): VerifyIpsumResult {
+    suspend operator fun invoke(expectedLink: ProfileLink? = null, expectedIpsumId: Long? = null): VerifyIpsumResult {
+        val link = expectedLink ?: loremRepository.profileLink.first() ?: return VerifyIpsumResult.NoActiveIpsum
+        if (loremRepository.profileLink.first() != link) throw ProfileLinkChanged()
         val ipsum = loremRepository.activeIpsum.first() ?: return VerifyIpsumResult.NoActiveIpsum
-        val remote = when (val result = codeforcesRepository.submissionHistory(ipsum.ownerHandle)) {
+        if (expectedIpsumId != null && ipsum.id != expectedIpsumId) return VerifyIpsumResult.NoActiveIpsum
+        if (ProfileLink.of(ipsum.ownerHandle, link.version) != link) return VerifyIpsumResult.NoActiveIpsum
+        val remote = when (val result = codeforcesRepository.submissionHistorySince(ipsum.ownerHandle, ipsum.startedAtEpochMillis - 1)) {
             is SubmissionHistoryResult.Success -> result.submissions
             is SubmissionHistoryResult.Failed -> return VerifyIpsumResult.ApiFailure(result.message)
             SubmissionHistoryResult.RateLimited -> return VerifyIpsumResult.RateLimited
@@ -40,9 +47,12 @@ class VerifyIpsumSubmissions(
             .map { IpsumSubmission(it.id, ipsum.id, checkNotNull(it.verdict), it.createdAt.toEpochMilli()) }
             .toList()
         return try {
-            val update = loremRepository.recordIpsumSubmissions(ipsum.id, definitive)
+            val update = loremRepository.withProfileLink(link) {
+                loremRepository.recordIpsumSubmissions(ipsum.id, definitive)
+            }
             VerifyIpsumResult.Success(update.insertedCount, update.errorCount, update.completed)
-        } catch (_: Exception) {
+        } catch (error: Exception) {
+            if (error is CancellationException) throw error
             VerifyIpsumResult.PersistenceFailure
         }
     }

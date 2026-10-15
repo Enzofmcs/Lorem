@@ -1,7 +1,8 @@
 # Sincronização automática com o Codeforces
 
-Proposta de implementação de 13/10/2026 para as Histórias 15–17. Os mecanismos
-descritos aqui ainda não foram implementados. A solicitação de atualização automática
+Plano de implementação de 13/10/2026 para as Histórias 15–17. A base de
+coordenação da História 15 está implementada; agendamento e polling das Histórias
+16–17 continuam planejados. A solicitação de atualização automática
 substitui a restrição de produto da D-011; veja D-018 em [DECISIONS.md](DECISIONS.md).
 
 ## Estratégia
@@ -57,6 +58,42 @@ requisição a cada dois segundos**, incluindo paginação, workers, botões e p
 - AC no Ipsum e upsolve reutilizam os casos de uso atuais. Persistir submissões,
   encerramento e efeito de rating de forma idempotente, inclusive na disputa entre
   worker, retorno à tela, polling e encerramento manual.
+
+## Base implementada na História 15
+
+`AppContainer.synchronizationCoordinator` é a entrada compartilhada para UI e os
+futuros workers/polling. Reutiliza uma única instância de `CodeforcesApiRepository`
+e seu gate de dois segundos, com relógio monotônico. Operações iguais do mesmo
+vínculo compartilham a execução; o lock de coordenação não envolve a importação
+inteira e cada página libera o gate para consultas do Ipsum.
+
+O vínculo persistido contém handle normalizado e versão crescente. Troca/remoção
+cancela operações do perfil anterior; cada gravação também confere essa versão
+sob o mesmo mutex usado para trocar o perfil. A proteção continua válida em
+A → B → A e na reconciliação Room → DataStore. Catálogo é global e continua válido
+entre perfis. Metadados e timestamp usam as escritas parciais existentes.
+
+`PreferencesSynchronizationStore` persiste estado por conjunto/vínculo (também por id do Ipsum nas consultas), último
+sucesso, falha e cursor. A primeira importação percorre páginas de 1.000 registros
+com sobreposição de 500; a retomada usa o cursor salvo. Room mescla evidências por
+`contestId + index` antes de gravar o próximo cursor em DataStore. Interrupção
+entre as duas gravações permite repetir o lote sem apagar tentativa/AC. Uma
+varredura adicional do início recupera submissões chegadas durante a paginação.
+
+Atualizações seguintes param após o watermark anterior com um minuto de
+sobreposição, incluindo timestamps iguais. IDs provisórios conservam sua data
+até receberem veredicto definitivo, ampliando a consulta quando necessário.
+Sobreposição deduplica IDs por lote; as evidências por problema são monotônicas.
+`importedCount` indica registros processados, incluindo sobreposição, e não uma
+contagem de submissões únicas. Histórico vazio só fica pronto após consulta
+bem-sucedida. Falha/cancelamento preserva cache, cursor e último sucesso anterior.
+
+Estado pequeno usa chaves novas em DataStore; o esquema Room não mudou. Vínculos
+legados começam na versão zero, mantendo histórico, rating e consolidação.
+`SynchronizationPersistenceTest` usa Room/DataStore reais para retomada, falha de
+gravação, cancelamento, A → B → A, sucesso parcial, timestamps iguais e disputas
+entre consulta, encerramento, upsolve e atualização do perfil. O gate e a API têm
+testes próprios de interleaving e paginação.
 
 ## Agendamento e falhas
 

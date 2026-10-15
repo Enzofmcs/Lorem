@@ -67,6 +67,25 @@ class CodeforcesApiRepository(
     override suspend fun submissionHistory(handle: String): SubmissionHistoryResult =
         submissionHistory(handle, null)
 
+    override suspend fun submissionPage(handle: String, from: Int, count: Int): SubmissionHistoryResult {
+        require(from > 0 && count > 0)
+        val encoded = URLEncoder.encode(handle.trim(), Charsets.UTF_8.name())
+        return try {
+            val response = gate.execute {
+                httpClient.get("https://codeforces.com/api/user.status?handle=$encoded&from=$from&count=$count")
+            }
+            when {
+                response.statusCode == 429 -> SubmissionHistoryResult.RateLimited
+                response.statusCode !in 200..299 -> SubmissionHistoryResult.HttpFailure(response.statusCode)
+                else -> when (val page = parseSubmissionPage(response.body)) {
+                    is SubmissionPageResult.Success -> SubmissionHistoryResult.Success(page.submissions, page.receivedCount)
+                    is SubmissionPageResult.Failed -> SubmissionHistoryResult.Failed(page.message)
+                    SubmissionPageResult.InvalidResponse -> SubmissionHistoryResult.InvalidResponse
+                }
+            }
+        } catch (_: IOException) { SubmissionHistoryResult.NetworkFailure }
+    }
+
     override suspend fun submissionHistorySince(
         handle: String,
         sinceEpochMillis: Long,

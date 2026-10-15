@@ -29,7 +29,8 @@ class SynchronizeProblemCatalog(
                 try {
                     loremRepository.replaceProblemCatalog(eligible, updatedAt)
                     ProblemCatalogSyncResult.Success(eligible.size, updatedAt)
-                } catch (_: Exception) {
+                } catch (error: Exception) {
+                    if (error is kotlinx.coroutines.CancellationException) throw error
                     ProblemCatalogSyncResult.PersistenceFailure(savedCount)
                 }
             }

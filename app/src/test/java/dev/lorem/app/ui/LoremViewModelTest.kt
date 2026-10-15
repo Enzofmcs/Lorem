@@ -402,6 +402,35 @@ class LoremViewModelTest {
         assertEquals(HistorySyncUiState.Idle, viewModel.historySyncState.value)
         assertEquals(emptyList<ProblemHistory>(), local.problemHistory.value)
     }
+
+    @Test
+    fun `late submission response cannot replace status of a newly started Ipsum`() = runTest {
+        val local = MemoryRepository(profile(lastSync = 1L).copy(loremRating = 1200))
+        local.problemCatalog.value = listOf(problem(10, 1200), problem(11, 1200))
+        val response = kotlinx.coroutines.CompletableDeferred<SubmissionHistoryResult>()
+        val remote = object : CodeforcesRepository {
+            override suspend fun user(handle: String) = UserLookupResult.NetworkFailure
+            override suspend fun submissionHistory(handle: String) = response.await()
+            override suspend fun problems() = ProblemCatalogResult.Success(emptyList())
+        }
+        val model = LoremViewModel(local, remote, nowMillis = { 5_000L }, randomSource = sequenceRandom(1, 0))
+        model.startNewIpsum()
+        advanceUntilIdle()
+        val first = local.activeIpsum.value!!
+        model.verifyActiveIpsumSubmissions()
+        advanceUntilIdle()
+        model.endActiveIpsum(IpsumFailureReason.TIME_EXPIRED)
+        advanceUntilIdle()
+        model.startNewIpsum()
+        advanceUntilIdle()
+        val next = local.activeIpsum.value!!
+        assertTrue(first.id != next.id)
+        assertEquals(SubmissionCheckUiState.Idle, model.submissionCheckState.value)
+        response.complete(SubmissionHistoryResult.Success(emptyList()))
+        advanceUntilIdle()
+        assertEquals(next, local.activeIpsum.value)
+        assertEquals(SubmissionCheckUiState.Idle, model.submissionCheckState.value)
+    }
 }
 
 private class MemoryRepository(
@@ -443,7 +472,7 @@ private class MemoryRepository(
     }
     override suspend fun createActiveIpsum(ipsum: Ipsum): Ipsum {
         if (activeIpsum.value != null) throw ActiveIpsumAlreadyExistsException()
-        val saved = ipsum.copy(id = 1L)
+        val saved = ipsum.copy(id = (ipsums.value.maxOfOrNull { it.id } ?: 0L) + 1L)
         ipsums.value += saved
         activeIpsum.value = saved
         return saved

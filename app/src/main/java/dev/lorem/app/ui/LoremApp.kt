@@ -1,5 +1,6 @@
 package dev.lorem.app.ui
 
+import dev.lorem.app.domain.sync.SynchronizationCoordinator
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
@@ -17,8 +18,9 @@ import dev.lorem.app.ui.navigation.LoremNavHost
 fun LoremApp(
     repository: LoremRepository,
     codeforcesRepository: CodeforcesRepository,
+    synchronizationCoordinator: SynchronizationCoordinator? = null,
     viewModel: LoremViewModel = viewModel(
-        factory = LoremViewModel.factory(repository, codeforcesRepository),
+        factory = LoremViewModel.factory(repository, codeforcesRepository, synchronizationCoordinator),
     ),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()

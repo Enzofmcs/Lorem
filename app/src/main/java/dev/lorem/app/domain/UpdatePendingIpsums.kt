@@ -1,5 +1,8 @@
 package dev.lorem.app.domain
 
+import dev.lorem.app.domain.sync.ProfileLinkChanged
+import dev.lorem.app.domain.sync.ProfileLink
+import kotlinx.coroutines.CancellationException
 import dev.lorem.app.domain.model.IpsumStatus
 import dev.lorem.app.domain.repository.CodeforcesRepository
 import dev.lorem.app.domain.repository.LoremRepository
@@ -21,7 +24,9 @@ class UpdatePendingIpsums(
     private val loremRepository: LoremRepository,
     private val codeforcesRepository: CodeforcesRepository,
 ) {
-    suspend operator fun invoke(): UpdatePendingIpsumsResult {
+    suspend operator fun invoke(expectedLink: ProfileLink? = null): UpdatePendingIpsumsResult {
+        val link = expectedLink ?: loremRepository.profileLink.first() ?: return UpdatePendingIpsumsResult.NoActiveProfile
+        if (loremRepository.profileLink.first() != link) throw ProfileLinkChanged()
         val profile = loremRepository.profile.first() ?: return UpdatePendingIpsumsResult.NoActiveProfile
         val pending = loremRepository.ipsums.first().filter {
             it.status == IpsumStatus.PENDING && it.endedAtEpochMillis != null &&
@@ -48,10 +53,11 @@ class UpdatePendingIpsums(
                 .minOrNull()
                 ?.let { ipsum.id to it }
         }.toMap()
-        return runCatching { loremRepository.markIpsumsSolvedOutside(firstAcceptedByIpsum) }
+        return runCatching { loremRepository.withProfileLink(link) { loremRepository.markIpsumsSolvedOutside(firstAcceptedByIpsum) } }
             .fold(
                 onSuccess = { UpdatePendingIpsumsResult.Success(it) },
-                onFailure = { UpdatePendingIpsumsResult.PersistenceFailure },
+                onFailure = { if (it is CancellationException) throw it
+                    UpdatePendingIpsumsResult.PersistenceFailure },
             )
     }
 }

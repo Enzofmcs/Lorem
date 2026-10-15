@@ -17,6 +17,7 @@ class MainActivity : ComponentActivity() {
                 LoremApp(
                     repository = container.loremRepository,
                     codeforcesRepository = container.codeforcesRepository,
+                    synchronizationCoordinator = container.synchronizationCoordinator,
                 )
             }
         }
