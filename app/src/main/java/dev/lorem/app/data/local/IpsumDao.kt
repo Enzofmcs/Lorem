@@ -61,6 +61,9 @@ interface IpsumDao {
         ) == 1
     }
 
+    @Query("UPDATE ipsums SET errorCount = :errorCount WHERE id = :ipsumId AND status = 'ACTIVE'")
+    suspend fun updateActiveErrorCount(ipsumId: Long, errorCount: Int)
+
     @Transaction
     suspend fun record(ipsumId: Long, values: List<IpsumSubmissionEntity>): IpsumUpdate {
         val current = find(ipsumId) ?: return IpsumUpdate(0, 0, false)
@@ -75,6 +78,7 @@ interface IpsumDao {
                 it.createdAtEpochMillis < firstAccepted.createdAtEpochMillis ||
                 it.createdAtEpochMillis == firstAccepted.createdAtEpochMillis && it.submissionId < firstAccepted.submissionId)
         }
+        if (firstAccepted == null) updateActiveErrorCount(ipsumId, errors)
         val rating = firstAccepted?.let {
             calculateLoremRating(
                 current.initialLoremRating, current.selectedRating, true,

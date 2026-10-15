@@ -68,7 +68,7 @@ fun HistoryScreen(
             onClick = onUpdatePending,
         ) {
             if (updateState == PendingUpdateUiState.Loading) CircularProgressIndicator()
-            else Text("Atualizar pendências")
+            else Text(if (updateState is PendingUpdateUiState.Error) "Tentar novamente" else "Atualizar agora")
         }
         when (updateState) {
             is PendingUpdateUiState.Success -> Text(

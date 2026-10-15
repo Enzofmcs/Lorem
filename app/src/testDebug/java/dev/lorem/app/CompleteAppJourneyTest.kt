@@ -20,6 +20,14 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowLooper
 import java.time.Instant
+import dev.lorem.app.domain.sync.*
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.channels.Channel
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [35])
@@ -47,6 +55,91 @@ class CompleteAppJourneyTest {
         condition()
     }
 
+    private fun awaitDisplayed(text: String) = await {
+        runCatching { compose.onNodeWithText(text).assertIsDisplayed(); true }.getOrDefault(false)
+    }
+
+    @Test fun `visible Ipsum detects WA TESTING AC without pressing recovery and keeps hidden data private`() {
+        val env = environment()
+        runBlocking {
+            env.repository.saveProfile(StatisticsFixtures.profile.copy(loremRating = 1200))
+            env.repository.replaceProblemCatalog(env.remote.catalog, 1)
+        }
+        val ticks = Channel<Unit>(Channel.UNLIMITED)
+        val vm = LoremViewModel(env.repository, env.remote, nowMillis = { 1_000_000 },
+            randomSource = RandomSource { 0 }, submissionPollingWait = { ticks.receive() })
+            .also { modelStore.put("auto", it) }
+        compose.setContent { LoremTheme { LoremApp(env.repository, env.remote, viewModel = vm) } }
+        click("Iniciar novo Ipsum")
+        await { vm.activeIpsum.value != null && vm.trackingState.value?.synchronization?.lastSuccessEpochMillis != null }
+        val first = vm.activeIpsum.value!!
+        val wa = CodeforcesSubmission(10, first.problem.id, "WRONG_ANSWER", Instant.ofEpochMilli(1_001_000))
+        val provisional = CodeforcesSubmission(11, first.problem.id, "TESTING", Instant.ofEpochMilli(1_002_000))
+        env.remote.submissions = SubmissionHistoryResult.Success(listOf(wa, provisional, wa))
+        ticks.trySend(Unit)
+        await { vm.activeIpsum.value?.errorCount == 1 }
+        compose.onNodeWithText("Erros definitivos: 1").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Tópicos: dp").assertDoesNotExist()
+        compose.onNodeWithText("CURRENT_LEVEL", substring = true).assertDoesNotExist()
+        compose.onNodeWithText("Por que este problema?").assertDoesNotExist()
+        env.remote.submissions = SubmissionHistoryResult.Success(listOf(wa, provisional.copy(verdict = "OK")))
+        ticks.trySend(Unit)
+        await { (vm.ipsumResultState.value as? IpsumResultUiState.Ready)?.result?.ipsum?.id == first.id }
+        awaitDisplayed("Resultado do Ipsum")
+        compose.onNodeWithText("Resultado do Ipsum").assertIsDisplayed()
+        val saved = runBlocking { env.repository.getIpsumResult(first.id)!!.ipsum }
+        assertEquals(1, saved.errorCount)
+        assertEquals(1_002_000L, saved.endedAtEpochMillis)
+        ticks.trySend(Unit)
+        click("Fechar resultado")
+        assertEquals(saved, runBlocking { env.repository.getIpsumResult(first.id)!!.ipsum })
+    }
+
+    @Test fun `background AC waits for resumed Ipsum route and survives saved state restoration`() {
+        val env = environment()
+        val active = runBlocking {
+            env.repository.saveProfile(StatisticsFixtures.profile)
+            env.repository.createActiveIpsum(StatisticsFixtures.attempt(1, IpsumStatus.ACTIVE).copy(id = 0))
+        }
+        val coordinator = SynchronizationCoordinator(env.repository, env.remote, storageScope)
+        val ticks = Channel<Unit>(Channel.UNLIMITED)
+        val vm = LoremViewModel(env.repository, env.remote, synchronizationCoordinator = coordinator,
+            submissionPollingWait = { ticks.receive() }).also { modelStore.put("background", it) }
+        val owner = object : LifecycleOwner {
+            val registry = LifecycleRegistry.createUnsafe(this).also { it.currentState = Lifecycle.State.RESUMED }
+            override val lifecycle: Lifecycle = registry
+        }
+        val restoration = StateRestorationTester(compose)
+        restoration.setContent {
+            CompositionLocalProvider(LocalLifecycleOwner provides owner) {
+                LoremTheme { LoremApp(env.repository, env.remote, viewModel = vm) }
+            }
+        }
+        await { vm.trackingState.value?.synchronization?.lastSuccessEpochMillis != null }
+        compose.onNodeWithText("Ipsum ativo").performScrollTo().assertIsDisplayed()
+        compose.runOnIdle { owner.registry.currentState = Lifecycle.State.STARTED }
+        env.remote.submissions = SubmissionHistoryResult.Success(listOf(
+            CodeforcesSubmission(99, active.problem.id, "OK", Instant.ofEpochMilli(active.startedAtEpochMillis + 2000))))
+        val outcome = runBlocking {
+            BackgroundSynchronization(env.repository, coordinator).profile(env.repository.profileLink.first()!!)
+        }
+        assertEquals(SyncWorkResult.SUCCESS, outcome)
+        await { vm.activeIpsum.value == null }
+        compose.onNodeWithText("Resultado do Ipsum").assertDoesNotExist()
+        restoration.emulateSavedInstanceStateRestore()
+        compose.onNodeWithText("Resultado do Ipsum").assertDoesNotExist()
+        compose.runOnIdle { owner.registry.currentState = Lifecycle.State.RESUMED }
+        await { (vm.ipsumResultState.value as? IpsumResultUiState.Ready)?.result?.ipsum?.id == active.id }
+        awaitDisplayed("Resultado do Ipsum")
+        compose.onNodeWithText("Resultado do Ipsum").assertIsDisplayed()
+        val result = (vm.ipsumResultState.value as IpsumResultUiState.Ready).result.ipsum
+        click("Fechar resultado")
+        compose.runOnIdle { owner.registry.currentState = Lifecycle.State.STARTED }
+        compose.runOnIdle { owner.registry.currentState = Lifecycle.State.RESUMED }
+        compose.onNodeWithText("Resultado do Ipsum").assertDoesNotExist()
+        assertEquals(result, runBlocking { env.repository.getIpsumResult(active.id)!!.ipsum })
+    }
+
     @Test fun `profile sync recommendation hint WA AC history upsolve statistics and next attempt work together`() {
         val env = environment()
         var now = 1_000_000L
@@ -59,13 +152,14 @@ class CompleteAppJourneyTest {
         click("Iniciar novo Ipsum")
         await { vm.startIpsumState.value is StartIpsumUiState.Error }
         assertNull(vm.activeIpsum.value)
-        click("Sincronizar histórico")
+        click("Atualizar histórico agora")
         await { vm.historySyncState.value is HistorySyncUiState.Success }
-        click("Atualizar catálogo")
+        click("Atualizar catálogo agora")
         await { vm.catalogSyncState.value is CatalogSyncUiState.Success }
         click("Iniciar novo Ipsum")
         await { vm.activeIpsum.value != null }
         val first = vm.activeIpsum.value!!
+        awaitDisplayed("Ipsum ativo")
         compose.onNodeWithText("Ipsum ativo").assertIsDisplayed()
         compose.onNodeWithText("Por que este problema?").assertDoesNotExist()
         click("Revelar tópicos")
@@ -73,12 +167,13 @@ class CompleteAppJourneyTest {
         await { vm.activeIpsum.value?.hintRevealedAtEpochMillis != null }
         val wa = CodeforcesSubmission(10, first.problem.id, "WRONG_ANSWER", Instant.ofEpochMilli(now + 1000))
         env.remote.submissions = SubmissionHistoryResult.Success(listOf(wa))
-        click("Verificar submissões")
+        click("Atualizar agora")
         await { (vm.submissionCheckState.value as? SubmissionCheckUiState.Success)?.errorCount == 1 }
         env.remote.submissions = SubmissionHistoryResult.Success(listOf(wa,
             CodeforcesSubmission(11, first.problem.id, "OK", Instant.ofEpochMilli(now + 2000))))
-        click("Verificar submissões")
+        click("Atualizar agora")
         await { (vm.ipsumResultState.value as? IpsumResultUiState.Ready)?.result?.ipsum?.id == first.id }
+        awaitDisplayed("Resultado do Ipsum")
         compose.onNodeWithText("Resultado do Ipsum").assertIsDisplayed()
         compose.onNodeWithText("Por que este problema?").performScrollTo().assertIsDisplayed()
         click("Fechar resultado")
@@ -86,6 +181,7 @@ class CompleteAppJourneyTest {
         click("Iniciar novo Ipsum")
         await { vm.activeIpsum.value?.id?.let { it != first.id } == true }
         val second = vm.activeIpsum.value!!
+        awaitDisplayed("Ipsum ativo")
         compose.onNodeWithText("Ipsum ativo").assertIsDisplayed()
         compose.onNodeWithText("Resultado do Ipsum").assertDoesNotExist()
         assertNotEquals(first.problem.id, second.problem.id)
@@ -100,9 +196,9 @@ class CompleteAppJourneyTest {
         compose.onNodeWithText("Histórico e pendências").assertIsDisplayed()
         env.remote.submissions = SubmissionHistoryResult.Success(listOf(
             CodeforcesSubmission(12, second.problem.id, "OK", Instant.ofEpochMilli(now + 2000))))
-        click("Atualizar pendências")
+        click("Atualizar agora")
         await { (vm.pendingUpdateState.value as? PendingUpdateUiState.Success)?.movedCount == 1 }
-        click("Atualizar pendências")
+        click("Atualizar agora")
         await { (vm.pendingUpdateState.value as? PendingUpdateUiState.Success)?.movedCount == 0 }
         click("Voltar ao Início")
         click("Abrir Estatísticas")
@@ -134,6 +230,7 @@ class CompleteAppJourneyTest {
         val restoration = StateRestorationTester(compose)
         restoration.setContent { LoremTheme { LoremApp(env.repository, env.remote, viewModel = vm) } }
         await { vm.activeIpsum.value != null }
+        awaitDisplayed("Ipsum ativo")
         compose.onNodeWithText("Ipsum ativo").assertIsDisplayed()
         compose.onNodeWithText("Tópicos: implementation").performScrollTo().assertIsDisplayed()
         restoration.emulateSavedInstanceStateRestore()

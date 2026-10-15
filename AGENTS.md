@@ -44,18 +44,18 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
-- **Foco:** Historia 16 concluida; proxima implementacao: Historia 17 - deteccao automatica.
-- **Ultima historia verificada:** Historia 16 - Sincronizacao em segundo plano com WorkManager, automaticamente em 2026-10-15.
-- **Primeiro item pendente:** polling do Ipsum visivel e verificacao do ativo no worker (Historia 17).
-- **Proxima entrega demonstravel:** acompanhamento automatico de submissoes (17), seguido de redesign (18-21); Historias 00-16 preservadas.
+- **Foco:** Historia 17 concluida; proxima implementacao: Historia 18 - identidade visual, temas e navegacao.
+- **Ultima historia verificada:** Historia 17 - Deteccao automatica de submissoes e status de atualizacao, automaticamente em 2026-10-15.
+- **Primeiro item pendente:** identidade visual, temas e navegacao (Historia 18).
+- **Proxima entrega demonstravel:** redesign (18-21), com preparacao e acompanhamento automaticos implementados; Historias 00-17 preservadas.
 - **Bloqueios conhecidos:** nenhum; teste manual e opcional (D-014).
 
-Regressao da Historia 16: 174 testes debug e 143 release sem falhas, lint sem erros
+Regressao da Historia 17: 184 testes debug e 150 release sem falhas, lint sem erros
 (apenas aviso preexistente de icone) e `assembleDebug` concluido.
 Progresso e aceite: [`docs/ROADMAP.md`](docs/ROADMAP.md).
 Roteiro: [`docs/DEMO.md`](docs/DEMO.md).
 Planejamento: [sincronizacao](docs/SYNC.md), [design](docs/DESIGN.md) e
-[Historia 17](docs/ROADMAP.md#historia-17---deteccao-automatica-de-submissoes-e-status-de-atualizacao).
+[Historia 18](docs/ROADMAP.md#historia-18---identidade-visual-temas-e-navegacao-do-lorem).
 
 ## Politica de contexto
 

@@ -1,5 +1,6 @@
 package dev.lorem.app.domain
 
+import dev.lorem.app.domain.sync.SyncFailureKind
 import dev.lorem.app.domain.sync.SynchronizationState
 import dev.lorem.app.domain.sync.SynchronizationStore
 import dev.lorem.app.domain.sync.MemorySynchronizationStore
@@ -52,14 +53,18 @@ class SynchronizeProblemHistory(
                 ).minOrNull()
                 state = state.copy(querySinceEpochMillis = boundary)
             }
-            state = state.copy(running = true, failure = null)
+            state = state.copy(running = true, failure = null, failureKind = null)
             persist()
             while (true) {
                 if (loremRepository.profileLink.first() != link) throw ProfileLinkChanged()
                 val wasFirstPage = state.nextFrom == 1 && state.importedCount == 0
                 val result = codeforcesRepository.submissionPage(link.handle, state.nextFrom, pageSize)
                 if (result !is SubmissionHistoryResult.Success) {
-                    state = state.copy(running = false, failure = result.toString())
+                    state = state.copy(running = false, failure = result.toString(), failureKind = when (result) {
+                        SubmissionHistoryResult.NetworkFailure -> SyncFailureKind.NETWORK
+                        SubmissionHistoryResult.RateLimited -> SyncFailureKind.RATE_LIMIT
+                        else -> SyncFailureKind.REMOTE
+                    })
                     persist()
                     return when (result) {
                         is SubmissionHistoryResult.Failed -> ProblemHistorySyncResult.Failed(result.message)
@@ -104,7 +109,7 @@ class SynchronizeProblemHistory(
                 val at = nowMillis()
                 loremRepository.withProfileLink(link) {
                     loremRepository.markHistorySynchronized(link.handle, at)
-                    state = state.copy(running = false, failure = null, lastSuccessEpochMillis = at,
+                    state = state.copy(running = false, failure = null, failureKind = null, lastSuccessEpochMillis = at,
                         nextFrom = 1, importedCount = 0, watermarkEpochMillis = maxOf(state.watermarkEpochMillis, newest),
                         querySinceEpochMillis = null, newestSeenEpochMillis = 0, catchingUp = false)
                     store.write(key, state)
@@ -115,13 +120,13 @@ class SynchronizeProblemHistory(
             if (error is CancellationException) {
                 withContext(NonCancellable) {
                     if (loremRepository.profileLink.first() == link) {
-                        state = state.copy(running = false, failure = "Interrompido; retomada disponível")
+                        state = state.copy(running = false, failure = "Interrompido; retomada disponível", failureKind = SyncFailureKind.INTERRUPTED)
                         try { persist() } catch (_: Exception) { /* Retain the prior durable cursor. */ }
                     }
                 }
                 throw error
             }
-            state = state.copy(running = false, failure = "Não foi possível salvar o histórico")
+            state = state.copy(running = false, failure = "Não foi possível salvar o histórico", failureKind = SyncFailureKind.PERSISTENCE)
             try { persist() } catch (cancelled: CancellationException) { throw cancelled }
             catch (_: Exception) { /* The previous durable checkpoint is still safe. */ }
             return ProblemHistorySyncResult.PersistenceFailure

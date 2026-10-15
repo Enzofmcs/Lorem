@@ -8,7 +8,7 @@ Um **Ipsum** é a tentativa oficial e cronometrada de resolver um problema recom
 
 ## Estado atual
 
-A base Android de módulo único implementa as Histórias 00–16:
+A base Android de módulo único implementa as Histórias 00–17:
 
 - Kotlin, Jetpack Compose e Material 3;
 - navegação que restaura o Ipsum ativo;
@@ -23,6 +23,7 @@ A base Android de módulo único implementa as Histórias 00–16:
 - recomendação por necessidade e recência de tags, com fatores persistidos;
 - consolidação permanente e requisitos objetivos para avançar de faixa;
 - preparação automática e manutenção com WorkManager, com progresso, retomada e retries;
+- acompanhamento de submissões em RESUMED e no worker, com estado por conjunto de dados;
 - importação incremental e proteção por versão do vínculo do perfil;
 - atualização antes da recomendação e uso de cache após a primeira importação;
 - injeção manual e estado de UI exposto por `ViewModel`/`StateFlow`.
@@ -98,7 +99,7 @@ Na raiz do projeto:
 
 ## Entrega atual
 
-As **Histórias 00–16 estão implementadas**. Conectar um perfil agenda a importação
+As **Histórias 00–17 estão implementadas**. Conectar um perfil agenda a importação
 completa do histórico e catálogo. WorkManager mantém histórico/pendências a cada
 15 minutos desejados e catálogo/metadados a cada 24 horas, sujeito ao Android.
 Reabrir o app preserva a agenda e recupera dados ausentes ou vencidos.
@@ -106,10 +107,11 @@ Reabrir o app preserva a agenda e recupera dados ausentes ou vencidos.
 A preparação mostra progresso por etapa e retoma importações interrompidas. O
 primeiro Ipsum exige histórico importado; depois, falha de atualização permite
 treinar com cache indicado na tela. Rating Lorem, consolidação e avaliações
-originais permanecem preservados. A verificação do ativo no worker e o polling
-serão integrados pela História 17.
+originais permanecem preservados. O Ipsum consulta submissões ao entrar/retomar
+e a cada 15 segundos em RESUMED, com backoff nas falhas. O worker também verifica
+o ativo; o resultado é apresentado ao retornar à sua tela.
 
-Validação final: **174 testes debug e 143 release sem falhas**, lint sem erros
+Validação final: **184 testes debug e 150 release sem falhas**, lint sem erros
 (apenas aviso preexistente de ícone) e `assembleDebug` concluído. O APK está em
 `app/build/outputs/apk/debug/app-debug.apk`.
 
@@ -120,10 +122,10 @@ Consulte o [roadmap](docs/ROADMAP.md) e o [roteiro de demonstração](docs/DEMO.
 
 O planejamento de 13/10/2026 acrescenta **15–17 — Sincronização automática** e
 **18–21 — Redesign**. As Histórias 00–14 e suas evidências permanecem preservadas;
-as Histórias 15 e 16 estão implementadas e verificadas: coordenador compartilhado,
-importação incremental retomável, proteção por vínculo e WorkManager. As Histórias
-17–21 seguem com implementação pendente. A próxima entrega é a detecção automática
-de submissões (História 17).
+as Histórias 15–17 estão implementadas e verificadas: coordenador compartilhado,
+importação incremental retomável, proteção por vínculo, WorkManager e acompanhamento
+automático. As Histórias 18–21 seguem com implementação pendente. A próxima entrega
+é identidade visual, temas e navegação (História 18).
 
 A proposta combina WorkManager em segundo plano, consulta frequente durante o
 Ipsum visível e temas claro/escuro em azul profundo e verde. Consulte o

@@ -4,6 +4,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import dev.lorem.app.domain.sync.SyncFailureKind
 import dev.lorem.app.domain.sync.SynchronizationState
 import dev.lorem.app.domain.sync.SynchronizationStore
 import kotlinx.coroutines.flow.first
@@ -21,6 +22,7 @@ class PreferencesSynchronizationStore(private val dataStore: DataStore<Preferenc
             put("retryNotBefore", state.retryNotBeforeEpochMillis)
             state.lastSuccessEpochMillis?.let { put("success", it) }
             state.failure?.let { put("failure", it) }
+            state.failureKind?.let { put("failureKind", it.name) }
             put("from", state.nextFrom)
             put("count", state.importedCount)
             put("watermark", state.watermarkEpochMillis)
@@ -43,6 +45,7 @@ class PreferencesSynchronizationStore(private val dataStore: DataStore<Preferenc
             retryNotBeforeEpochMillis = json.optLong("retryNotBefore"),
             lastSuccessEpochMillis = if (json.has("success")) json.getLong("success") else null,
             failure = if (json.has("failure")) json.getString("failure") else null,
+            failureKind = SyncFailureKind.entries.firstOrNull { it.name == json.optString("failureKind") },
             nextFrom = json.optInt("from", 1),
             importedCount = json.optInt("count"),
             watermarkEpochMillis = json.optLong("watermark"),

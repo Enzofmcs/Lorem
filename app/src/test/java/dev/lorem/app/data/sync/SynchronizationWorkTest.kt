@@ -227,6 +227,33 @@ class SynchronizationWorkTest {
         }
     }
 
+    @Test fun `profile worker checks the active Ipsum even with fresh history and completes rating once`() = runTest {
+        Fixture(backgroundScope).use { f ->
+            val link = f.link()
+            val problem = CodeforcesProblem(ProblemId(100, "A"), "Problem", 1200, setOf("dp"))
+            val ipsum = f.local.createActiveIpsum(Ipsum(0, "tourist", problem, 1234, IpsumCategory.CURRENT_LEVEL,
+                1200, 1300, 1200, 0, 1000, status = IpsumStatus.ACTIVE))
+            val wa = CodeforcesSubmission(1, problem.id, "WRONG_ANSWER", Instant.ofEpochMilli(2000))
+            val testing = CodeforcesSubmission(2, problem.id, "TESTING", Instant.ofEpochMilli(3000))
+            f.remote.history = SubmissionHistoryResult.Success(listOf(wa, testing, wa))
+            assertEquals(ListenableWorker.Result.success(), f.worker(SynchronizationScheduler.profileData(link)).doWork())
+            assertEquals(1, f.local.activeIpsum.first()!!.errorCount)
+            assertEquals(1234, f.local.profile.first()!!.loremRating)
+            assertNotNull(f.store.read(syncKey(SyncDataset.SUBMISSIONS, link, ipsum.id)).lastSuccessEpochMillis)
+            assertFalse(f.background.profileDue(link))
+            f.remote.history = SubmissionHistoryResult.Success(listOf(wa, testing.copy(verdict = "OK")))
+            assertEquals(ListenableWorker.Result.success(), f.worker(SynchronizationScheduler.profileData(link)).doWork())
+            val result = f.local.getIpsumResult(ipsum.id)!!.ipsum
+            assertEquals(IpsumStatus.COMPLETED, result.status)
+            assertEquals(1, result.errorCount)
+            assertEquals(3000L, result.endedAtEpochMillis)
+            val rating = f.local.profile.first()!!.loremRating
+            f.worker(SynchronizationScheduler.profileData(link)).doWork()
+            assertEquals(result, f.local.getIpsumResult(ipsum.id)!!.ipsum)
+            assertEquals(rating, f.local.profile.first()!!.loremRating)
+        }
+    }
+
     @Test fun `work manager keeps cadence and constraints and cancels only obsolete profile work`() = runTest {
         Fixture(backgroundScope).use { f ->
             val executor = Executors.newFixedThreadPool(2)

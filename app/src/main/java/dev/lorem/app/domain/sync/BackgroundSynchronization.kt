@@ -30,6 +30,10 @@ class BackgroundSynchronization(
         try {
             if (repository.profileLink.first() != link) return SyncWorkResult.OBSOLETE
             if (apiDeferred()) return SyncWorkResult.RETRY
+            repository.activeIpsum.first()?.takeIf { ProfileLink.of(it.ownerHandle, link.version) == link }?.let {
+                results += classify(coordinator.verifyActiveIpsum(link, it.id))
+            }
+            if (apiDeferred()) return SyncWorkResult.RETRY
             if (due(SyncDataset.HISTORY, link)) results += classify(coordinator.synchronizeHistory(link))
             if (apiDeferred()) return SyncWorkResult.RETRY
             if (due(SyncDataset.PENDING, link)) results += classify(coordinator.updatePendingIpsums(link))
@@ -48,16 +52,19 @@ class BackgroundSynchronization(
 
     private fun classify(result: Any): SyncWorkResult = when (result) {
         is ProblemHistorySyncResult.Success, is ProblemCatalogSyncResult.Success,
-        is UpdatePendingIpsumsResult.Success, is UserLookupResult.Success -> SyncWorkResult.SUCCESS
+        is UpdatePendingIpsumsResult.Success, is UserLookupResult.Success,
+        is VerifyIpsumResult.Success, VerifyIpsumResult.NoActiveIpsum -> SyncWorkResult.SUCCESS
         ProblemHistorySyncResult.NetworkFailure, ProblemHistorySyncResult.RateLimited,
         ProblemHistorySyncResult.PersistenceFailure, is ProblemCatalogSyncResult.NetworkFailure,
         is ProblemCatalogSyncResult.RateLimited, is ProblemCatalogSyncResult.PersistenceFailure,
         UpdatePendingIpsumsResult.NetworkFailure, UpdatePendingIpsumsResult.RateLimited,
         UpdatePendingIpsumsResult.PersistenceFailure, UserLookupResult.NetworkFailure,
-        UserLookupResult.RateLimited -> SyncWorkResult.RETRY
+        UserLookupResult.RateLimited, VerifyIpsumResult.NetworkFailure, VerifyIpsumResult.RateLimited,
+        VerifyIpsumResult.PersistenceFailure -> SyncWorkResult.RETRY
         is ProblemHistorySyncResult.HttpFailure -> http(result.statusCode)
         is ProblemCatalogSyncResult.HttpFailure -> http(result.statusCode)
         is UpdatePendingIpsumsResult.HttpFailure -> http(result.statusCode)
+        is VerifyIpsumResult.HttpFailure -> http(result.statusCode)
         else -> SyncWorkResult.FAILURE
     }
 

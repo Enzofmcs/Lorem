@@ -23,6 +23,7 @@ fun LoremApp(
         factory = LoremViewModel.factory(repository, codeforcesRepository, synchronizationCoordinator),
     ),
 ) {
+    val trackingState by viewModel.trackingState.collectAsStateWithLifecycle()
     val preparationState by viewModel.preparationState.collectAsStateWithLifecycle()
     val dataSourceNotice by viewModel.dataSourceNotice.collectAsStateWithLifecycle()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -74,7 +75,10 @@ fun LoremApp(
             onUpdatePendingIpsums = viewModel::updatePendingIpsums,
             statisticsState = statisticsState,
             consolidationState = consolidationState,
-            preparationState = preparationState,
+            preparationState = preparationState?.takeIf { it.owner == state.link },
+            trackingState = trackingState?.takeIf { it.owner == state.link },
+            onMonitorIpsum = viewModel::monitorIpsum,
+            onRefreshProfile = viewModel::refreshProfile,
             dataSourceNotice = dataSourceNotice,
         )
     }
