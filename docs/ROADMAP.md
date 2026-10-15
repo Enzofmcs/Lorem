@@ -6,13 +6,13 @@
 
 ## Estado atual
 
-**Foco atual:** entrega das Historias 12-14 concluida; fluxo completo pronto para demonstracao.
+**Foco atual:** planejamento de automacao e redesign concluido; proxima implementacao: Historia 15.
 
 **Ultima historia verificada:** Historia 14 - Fluxo completo e robustez; Historias 12-14 verificadas automaticamente em 2026-10-13.
 
-**Primeiro item pendente:** nenhum item funcional do escopo planejado.
+**Primeiro item pendente:** coordenacao segura para sincronizacao automatica (Historia 15).
 
-**Proxima entrega demonstravel:** jornada completa pelo APK debug e roteiro `DEMO.md`.
+**Proxima entrega demonstravel:** preparacao e manutencao automatica do Codeforces (Historias 15-17); depois redesign (18-21).
 
 **Bloqueios conhecidos:** nenhum. Conferencia em dispositivo e opcional (D-014).
 
@@ -37,7 +37,7 @@ Consulte historias anteriores somente para os contratos e evidencias necessarios
 A DA-04 da Historia 13 foi definida nesta conversa pela D-015; a implementacao deve
 preservar a maior faixa alcancada. Veja [`DECISIONS.md`](DECISIONS.md).
 
-## Plano das historias restantes
+## Plano executado das Historias 12-14
 
 **Plano executado em 2026-10-13:** Historias 12, 13 e 14 concluidas com 147 testes
 debug e 116 release sem falhas, lint sem erros e APK debug gerado.
@@ -62,9 +62,20 @@ as iteracoes, use testes direcionados de `TESTING.md`; ao encerrar uma historia
 relevante ou marco, execute a regressao de Nivel 5. Testes manuais e ensaio humano
 sao opcionais e nao bloqueiam avanco (D-014).
 
-**Continuidade:** nao ha historia funcional pendente neste plano. Para demonstracao
+**Continuidade do bloco 12-14:** nao ha historia funcional pendente neste bloco. Para demonstracao
 e avaliacao do TCC, consultar [`DEMO.md`](DEMO.md). Os passos abaixo registram o
 planejamento executado e as evidencias de cada historia.
+
+## Novo bloco: automacao e apresentacao
+
+Solicitacao de 13/10/2026, conferida contra `main` em
+`485f4131113a0098511ba2bdbab6519f35467568` ([PR #29](https://github.com/Enzofmcs/Lorem/pull/29)).
+As Historias 00-14 e suas evidencias permanecem concluidas.
+
+Ordem proposta: **15 -> 16 -> 17**, seguida de **18 -> 19 -> 20 -> 21**.
+A 18 pode iniciar independentemente da automacao; 19 integra 16/17 e a 21 nao depende
+da 20. [SYNC.md](SYNC.md) e [DESIGN.md](DESIGN.md) detalham os planos.
+As novas historias estao planejadas; todos os criterios de implementacao continuam pendentes.
 
 ## Sumario rapido
 
@@ -83,6 +94,13 @@ planejamento executado e as evidencias de cada historia.
 - [Historia 12 - Recomendacao orientada por variedade](#historia-12---recomendacao-orientada-por-variedade)
 - [Historia 13 - Consolidacao de faixa](#historia-13---consolidacao-de-faixa)
 - [Historia 14 - Fluxo completo e robustez](#historia-14---fluxo-completo-e-robustez)
+- [Historia 15 - Base segura para sincronização automática](#historia-15---base-segura-para-sincronizacao-automatica)
+- [Historia 16 - Sincronização em segundo plano com WorkManager](#historia-16---sincronizacao-em-segundo-plano-com-workmanager)
+- [Historia 17 - Detecção automática de submissões e status de atualização](#historia-17---deteccao-automatica-de-submissoes-e-status-de-atualizacao)
+- [Historia 18 - Identidade visual, temas e navegação do Lorem](#historia-18---identidade-visual-temas-e-navegacao-do-lorem)
+- [Historia 19 - Redesign da configuração e tela inicial](#historia-19---redesign-da-configuracao-e-tela-inicial)
+- [Historia 20 - Redesign da experiência do Ipsum e resultado](#historia-20---redesign-da-experiencia-do-ipsum-e-resultado)
+- [Historia 21 - Redesign do histórico e estatísticas](#historia-21---redesign-do-historico-e-estatisticas)
 
 ### Historia 00 - Estrutura basica
 
@@ -821,11 +839,240 @@ anteriores das Historias 10/11 permanecem preservadas.
 
 ---
 
+### Historia 15 - Base segura para sincronizacao automatica
+
+**Historia:** Como usuário, quero que atualizações simultâneas preservem meu histórico, perfil e Rating Lorem.
+
+**Status:** planejada; implementacao e aceite pendentes.
+
+**GitHub:** [#30 — História 15 — Base segura para sincronização automática](https://github.com/Enzofmcs/Lorem/issues/30).
+
+**Dependencias:** Histórias 02, 03, 06, 08 e 10 já implementadas.
+
+**Escopo:** Extrair a coordenação dos disparos manuais do ViewModel para um ponto compartilhado no AppContainer. Reutilizar o cliente, gate e casos de uso atuais. Preparar importação incremental, estado persistido e proteção contra concorrência antes de adicionar timers.
+
+**Referencia:** [SYNC.md](SYNC.md).
+
+#### Criterios de aceite
+
+- [ ] UI, workers e polling compartilham cliente e gate; o total de chamadas, incluindo paginação, nunca excede uma requisição a cada dois segundos.
+- [ ] Disparos da mesma operação/perfil são unificados; consultas do Ipsum podem prosseguir entre páginas da importação sem duplicar trabalhos.
+- [ ] Primeira importação completa e retomável; atualizações seguintes mesclam dados incrementais sem perder tentativa ou AC já salvo, usando contestId + index.
+- [ ] Checkpoint só avança após persistência; sobreposição e deduplicação por id toleram timestamps iguais, novas submissões entre páginas e veredictos ainda não definitivos.
+- [ ] Trocar/remover perfil cancela trabalhos antigos e invalida resultados por handle normalizado e versão do vínculo, inclusive na troca A → B → A.
+- [ ] Reutilizar markHistorySynchronized e updateProfileMetadata existentes: atualizações não regravam snapshots de Rating Lorem/faixa/handle; validar também a nova concorrência entre workers, consultas e troca de vínculo.
+- [ ] Último sucesso, progresso inicial e falha são persistidos por conjunto de dados; falha parcial/cancelamento preserva cache e não marca preparo como concluído.
+- [ ] Consulta, encerramento e upsolve concorrentes são idempotentes; rating é aplicado uma vez e AC posterior mantém a avaliação original.
+
+#### Verificacao planejada
+
+Nível 4: testes direcionados de API, domínio e Room/DataStore para paginação, cancelamento, recuperação, troca de perfil, gate e concorrência com rating. Cobrir migração se houver mudança de esquema; regressão de marco conforme TESTING.md. Conferencias em dispositivo sao opcionais conforme D-014; criterios funcionais exigem evidencia automatizada proporcional ao risco.
+
+**Exemplo de aceite:** Uma importação disputa com AC e troca de handle: o perfil correto permanece salvo, as proteções atuais de rating/consolidação são preservadas e não há dupla avaliação.
+
+---
+
+### Historia 16 - Sincronizacao em segundo plano com WorkManager
+
+**Historia:** Como usuário, quero abrir o Lorem pronto para treinar, com dados do Codeforces atualizados automaticamente.
+
+**Status:** planejada; implementacao e aceite pendentes.
+
+**GitHub:** [#31 — História 16 — Sincronização em segundo plano com WorkManager](https://github.com/Enzofmcs/Lorem/issues/31).
+
+**Dependencias:** História 15. A verificação do Ipsum em segundo plano será integrada pela História 17.
+
+**Escopo:** Adicionar CoroutineWorkers e agendamento único com injeção manual. Intervalos iniciais: histórico/pendências 15 minutos, catálogo 24 horas e metadados do perfil 24 horas. São intervalos desejados; o Android pode atrasar execuções.
+
+**Referencia:** [SYNC.md](SYNC.md).
+
+#### Criterios de aceite
+
+- [ ] Validar o primeiro handle inicia automaticamente importação completa do histórico e catálogo, com estado/progresso por etapa e retomada de importações longas.
+- [ ] Existe um trabalho periódico único por perfil para histórico/pendências e um global para catálogo; reabrir o app não reinicia nem adia a agenda.
+- [ ] Workers exigem rede conectada; catálogo periódico também exige bateria não baixa. Troca/remoção de perfil cancela os trabalhos do dono anterior.
+- [ ] Falhas temporárias e rate limit usam retry/backoff exponencial a partir de 30 segundos, respeitando Retry-After quando disponível; erro permanente não entra em loop imediato.
+- [ ] Retorno ao app recupera dados ausentes/vencidos e estados abandonados após morte do processo, usando cache local e o coordenador compartilhado.
+- [ ] Antes de novo Ipsum, tentar atualizar submissões recentes com rede e revalidar o perfil; sem rede, preservar a política D-017 de cache após a primeira importação bem-sucedida, indicando dados locais. Histórico nunca importado bloqueia criação.
+- [ ] Histórico/pendências/metadados atualizam sem redefinir Rating Lorem; nenhum trabalho gera notificação ou abre uma tela espontaneamente.
+- [ ] Agenda persiste após encerramento normal do processo e reinício do aparelho; reabertura recupera atraso após parada forçada, sem prometer intervalo exato.
+
+#### Verificacao planejada
+
+Nível 4: work-testing para unicidade, constraints, sucesso parcial, retries, cancelamento e retomada; integração com dados reais em dispositivo. Verificações em dispositivo de offline, reinício e parada forçada/reabertura são opcionais (D-014). Executar regressão de marco. Conferencias em dispositivo sao opcionais conforme D-014; criterios funcionais exigem evidencia automatizada proporcional ao risco.
+
+**Exemplo de aceite:** Após conectar um perfil, o usuário não precisa apertar botões de sincronização. Um upsolve é reconhecido no próximo trabalho elegível, preservando o rating original.
+
+---
+
+### Historia 17 - Deteccao automatica de submissoes e status de atualizacao
+
+**Historia:** Como usuário, quero que o Lorem reconheça minhas submissões sem cliques e mostre quando os dados foram atualizados.
+
+**Status:** planejada; implementacao e aceite pendentes.
+
+**GitHub:** [#32 — História 17 — Detecção automática de submissões e status de atualização](https://github.com/Enzofmcs/Lorem/issues/32).
+
+**Dependencias:** Histórias 15 e 16; comportamento das Histórias 06–10 preservado.
+
+**Escopo:** Consultar imediatamente ao entrar/retomar um Ipsum e depois a cada 15 segundos enquanto sua tela estiver visível e RESUMED. Usar o mesmo caso de uso também no trabalho de perfil em segundo plano. Tornar as ações manuais opções de recuperação.
+
+**Referencia:** [SYNC.md](SYNC.md).
+
+#### Criterios de aceite
+
+- [ ] Existe um único loop por Ipsum visível em RESUMED, com consulta imediata e intervalo inicial de 15 segundos; rotação e recomposição não multiplicam chamadas.
+- [ ] Polling para ao sair da tela, ir para segundo plano ou encerrar o Ipsum e retoma com consulta imediata; falhas recebem backoff sem bloquear o cronômetro.
+- [ ] O worker do perfil verifica um Ipsum ativo no próximo ciclo elegível; AC reconhecido em segundo plano aparece no resultado ao retornar, sem navegação ou notificação espontânea.
+- [ ] Ignorar submissões anteriores ao início, deduplicar ids, reconsultar veredictos provisórios e preservar primeiro AC/erros, dica e rating em disputas entre polling, worker e encerramento manual.
+- [ ] Início/Configurações informam preparação inicial e estado por dado, último sucesso, atualização em andamento e cache offline; sucesso parcial não aparece como atualização completa.
+- [ ] No Ipsum, exibir acompanhamento, última consulta e erro recuperável sem snackbar a cada ciclo; dados ocultos continuam protegidos.
+- [ ] Remover a dependência de Sincronizar histórico, Atualizar catálogo, Verificar submissões e Atualizar pendências para o fluxo normal; Tentar novamente/Atualizar agora reutilizam o coordenador.
+- [ ] Sem internet, manter treino ativo, histórico e estatísticas locais; recomendação com cache segue a D-017, exigindo primeira importação bem-sucedida e informando uso de dados salvos.
+
+#### Verificacao planejada
+
+Nível 4: testes de ciclo de vida com relógio falso, integração de AC/WA/TESTING, duplicidade e encerramento. Conferência manual opcional abrindo Codeforces, retornando, rotacionando, perdendo rede e fazendo upsolve. Conferencias em dispositivo sao opcionais conforme D-014; criterios funcionais exigem evidencia automatizada proporcional ao risco.
+
+**Exemplo de aceite:** Um WA seguido de AC é detectado com a tela aberta sem tocar em Verificar submissões; rating muda uma vez. Ao voltar de segundo plano, a consulta recupera submissões pendentes.
+
+---
+
+### Historia 18 - Identidade visual, temas e navegacao do Lorem
+
+**Historia:** Como usuário, quero uma interface consistente, legível e confortável para acompanhar meu treino.
+
+**Status:** planejada; implementacao e aceite pendentes.
+
+**GitHub:** [#33 — História 18 — Identidade visual, temas e navegação do Lorem](https://github.com/Enzofmcs/Lorem/issues/33).
+
+**Dependencias:** Base Compose existente. Pode começar após o planejamento, independentemente da lógica das Histórias 15–17.
+
+**Escopo:** Adotar a direção visual de caderno de treino: azul profundo, verde de destaque, superfícies discretas, cards de 20 dp e tipografia do sistema. Preparar claro/escuro, componentes usados no produto e navegação Início/Histórico/Estatísticas.
+
+**Referencia:** [DESIGN.md](DESIGN.md).
+
+#### Criterios de aceite
+
+- [ ] Criar ColorScheme claro/escuro com papéis semânticos, Typography e Shape; padrão segue sistema, escolha Sistema/Claro/Escuro persiste em Configurações.
+- [ ] Usar fundo #0B1220, superfície #151F30 e ação #6EE7BE no escuro; fundo #F5F7FA, superfície #FFFFFF e ação #006B55 no claro, conforme DESIGN.md.
+- [ ] Implementar somente os componentes compartilhados necessários: scaffold/cabeçalho, card de métrica, status de sync, badge, estado vazio/erro e ação principal.
+- [ ] Adicionar barra inferior com Início, Histórico e Estatísticas, rótulos e estado selecionado; preservar rolagem/back stack. Configurações ficam no cabeçalho.
+- [ ] Ipsum/Resultado usam fluxo dedicado com voltar; sair da tela não encerra a tentativa e restauração do ativo continua funcionando.
+- [ ] Validar contraste 4,5:1 no texto normal e 3:1 no texto grande/indicadores necessários, áreas de toque de pelo menos 48 dp e significado além da cor.
+- [ ] Tema/componentes suportam 320 dp, fonte 200%, paisagem, insets e TalkBack, sem alturas fixas que cortem conteúdo; previews mostram estados relevantes nos dois temas.
+
+#### Verificacao planejada
+
+Nível 1 para tokens/layout; Nível 3 para navegação e persistência de tema. Verificar compilação, smoke test visual e navegação. Testar comportamento necessário, sem testes que apenas espelhem cores/padding. Conferencias em dispositivo sao opcionais conforme D-014; criterios funcionais exigem evidencia automatizada proporcional ao risco.
+
+**Exemplo de aceite:** Trocar tema preserva preferência após reabrir o app. Navegar pelas três abas, abrir e retomar um Ipsum funciona com fonte ampliada e rótulos acessíveis.
+
+---
+
+### Historia 19 - Redesign da configuracao e tela inicial
+
+**Historia:** Como usuário, quero conectar meu perfil e iniciar um treino com clareza, sem uma tela cheia de botões técnicos.
+
+**Status:** planejada; implementacao e aceite pendentes.
+
+**GitHub:** [#34 — História 19 — Redesign da configuração e tela inicial](https://github.com/Enzofmcs/Lorem/issues/34).
+
+**Dependencias:** Histórias 16, 17 e 18.
+
+**Escopo:** Organizar o primeiro acesso em handle → validação → preparação automática. Na tela inicial, priorizar Rating Lorem e Iniciar/Continuar Ipsum; status de sincronização e detalhes do perfil ficam em segundo plano. Preservar o card de consolidação e seus requisitos já implementados.
+
+**Referencia:** [DESIGN.md](DESIGN.md).
+
+#### Criterios de aceite
+
+- [ ] Configuração mostra marca/promessa curta, handle público, ação Conectar Codeforces, validação inline e progresso/recuperação da preparação por etapa.
+- [ ] Início apresenta saudação/handle, card de Rating Lorem e rating oficial como referência, resumo de treinos locais e acesso ao último resultado.
+- [ ] Há uma única ação dominante: Iniciar Ipsum ou Continuar Ipsum; preparação/bloqueio explica a razão e cliques repetidos não criam múltiplas tentativas.
+- [ ] Retirar botões Abrir… e blocos técnicos de catálogo/histórico do corpo principal, usando a navegação e detalhes em Configurações.
+- [ ] Status discreto informa último sucesso/atualizando/offline; UI renderiza cache antes da rede sem marcar sucesso inexistente.
+- [ ] Perfil, tema e detalhes/recuperação da sincronização ficam em Configurações; faixa consolidada e progresso reutilizam a História 13, preservando marco permanente e ausência de evidência como null.
+- [ ] Validar primeiro acesso, perfil salvo, ativo, vazio, falha de rede e troca de handle em claro/escuro, 320 dp, fonte 200% e TalkBack.
+
+#### Verificacao planejada
+
+Nível 3: testes Compose/ViewModel direcionados para estados reais, preparação, navegação e duplo clique; smoke test visual/dispositivo. Reutilizar contratos de sync e recomendação. Conferencias em dispositivo sao opcionais conforme D-014; criterios funcionais exigem evidencia automatizada proporcional ao risco.
+
+**Exemplo de aceite:** Um perfil novo chega à tela pronta para iniciar o primeiro Ipsum sem sincronização manual; um perfil com Ipsum ativo encontra Continuar Ipsum como ação principal.
+
+---
+
+### Historia 20 - Redesign da experiencia do Ipsum e resultado
+
+**Historia:** Como usuário, quero me concentrar no problema durante o treino e entender claramente meu resultado ao terminar.
+
+**Status:** planejada; implementacao e aceite pendentes.
+
+**GitHub:** [#35 — História 20 — Redesign da experiência do Ipsum e resultado](https://github.com/Enzofmcs/Lorem/issues/35).
+
+**Dependencias:** Histórias 17 e 18; regras das Histórias 05–08 preservadas.
+
+**Escopo:** Tela de treino com problema/id, cronômetro decorrido grande, acompanhamento automático e Abrir no Codeforces como ação principal. Resultado com situação, variação de rating e métricas organizadas.
+
+**Referencia:** [DESIGN.md](DESIGN.md).
+
+#### Criterios de aceite
+
+- [ ] Destacar cronômetro como Tempo decorrido com números tabulares, nome/id e ação Abrir no Codeforces; não sugerir prazo fatal inexistente.
+- [ ] Mostrar submissões/erros definitivos, status e última consulta automática; ação manual de recuperação fica secundária.
+- [ ] Revelar tópicos e Encerrar sem AC mantêm confirmação, registro da dica e motivo obrigatório; encerrar tem destaque menor que abrir o problema.
+- [ ] Rating, categoria, tags e justificativa permanecem ocultos durante o ativo, inclusive em semântica/TalkBack; após dica, revelar apenas tags oficiais.
+- [ ] Resultado distingue AC e encerramento sem AC, exibe rating anterior → atual/variação explicada, tempo, dica e erros, com acesso ao problema e retorno ao Início.
+- [ ] AC posterior continua separado do resultado original; apresentar a tela não recalcula rating nem encerra novamente o Ipsum.
+- [ ] Preservar rotação, morte de processo, retomada do navegador e operação local offline; fonte 200% não corta cronômetro ou confirmações e TalkBack não anuncia cada segundo.
+
+#### Verificacao planejada
+
+Layout Nível 1, preservação das regras críticas Nível 4: testes direcionados de UI/semântica, navegação, dica, encerramento e rating. Smoke test de WA → AC real, retomada e fonte ampliada. Conferencias em dispositivo sao opcionais conforme D-014; criterios funcionais exigem evidencia automatizada proporcional ao risco.
+
+**Exemplo de aceite:** É possível treinar e reconhecer AC automaticamente com uma tela focada. Nenhuma informação proibida vaza antes do resultado e a avaliação aparece exatamente uma vez.
+
+---
+
+### Historia 21 - Redesign do historico e estatisticas
+
+**Historia:** Como usuário, quero revisar minhas tentativas e entender minha evolução em telas organizadas e fáceis de ler.
+
+**Status:** planejada; implementacao e aceite pendentes.
+
+**GitHub:** [#36 — História 21 — Redesign do histórico e estatísticas](https://github.com/Enzofmcs/Lorem/issues/36).
+
+**Dependencias:** Histórias 17 e 18; contratos das Histórias 09–11 preservados. Pode ser feita após 19, independentemente da 20.
+
+**Escopo:** Histórico em cards cronológicos com filtros claros; estatísticas com resumo, curva do rating persistido e barras por rating/tag. Toda visualização preserva amostras e definições da D-013.
+
+**Referencia:** [DESIGN.md](DESIGN.md).
+
+#### Criterios de aceite
+
+- [ ] Histórico apresenta nome/id, data, tempo, dica e situação textual por card, distinguindo AC no Ipsum, pendente e AC posterior.
+- [ ] Filtros ativos, Limpar filtros e estados vazios explicam ausência de dados ou ausência de resultados; preservar filtros/rolagem entre abas.
+- [ ] Upsolve mostra data do AC posterior separada da avaliação original, sem alterar rating nem taxa original de AC.
+- [ ] Estatísticas destacam resumo, evolução pelos snapshots persistidos e grupos por rating/tag; usar gráficos apenas com alternativa textual acessível.
+- [ ] Exibir denominadores/amostras, distinguir Sem amostra de zero e explicar que uma tentativa pode contribuir para várias tags; manter rankings e agregados auditáveis.
+- [ ] Preservar escopo por perfil, exclusão de Ipsums ativos e atualização por dados locais; não introduzir pontuação, conquistas ou métricas sem contrato.
+- [ ] Validar dados vazios/pequenos/grandes e nomes/tags longos, claro/escuro, offline, 320 dp, paisagem, fonte 200% e leitura por TalkBack.
+
+#### Verificacao planejada
+
+Nível 3 para UI/agregados existentes e Nível 4 se houver mudança de regra; reutilizar StatisticsFixtures e testes da D-013. Revisão visual e acessibilidade em dispositivo; regressão de marco ao concluir o bloco 18–21. Conferencias em dispositivo sao opcionais conforme D-014; criterios funcionais exigem evidencia automatizada proporcional ao risco.
+
+**Exemplo de aceite:** O conjunto de referência da História 11 produz os mesmos totais após o redesign; cada gráfico pode ser conferido sem depender de cor ou leitura visual.
+
+---
+
 ## 10. Marcos demonstraveis
 
 - **A - Espinha funcional (00-07):** handle, recomendacao, Ipsum, submissao e resultado.
 - **B - Memoria e avaliacao (08-10):** rating, historico, pendencias e upsolve.
 - **C - Orientacao de estudo (11-13):** estatisticas, variedade e consolidacao.
 - **D - Entrega (14):** fluxo completo testado, explicavel e demonstravel.
+- **E - Automacao (15-17):** preparacao, manutencao e deteccao sem cliques obrigatorios.
+- **F - Apresentacao (18-21):** temas e telas consistentes, acessiveis e demonstraveis.
 
 ---
