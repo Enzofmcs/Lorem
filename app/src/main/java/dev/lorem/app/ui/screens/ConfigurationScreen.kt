@@ -31,6 +31,11 @@ fun ConfigurationScreen(
     existingProfile: LocalProfile?,
     onHandleChange: (String) -> Unit,
     onConfirm: () -> Unit,
+    preparation: dev.lorem.app.ui.PreparationUiState? = null,
+    onRefreshHistory: () -> Unit = {},
+    onRefreshCatalog: () -> Unit = {},
+    onRefreshPending: () -> Unit = {},
+    onRefreshProfile: () -> Unit = {},
 ) {
     var showChangeConfirmation by remember { mutableStateOf(false) }
     val isChanging = existingProfile != null &&
@@ -71,6 +76,13 @@ fun ConfigurationScreen(
                 } else {
                     Text(if (existingProfile == null) "Validar e abrir Início" else "Atualizar handle")
                 }
+            }
+            if (existingProfile != null && preparation != null) {
+                PreparationStatus(preparation)
+                androidx.compose.material3.OutlinedButton(onClick = onRefreshHistory, enabled = !preparation.history.running) { Text("Atualizar histórico agora") }
+                androidx.compose.material3.OutlinedButton(onClick = onRefreshCatalog, enabled = !preparation.catalog.running) { Text("Atualizar catálogo agora") }
+                androidx.compose.material3.OutlinedButton(onClick = onRefreshPending, enabled = !preparation.pending.running) { Text("Atualizar pendências agora") }
+                androidx.compose.material3.OutlinedButton(onClick = onRefreshProfile, enabled = !preparation.metadata.running) { Text("Atualizar perfil agora") }
             }
         }
     }

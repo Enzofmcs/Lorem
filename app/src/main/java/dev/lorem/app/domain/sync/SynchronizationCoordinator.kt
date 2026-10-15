@@ -89,7 +89,7 @@ class SynchronizationCoordinator(
             if (work.keys.any { it.lookupHandle == null && syncKey(it.dataset, it.link, it.ipsumId) == key }) continue
             val state = store.read(key)
             if (state.running) {
-                val recovered = state.copy(running = false, failure = "Interrompido; retomada disponível")
+                val recovered = state.copy(running = false, failure = "Interrompido; retomada disponível", failureKind = SyncFailureKind.INTERRUPTED)
                 if (key == syncKey(SyncDataset.CATALOG, null)) store.write(key, recovered)
                 else if (link != null) repository.withProfileLink(link) { store.write(key, recovered) }
             }
@@ -110,9 +110,10 @@ class SynchronizationCoordinator(
         }
     }
 
-    suspend fun verifyActiveIpsum(): VerifyIpsumResult {
-        val link = repository.profileLink.first() ?: return VerifyIpsumResult.NoActiveIpsum
+    suspend fun verifyActiveIpsum(expectedLink: ProfileLink? = null, expectedIpsumId: Long? = null): VerifyIpsumResult {
+        val link = currentLink(expectedLink) ?: return VerifyIpsumResult.NoActiveIpsum
         val ipsum = repository.activeIpsum.first() ?: return VerifyIpsumResult.NoActiveIpsum
+        if (expectedIpsumId != null && ipsum.id != expectedIpsumId) return VerifyIpsumResult.NoActiveIpsum
         return single(Operation(SyncDataset.SUBMISSIONS, link, ipsum.id)) {
             track(SyncDataset.SUBMISSIONS, link, { it is VerifyIpsumResult.Success }, { VerifyIpsumResult.PersistenceFailure }, ipsumId = ipsum.id) {
                 VerifyIpsumSubmissions(repository, codeforces)(link, ipsum.id)
@@ -168,18 +169,20 @@ class SynchronizationCoordinator(
         }
         try {
             state = store.read(key)
-            state = state.copy(running = true, failure = null)
+            state = state.copy(running = true, failure = null, failureKind = null)
             persist()
             val result = action()
             state = state.copy(running = false,
                 lastSuccessEpochMillis = if (success(result)) nowMillis() else state.lastSuccessEpochMillis,
-                failure = if (success(result)) null else result.toString())
-            persist()
+                failure = if (success(result)) null else result.toString(),
+                failureKind = if (success(result)) null else syncFailureKind(result))
+            withContext(NonCancellable) { persist() }
             return result
         } catch (error: Exception) {
             withContext(NonCancellable) {
                 if (link == null || repository.profileLink.first() == link) {
-                    state = state.copy(running = false, failure = if (error is CancellationException) "Interrompido" else "Falha de persistência")
+                    state = state.copy(running = false, failure = if (error is CancellationException) "Interrompido" else "Falha de persistência",
+                        failureKind = if (error is CancellationException) SyncFailureKind.INTERRUPTED else SyncFailureKind.PERSISTENCE)
                     try { persist() } catch (_: Exception) { /* Keep the last durable evidence. */ }
                 }
             }

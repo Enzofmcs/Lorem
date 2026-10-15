@@ -1,8 +1,8 @@
 # Sincronização automática com o Codeforces
 
-Plano de implementação de 13/10/2026 para as Histórias 15–17. A coordenação da História 15 e o
-agendamento da História 16 estão implementados e verificados. O polling e a
-consulta do ativo no worker continuam planejados na História 17. A solicitação de atualização automática
+Plano de implementação de 13/10/2026 para as Histórias 15–17, implementadas e
+verificadas em 15/10/2026: coordenação, WorkManager, polling e consulta do ativo
+pelo worker. A solicitação de atualização automática
 substitui a restrição de produto da D-011; veja D-018 em [DECISIONS.md](DECISIONS.md).
 
 ## Estratégia
@@ -62,7 +62,7 @@ requisição a cada dois segundos**, incluindo paginação, workers, botões e p
 ## Base implementada na História 15
 
 `AppContainer.synchronizationCoordinator` é a entrada compartilhada para UI e os
-workers e futuro polling. Reutiliza uma única instância de `CodeforcesApiRepository`
+workers e polling. Reutiliza uma única instância de `CodeforcesApiRepository`
 e seu gate de dois segundos, com relógio monotônico. Operações iguais do mesmo
 vínculo compartilham a execução; o lock de coordenação não envolve a importação
 inteira e cada página libera o gate para consultas do Ipsum.
@@ -156,7 +156,41 @@ Histórico nunca importado continua bloqueando a criação, conforme D-017.
 
 `SynchronizationWorkTest`, API/gate e ViewModel cobrem o comportamento; consulte
 [as evidências da História 16](ROADMAP.md#historia-16---sincronizacao-em-segundo-plano-com-workmanager).
-A verificação do Ipsum ativo pelo worker e o loop de 15 s pertencem à História 17.
+A verificação do Ipsum ativo pelo worker e o loop de 15 s foram integrados na História 17.
+
+## Acompanhamento implementado na História 17
+
+`IpsumSubmissionMonitor` é uma sessão única por ViewModel, vinculada ao id do
+Ipsum e ao ciclo de vida da rota. `LaunchedEffect` mantém chaves estáveis durante
+recomposição; `repeatOnLifecycle(RESUMED)` inicia uma consulta imediata e cancela ao
+pausar/sair. A espera após sucesso é de 15 s; falhas usam 30/60/120 s e voltam a
+15 s após sucesso. O gate e `Retry-After` continuam valendo para todas as chamadas.
+Encerramento/troca de vínculo também interrompem a sessão, inclusive em rede.
+O cronômetro tem sua própria atualização e mantém o tempo por timestamp offline.
+
+`BackgroundSynchronization` verifica o ativo no começo de cada execução elegível
+do perfil, mesmo com histórico recente, antes de uma importação longa. Reutiliza
+`verifyActiveIpsum` com vínculo e id esperados. Submissões antes do início não
+contam, `TESTING`/veredicto ausente são reconsultados e ids definitivos não se
+repetem. A contagem de erros do ativo é persistida na transação existente do Room.
+A gravação local curta termina mesmo quando o AC remove a tela; cancelamento não
+interrompe entre evidência, rating e estado de sucesso. HTTP permanece cancelável.
+
+O worker só altera dados. A rota guarda o id em estado restaurável e aguarda
+RESUMED para apresentar seu resultado, inclusive após restauração com AC já salvo.
+Home continua no seu próprio fluxo; fechar o resultado não dispara outra abertura.
+Abrir o resultado lê a avaliação persistida, sem recalcular rating ou encerrar de novo.
+
+Início/Configurações observam as quatro etapas com sucesso/falha/progresso próprios;
+Ipsum observa seu estado por vínculo/id e mostra acompanhamento, erros e última
+consulta. `failureKind` opcional em DataStore diferencia rede, rate limit, erro
+remoto, persistência e interrupção, preservando formatos antigos e último sucesso.
+Dados vencidos mostram “Dados salvos · atualização pendente”; sucesso parcial não
+anuncia atualização completa. Os botões são recuperação com o mesmo coordenador.
+
+Os testes de ciclo de vida usam relógio virtual com armazenamento em memória;
+integração e jornadas usam Room/DataStore reais e Codeforces falso apenas no teste.
+Veja [evidências da História 17](ROADMAP.md#historia-17---deteccao-automatica-de-submissoes-e-status-de-atualizacao).
 
 ## Experiência
 
@@ -173,7 +207,7 @@ retomar com consulta imediata, sem multiplicar loops após rotação. AC reconhe
 segundo plano atualiza os dados; o resultado aparece ao retornar, sem abrir tela ou
 mandar notificação espontânea. AC posterior não altera a avaliação original.
 
-## Verificação planejada
+## Estratégia de verificação
 
 Histórias 15–17 têm risco de Nível 4: usar relógio e repositoríos falsos para
 concorrência, rate limit, checkpoint, cancelamento, troca de perfil, rating e

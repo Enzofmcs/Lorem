@@ -113,6 +113,7 @@ class LocalLoremRepositoryTest {
         override fun observeForOwner(ownerHandle: String) = MutableStateFlow<List<IpsumEntity>>(emptyList())
         override fun observeActive() = MutableStateFlow<IpsumEntity?>(null)
         override suspend fun insert(ipsum: IpsumEntity) = 1L
+        override suspend fun updateActiveErrorCount(ipsumId: Long, errorCount: Int) {}
         override suspend fun revealHintOnce(ipsumId: Long, revealedAt: Long) = 0
         override suspend fun find(ipsumId: Long): IpsumEntity? = null
         override suspend fun insertSubmissions(submissions: List<IpsumSubmissionEntity>) = emptyList<Long>()

@@ -128,7 +128,7 @@ fun HomeScreen(
                 onClick = onSynchronize,
                 enabled = syncState != HistorySyncUiState.Loading,
             ) {
-                Text(if (syncState is HistorySyncUiState.Error) "Tentar novamente" else "Sincronizar histórico")
+                Text(if (syncState is HistorySyncUiState.Error) "Tentar novamente" else "Atualizar histórico agora")
             }
 
             Text("Catálogo de problemas", style = MaterialTheme.typography.titleMedium)
@@ -156,7 +156,7 @@ fun HomeScreen(
                 onClick = onSynchronizeCatalog,
                 enabled = catalogSyncState != CatalogSyncUiState.Loading,
             ) {
-                Text(if (catalogSyncState is CatalogSyncUiState.Error) "Tentar atualizar catálogo" else "Atualizar catálogo")
+                Text(if (catalogSyncState is CatalogSyncUiState.Error) "Tentar atualizar catálogo" else "Atualizar catálogo agora")
             }
 
             LoremDestination.all.filterNot {

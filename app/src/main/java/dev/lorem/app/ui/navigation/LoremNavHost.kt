@@ -1,6 +1,10 @@
 package dev.lorem.app.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
@@ -64,6 +68,9 @@ fun LoremNavHost(
     consolidationState: ConsolidationUiState? = null,
     preparationState: dev.lorem.app.ui.PreparationUiState? = null,
     dataSourceNotice: String? = null,
+    trackingState: dev.lorem.app.ui.IpsumTrackingUiState? = null,
+    onMonitorIpsum: suspend (Long) -> Unit = {},
+    onRefreshProfile: () -> Unit = {},
     navController: NavHostController = rememberNavController(),
 ) {
     val profile = initialProfile ?: configurationState.savedProfile
@@ -75,10 +82,12 @@ fun LoremNavHost(
         LoremDestination.Home.route
     }
     var resumedActive by remember { mutableStateOf(false) }
+    var requestedIpsumId by rememberSaveable { mutableStateOf<Long?>(null) }
     LaunchedEffect(activeIpsum?.id) {
         if (!resumedActive && activeIpsum != null) {
             resumedActive = true
             if (navController.currentDestination?.route == LoremDestination.Home.route) {
+                requestedIpsumId = activeIpsum.id
                 navController.navigate(LoremDestination.Ipsum.route) { launchSingleTop = true }
             }
         }
@@ -94,17 +103,9 @@ fun LoremNavHost(
     }
     LaunchedEffect(startIpsumState) {
         if (startIpsumState is StartIpsumUiState.Success) {
+            requestedIpsumId = startIpsumState.ipsumId
             navController.navigate(LoremDestination.Ipsum.route) { launchSingleTop = true }
             onIpsumNavigationHandled()
-        }
-    }
-    LaunchedEffect(submissionCheckState, ipsumResultState) {
-        val completedId = (submissionCheckState as? SubmissionCheckUiState.Success)
-            ?.takeIf { it.completed }?.ipsumId
-        val manuallyEndedId = (ipsumResultState as? IpsumResultUiState.Ready)?.result?.ipsum?.id
-        val id = completedId ?: manuallyEndedId
-        if (id != null && navController.currentDestination?.route == LoremDestination.Ipsum.route) {
-            navController.navigate("${LoremDestination.Result.route}/$id") { launchSingleTop = true }
         }
     }
     NavHost(navController = navController, startDestination = startDestination) {
@@ -114,6 +115,11 @@ fun LoremNavHost(
                 existingProfile = profile,
                 onHandleChange = onHandleChange,
                 onConfirm = onConfirmHandle,
+                preparation = preparationState,
+                onRefreshHistory = onSynchronizeHistory,
+                onRefreshCatalog = onSynchronizeCatalog,
+                onRefreshPending = onUpdatePendingIpsums,
+                onRefreshProfile = onRefreshProfile,
             )
         }
         composable(LoremDestination.Home.route) {
@@ -131,7 +137,10 @@ fun LoremNavHost(
                     latestFinishedIpsumId = ownedIpsums.lastOrNull { it.endedAtEpochMillis != null }?.id,
                     startIpsumState = startIpsumState,
                     onStartIpsum = onStartIpsum,
-                    onNavigate = navController::navigate,
+                    onNavigate = { route ->
+                        if (route == LoremDestination.Ipsum.route) requestedIpsumId = activeIpsum?.id
+                        navController.navigate(route)
+                    },
                     consolidation = consolidation,
                     preparation = preparationState?.takeIf { state -> state.owner?.handle == dev.lorem.app.domain.sync.ProfileLink.of(it.handle, 0).handle },
                     dataSourceNotice = dataSourceNotice,
@@ -139,9 +148,33 @@ fun LoremNavHost(
             }
         }
         composable(LoremDestination.Ipsum.route) {
+            var viewedIpsumId by rememberSaveable { mutableStateOf(requestedIpsumId) }
+            val lifecycleState by LocalLifecycleOwner.current.lifecycle.currentStateFlow.collectAsState()
+            LaunchedEffect(activeIpsum?.id) { activeIpsum?.id?.let { viewedIpsumId = it } }
+            val savedCompletion = viewedIpsumId?.let { id -> ownedIpsums.firstOrNull { it.id == id && it.endedAtEpochMillis != null }?.id }
+            val manualCompletion = (submissionCheckState as? SubmissionCheckUiState.Success)?.takeIf { it.completed }?.ipsumId
+                ?: (ipsumResultState as? IpsumResultUiState.Ready)?.result?.ipsum
+                    ?.takeIf { it.ownerHandle.trim().equals(profile?.handle?.trim(), true) }?.id
+            // A restored Ipsum route may load after a worker already completed it. Raw repository
+            // streams in trackingState distinguish that case from the initial null StateFlow cache.
+            val restoredCompletion = trackingState?.takeIf {
+                viewedIpsumId == null && it.activeIpsumId == null && activeIpsum == null &&
+                    ownedIpsums.none { attempt -> attempt.status == dev.lorem.app.domain.model.IpsumStatus.ACTIVE }
+            }?.lastFinishedIpsumId
+            val completedId = savedCompletion ?: manualCompletion ?: restoredCompletion
+            LaunchedEffect(completedId, viewedIpsumId, lifecycleState) {
+                if (completedId != null && (viewedIpsumId == null || completedId == viewedIpsumId) && lifecycleState == Lifecycle.State.RESUMED) {
+                    navController.navigate("${LoremDestination.Result.route}/$completedId") {
+                        popUpTo(LoremDestination.Ipsum.route) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+            }
             IpsumScreen(
                 ipsum = activeIpsum,
                 dataSourceNotice = dataSourceNotice,
+                trackingState = trackingState,
+                onMonitorIpsum = onMonitorIpsum,
                 onRevealHint = onRevealIpsumHint,
                 submissionCheckState = submissionCheckState,
                 onVerifySubmissions = onVerifyIpsumSubmissions,

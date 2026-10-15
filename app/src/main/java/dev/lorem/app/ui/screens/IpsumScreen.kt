@@ -22,6 +22,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
@@ -34,7 +36,6 @@ import dev.lorem.app.domain.model.elapsedIpsumMillis
 import dev.lorem.app.domain.model.problemUrl
 import dev.lorem.app.ui.SubmissionCheckUiState
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LifecycleEventEffect
 import kotlinx.coroutines.delay
 import java.util.Locale
 
@@ -48,14 +49,18 @@ fun IpsumScreen(
     onEndWithoutAc: (IpsumFailureReason?) -> Unit = {},
     nowMillis: () -> Long = System::currentTimeMillis,
     dataSourceNotice: String? = null,
+    trackingState: dev.lorem.app.ui.IpsumTrackingUiState? = null,
+    onMonitorIpsum: suspend (Long) -> Unit = {},
 ) {
     var now by remember(ipsum?.id) { mutableLongStateOf(nowMillis()) }
     var dialog by remember { mutableStateOf<IpsumDialog?>(null) }
     var selectedReason by remember(ipsum?.id) { mutableStateOf<IpsumFailureReason?>(null) }
     val uriHandler = LocalUriHandler.current
 
-    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
-        if (ipsum != null) onVerifySubmissions()
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    val monitor by rememberUpdatedState(onMonitorIpsum)
+    LaunchedEffect(ipsum?.id, lifecycle) {
+        ipsum?.id?.let { dev.lorem.app.ui.monitorResumedIpsum(lifecycle, it) { id -> monitor(id) } }
     }
 
     LaunchedEffect(ipsum?.id) {
@@ -98,15 +103,20 @@ fun IpsumScreen(
                 Text("O rating e a categoria continuam ocultos durante o Ipsum.")
             }
 
-            Button(
+            Text("Acompanhando submissões automaticamente")
+            Text("Erros definitivos: ${ipsum.errorCount}")
+            trackingState?.takeIf { it.activeIpsumId == ipsum.id }?.let {
+                SynchronizationStage("Submissões", it.synchronization)
+            }
+            OutlinedButton(
                 modifier = Modifier.fillMaxWidth(),
-                enabled = submissionCheckState != SubmissionCheckUiState.Loading,
+                enabled = submissionCheckState != SubmissionCheckUiState.Loading && trackingState?.synchronization?.running != true,
                 onClick = onVerifySubmissions,
             ) {
                 if (submissionCheckState == SubmissionCheckUiState.Loading) {
                     CircularProgressIndicator()
                 } else {
-                    Text("Verificar submissões")
+                    Text(if (trackingState?.synchronization?.failure != null || submissionCheckState is SubmissionCheckUiState.Error) "Tentar novamente" else "Atualizar agora")
                 }
             }
             OutlinedButton(

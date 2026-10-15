@@ -63,7 +63,7 @@ class IpsumScreenTest {
         composeRule.waitForIdle()
         assertTrue(revealRequested)
 
-        composeRule.onNodeWithText("Verificar submissões").performScrollTo().performClick()
+        composeRule.onNodeWithText("Atualizar agora").performScrollTo().performClick()
         composeRule.waitForIdle()
         assertTrue(verifyRequested)
         composeRule.onNodeWithText("Encerrar sem AC").performScrollTo().performClick()

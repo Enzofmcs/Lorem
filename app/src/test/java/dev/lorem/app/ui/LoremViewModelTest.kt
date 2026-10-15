@@ -21,6 +21,7 @@ import dev.lorem.app.domain.repository.UserLookupResult
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -35,6 +36,32 @@ import org.junit.Test
 class LoremViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
+
+    @Test
+    fun `preparation distinguishes expired successes from a completed current refresh`() = runTest {
+        val local = MemoryRepository(profile(lastSync = 1L))
+        val remote = CountingRepository()
+        val store = dev.lorem.app.domain.sync.MemorySynchronizationStore()
+        val link = local.profileLink.first()!!
+        val now = 1_000_000L
+        for (dataset in listOf(dev.lorem.app.domain.sync.SyncDataset.HISTORY, dev.lorem.app.domain.sync.SyncDataset.CATALOG,
+            dev.lorem.app.domain.sync.SyncDataset.PENDING, dev.lorem.app.domain.sync.SyncDataset.PROFILE)) {
+            store.write(dev.lorem.app.domain.sync.syncKey(dataset, if (dataset == dev.lorem.app.domain.sync.SyncDataset.CATALOG) null else link),
+                dev.lorem.app.domain.sync.SynchronizationState(lastSuccessEpochMillis = 1))
+        }
+        val coordinator = dev.lorem.app.domain.sync.SynchronizationCoordinator(local, remote, backgroundScope, store, { now })
+        val model = LoremViewModel(local, remote, nowMillis = { now }, synchronizationCoordinator = coordinator)
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { model.preparationState.collect {} }
+        advanceUntilIdle()
+        assertTrue(model.preparationState.value!!.hasExpiredData)
+        for (dataset in listOf(dev.lorem.app.domain.sync.SyncDataset.HISTORY, dev.lorem.app.domain.sync.SyncDataset.PENDING)) {
+            store.write(dev.lorem.app.domain.sync.syncKey(dataset, link), dev.lorem.app.domain.sync.SynchronizationState(lastSuccessEpochMillis = now))
+        }
+        advanceUntilIdle()
+        assertFalse(model.preparationState.value!!.hasExpiredData)
+        assertEquals(1L, model.preparationState.value!!.catalog.lastSuccessEpochMillis)
+        assertEquals(0, remote.calls)
+    }
 
     @Test
     fun `statistics react to local closure rating catalog and upsolve without remote calls`() = runTest {
@@ -452,7 +479,7 @@ class LoremViewModelTest {
         val viewModel = LoremViewModel(local, CountingRepository())
         viewModel.startNewIpsum()
         advanceUntilIdle()
-        assertTrue((viewModel.startIpsumState.value as StartIpsumUiState.Error).message.contains("Sincronize"))
+        assertTrue((viewModel.startIpsumState.value as StartIpsumUiState.Error).message.contains("preparação automática do histórico"))
         assertEquals(null, local.activeIpsum.value)
     }
 

@@ -9,7 +9,7 @@ Abra somente o documento necessario para a tarefa:
 - [`SESSIONS.md`](SESSIONS.md): cinco sessoes recentes e continuidade do trabalho.
 - [`DEMO.md`](DEMO.md): roteiro do fluxo completo, reproducao automatizada e limites da avaliacao do TCC.
 
-- [`SYNC.md`](SYNC.md): automacao do Codeforces (15-16 implementadas; polling da 17 planejado).
+- [`SYNC.md`](SYNC.md): automacao do Codeforces (Historias 15-17 implementadas e verificadas).
 - [`DESIGN.md`](DESIGN.md): direcao visual e criterios de interface para Historias 18-21.
 
 O guia obrigatorio e compacto de cada sessao permanece em [`../AGENTS.md`](../AGENTS.md).

@@ -6,13 +6,13 @@
 
 ## Estado atual
 
-**Foco atual:** Historia 16 concluida; proxima implementacao: Historia 17 - deteccao automatica.
+**Foco atual:** Historia 17 concluida; proxima implementacao: Historia 18 - identidade visual, temas e navegacao.
 
-**Ultima historia verificada:** Historia 16 - WorkManager, automaticamente em 2026-10-15. Historias 00-15 preservadas.
+**Ultima historia verificada:** Historia 17 - Deteccao automatica de submissoes e status, automaticamente em 2026-10-15. Historias 00-16 preservadas.
 
-**Primeiro item pendente:** polling do Ipsum visivel e verificacao do ativo no worker (Historia 17).
+**Primeiro item pendente:** identidade visual, temas e navegacao (Historia 18).
 
-**Proxima entrega demonstravel:** acompanhamento de submissoes (Historia 17), apos preparacao/manutencao automatica ja implementadas; depois redesign (18-21).
+**Proxima entrega demonstravel:** redesign (18-21), com preparacao, manutencao e acompanhamento automaticos ja implementados.
 
 **Bloqueios conhecidos:** nenhum. Conferencia em dispositivo e opcional (D-014).
 
@@ -75,7 +75,7 @@ As Historias 00-14 e suas evidencias permanecem concluidas.
 Ordem proposta: **15 -> 16 -> 17**, seguida de **18 -> 19 -> 20 -> 21**.
 A 18 pode iniciar independentemente da automacao; 19 integra 16/17 e a 21 nao depende
 da 20. [SYNC.md](SYNC.md) e [DESIGN.md](DESIGN.md) detalham os planos.
-As Historias 15 e 16 foram implementadas e verificadas em 2026-10-15; Historias 17-21 continuam planejadas e com aceite pendente.
+As Historias 15-17 foram implementadas e verificadas em 2026-10-15; Historias 18-21 continuam planejadas e com aceite pendente.
 
 ## Sumario rapido
 
@@ -1014,7 +1014,7 @@ nao foi alegada execucao desses cenarios em aparelho nem periodicidade exata.
 
 **Historia:** Como usuário, quero que o Lorem reconheça minhas submissões sem cliques e mostre quando os dados foram atualizados.
 
-**Status:** planejada; implementacao e aceite pendentes.
+**Status:** implementada e verificada automaticamente em 2026-10-15.
 
 **GitHub:** [#32 — História 17 — Detecção automática de submissões e status de atualização](https://github.com/Enzofmcs/Lorem/issues/32).
 
@@ -1026,20 +1026,82 @@ nao foi alegada execucao desses cenarios em aparelho nem periodicidade exata.
 
 #### Criterios de aceite
 
-- [ ] Existe um único loop por Ipsum visível em RESUMED, com consulta imediata e intervalo inicial de 15 segundos; rotação e recomposição não multiplicam chamadas.
-- [ ] Polling para ao sair da tela, ir para segundo plano ou encerrar o Ipsum e retoma com consulta imediata; falhas recebem backoff sem bloquear o cronômetro.
-- [ ] O worker do perfil verifica um Ipsum ativo no próximo ciclo elegível; AC reconhecido em segundo plano aparece no resultado ao retornar, sem navegação ou notificação espontânea.
-- [ ] Ignorar submissões anteriores ao início, deduplicar ids, reconsultar veredictos provisórios e preservar primeiro AC/erros, dica e rating em disputas entre polling, worker e encerramento manual.
-- [ ] Início/Configurações informam preparação inicial e estado por dado, último sucesso, atualização em andamento e cache offline; sucesso parcial não aparece como atualização completa.
-- [ ] No Ipsum, exibir acompanhamento, última consulta e erro recuperável sem snackbar a cada ciclo; dados ocultos continuam protegidos.
-- [ ] Remover a dependência de Sincronizar histórico, Atualizar catálogo, Verificar submissões e Atualizar pendências para o fluxo normal; Tentar novamente/Atualizar agora reutilizam o coordenador.
-- [ ] Sem internet, manter treino ativo, histórico e estatísticas locais; recomendação com cache segue a D-017, exigindo primeira importação bem-sucedida e informando uso de dados salvos.
+- [x] Existe um único loop por Ipsum visível em RESUMED, com consulta imediata e intervalo inicial de 15 segundos; rotação e recomposição não multiplicam chamadas.
+- [x] Polling para ao sair da tela, ir para segundo plano ou encerrar o Ipsum e retoma com consulta imediata; falhas recebem backoff sem bloquear o cronômetro.
+- [x] O worker do perfil verifica um Ipsum ativo no próximo ciclo elegível; AC reconhecido em segundo plano aparece no resultado ao retornar, sem navegação ou notificação espontânea.
+- [x] Ignorar submissões anteriores ao início, deduplicar ids, reconsultar veredictos provisórios e preservar primeiro AC/erros, dica e rating em disputas entre polling, worker e encerramento manual.
+- [x] Início/Configurações informam preparação inicial e estado por dado, último sucesso, atualização em andamento e cache offline; sucesso parcial não aparece como atualização completa.
+- [x] No Ipsum, exibir acompanhamento, última consulta e erro recuperável sem snackbar a cada ciclo; dados ocultos continuam protegidos.
+- [x] Remover a dependência de Sincronizar histórico, Atualizar catálogo, Verificar submissões e Atualizar pendências para o fluxo normal; Tentar novamente/Atualizar agora reutilizam o coordenador.
+- [x] Sem internet, manter treino ativo, histórico e estatísticas locais; recomendação com cache segue a D-017, exigindo primeira importação bem-sucedida e informando uso de dados salvos.
 
-#### Verificacao planejada
+#### Verificacao e evidencias
 
 Nível 4: testes de ciclo de vida com relógio falso, integração de AC/WA/TESTING, duplicidade e encerramento. Conferência manual opcional abrindo Codeforces, retornando, rotacionando, perdendo rede e fazendo upsolve. Conferencias em dispositivo sao opcionais conforme D-014; criterios funcionais exigem evidencia automatizada proporcional ao risco.
 
 **Exemplo de aceite:** Um WA seguido de AC é detectado com a tela aberta sem tocar em Verificar submissões; rating muda uma vez. Ao voltar de segundo plano, a consulta recupera submissões pendentes.
+
+#### Implementacao
+
+- `IpsumSubmissionMonitor` pertence ao ViewModel e serializa sessoes visiveis.
+  `LaunchedEffect(id, lifecycle)` usa `repeatOnLifecycle(RESUMED)`, consulta
+  imediatamente e aguarda 15 s apos sucesso. Falhas usam 30/60/120 s (teto),
+  voltando a 15 s apos recuperacao. Saida da rota, pausa, troca de vinculo e
+  encerramento cancelam o loop; cronometro permanece independente.
+- Worker consulta o ativo antes de importar historico, inclusive com os outros
+  conjuntos ainda validos. Polling, worker e recuperacao compartilham coordenador,
+  cliente e gate. Handle/versao/id esperados impedem respostas de outra tentativa.
+- Veredictos provisórios sao reconsultados, ids definitivos deduplicados e
+  submissoes anteriores ao inicio ignoradas. Room atualiza a contagem de erros
+  durante o ativo. Persistencia local curta finaliza mesmo se reconhecer AC
+  remover a tela e cancelar seu consumidor; HTTP continua cancelavel.
+- A rota guarda o id iniciado/visualizado, aguarda dados locais carregados e so
+  abre seu resultado em RESUMED. Worker nao navega nem notifica; retorno apos
+  pausa/restauracao recupera o resultado sem reaplicar rating. Novo Ipsum nao
+  reutiliza o resultado anterior durante o carregamento dos flows.
+- Inicio e Configuracoes mostram historico/catalogo/pendencias/perfil, ultimo
+  sucesso e falha/progresso separados. `failureKind` e um campo opcional novo em
+  DataStore; formatos antigos continuam legiveis. Dados vencidos indicam cache
+  pendente, sem anunciar atualizacao completa. Sem mudanca de esquema Room.
+- Ipsum mostra acompanhamento, erros definitivos, ultima consulta e falha
+  recuperavel sem snackbar por ciclo. Acoes `Atualizar agora`/`Tentar novamente`
+  continuam no coordenador; preparo e verificacoes normais sao automaticos.
+  D-017, sigilo de rating/categoria/tags e estatisticas locais sao preservados.
+
+Evidencias automatizadas:
+
+- `IpsumSubmissionMonitorTest`: ciclo de vida/rotacao, dois bindings concorrentes,
+  cancelamento em rede, backoff/recuperacao, WA/TESTING/AC com ids duplicados e
+  anteriores ao inicio, dica/rating, worker versus encerramento e upsolve.
+  Relogio virtual usa repositorio em memoria; regras/persistencia usam Room e
+  DataStore reais. A contagem exata de chamadas fica no teste de relogio isolado,
+  evitando misturar avancos virtuais com a latencia real de armazenamento.
+- `SynchronizationWorkTest`: worker reconhece WA e AC mesmo com historico fresco,
+  preserva primeiro AC/erros e nao duplica rating ao repetir. Suites anteriores
+  de concorrencia, migracoes, cache e reconexao do perfil permanecem preservadas.
+- `CompleteAppJourneyTest`: WA -> TESTING -> AC sem tocar na recuperacao; sigilo de
+  dados; AC em segundo plano sem navegacao, restauracao de estado pausado e
+  resultado ao retomar, sem reabrir espontaneamente depois de fecha-lo.
+- `SynchronizationStatusTest` e ViewModel: sucesso parcial/offline, ultimo sucesso
+  preservado, dados vencidos e acao real de recuperacao em Configuracoes.
+
+Comandos com Java 17, Gradle 8.11.1 e SDK 35:
+
+```bash
+./gradlew compileDebugKotlin --max-workers=2 --console=plain
+./gradlew testDebugUnitTest --tests 'dev.lorem.app.domain.sync.IpsumSubmissionMonitorTest' --tests 'dev.lorem.app.data.sync.SynchronizationWorkTest' --tests 'dev.lorem.app.data.local.SynchronizationPersistenceTest' --tests 'dev.lorem.app.ui.LoremViewModelTest' --tests 'dev.lorem.app.CompleteAppJourneyTest' --tests 'dev.lorem.app.ui.IpsumScreenTest' --tests 'dev.lorem.app.ui.SynchronizationStatusTest' --max-workers=2 --console=plain
+./gradlew test lint assembleDebug --max-workers=2 --console=plain
+```
+
+Regressao final: **184 testes debug e 150 release**, zero falhas/erros; lint sem
+erros (somente `MissingApplicationIcon`, preexistente), APK debug gerado. Diff,
+81 links/ancoras locais e oito criterios conferidos.
+As jornadas aguardam a tela renderizada apos o estado Ready, evitando assercoes
+durante a transicao de navegacao.
+
+**TESTE MANUAL OPCIONAL - NAO EXECUTADO**, conforme D-014. Conferir em dispositivo:
+WA/AC real no Codeforces, alternancia navegador/app, rotacao, perda de rede,
+retomada e upsolve; nenhuma execucao em aparelho foi alegada.
 
 ---
 

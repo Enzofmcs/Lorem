@@ -3,6 +3,8 @@ package dev.lorem.app.domain
 import dev.lorem.app.domain.sync.ProfileLinkChanged
 import dev.lorem.app.domain.sync.ProfileLink
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
 import dev.lorem.app.domain.model.IpsumSubmission
 import dev.lorem.app.domain.repository.CodeforcesRepository
 import dev.lorem.app.domain.repository.LoremRepository
@@ -47,8 +49,10 @@ class VerifyIpsumSubmissions(
             .map { IpsumSubmission(it.id, ipsum.id, checkNotNull(it.verdict), it.createdAt.toEpochMilli()) }
             .toList()
         return try {
-            val update = loremRepository.withProfileLink(link) {
-                loremRepository.recordIpsumSubmissions(ipsum.id, definitive)
+            // Once the response is known, finish the short local transaction even if its
+            // completion removes the active screen and cancels the polling consumer.
+            val update = withContext(NonCancellable) {
+                loremRepository.withProfileLink(link) { loremRepository.recordIpsumSubmissions(ipsum.id, definitive) }
             }
             VerifyIpsumResult.Success(update.insertedCount, update.errorCount, update.completed)
         } catch (error: Exception) {

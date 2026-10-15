@@ -1,6 +1,6 @@
 # Demonstracao do Lorem
 
-O roteiro percorre as Historias 00-14. O ensaio em dispositivo e opcional; o aceite
+O roteiro percorre as Historias 00-17. O ensaio em dispositivo e opcional; o aceite
 funcional usa os testes automatizados, conforme D-014.
 
 ## Preparacao
@@ -18,9 +18,10 @@ O Lorem consulta somente dados publicos; as submissoes sao feitas no Codeforces.
 2. Inicie um Ipsum. Confira o problema e o cronometro; rating, categoria e fatores
    da recomendacao permanecem ocultos. Abra o problema no Codeforces.
 3. Opcionalmente, confirme `Revelar topicos`. O uso da dica fica registrado uma vez.
-4. Apos uma submissao errada, volte ao app ou toque em `Verificar submissoes`.
-   Depois de obter AC, verifique novamente: o Resultado mostra tempo, erros, dica,
-   rating anterior/variacao/posterior e a explicacao da recomendacao.
+4. Apos uma submissao errada, volte ao app: a consulta e imediata ao retomar e se
+   repete a cada 15 s com a tela em RESUMED. Confira erros definitivos e ultimo
+   sucesso. Depois do AC, o Resultado mostra tempo, erros, dica, rating e fatores
+   da recomendacao. `Atualizar agora`/`Tentar novamente` sao recuperacao opcional.
 5. Feche o Resultado, abra Historico e Estatisticas. Confira a tentativa em
    `Resolvidos em Ipsums`, os indicadores originais e a evolucao persistida.
 6. Inicie outro Ipsum: o problema anterior nao participa do sorteio. A recomendacao
@@ -31,9 +32,10 @@ O Lorem consulta somente dados publicos; as submissoes sao feitas no Codeforces.
 
 1. Inicie outro Ipsum e escolha um motivo em `Encerrar sem AC`. O rating diminui
    uma unica vez e a tentativa aparece em `Pendentes`.
-2. Resolva o problema posteriormente no Codeforces, fora da tentativa. Em Historico,
-   use `Atualizar pendencias`: o primeiro AC posterior move o item para
-   `Resolvidos fora de Ipsums` e preserva rating, tempo, dica e erros originais.
+2. Resolva o problema posteriormente no Codeforces, fora da tentativa. Aguarde
+   o proximo trabalho elegivel (intervalo desejado de 15 min, sujeito ao Android),
+   ou use `Atualizar agora` no Historico para recuperacao. O primeiro AC posterior
+   move o item para `Resolvidos fora de Ipsums`, preservando a avaliacao original.
 3. Repita a atualizacao. A operacao nao duplica o item nem altera a avaliacao.
 4. Abra Estatisticas: pendencias diminuem e upsolves aumentam; a taxa de AC durante
    Ipsums e a evolucao original permanecem iguais.
@@ -60,7 +62,9 @@ AC para consolidacao.
 `CompleteAppJourneyTest` percorre as telas com Room/DataStore reais e Codeforces
 roteirizado somente no teste. `FullTrainingJourneyTest` cobre reinicio do repositorio,
 migracao 9-10 validada pelo Room, recuperacao de rating/consolidacao, cliques
-concorrentes, dica tardia e sincronizacao depois da troca de perfil.
+concorrentes, dica tardia e sincronizacao depois da troca de perfil. As jornadas
+automaticas tambem cobrem WA/TESTING/AC sem botoes e resultado apos trabalho em
+segundo plano/restauracao, aguardando RESUMED.
 
 ## Limites da avaliacao do TCC
 

@@ -50,7 +50,7 @@ import kotlinx.coroutines.launch
 
 sealed interface LoremUiState {
     data object Loading : LoremUiState
-    data class Ready(val profile: LocalProfile?) : LoremUiState
+    data class Ready(val profile: LocalProfile?, val link: ProfileLink? = null) : LoremUiState
 }
 
 data class ConfigurationUiState(
@@ -115,6 +115,16 @@ data class PreparationUiState(
     val owner: ProfileLink?,
     val history: SynchronizationState = SynchronizationState(),
     val catalog: SynchronizationState = SynchronizationState(),
+    val pending: SynchronizationState = SynchronizationState(),
+    val metadata: SynchronizationState = SynchronizationState(),
+    val hasExpiredData: Boolean = false,
+)
+
+data class IpsumTrackingUiState(
+    val owner: ProfileLink?,
+    val activeIpsumId: Long?,
+    val lastFinishedIpsumId: Long?,
+    val synchronization: SynchronizationState = SynchronizationState(),
 )
 
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
@@ -125,22 +135,46 @@ class LoremViewModel(
     randomSource: RandomSource = RandomSource { Random.Default.nextInt(it) },
     statisticsDispatcher: CoroutineDispatcher = Dispatchers.Default,
     synchronizationCoordinator: SynchronizationCoordinator? = null,
+    submissionPollingWait: suspend (Long) -> Unit = { kotlinx.coroutines.delay(it) },
 ) : ViewModel() {
     private val coordinator = synchronizationCoordinator ?: SynchronizationCoordinator(
         repository, codeforcesRepository, viewModelScope, nowMillis = nowMillis,
     )
+    private val submissionMonitor = dev.lorem.app.domain.sync.IpsumSubmissionMonitor(repository, coordinator, submissionPollingWait)
+    suspend fun monitorIpsum(ipsumId: Long) = submissionMonitor.monitor(ipsumId)
+
     val preparationState: StateFlow<PreparationUiState?> = repository.profileLink.distinctUntilChanged().flatMapLatest { link ->
-        combine(coordinator.store.observe(syncKey(SyncDataset.CATALOG, null)),
-            if (link == null) kotlinx.coroutines.flow.flowOf(SynchronizationState())
-            else coordinator.store.observe(syncKey(SyncDataset.HISTORY, link))) { catalog, history ->
-            PreparationUiState(link, history, catalog)
+        fun observe(dataset: SyncDataset) = if (link == null && dataset != SyncDataset.CATALOG)
+            kotlinx.coroutines.flow.flowOf(SynchronizationState()) else coordinator.store.observe(syncKey(dataset, link))
+        combine(observe(SyncDataset.HISTORY), observe(SyncDataset.CATALOG), observe(SyncDataset.PENDING), observe(SyncDataset.PROFILE)) { history, catalog, pending, metadata ->
+            val now = nowMillis()
+            val expired = listOf(history to dev.lorem.app.domain.sync.BackgroundSynchronization.QUARTER_HOUR,
+                pending to dev.lorem.app.domain.sync.BackgroundSynchronization.QUARTER_HOUR,
+                catalog to dev.lorem.app.domain.sync.BackgroundSynchronization.DAY,
+                metadata to dev.lorem.app.domain.sync.BackgroundSynchronization.DAY)
+                .any { (state, ttl) -> state.lastSuccessEpochMillis?.let { now - it >= ttl } == true }
+            PreparationUiState(link, history, catalog, pending, metadata, expired)
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    val trackingState: StateFlow<IpsumTrackingUiState?> = repository.profileLink.distinctUntilChanged().flatMapLatest { link ->
+        combine(repository.activeIpsum, repository.ipsums) { active, attempts ->
+            val owned = attempts.filter { ProfileLink.of(it.ownerHandle, link?.version ?: 0) == link }
+            IpsumTrackingUiState(link,
+                active?.takeIf { ProfileLink.of(it.ownerHandle, link?.version ?: 0) == link }?.id,
+                owned.lastOrNull { it.endedAtEpochMillis != null }?.id)
+        }.flatMapLatest { session ->
+            if (link == null || session.activeIpsumId == null) kotlinx.coroutines.flow.flowOf(session)
+            else coordinator.store.observe(syncKey(SyncDataset.SUBMISSIONS, link, session.activeIpsumId))
+                .map { session.copy(synchronization = it) }
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
     private val mutableDataSourceNotice = MutableStateFlow<String?>(null)
     val dataSourceNotice = mutableDataSourceNotice.asStateFlow()
     private val startIpsum = StartIpsum(repository, RecommendIpsum(randomSource), nowMillis)
-    val uiState: StateFlow<LoremUiState> = repository.profile
-        .map<LocalProfile?, LoremUiState>(LoremUiState::Ready)
+    val uiState: StateFlow<LoremUiState> = combine(repository.profile, repository.profileLink) { profile, link ->
+        LoremUiState.Ready(profile, link?.takeIf { it.handle == profile?.handle?.let { handle -> ProfileLink.of(handle, 0).handle } }) as LoremUiState
+    }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
@@ -365,6 +399,12 @@ class LoremViewModel(
     private fun catalogError(message: String, savedProblemCount: Int) =
         CatalogSyncUiState.Error(message, savedProblemCount)
 
+    fun refreshProfile() {
+        viewModelScope.launch {
+            try { coordinator.refreshProfile() } catch (_: ProfileLinkChanged) { /* Account was removed. */ }
+        }
+    }
+
     fun startNewIpsum() {
         if (mutableStartIpsumState.value == StartIpsumUiState.Loading) return
         mutableIpsumResultState.value = IpsumResultUiState.Idle
@@ -388,7 +428,7 @@ class LoremViewModel(
                         "Nenhum problema inédito foi encontrado até 300 pontos da faixa. Atualize catálogo e histórico e tente novamente.",
                     )
                     StartIpsumResult.NoProfile -> StartIpsumUiState.Error("Configure um perfil antes de iniciar um Ipsum.")
-                    StartIpsumResult.NeedsHistorySync -> StartIpsumUiState.Error("Sincronize seu histórico do Codeforces antes de iniciar o primeiro Ipsum.")
+                    StartIpsumResult.NeedsHistorySync -> StartIpsumUiState.Error("Aguarde a preparação automática do histórico do Codeforces antes de iniciar o primeiro Ipsum.")
                     StartIpsumResult.PersistenceFailure -> StartIpsumUiState.Error("Não foi possível salvar o Ipsum. Tente novamente.")
                 }
             } catch (_: ProfileLinkChanged) {

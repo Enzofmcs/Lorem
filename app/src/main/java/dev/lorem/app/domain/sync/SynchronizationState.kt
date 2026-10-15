@@ -21,6 +21,7 @@ data class SynchronizationState(
     val retryNotBeforeEpochMillis: Long = 0,
     val lastSuccessEpochMillis: Long? = null,
     val failure: String? = null,
+    val failureKind: SyncFailureKind? = null,
     val nextFrom: Int = 1,
     val importedCount: Int = 0,
     val watermarkEpochMillis: Long = 0,
