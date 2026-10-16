@@ -99,7 +99,7 @@ Na raiz do projeto:
 
 ## Entrega atual
 
-As **Histórias 00–18 estão implementadas**. Conectar um perfil agenda a importação
+As **Histórias 00–19 estão implementadas**. Conectar um perfil agenda a importação
 completa do histórico e catálogo. WorkManager mantém histórico/pendências a cada
 15 minutos desejados e catálogo/metadados a cada 24 horas, sujeito ao Android.
 Reabrir o app preserva a agenda e recupera dados ausentes ou vencidos.
@@ -116,7 +116,13 @@ persistidos em Configurações. As abas Início, Histórico e Estatísticas pres
 estado e rolagem; Configurações ficam no cabeçalho. Ipsum e Resultado têm navegação
 dedicada com voltar, mantendo a tentativa ativa ao sair da tela.
 
-Validação final: **193 testes debug e 154 release sem falhas**, lint sem erros
+O primeiro acesso usa Conectar Codeforces e validação inline. O Início destaca
+Rating Lorem, Iniciar/Continuar Ipsum, resumo local e último resultado. Perfil, tema
+e recuperação por etapa ficam em Configurações; o status de atualização permanece
+discreto no Início. A faixa consolidada preserva seu marco e permite expandir os
+requisitos da próxima faixa.
+
+Validação final: **198 testes debug e 154 release sem falhas**, lint sem erros
 (apenas aviso preexistente de ícone) e `assembleDebug` concluído. O APK está em
 `app/build/outputs/apk/debug/app-debug.apk`.
 
@@ -130,8 +136,8 @@ O planejamento de 13/10/2026 acrescenta **15–17 — Sincronização automátic
 as Histórias 15–17 estão implementadas e verificadas: coordenador compartilhado,
 importação incremental retomável, proteção por vínculo, WorkManager e acompanhamento
 automático. A base visual e a navegação da História 18 também estão verificadas.
-A próxima entrega é o redesign da configuração e tela inicial (História 19),
-seguido por Ipsum/Resultado (20) e Histórico/Estatísticas (21).
+Configuração e Início (19) estão implementados e verificados. A próxima entrega é
+o redesign de Ipsum/Resultado (20), seguido por Histórico/Estatísticas (21).
 
 A proposta combina WorkManager em segundo plano, consulta frequente durante o
 Ipsum visível e temas claro/escuro em azul profundo e verde. Consulte o

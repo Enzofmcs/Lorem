@@ -36,11 +36,7 @@ fun LoremApp(
     val dataSourceNotice by viewModel.dataSourceNotice.collectAsStateWithLifecycle()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val configurationState by viewModel.configurationState.collectAsStateWithLifecycle()
-    val historySyncState by viewModel.historySyncState.collectAsStateWithLifecycle()
-    val problemHistory by viewModel.problemHistory.collectAsStateWithLifecycle()
     val problemCatalog by viewModel.problemCatalog.collectAsStateWithLifecycle()
-    val catalogUpdatedAt by viewModel.catalogLastUpdatedEpochMillis.collectAsStateWithLifecycle()
-    val catalogSyncState by viewModel.catalogSyncState.collectAsStateWithLifecycle()
     val activeIpsum by viewModel.activeIpsum.collectAsStateWithLifecycle()
     val startIpsumState by viewModel.startIpsumState.collectAsStateWithLifecycle()
     val submissionCheckState by viewModel.submissionCheckState.collectAsStateWithLifecycle()
@@ -64,12 +60,8 @@ fun LoremApp(
                 onHandleChange = viewModel::updateHandle,
                 onConfirmHandle = viewModel::confirmHandle,
                 onHomeNavigationHandled = viewModel::homeNavigationHandled,
-                historySyncState = historySyncState,
-                problemHistory = problemHistory,
                 onSynchronizeHistory = viewModel::synchronizeHistory,
                 problemCatalogCount = problemCatalog.size,
-                catalogUpdatedAtEpochMillis = catalogUpdatedAt,
-                catalogSyncState = catalogSyncState,
                 onSynchronizeCatalog = viewModel::synchronizeCatalog,
                 activeIpsum = activeIpsum,
                 ipsums = ipsums,

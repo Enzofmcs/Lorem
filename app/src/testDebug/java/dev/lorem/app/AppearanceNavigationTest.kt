@@ -46,7 +46,7 @@ class AppearanceNavigationTest {
             appearanceRepository = storage.appearance).also { models.put("app", it) }
         val restorer = StateRestorationTester(compose)
         restorer.setContent { LoremApp(storage.repository, storage.remote, viewModel = model) }
-        see("Iniciar novo Ipsum")
+        see("Iniciar Ipsum")
         return model to restorer
     }
 
@@ -66,7 +66,7 @@ class AppearanceNavigationTest {
         val statisticsScroll = compose.onNodeWithTag("statistics-list").fetchSemanticsNode()
             .config[androidx.compose.ui.semantics.SemanticsProperties.VerticalScrollAxisRange].value()
         compose.onNodeWithContentDescription("Configurações").performClick()
-        see("Vincular Codeforces")
+        see("Conectado como @tourist")
         compose.onNodeWithTag("tab-statistics").assertDoesNotExist()
         compose.onNodeWithTag("theme-DARK").performScrollTo().performClick()
         await { model.themePreference.value == ThemePreference.DARK }
@@ -83,28 +83,28 @@ class AppearanceNavigationTest {
             .config[androidx.compose.ui.semantics.SemanticsProperties.VerticalScrollAxisRange].value(), 1f)
         compose.onNodeWithTag("situation-PENDING").performScrollTo().assertIsSelected()
         tab("home")
-        compose.onNodeWithText("Iniciar novo Ipsum").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Iniciar Ipsum").performScrollTo().assertIsDisplayed()
     }
 
     @Test fun `dedicated training back preserves active attempt and returning result has no tabs`() {
         val (model, restorer) = setup()
-        compose.onNodeWithText("Iniciar novo Ipsum").performClick()
+        compose.onNodeWithText("Iniciar Ipsum").performClick()
         see("Ipsum ativo")
         val id = model.activeIpsum.value!!.id
         compose.onNodeWithTag("tab-home").assertDoesNotExist()
         compose.onNodeWithContentDescription("Voltar").performClick()
-        see("Voltar para o Ipsum ativo")
+        see("Continuar Ipsum")
         assertEquals(id, model.activeIpsum.value!!.id)
         restorer.emulateSavedInstanceStateRestore()
-        see("Voltar para o Ipsum ativo")
-        compose.onNodeWithText("Voltar para o Ipsum ativo").performClick()
+        see("Continuar Ipsum")
+        compose.onNodeWithText("Continuar Ipsum").performClick()
         see("Ipsum ativo")
         assertEquals(id, model.activeIpsum.value!!.id)
         compose.runOnIdle { model.endActiveIpsum(dev.lorem.app.domain.model.IpsumFailureReason.LOGIC_NOT_FOUND) }
         see("Resultado do Ipsum")
         compose.onNodeWithTag("tab-home").assertDoesNotExist()
         compose.onNodeWithContentDescription("Voltar").performClick()
-        see("Iniciar novo Ipsum")
+        see("Iniciar Ipsum")
         assertNull(model.activeIpsum.value)
     }
 }

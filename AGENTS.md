@@ -44,18 +44,18 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
-- **Foco:** Historia 18 concluida; proxima implementacao: Historia 19 - redesign da configuracao e tela inicial.
-- **Ultima historia verificada:** Historia 18 - Identidade visual, temas e navegacao, automaticamente em 2026-10-16.
-- **Primeiro item pendente:** redesign da configuracao e tela inicial (Historia 19).
-- **Proxima entrega demonstravel:** redesign das telas (19-21), sobre temas/navegacao e automacao implementados; Historias 00-18 preservadas.
+- **Foco:** Historia 19 concluida; proxima implementacao: Historia 20 - redesign da experiencia do Ipsum e resultado.
+- **Ultima historia verificada:** Historia 19 - Redesign da configuracao e tela inicial, automaticamente em 2026-10-16.
+- **Primeiro item pendente:** redesign da experiencia do Ipsum e resultado (Historia 20).
+- **Proxima entrega demonstravel:** redesign de Ipsum/Resultado (20) e Historico/Estatisticas (21); Historias 00-19 preservadas.
 - **Bloqueios conhecidos:** nenhum; teste manual e opcional (D-014).
 
-Regressao da Historia 18: 193 testes debug e 154 release sem falhas, lint sem erros
+Regressao da Historia 19: 198 testes debug e 154 release sem falhas, lint sem erros
 (apenas aviso preexistente de icone) e `assembleDebug` concluido.
 Progresso e aceite: [`docs/ROADMAP.md`](docs/ROADMAP.md).
 Roteiro: [`docs/DEMO.md`](docs/DEMO.md).
 Planejamento: [sincronizacao](docs/SYNC.md), [design](docs/DESIGN.md) e
-[Historia 19](docs/ROADMAP.md#historia-19---redesign-da-configuracao-e-tela-inicial).
+[Historia 20](docs/ROADMAP.md#historia-20---redesign-da-experiencia-do-ipsum-e-resultado).
 
 ## Politica de contexto
 

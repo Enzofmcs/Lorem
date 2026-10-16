@@ -45,4 +45,27 @@ class SynchronizationStatusTest {
         compose.onNodeWithText("Dados salvos · atualização pendente").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("Dados atualizados").assertDoesNotExist()
     }
+    @Test fun `initial offline preparation exposes per stage recovery without inventing a saved success`() {
+        val state = mutableStateOf(PreparationUiState(ProfileLink.of("tourist", 1),
+            history = SynchronizationState(failure = "offline", failureKind = SyncFailureKind.NETWORK)))
+        var recovered = 0
+        compose.setContent { LoremTheme {
+            ConfigurationScreen(ConfigurationUiState(handle = "tourist"),
+                LocalProfile("tourist", "Tourist", null, 800, null, 0), {}, {},
+                preparation = state.value, onRefreshHistory = { recovered++ })
+        } }
+        compose.onNodeWithText("Sem conexão · preparação pendente").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Histórico · último sucesso: nenhuma consulta concluída").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Último sucesso de todos os dados:", substring = true).assertDoesNotExist()
+        compose.onNodeWithText("Atualizar histórico agora").performScrollTo().performClick()
+        assertEquals(1, recovered)
+        compose.runOnIdle { state.value = state.value.copy(history = SynchronizationState(running = true, importedCount = 500)) }
+        compose.onNodeWithText("Histórico: 500 registros processados; importação em andamento").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Atualizar histórico agora").performScrollTo().assertIsNotEnabled()
+        compose.onNodeWithText("Dados atualizados").assertDoesNotExist()
+        compose.runOnIdle { state.value = state.value.copy(history = SynchronizationState(lastSuccessEpochMillis = 1000)) }
+        compose.onNodeWithText("Atualizar histórico agora").performScrollTo().assertIsEnabled()
+        compose.onNodeWithText("Dados atualizados").assertDoesNotExist()
+    }
+
 }

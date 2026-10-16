@@ -9,38 +9,42 @@ import dev.lorem.app.ui.components.LoremSyncStatus
 import dev.lorem.app.ui.components.LoremTone
 
 @Composable
-internal fun PreparationStatus(state: PreparationUiState) {
+internal fun PreparationSummary(state: PreparationUiState) {
     val stages = listOf(state.history, state.catalog, state.pending, state.metadata)
+    val complete = stages.all { it.lastSuccessEpochMillis != null }
+    val offline = stages.any { it.failureKind == SyncFailureKind.NETWORK }
     val summary = when {
+        stages.any { it.running } -> if (state.history.lastSuccessEpochMillis == null || state.catalog.lastSuccessEpochMillis == null)
+            "Preparando seu treino" else "Atualizando dados…"
+        offline -> if (state.history.lastSuccessEpochMillis != null && state.catalog.lastSuccessEpochMillis != null)
+            "Sem conexão · dados salvos" else "Sem conexão · preparação pendente"
+        stages.any { it.failure != null } -> "Atualização incompleta · tente novamente em Configurações"
         state.history.lastSuccessEpochMillis == null || state.catalog.lastSuccessEpochMillis == null -> "Preparando seu treino"
-        stages.any { it.running } -> "Atualizando dados…"
-        stages.any { it.failureKind == SyncFailureKind.NETWORK } -> "Sem conexão · dados salvos"
-        stages.any { it.failure != null } -> "Atualização incompleta · dados salvos"
         state.hasExpiredData -> "Dados salvos · atualização pendente"
-        stages.all { it.lastSuccessEpochMillis != null } -> "Dados atualizados"
+        complete -> "Dados atualizados"
         else -> "Preparação em andamento"
     }
+    // Only a fully completed set can have a shared success time; a partial refresh cannot advance it.
+    val lastCompleteSuccess = if (complete) stages.mapNotNull { it.lastSuccessEpochMillis }.minOrNull() else null
     LoremSyncStatus(summary, when {
-        stages.any { it.failureKind == SyncFailureKind.NETWORK } || state.hasExpiredData -> LoremTone.ATTENTION
+        stages.any { it.running } -> LoremTone.NEUTRAL
+        offline || state.hasExpiredData -> LoremTone.ATTENTION
         stages.any { it.failure != null } -> LoremTone.ERROR
-        stages.all { it.lastSuccessEpochMillis != null && !it.running } -> LoremTone.SUCCESS
+        complete -> LoremTone.SUCCESS
         else -> LoremTone.NEUTRAL
-    })
-    SynchronizationStage("Histórico", state.history)
-    SynchronizationStage("Catálogo", state.catalog)
-    SynchronizationStage("Pendências", state.pending)
-    SynchronizationStage("Perfil", state.metadata)
+    }, detail = lastCompleteSuccess?.let { "Último sucesso de todos os dados: ${formatSyncTime(it)}" })
 }
 
 @Composable
 internal fun SynchronizationStage(label: String, state: SynchronizationState) {
+    val saved = if (state.lastSuccessEpochMillis != null) "dados salvos" else "preparação pendente"
     val status = when {
         state.running && state.importedCount > 0 -> "${state.importedCount} registros processados; importação em andamento"
         state.running -> "atualizando…"
-        state.failureKind == SyncFailureKind.NETWORK -> "sem conexão · dados salvos. Tentaremos novamente."
+        state.failureKind == SyncFailureKind.NETWORK -> "sem conexão · $saved. Tentaremos novamente."
         state.failureKind == SyncFailureKind.RATE_LIMIT -> "aguardando o Codeforces permitir nova consulta"
         state.failureKind == SyncFailureKind.INTERRUPTED -> "atualização interrompida; retomada automática disponível"
-        state.failure != null -> "falha na atualização; tente novamente. Dados salvos preservados."
+        state.failure != null -> "falha na atualização; tente novamente. ${if (state.lastSuccessEpochMillis != null) "Dados salvos preservados." else "Nenhuma consulta concluída."}"
         state.lastSuccessEpochMillis != null -> "atualizado"
         else -> "aguardando conexão e execução automática"
     }

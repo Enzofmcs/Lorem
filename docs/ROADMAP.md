@@ -6,13 +6,13 @@
 
 ## Estado atual
 
-**Foco atual:** Historia 18 concluida; proxima implementacao: Historia 19 - redesign da configuracao e tela inicial.
+**Foco atual:** Historia 19 concluida; proxima implementacao: Historia 20 - redesign da experiencia do Ipsum e resultado.
 
-**Ultima historia verificada:** Historia 18 - Identidade visual, temas e navegacao, automaticamente em 2026-10-16. Historias 00-17 preservadas.
+**Ultima historia verificada:** Historia 19 - Redesign da configuracao e tela inicial, automaticamente em 2026-10-16. Historias 00-18 preservadas.
 
-**Primeiro item pendente:** redesign da configuracao e tela inicial (Historia 19).
+**Primeiro item pendente:** redesign da experiencia do Ipsum e resultado (Historia 20).
 
-**Proxima entrega demonstravel:** redesign das telas (19-21), sobre temas/navegacao e sincronizacao automatica ja implementados.
+**Proxima entrega demonstravel:** redesign de Ipsum/Resultado (20) e Historico/Estatisticas (21), sobre Inicio/Configuracoes e automacao implementados.
 
 **Bloqueios conhecidos:** nenhum. Conferencia em dispositivo e opcional (D-014).
 
@@ -75,7 +75,7 @@ As Historias 00-14 e suas evidencias permanecem concluidas.
 Ordem proposta: **15 -> 16 -> 17**, seguida de **18 -> 19 -> 20 -> 21**.
 A 18 pode iniciar independentemente da automacao; 19 integra 16/17 e a 21 nao depende
 da 20. [SYNC.md](SYNC.md) e [DESIGN.md](DESIGN.md) detalham os planos.
-As Historias 15-17 foram implementadas e verificadas em 2026-10-15; Historias 18-21 continuam planejadas e com aceite pendente.
+As Historias 15-17 foram implementadas e verificadas em 2026-10-15 e as Historias 18-19 em 2026-10-16; Historias 20-21 continuam com aceite pendente.
 
 ## Sumario rapido
 
@@ -1194,7 +1194,7 @@ renderizacoes/testes automatizados nao sao apresentados como uso em dispositivo.
 
 **Historia:** Como usuário, quero conectar meu perfil e iniciar um treino com clareza, sem uma tela cheia de botões técnicos.
 
-**Status:** planejada; implementacao e aceite pendentes.
+**Status:** implementada e verificada automaticamente em 2026-10-16; conferencia em dispositivo opcional (D-014).
 
 **GitHub:** [#34 — História 19 — Redesign da configuração e tela inicial](https://github.com/Enzofmcs/Lorem/issues/34).
 
@@ -1206,19 +1206,81 @@ renderizacoes/testes automatizados nao sao apresentados como uso em dispositivo.
 
 #### Criterios de aceite
 
-- [ ] Configuração mostra marca/promessa curta, handle público, ação Conectar Codeforces, validação inline e progresso/recuperação da preparação por etapa.
-- [ ] Início apresenta saudação/handle, card de Rating Lorem e rating oficial como referência, resumo de treinos locais e acesso ao último resultado.
-- [ ] Há uma única ação dominante: Iniciar Ipsum ou Continuar Ipsum; preparação/bloqueio explica a razão e cliques repetidos não criam múltiplas tentativas.
-- [ ] Retirar botões Abrir… e blocos técnicos de catálogo/histórico do corpo principal, usando a navegação e detalhes em Configurações.
-- [ ] Status discreto informa último sucesso/atualizando/offline; UI renderiza cache antes da rede sem marcar sucesso inexistente.
-- [ ] Perfil, tema e detalhes/recuperação da sincronização ficam em Configurações; faixa consolidada e progresso reutilizam a História 13, preservando marco permanente e ausência de evidência como null.
-- [ ] Validar primeiro acesso, perfil salvo, ativo, vazio, falha de rede e troca de handle em claro/escuro, 320 dp, fonte 200% e TalkBack.
+- [x] Configuração mostra marca/promessa curta, handle público, ação Conectar Codeforces, validação inline e progresso/recuperação da preparação por etapa.
+- [x] Início apresenta saudação/handle, card de Rating Lorem e rating oficial como referência, resumo de treinos locais e acesso ao último resultado.
+- [x] Há uma única ação dominante: Iniciar Ipsum ou Continuar Ipsum; preparação/bloqueio explica a razão e cliques repetidos não criam múltiplas tentativas.
+- [x] Retirar botões Abrir… e blocos técnicos de catálogo/histórico do corpo principal, usando a navegação e detalhes em Configurações.
+- [x] Status discreto informa último sucesso/atualizando/offline; UI renderiza cache antes da rede sem marcar sucesso inexistente.
+- [x] Perfil, tema e detalhes/recuperação da sincronização ficam em Configurações; faixa consolidada e progresso reutilizam a História 13, preservando marco permanente e ausência de evidência como null.
+- [x] Validar primeiro acesso, perfil salvo, ativo, vazio, falha de rede e troca de handle em claro/escuro, 320 dp, fonte 200% e TalkBack.
 
-#### Verificacao planejada
+#### Verificacao e evidencias
 
 Nível 3: testes Compose/ViewModel direcionados para estados reais, preparação, navegação e duplo clique; smoke test visual/dispositivo. Reutilizar contratos de sync e recomendação. Conferencias em dispositivo sao opcionais conforme D-014; criterios funcionais exigem evidencia automatizada proporcional ao risco.
 
 **Exemplo de aceite:** Um perfil novo chega à tela pronta para iniciar o primeiro Ipsum sem sincronização manual; um perfil com Ipsum ativo encontra Continuar Ipsum como ação principal.
+
+#### Implementacao
+
+- Primeiro acesso com marca/promessa, handle publico com prefixo visual `@`,
+  teclado sem autocorrecao e acao Conectar Codeforces, inclusive pelo IME.
+  Erros inline preservam o texto; consulta desabilita campo/botao e mostra progresso.
+  Troca de handle mantem confirmacao e so substitui o perfil apos validacao.
+- Inicio destaca saudacao/handle, Rating Lorem e rating oficial como referencia.
+  Resumo conta somente Ipsums encerrados do perfil; AC posterior nao vira AC
+  durante o treino. Ultimo resultado usa o maior instante de encerramento.
+- Uma acao principal Iniciar/Continuar Ipsum. Primeira importacao incompleta ou
+  catalogo indisponivel explicam o bloqueio e levam a Ver preparacao. Ativo pode
+  continuar offline, independentemente da preparacao. Loading impede nova acao;
+  ViewModel e gravacao atomica existentes continuam protegendo cliques concorrentes.
+- Botoes/blocos tecnicos de historico/catalogo sairam do Inicio. Perfil, tema e
+  quatro etapas de sincronizacao ficam em Configuracoes, com progresso, ultimo
+  sucesso e recuperacao junto de cada etapa. Todas as acoes usam o coordenador.
+- Inicio usa resumo discreto de preparacao/atualizacao/offline/vencimento. Sucesso
+  parcial nunca aparece como Dados atualizados; so ha horario geral quando todas
+  as etapas tem evidencia, usando o mais antigo dos ultimos sucessos. Sem primeira
+  consulta concluida, a falha informa preparacao pendente em vez de inventar cache.
+- Card de consolidacao reutilizado com requisitos expansiveis; ausencia de faixa
+  permanece null e ausencia de amostra fica sem dados, preservando marco permanente.
+  Sem alteracao de dominio, esquema Room, agenda, dependencia ou regra de rating.
+
+Evidencias automatizadas:
+
+- `HomeScreenTest`: bloqueio/liberacao por dados locais, loading/erro, Continuar,
+  perfil vazio, cache offline, ultimo resultado e consolidacao sem amostra/marco.
+- `MainActivityTest`: validacao/falha/rede/troca de handle e resumo isolado por perfil,
+  sem contar ativos/upsolve como AC original, com ultimo resultado por data.
+- `CompleteAppJourneyTest`: primeiro acesso passa pela preparacao automatica do
+  servico compartilhado sem botoes de sync; conserva dica, WA/AC, pendencia e upsolve.
+  `SynchronizationWorkTest` valida o agendamento/worker ja existente; ViewModel e
+  `FullTrainingJourneyTest` preservam duplo clique, cache e persistencia critica.
+- `SynchronizationStatusTest`: sucesso parcial/offline, primeira importacao sem
+  sucesso ficticio, progresso em lotes e recuperacao por etapa.
+- `HomeConfigurationLayoutTest`: renderizacoes nativas em claro/escuro, 360 dp,
+  320 dp/fonte 200% e paisagem. Texto completo sem reticencias/corte de layout,
+  nomes longos, validacao/carregamento, controles de 48 dp e acoes por semantica.
+  Previews cobrem primeiro acesso, vazio/preparacao, perfil salvo, ativo e offline.
+  `AppearanceNavigationTest` preserva tema, filtros, rolagem e restauracao.
+
+Comandos com Java 17, Gradle 8.11.1 e SDK 35:
+
+```bash
+./gradlew compileDebugKotlin --max-workers=2 --console=plain
+./gradlew testDebugUnitTest --tests '*HomeScreenTest' --tests '*SynchronizationStatusTest' --tests '*HomeConfigurationLayoutTest' --tests '*MainActivityTest' --tests '*CompleteAppJourneyTest' --tests '*AppearanceNavigationTest' --tests '*LoremViewModelTest' --tests '*SynchronizationWorkTest' --tests '*FullTrainingJourneyTest' --max-workers=2 --console=plain
+./gradlew test lint assembleDebug --max-workers=2 --console=plain
+```
+
+O bootstrap offline inicial nao encontrava WorkManager no cache; a execucao online
+baixou a dependencia ja declarada. A primeira rodada direcionada encontrou uma
+expectativa antiga do titulo de Configuracoes; corrigida para o perfil conectado.
+Compilacao e direcionados finais passaram. A regressao completa passou com
+**198 testes debug e 154 release**, zero falhas/erros, lint sem erros
+(somente `MissingApplicationIcon`, preexistente) e APK debug gerado. Diff e 81
+links/ancoras locais conferidos. Sete criterios concluidos.
+
+**TESTE MANUAL OPCIONAL - NAO EXECUTADO**, conforme D-014. TalkBack, IME, rotacao,
+rede e Codeforces reais seguem conferencia humana opcional. As verificacoes de
+semantica/renderizacao automatizadas nao representam uso humano de TalkBack.
 
 ---
 
