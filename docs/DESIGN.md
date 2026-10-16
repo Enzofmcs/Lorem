@@ -2,7 +2,8 @@
 
 Direção de 13/10/2026 para as Histórias 18–21. A base da História 18 está implementada:
 paleta semântica clara/escura, preferência persistida, componentes e navegação.
-Os redesigns específicos das telas continuam nas Histórias 19–21.
+Configuração e Início (19) também estão implementados. Os próximos redesigns são
+Ipsum/Resultado (20) e Histórico/Estatísticas (21).
 Este documento e a [referência visual](design/lorem-concept.svg) orientam o redesign;
 os números da referência são exemplos ilustrativos, não dados do usuário.
 
@@ -130,3 +131,10 @@ e paisagem. `FoundationLayoutTest` renderiza os componentes e Configurações co
 gráficos nativos do Robolectric em `app/build/reports/visual/`, verifica texto
 completo, controles de 48 dp, semântica selecionável e insets simulados. Essas
 renderizações automatizadas não equivalem a ensaio humano em dispositivo.
+
+A História 19 aplica essa direção a Configuração e Início. Perfil, Aparência e
+Preparação/sincronização têm seções próprias. O Início usa uma ação dominante,
+resumo dos treinos locais e progresso expansível da faixa. `HomeConfigurationPreviews`
+e `HomeConfigurationLayoutTest` cobrem os estados e geram imagens em
+`app/build/reports/visual/`, incluindo primeiro acesso com erro/carregamento,
+recuperação offline e Continuar Ipsum, nos dois temas e tamanhos de referência.

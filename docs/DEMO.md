@@ -1,6 +1,6 @@
 # Demonstracao do Lorem
 
-O roteiro percorre as Historias 00-18. O ensaio em dispositivo e opcional; o aceite
+O roteiro percorre as Historias 00-19. O ensaio em dispositivo e opcional; o aceite
 funcional usa os testes automatizados, conforme D-014.
 
 ## Preparacao
@@ -26,11 +26,14 @@ O Lorem consulta somente dados publicos; as submissoes sao feitas no Codeforces.
 
 ## Jornada com AC no Ipsum
 
-1. Valide o handle em Configuracao. Na Home, aguarde a preparacao automatica do
-   historico e catalogo; acompanhe cada etapa. O primeiro Ipsum exige importacao
-   bem-sucedida do historico. Use os botoes de recuperacao somente se necessario.
-2. Inicie um Ipsum. Confira o problema e o cronometro; rating, categoria e fatores
-   da recomendacao permanecem ocultos. Abra o problema no Codeforces.
+1. Informe o handle publico e toque Conectar Codeforces. Na Home, confira saudacao,
+   Rating Lorem e referencia oficial. Aguarde a preparacao automatica: Iniciar Ipsum
+   explica o bloqueio ate o historico e catalogo ficarem prontos. Ver preparacao ou
+   Configuracoes mostra progresso/ultimo sucesso de cada etapa e recuperacao opcional.
+   Nenhum clique de sincronizacao e exigido no fluxo normal.
+2. Toque Iniciar Ipsum (ou Continuar Ipsum para retomar). Confira o problema e o
+   cronometro; rating, categoria e fatores da recomendacao permanecem ocultos. Abra
+   o problema no Codeforces.
 3. Opcionalmente, confirme `Revelar topicos`. O uso da dica fica registrado uma vez.
 4. Apos uma submissao errada, volte ao app: a consulta e imediata ao retomar e se
    repete a cada 15 s com a tela em RESUMED. Confira erros definitivos e ultimo
@@ -58,8 +61,9 @@ O Lorem consulta somente dados publicos; as submissoes sao feitas no Codeforces.
 
 ## Consolidacao
 
-Na Home ha um resumo da faixa consolidada; em Estatisticas ha os requisitos da
-proxima faixa. Uma janela de 20 encerrados exige, na faixa avaliada, 8 tentativas,
+Na Home ha um resumo da faixa consolidada; Ver progresso da faixa expande os
+requisitos da proxima faixa, tambem disponiveis em Estatisticas. Uma janela de 20
+encerrados exige, na faixa avaliada, 8 tentativas,
 70% de AC, 5 ACs sem dica e diversidade de 3 tags em 3 conjuntos distintos.
 A maior faixa alcancada permanece registrada, inclusive apos fracassos recentes;
 o Rating Lorem estimado continua mudando conforme o desempenho. Upsolve nao cria
@@ -85,7 +89,10 @@ tema e restauracao com Room/DataStore. `PreferencesAppearanceRepositoryTest` fec
 e reabre o DataStore e confirma as tres opcoes e independencia do perfil.
 `FoundationLayoutTest` gera renderizacoes em `app/build/reports/visual/` e verifica
 fonte ampliada, paisagem, insets e semantica; `ThemeContrastTest` valida os pares
-semanticos efetivamente usados.
+semanticos efetivamente usados. `HomeConfigurationLayoutTest` cobre as telas da
+Historia 19 em claro/escuro, 360 dp, 320 dp/fonte 200% e paisagem, com erros inline,
+loading e recuperacao por etapa. No Inicio, confira resumo local e Ver ultimo
+resultado; configuracoes de perfil/tema/sync ficam fora do corpo principal.
 
 ## Limites da avaliacao do TCC
 

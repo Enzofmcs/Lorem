@@ -70,7 +70,7 @@ class CompleteAppJourneyTest {
             randomSource = RandomSource { 0 }, submissionPollingWait = { ticks.receive() })
             .also { modelStore.put("auto", it) }
         compose.setContent { LoremTheme { LoremApp(env.repository, env.remote, viewModel = vm) } }
-        click("Iniciar novo Ipsum")
+        click("Iniciar Ipsum")
         await { vm.activeIpsum.value != null && vm.trackingState.value?.synchronization?.lastSuccessEpochMillis != null }
         val first = vm.activeIpsum.value!!
         val wa = CodeforcesSubmission(10, first.problem.id, "WRONG_ANSWER", Instant.ofEpochMilli(1_001_000))
@@ -143,20 +143,26 @@ class CompleteAppJourneyTest {
     @Test fun `profile sync recommendation hint WA AC history upsolve statistics and next attempt work together`() {
         val env = environment()
         var now = 1_000_000L
-        val vm = model(env) { now }
+        val coordinator = SynchronizationCoordinator(env.repository, env.remote, storageScope, nowMillis = { now })
+        val vm = LoremViewModel(env.repository, env.remote, nowMillis = { now },
+            randomSource = RandomSource { if (it == 3) 1 else 0 }, synchronizationCoordinator = coordinator)
+            .also { modelStore.put("journey", it) }
         compose.setContent { LoremTheme { LoremApp(env.repository, env.remote, viewModel = vm) } }
         await { compose.onAllNodesWithText("Handle do Codeforces").fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithText("Handle do Codeforces").performTextInput("tourist")
-        click("Validar e abrir Início")
+        click("Conectar Codeforces")
         await { vm.configurationState.value.savedProfile != null }
-        click("Iniciar novo Ipsum")
-        await { vm.startIpsumState.value is StartIpsumUiState.Error }
+        compose.onNodeWithText("Iniciar Ipsum").performScrollTo().assertIsNotEnabled()
         assertNull(vm.activeIpsum.value)
-        click("Atualizar histórico agora")
-        await { vm.historySyncState.value is HistorySyncUiState.Success }
-        click("Atualizar catálogo agora")
-        await { vm.catalogSyncState.value is CatalogSyncUiState.Success }
-        click("Iniciar novo Ipsum")
+        // The application's scheduler runs this service after binding. No manual sync action is used.
+        val preparation = BackgroundSynchronization(env.repository, coordinator, nowMillis = { now })
+        runBlocking {
+            preparation.profile(env.repository.profileLink.first()!!)
+            preparation.catalog()
+        }
+        await { vm.uiState.value.let { it is LoremUiState.Ready && it.profile!!.lastSyncEpochMillis > 0 } && vm.problemCatalog.value.isNotEmpty() }
+        await { runCatching { compose.onNodeWithText("Iniciar Ipsum").assertIsEnabled(); true }.getOrDefault(false) }
+        click("Iniciar Ipsum")
         await { vm.activeIpsum.value != null }
         val first = vm.activeIpsum.value!!
         awaitDisplayed("Ipsum ativo")
@@ -178,7 +184,7 @@ class CompleteAppJourneyTest {
         compose.onNodeWithText("Por que este problema?").performScrollTo().assertIsDisplayed()
         click("Fechar resultado")
         now += 10_000
-        click("Iniciar novo Ipsum")
+        click("Iniciar Ipsum")
         await { vm.activeIpsum.value?.id?.let { it != first.id } == true }
         val second = vm.activeIpsum.value!!
         awaitDisplayed("Ipsum ativo")
@@ -212,7 +218,7 @@ class CompleteAppJourneyTest {
         compose.onNodeWithTag("statistics-list").performScrollToNode(hasText("Voltar ao Início"))
         click("Voltar ao Início")
         now += 10_000
-        click("Iniciar novo Ipsum")
+        click("Iniciar Ipsum")
         await { vm.activeIpsum.value != null }
         assertTrue(vm.activeIpsum.value!!.problem.id !in setOf(first.problem.id, second.problem.id))
     }

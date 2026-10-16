@@ -69,11 +69,11 @@ class MainActivityTest {
         setApp(local, UserLookupResult.Success(CodeforcesUser("tourist", "Gennady", 4009)))
 
         composeRule.onNodeWithText("Handle do Codeforces").performTextInput("tourist")
-        composeRule.onNodeWithText("Validar e abrir Início").performClick()
+        composeRule.onNodeWithText("Conectar Codeforces").performScrollTo().performClick()
         composeRule.waitUntil(5_000) { local.profile.value != null }
 
         composeRule.onNodeWithTag("tab-home").assertIsSelected()
-        composeRule.onNodeWithText("Gennady (@tourist)").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Olá, Gennady").performScrollTo().assertIsDisplayed()
         assertEquals(4009, local.profile.value?.loremRating)
     }
 
@@ -81,21 +81,21 @@ class MainActivityTest {
     fun `invalid handle shows error and does not navigate`() {
         setApp(MemoryLoremRepository(), UserLookupResult.UserNotFound)
         composeRule.onNodeWithText("Handle do Codeforces").performTextInput("missing")
-        composeRule.onNodeWithText("Validar e abrir Início").performClick()
+        composeRule.onNodeWithText("Conectar Codeforces").performScrollTo().performClick()
 
         composeRule.onNodeWithText("Usuário não encontrado no Codeforces.").assertIsDisplayed()
-        composeRule.onNodeWithText("Vincular Codeforces").assertIsDisplayed()
+        composeRule.onNodeWithText("Conecte seu Codeforces").assertIsDisplayed()
     }
 
     @Test
     fun `network error preserves typed handle and stays on configuration`() {
         setApp(MemoryLoremRepository(), UserLookupResult.NetworkFailure)
         composeRule.onNodeWithText("Handle do Codeforces").performTextInput("keep-me")
-        composeRule.onNodeWithText("Validar e abrir Início").performClick()
+        composeRule.onNodeWithText("Conectar Codeforces").performScrollTo().performClick()
 
         composeRule.onNodeWithText("Handle do Codeforces")
-            .assertTextEquals("Handle do Codeforces", "keep-me", "Sem conexão com o Codeforces. Verifique a internet e tente novamente.")
-        composeRule.onNodeWithText("Vincular Codeforces").assertIsDisplayed()
+            .assertTextEquals("Handle do Codeforces", "@", "keep-me", "Sem conexão com o Codeforces. Verifique a internet e tente novamente.")
+        composeRule.onNodeWithText("Conecte seu Codeforces").assertIsDisplayed()
     }
 
     @Test
@@ -106,7 +106,7 @@ class MainActivityTest {
 
         composeRule.onNodeWithContentDescription("Configurações").performClick()
         composeRule.onNodeWithText("Handle do Codeforces").performTextReplacement("new")
-        composeRule.onNodeWithText("Atualizar handle").performClick()
+        composeRule.onNodeWithText("Atualizar handle").performScrollTo().performClick()
 
         composeRule.onNodeWithText("Trocar handle?").assertIsDisplayed()
         assertEquals(original, local.profile.value)
@@ -114,11 +114,11 @@ class MainActivityTest {
         composeRule.onAllNodesWithText("Trocar handle?").assertCountEquals(0)
         assertEquals(original, local.profile.value)
 
-        composeRule.onNodeWithText("Atualizar handle").performClick()
+        composeRule.onNodeWithText("Atualizar handle").performScrollTo().performClick()
         composeRule.onNodeWithText("Trocar").performClick()
         composeRule.waitUntil(5_000) { local.profile.value?.handle == "new" }
 
-        composeRule.onNodeWithText("New User (@new)").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Olá, New User").performScrollTo().assertIsDisplayed()
         assertEquals(1500, local.profile.value?.officialRating)
     }
 
@@ -130,7 +130,7 @@ class MainActivityTest {
 
         composeRule.onNodeWithContentDescription("Configurações").performClick()
         composeRule.onNodeWithText("Handle do Codeforces").performTextReplacement("missing")
-        composeRule.onNodeWithText("Atualizar handle").performClick()
+        composeRule.onNodeWithText("Atualizar handle").performScrollTo().performClick()
         composeRule.onNodeWithText("Trocar").performClick()
 
         composeRule.onNodeWithText("Usuário não encontrado no Codeforces.").assertIsDisplayed()
@@ -159,10 +159,24 @@ class MainActivityTest {
         )
         setApp(local, UserLookupResult.NetworkFailure)
 
-        composeRule.onNodeWithText("Abrir Resultado").performScrollTo().performClick()
+        composeRule.onNodeWithText("Ver último resultado").performScrollTo().performClick()
 
         composeRule.onNodeWithText("Resultado do Ipsum").assertIsDisplayed()
         composeRule.onNodeWithText("Finished problem").assertIsDisplayed()
+    }
+
+    @Test
+    fun `home summary counts only finished owned attempts and opens latest result by end time`() {
+        val latest = StatisticsFixtures.attempt(1, IpsumStatus.COMPLETED).copy(startedAtEpochMillis = 1000, endedAtEpochMillis = 5000,
+            problem = CodeforcesProblem(ProblemId(100, "A"), "Latest by date", 1200, setOf("dp")))
+        val older = StatisticsFixtures.attempt(2, IpsumStatus.SOLVED_OUTSIDE).copy(startedAtEpochMillis = 1000, endedAtEpochMillis = 4000)
+        val active = StatisticsFixtures.attempt(3, IpsumStatus.ACTIVE).copy(endedAtEpochMillis = null)
+        val foreign = latest.copy(id = 4, ownerHandle = "another", endedAtEpochMillis = 9000)
+        setApp(MemoryLoremRepository(StatisticsFixtures.profile, listOf(latest, older, active, foreign)), UserLookupResult.NetworkFailure)
+        composeRule.onNodeWithText("Ipsums encerrados: 2").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("AC durante o Ipsum: 1 de 2").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Ver último resultado").performScrollTo().performClick()
+        composeRule.onNodeWithText("Latest by date").assertIsDisplayed()
     }
 
     private fun setApp(local: LoremRepository, result: UserLookupResult) {

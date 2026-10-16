@@ -19,12 +19,9 @@ import androidx.navigation.navArgument
 import dev.lorem.app.domain.model.Ipsum
 import dev.lorem.app.domain.model.IpsumFailureReason
 import dev.lorem.app.domain.model.LocalProfile
-import dev.lorem.app.domain.model.ProblemHistory
 import dev.lorem.app.domain.model.ThemePreference
-import dev.lorem.app.ui.CatalogSyncUiState
 import dev.lorem.app.ui.ConfigurationUiState
 import dev.lorem.app.ui.ConsolidationUiState
-import dev.lorem.app.ui.HistorySyncUiState
 import dev.lorem.app.ui.IpsumResultUiState
 import dev.lorem.app.ui.PendingUpdateUiState
 import dev.lorem.app.ui.StartIpsumUiState
@@ -46,12 +43,8 @@ fun LoremNavHost(
     onHandleChange: (String) -> Unit,
     onConfirmHandle: () -> Unit,
     onHomeNavigationHandled: () -> Unit,
-    historySyncState: HistorySyncUiState,
-    problemHistory: List<ProblemHistory>,
     onSynchronizeHistory: () -> Unit,
     problemCatalogCount: Int,
-    catalogUpdatedAtEpochMillis: Long?,
-    catalogSyncState: CatalogSyncUiState,
     onSynchronizeCatalog: () -> Unit,
     activeIpsum: Ipsum?,
     ipsums: List<Ipsum>,
@@ -153,15 +146,11 @@ fun LoremNavHost(
                 profile?.let {
                     HomeScreen(
                         profile = it,
-                        syncState = historySyncState,
-                        problemHistory = problemHistory,
-                        onSynchronize = onSynchronizeHistory,
-                        problemCatalogCount = problemCatalogCount,
-                        catalogUpdatedAtEpochMillis = catalogUpdatedAtEpochMillis,
-                        catalogSyncState = catalogSyncState,
-                        onSynchronizeCatalog = onSynchronizeCatalog,
+                        catalogReady = problemCatalogCount > 0,
+                        finishedIpsumCount = ownedIpsums.count { attempt -> attempt.endedAtEpochMillis != null },
+                        acceptedIpsumCount = ownedIpsums.count { attempt -> attempt.status == dev.lorem.app.domain.model.IpsumStatus.COMPLETED },
                         hasActiveIpsum = activeIpsum != null,
-                        latestFinishedIpsumId = ownedIpsums.lastOrNull { it.endedAtEpochMillis != null }?.id,
+                        latestFinishedIpsumId = ownedIpsums.filter { it.endedAtEpochMillis != null }.maxByOrNull { it.endedAtEpochMillis!! }?.id,
                         startIpsumState = startIpsumState,
                         onStartIpsum = onStartIpsum,
                         onNavigate = { route ->
