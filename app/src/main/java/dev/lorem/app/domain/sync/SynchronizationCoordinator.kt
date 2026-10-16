@@ -163,6 +163,7 @@ class SynchronizationCoordinator(
     ): T {
         val key = syncKey(dataset, link, ipsumId)
         var state = SynchronizationState()
+        var outcomeKnown = false
         suspend fun persist() {
             if (link == null) store.write(key, state)
             else repository.withProfileLink(link) { store.write(key, state) }
@@ -176,13 +177,19 @@ class SynchronizationCoordinator(
                 lastSuccessEpochMillis = if (success(result)) nowMillis() else state.lastSuccessEpochMillis,
                 failure = if (success(result)) null else result.toString(),
                 failureKind = if (success(result)) null else syncFailureKind(result))
+            outcomeKnown = true
             withContext(NonCancellable) { persist() }
             return result
         } catch (error: Exception) {
             withContext(NonCancellable) {
                 if (link == null || repository.profileLink.first() == link) {
-                    state = state.copy(running = false, failure = if (error is CancellationException) "Interrompido" else "Falha de persistência",
-                        failureKind = if (error is CancellationException) SyncFailureKind.INTERRUPTED else SyncFailureKind.PERSISTENCE)
+                    // Cancellation may resume after the outcome's durable write (for example,
+                    // when AC removes its screen). Finish that known outcome instead of replacing
+                    // it with Interrupted. Cancellation before an outcome remains recoverable.
+                    if (error !is CancellationException || !outcomeKnown) {
+                        state = state.copy(running = false, failure = if (error is CancellationException) "Interrompido" else "Falha de persistência",
+                            failureKind = if (error is CancellationException) SyncFailureKind.INTERRUPTED else SyncFailureKind.PERSISTENCE)
+                    }
                     try { persist() } catch (_: Exception) { /* Keep the last durable evidence. */ }
                 }
             }

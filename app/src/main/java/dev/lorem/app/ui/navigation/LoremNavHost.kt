@@ -237,7 +237,8 @@ fun LoremNavHost(
                 }
                 IpsumResultScreen(
                     state = if (ipsumResultState is IpsumResultUiState.Ready &&
-                        !ipsumResultState.result.ipsum.ownerHandle.trim().equals(profile?.handle?.trim(), true)
+                        (ipsumResultState.result.ipsum.id != ipsumId ||
+                            !ipsumResultState.result.ipsum.ownerHandle.trim().equals(profile?.handle?.trim(), true))
                     ) IpsumResultUiState.Loading else ipsumResultState,
                     onClose = {
                         if (!navController.popBackStack(LoremDestination.Home.route, false)) {

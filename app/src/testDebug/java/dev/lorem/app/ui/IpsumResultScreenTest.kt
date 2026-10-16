@@ -13,6 +13,11 @@ import dev.lorem.app.domain.model.IpsumStatus
 import dev.lorem.app.domain.model.ProblemId
 import dev.lorem.app.ui.screens.IpsumResultScreen
 import dev.lorem.app.ui.theme.LoremTheme
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.UriHandler
+import androidx.compose.ui.test.performClick
+import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -47,9 +52,9 @@ class IpsumResultScreenTest {
 
         listOf(
             "Rating do problema: 1500", "Categoria: Desafio", "Tópicos: dp, graphs",
-            "Tempo total: 01:01:01", "Dica usada: sim", "Erros antes do primeiro AC: 2",
+            "Tempo total: 01:01:01", "Dica usada: sim", "Erros definitivos: 2",
             "WRONG_ANSWER (1), COMPILATION_ERROR (1)", "Alteração do Rating Lorem",
-            "1200 + 24 = 1224", "mais difícil que seu nível anterior",
+            "1200 → 1224", "mais difícil que seu nível anterior",
             "tópicos foram revelados", "Tempo esperado: 01:30:00",
         ).forEach { composeRule.onNodeWithText(it, substring = true).performScrollTo().assertIsDisplayed() }
     }
@@ -72,7 +77,7 @@ class IpsumResultScreenTest {
         }
 
         composeRule.onNodeWithText("Tempo total indisponível").performScrollTo().assertIsDisplayed()
-        composeRule.onNodeWithText("Fechar resultado").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Voltar ao início").performScrollTo().assertIsDisplayed()
     }
 
     @Test
@@ -95,14 +100,51 @@ class IpsumResultScreenTest {
         }
 
         listOf(
-            "Pendente sem AC",
+            "Encerrado sem AC",
             "Tempo total: 00:01:00",
             "Dica usada: não",
-            "Erros antes do primeiro AC: 0",
-            "Tipos de erro: nenhum (1)",
+            "Erros definitivos: 0",
+            "Tipos de erro: nenhum",
             "Motivo: Não conhecia o conteúdo.",
         ).forEach { text ->
             composeRule.onNodeWithText(text).performScrollTo().assertIsDisplayed()
         }
     }
+    @Test
+    fun `upsolve keeps the original failure assessment and provides problem and home actions`() {
+        val attempt = dev.lorem.app.StatisticsFixtures.attempt(50, IpsumStatus.SOLVED_OUTSIDE).copy(
+            initialLoremRating = 1200, ratingDelta = -20, finalLoremRating = 1180,
+            solvedOutsideAtEpochMillis = 1_700_000_000_000, failureReason = IpsumFailureReason.LOGIC_NOT_FOUND)
+        var opened: String? = null
+        var closed = 0
+        composeRule.setContent { CompositionLocalProvider(LocalUriHandler provides object : UriHandler {
+            override fun openUri(uri: String) { opened = uri }
+        }) { LoremTheme { IpsumResultScreen(IpsumResultUiState.Ready(IpsumResult(attempt, emptyList())), { closed++ }) } } }
+        composeRule.onNodeWithText("Encerrado sem AC").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("AC no Ipsum").assertDoesNotExist()
+        composeRule.onNodeWithText("Resolvido depois do Ipsum").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("AC posterior:", substring = true).performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("1200 → 1180").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Variação: −20 pontos").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Sem AC, a tentativa aplica a perda completa; desistir cedo não reduz essa perda.").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Abrir no Codeforces").performScrollTo().performClick()
+        assertEquals("https://codeforces.com/contest/100/problem/50", opened)
+        composeRule.onNodeWithText("Voltar ao início").performScrollTo().performClick()
+        assertEquals(1, closed)
+        assertEquals(-20, attempt.ratingDelta)
+        assertEquals(1180, attempt.finalLoremRating)
+    }
+
+    @Test
+    fun `active payload cannot reveal protected data through the result route`() {
+        val active = dev.lorem.app.StatisticsFixtures.attempt(51, IpsumStatus.ACTIVE, rating = 1900, tags = setOf("dp"))
+        composeRule.setContent { LoremTheme { IpsumResultScreen(IpsumResultUiState.Ready(IpsumResult(active, emptyList())), {}) } }
+        composeRule.onNodeWithText("Este Ipsum ainda está ativo.", substring = true).assertIsDisplayed()
+        for (unmerged in listOf(false, true)) {
+            composeRule.onNodeWithText("1900", substring = true, useUnmergedTree = unmerged).assertDoesNotExist()
+            composeRule.onNodeWithText("Tópicos:", substring = true, useUnmergedTree = unmerged).assertDoesNotExist()
+            composeRule.onNodeWithText("Categoria:", substring = true, useUnmergedTree = unmerged).assertDoesNotExist()
+        }
+    }
+
 }

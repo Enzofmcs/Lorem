@@ -1,6 +1,6 @@
 # Demonstracao do Lorem
 
-O roteiro percorre as Historias 00-19. O ensaio em dispositivo e opcional; o aceite
+O roteiro percorre as Historias 00-20. O ensaio em dispositivo e opcional; o aceite
 funcional usa os testes automatizados, conforme D-014.
 
 ## Preparacao
@@ -33,13 +33,17 @@ O Lorem consulta somente dados publicos; as submissoes sao feitas no Codeforces.
    Nenhum clique de sincronizacao e exigido no fluxo normal.
 2. Toque Iniciar Ipsum (ou Continuar Ipsum para retomar). Confira o problema e o
    cronometro; rating, categoria e fatores da recomendacao permanecem ocultos. Abra
-   o problema no Codeforces.
+   o problema por Abrir no Codeforces, acao principal. O timer mostra Tempo decorrido;
+   nao ha prazo fatal. No TalkBack, ative Consultar tempo decorrido para ouvir o valor
+   atual, sem anuncios por segundo.
 3. Opcionalmente, confirme `Revelar topicos`. O uso da dica fica registrado uma vez.
 4. Apos uma submissao errada, volte ao app: a consulta e imediata ao retomar e se
    repete a cada 15 s com a tela em RESUMED. Confira erros definitivos e ultimo
    sucesso. Depois do AC, o Resultado mostra tempo, erros, dica, rating e fatores
    da recomendacao. `Atualizar agora`/`Tentar novamente` sao recuperacao opcional.
-5. Feche o Resultado e use as abas Historico e Estatisticas. Confira a tentativa em
+5. No Resultado, confira AC/Encerrado sem AC, rating anterior -> atual e variacao,
+   tempo, dica e erros. Abrir no Codeforces acessa o problema; Voltar ao inicio
+   retorna ao Inicio. Use as abas Historico e Estatisticas. Confira a tentativa em
    `Resolvidos em Ipsums`, os indicadores originais e a evolucao persistida.
 6. Inicie outro Ipsum: o problema anterior nao participa do sorteio. A recomendacao
    prioriza tags ineditas, pouca pratica, maior falha, uso de dica e recencia, dentro
@@ -54,6 +58,8 @@ O Lorem consulta somente dados publicos; as submissoes sao feitas no Codeforces.
    ou use `Atualizar agora` no Historico para recuperacao. O primeiro AC posterior
    move o item para `Resolvidos fora de Ipsums`, preservando a avaliacao original.
 3. Repita a atualizacao. A operacao nao duplica o item nem altera a avaliacao.
+   Em Ver ultimo resultado, o AC posterior e sua data ficam separados do encerramento
+   original sem AC; o rating anterior -> atual e sua perda original permanecem.
 4. Abra Estatisticas: pendencias diminuem e upsolves aumentam; a taxa de AC durante
    Ipsums e a evolucao original permanecem iguais.
 5. Reabra o app sem rede para consultar os dados locais. Se havia Ipsum ativo,
@@ -93,6 +99,9 @@ semanticos efetivamente usados. `HomeConfigurationLayoutTest` cobre as telas da
 Historia 19 em claro/escuro, 360 dp, 320 dp/fonte 200% e paisagem, com erros inline,
 loading e recuperacao por etapa. No Inicio, confira resumo local e Ver ultimo
 resultado; configuracoes de perfil/tema/sync ficam fora do corpo principal.
+`IpsumLayoutTest` cobre cronometro de 123 horas, confirmacoes com motivo e resultados
+AC/sem AC/upsolve em claro/escuro, 320 dp/fonte 200%, 360 dp e paisagem.
+A fonte ampliada tambem e aplicada aos recursos da janela de confirmacao.
 
 ## Limites da avaliacao do TCC
 

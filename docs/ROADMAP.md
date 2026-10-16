@@ -6,13 +6,13 @@
 
 ## Estado atual
 
-**Foco atual:** Historia 19 concluida; proxima implementacao: Historia 20 - redesign da experiencia do Ipsum e resultado.
+**Foco atual:** Historia 20 concluida; proxima implementacao: Historia 21 - redesign do historico e estatisticas.
 
-**Ultima historia verificada:** Historia 19 - Redesign da configuracao e tela inicial, automaticamente em 2026-10-16. Historias 00-18 preservadas.
+**Ultima historia verificada:** Historia 20 - Redesign da experiencia do Ipsum e resultado, automaticamente em 2026-10-16. Historias 00-19 preservadas.
 
-**Primeiro item pendente:** redesign da experiencia do Ipsum e resultado (Historia 20).
+**Primeiro item pendente:** redesign do historico e estatisticas (Historia 21), ultima historia planejada.
 
-**Proxima entrega demonstravel:** redesign de Ipsum/Resultado (20) e Historico/Estatisticas (21), sobre Inicio/Configuracoes e automacao implementados.
+**Proxima entrega demonstravel:** redesign de Historico/Estatisticas (21) e regressao do marco de apresentacao, sobre Historias 00-20 implementadas.
 
 **Bloqueios conhecidos:** nenhum. Conferencia em dispositivo e opcional (D-014).
 
@@ -75,7 +75,7 @@ As Historias 00-14 e suas evidencias permanecem concluidas.
 Ordem proposta: **15 -> 16 -> 17**, seguida de **18 -> 19 -> 20 -> 21**.
 A 18 pode iniciar independentemente da automacao; 19 integra 16/17 e a 21 nao depende
 da 20. [SYNC.md](SYNC.md) e [DESIGN.md](DESIGN.md) detalham os planos.
-As Historias 15-17 foram implementadas e verificadas em 2026-10-15 e as Historias 18-19 em 2026-10-16; Historias 20-21 continuam com aceite pendente.
+As Historias 15-17 foram implementadas e verificadas em 2026-10-15 e as Historias 18-20 em 2026-10-16; somente a Historia 21 continua com aceite pendente.
 
 ## Sumario rapido
 
@@ -1288,7 +1288,7 @@ semantica/renderizacao automatizadas nao representam uso humano de TalkBack.
 
 **Historia:** Como usuário, quero me concentrar no problema durante o treino e entender claramente meu resultado ao terminar.
 
-**Status:** planejada; implementacao e aceite pendentes.
+**Status:** implementada e verificada automaticamente em 2026-10-16; conferencia em dispositivo opcional (D-014).
 
 **GitHub:** [#35 — História 20 — Redesign da experiência do Ipsum e resultado](https://github.com/Enzofmcs/Lorem/issues/35).
 
@@ -1300,19 +1300,101 @@ semantica/renderizacao automatizadas nao representam uso humano de TalkBack.
 
 #### Criterios de aceite
 
-- [ ] Destacar cronômetro como Tempo decorrido com números tabulares, nome/id e ação Abrir no Codeforces; não sugerir prazo fatal inexistente.
-- [ ] Mostrar submissões/erros definitivos, status e última consulta automática; ação manual de recuperação fica secundária.
-- [ ] Revelar tópicos e Encerrar sem AC mantêm confirmação, registro da dica e motivo obrigatório; encerrar tem destaque menor que abrir o problema.
-- [ ] Rating, categoria, tags e justificativa permanecem ocultos durante o ativo, inclusive em semântica/TalkBack; após dica, revelar apenas tags oficiais.
-- [ ] Resultado distingue AC e encerramento sem AC, exibe rating anterior → atual/variação explicada, tempo, dica e erros, com acesso ao problema e retorno ao Início.
-- [ ] AC posterior continua separado do resultado original; apresentar a tela não recalcula rating nem encerra novamente o Ipsum.
-- [ ] Preservar rotação, morte de processo, retomada do navegador e operação local offline; fonte 200% não corta cronômetro ou confirmações e TalkBack não anuncia cada segundo.
+- [x] Destacar cronômetro como Tempo decorrido com números tabulares, nome/id e ação Abrir no Codeforces; não sugerir prazo fatal inexistente.
+- [x] Mostrar submissões/erros definitivos, status e última consulta automática; ação manual de recuperação fica secundária.
+- [x] Revelar tópicos e Encerrar sem AC mantêm confirmação, registro da dica e motivo obrigatório; encerrar tem destaque menor que abrir o problema.
+- [x] Rating, categoria, tags e justificativa permanecem ocultos durante o ativo, inclusive em semântica/TalkBack; após dica, revelar apenas tags oficiais.
+- [x] Resultado distingue AC e encerramento sem AC, exibe rating anterior → atual/variação explicada, tempo, dica e erros, com acesso ao problema e retorno ao Início.
+- [x] AC posterior continua separado do resultado original; apresentar a tela não recalcula rating nem encerra novamente o Ipsum.
+- [x] Preservar rotação, morte de processo, retomada do navegador e operação local offline; fonte 200% não corta cronômetro ou confirmações e TalkBack não anuncia cada segundo.
 
-#### Verificacao planejada
+#### Verificacao e evidencias
 
 Layout Nível 1, preservação das regras críticas Nível 4: testes direcionados de UI/semântica, navegação, dica, encerramento e rating. Smoke test de WA → AC real, retomada e fonte ampliada. Conferencias em dispositivo sao opcionais conforme D-014; criterios funcionais exigem evidencia automatizada proporcional ao risco.
 
 **Exemplo de aceite:** É possível treinar e reconhecer AC automaticamente com uma tela focada. Nenhuma informação proibida vaza antes do resultado e a avaliação aparece exatamente uma vez.
+
+#### Implementacao
+
+- Treino com nome/id, cronometro destacado e acao principal Abrir no Codeforces.
+  O tempo e decorrido pelo inicio persistido, sem prazo fatal. Tipografia tabular
+  e ajuste pela largura real mantem horas longas em uma linha, inclusive em 320 dp
+  com fonte 200%. O ticker visual pausa fora de RESUMED e recalcula ao retomar.
+- Semantica do timer e estavel: a acao Consultar tempo decorrido le o tempo atual
+  sob demanda. O valor visual por segundo fica fora da arvore de acessibilidade;
+  ultimo valor consultado so muda por acao explicita, sem live region.
+- Acompanhamento automatico, erros definitivos, ultimo sucesso de consulta e falha
+  recuperavel ficam juntos; Atualizar agora/Tentar novamente sao secundarios.
+  Revelar topicos e Encerrar sem AC tem destaque menor que abrir o problema.
+- Confirmacao de dica, dialogo de encerramento e motivo selecionado sobrevivem a
+  restauracao. Encerrar exige exatamente um motivo; a dica continua idempotente
+  no contrato existente. Controles das confirmacoes e motivos tem minimo de 48 dp.
+- Rating, categoria e fatores nao sao renderizados no ativo, inclusive nas duas
+  arvores de semantica; somente tags oficiais aparecem depois da dica. A tela de
+  Resultado tambem rejeita um payload ainda ativo antes de exibir dados protegidos.
+- Resultado mostra AC no Ipsum ou Encerrado sem AC, rating anterior -> atual e
+  variacao pelos snapshots, tempo/dica/erros/motivo, link do problema e Voltar ao
+  inicio. Explicacoes existentes de dificuldade/tempo/dica foram preservadas.
+  Ausencia de calculo salvo continua explicita; tipos de erro vazios mostram nenhum.
+- AC posterior aparece em bloco separado com data, preservando o encerramento e
+  rating originais. Navegacao aguarda o id solicitado antes de apresentar resultado
+  em cache. Telas apenas leem dados; avaliacao e encerramento permanecem no fluxo
+  transacional existente. Sem nova dependencia, esquema Room ou regra de dominio.
+- A regressao expos uma corrida no coordenador: cancelamento apos salvar o sucesso
+  podia sobrescreve-lo como Interrompido. Um resultado ja conhecido agora conclui
+  seu registro de estado; HTTP permanece cancelavel. Cancelamento antes de conhecer
+  o resultado continua marcado como interrupcao. Guardas de perfil preservadas.
+
+Evidencias automatizadas:
+
+- `IpsumScreenTest`: sigilo nas arvores mesclada e nao mesclada, dica cancelada/
+  confirmada/restaurada e somente tags, motivos obrigatorios/restaurados, abertura
+  da URL por identidade, estados de consulta e tempo correto apos pausa/restauracao.
+  A leitura do timer fica estavel ate a proxima acao explicita de acessibilidade.
+- `IpsumResultScreenTest`: AC, sem AC, upsolve com avaliacao original, legado sem
+  tempo/rating salvo, rejeicao de ativo e acoes de problema/retorno.
+- `IpsumLayoutTest`: imagens nativas em claro/escuro, 360 dp, 320 dp/fonte 200% e
+  paisagem; nome/tags/motivo longos, timer de 123 horas, texto sem corte/reticencias,
+  confirmacoes com area de 48 dp e fonte real de 200% tambem na janela do dialogo.
+  A escala dos recursos Android e verificada no layout da confirmacao. Previews
+  cobrem treino, dica/offline, AC e encerramento/upsolve.
+- Novo caso deterministico em `IpsumSubmissionMonitorTest` injeta cancelamento apos
+  a gravacao duravel de sucesso, falha na base anterior e passa com a correcao.
+  Os casos de cancelamento em rede, worker compartilhado e isolamento de perfil
+  continuam cobertos por monitor, `SynchronizationPersistenceTest` e WorkManager.
+- `CompleteAppJourneyTest`, `AppearanceNavigationTest`, ViewModel, persistencia,
+  `IpsumSubmissionMonitorTest` e `FullTrainingJourneyTest`: WA/TESTING/AC automatico,
+  retomada/navegador/ciclo de vida, resultado apos trabalho em segundo plano,
+  restauracao e leitura local offline, dica, primeiro AC e rating aplicado uma vez.
+
+Comandos com Java 17, Gradle 8.11.1 e SDK 35:
+
+```bash
+./gradlew compileDebugKotlin --max-workers=2 --console=plain
+./gradlew testDebugUnitTest --tests '*IpsumScreenTest' --tests '*IpsumResultScreenTest' --tests '*IpsumLayoutTest' --tests '*CompleteAppJourneyTest' --tests '*AppearanceNavigationTest' --tests '*LoremViewModelTest' --tests '*IpsumPersistenceTest' --tests '*IpsumSubmissionMonitorTest' --tests '*FullTrainingJourneyTest' --max-workers=2 --console=plain
+./gradlew testDebugUnitTest --tests '*IpsumLayoutTest' --max-workers=2 --console=plain
+./gradlew testDebugUnitTest --tests '*IpsumLayoutTest' --tests '*IpsumScreenTest' --max-workers=2 --console=plain
+./gradlew testDebugUnitTest --tests '*IpsumSubmissionMonitorTest.cancellation after durable AC success cannot overwrite its recorded outcome' --max-workers=2 --console=plain
+./gradlew testDebugUnitTest --tests '*IpsumSubmissionMonitorTest' --tests '*SynchronizationPersistenceTest' --tests '*SynchronizationWorkTest' --tests '*CompleteAppJourneyTest' --tests '*IpsumScreenTest' --tests '*IpsumResultScreenTest' --tests '*FullTrainingJourneyTest' --max-workers=2 --console=plain
+./gradlew test lint assembleDebug --max-workers=2 --console=plain
+```
+
+As primeiras compilacoes exigiram corrigir imports de semantica. Nos direcionados,
+foi corrigida uma assercao de viewport; a renderizacao encontrou controle de 40 dp
+na confirmacao e diferenca entre premedicao e fonte real do timer em 200%.
+Controles agora tem 48 dp e o timer verifica o tamanho efetivamente renderizado.
+A validacao foi ampliada para aplicar escala nos recursos Android, pois dialogos
+criam outra janela; a escala real e afirmada no teste. Uma regressao posterior
+reproduziu a sobrescrita do sucesso por cancelamento apos AC. O caso novo foi
+executado vermelho na base e verde com o registro de resultado conhecido; suites
+relacionadas de cancelamento/persistencia/worker foram executadas. Direcionados e
+regressao final passaram: **208 testes debug e 155 release**, zero falhas/erros,
+lint sem erros (somente `MissingApplicationIcon`, preexistente) e APK debug gerado.
+Diff e 81 links/ancoras locais conferidos. Sete criterios concluidos.
+
+**TESTE MANUAL OPCIONAL - NAO EXECUTADO**, conforme D-014. TalkBack, submissao real
+WA -> AC, navegador/rede reais e uso em aparelho seguem conferencia humana opcional.
+Semantica/renderizacoes automatizadas nao representam ensaio humano com TalkBack.
 
 ---
 

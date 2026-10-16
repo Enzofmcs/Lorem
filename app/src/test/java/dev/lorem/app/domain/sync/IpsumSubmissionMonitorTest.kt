@@ -8,6 +8,7 @@ import androidx.lifecycle.LifecycleRegistry
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import dev.lorem.app.data.local.*
+import dev.lorem.app.domain.VerifyIpsumResult
 import dev.lorem.app.domain.model.*
 import dev.lorem.app.domain.repository.*
 import dev.lorem.app.ui.MainDispatcherRule
@@ -53,11 +54,13 @@ class IpsumSubmissionMonitorTest {
         override suspend fun revealIpsumHint(ipsumId: Long, revealedAtEpochMillis: Long) {}
     }
 
-    private inner class Fixture(scope: CoroutineScope, val clock: TestCoroutineScheduler, private val useDisk: Boolean = true) : AutoCloseable {
+    private inner class Fixture(scope: CoroutineScope, val clock: TestCoroutineScheduler, private val useDisk: Boolean = true,
+        decorateStore: (SynchronizationStore) -> SynchronizationStore = { it },
+    ) : AutoCloseable {
         val db = Room.inMemoryDatabaseBuilder(ApplicationProvider.getApplicationContext(), LoremDatabase::class.java).build()
         val prefs = PreferenceDataStoreFactory.create(scope = scope, produceFile = { folder.newFile("${System.nanoTime()}.preferences_pb") })
         val repository: LoremRepository = if (useDisk) LocalLoremRepository(prefs, db.problemHistoryDao(), db.problemCatalogDao(), db.ipsumDao()) else ClockRepository()
-        val store: SynchronizationStore = if (useDisk) PreferencesSynchronizationStore(prefs) else MemorySynchronizationStore()
+        val store: SynchronizationStore = decorateStore(if (useDisk) PreferencesSynchronizationStore(prefs) else MemorySynchronizationStore())
         val calls = java.util.Collections.synchronizedList(mutableListOf<Long>())
         var result: SubmissionHistoryResult = SubmissionHistoryResult.Success(emptyList())
         var beforeResponse: suspend () -> Unit = {}
@@ -218,6 +221,39 @@ class IpsumSubmissionMonitorTest {
             val completedCalls = f.calls.size
             advanceTimeBy(60_000); runCurrent()
             assertEquals(completedCalls, f.calls.size)
+        }
+    }
+
+    @Test fun `cancellation after durable AC success cannot overwrite its recorded outcome`() = runTest {
+        var cancelledAfterCommit = false
+        Fixture(backgroundScope, testScheduler, decorateStore = { delegate ->
+            object : SynchronizationStore by delegate {
+                override suspend fun write(key: String, state: SynchronizationState) {
+                    delegate.write(key, state)
+                    if (!cancelledAfterCommit && key.contains(":SUBMISSIONS:") &&
+                        !state.running && state.lastSuccessEpochMillis != null && state.failure == null) {
+                        cancelledAfterCommit = true
+                        // A cancelled continuation can resume after its durable write has committed.
+                        throw CancellationException("Screen removed immediately after AC success was saved")
+                    }
+                }
+            }
+        }).use { f ->
+            val active = f.start()
+            f.result = SubmissionHistoryResult.Success(listOf(CodeforcesSubmission(1, active.problem.id, "OK", Instant.ofEpochMilli(3000))))
+            val verification = backgroundScope.launch { f.coordinator.verifyActiveIpsum() }
+            verification.join()
+            assertTrue(cancelledAfterCommit)
+            val result = f.repository.getIpsumResult(active.id)!!.ipsum
+            assertEquals(IpsumStatus.COMPLETED, result.status)
+            assertEquals(result.finalLoremRating, f.repository.profile.first()!!.loremRating)
+            val state = f.state(active.id)
+            assertNotNull(state.lastSuccessEpochMillis)
+            assertNull(state.failure)
+            assertNull(state.failureKind)
+            assertFalse(state.running)
+            assertEquals(VerifyIpsumResult.NoActiveIpsum, f.coordinator.verifyActiveIpsum())
+            assertEquals(result, f.repository.getIpsumResult(active.id)!!.ipsum)
         }
     }
 
