@@ -99,7 +99,7 @@ Na raiz do projeto:
 
 ## Entrega atual
 
-As **Histórias 00–20 estão implementadas**. Conectar um perfil agenda a importação
+As **Histórias 00–21 estão implementadas**. Conectar um perfil agenda a importação
 completa do histórico e catálogo. WorkManager mantém histórico/pendências a cada
 15 minutos desejados e catálogo/metadados a cada 24 horas, sujeito ao Android.
 Reabrir o app preserva a agenda e recupera dados ausentes ou vencidos.
@@ -126,7 +126,12 @@ O treino destaca tempo decorrido e Abrir no Codeforces; dica e encerramento mant
 confirmação. O resultado mostra avaliação persistida, variação, tempo, dica e erros,
 com AC posterior separado. A leitura acessível do timer é feita sob demanda.
 
-Validação final: **208 testes debug e 155 release sem falhas**, lint sem erros
+O histórico usa cards cronológicos, filtros avançados e estado preservado entre
+abas. AC posterior tem data própria e mantém a avaliação original. As estatísticas
+apresentam curva de rating persistido e barras por rating/tag com valores textuais,
+frações e amostras; ausência de amostra é distinta de zero.
+
+Validação final: **217 testes debug e 155 release sem falhas**, lint sem erros
 (apenas aviso preexistente de ícone) e `assembleDebug` concluído. O APK está em
 `app/build/outputs/apk/debug/app-debug.apk`.
 
@@ -141,7 +146,7 @@ as Histórias 15–17 estão implementadas e verificadas: coordenador compartilh
 importação incremental retomável, proteção por vínculo, WorkManager e acompanhamento
 automático. A base visual e a navegação da História 18 também estão verificadas.
 Configuração/Início (19) e Ipsum/Resultado (20) estão implementados e verificados.
-Resta o redesign de Histórico/Estatísticas (21), última história do planejamento.
+Histórico/Estatísticas (21) também estão verificados, concluindo o planejamento atual.
 
 A proposta combina WorkManager em segundo plano, consulta frequente durante o
 Ipsum visível e temas claro/escuro em azul profundo e verde. Consulte o

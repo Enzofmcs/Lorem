@@ -1,22 +1,25 @@
 package dev.lorem.app.ui.screens
 
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.*
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.runtime.key
+import dev.lorem.app.domain.RatingEvolutionPoint
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -51,32 +54,43 @@ fun StatisticsScreen(state: StatisticsUiState, onNavigateHome: () -> Unit = {}, 
         }
         StatisticsUiState.NoProfile -> Column(Modifier.padding(padding).padding(16.dp)) {
             LoremEmptyState("Vincule um handle para visualizar suas estatísticas.")
-            Button(onClick = onNavigateHome) { Text("Voltar ao Início") }
+            TextButton(onClick = onNavigateHome, modifier = Modifier.heightIn(min = 48.dp)) { Text("Voltar ao Início") }
         }
-        is StatisticsUiState.Ready -> StatisticsContent(state.statistics, padding, onNavigateHome, consolidation)
+        is StatisticsUiState.Ready -> key(state.statistics.ownerHandle.trim().lowercase(Locale.ROOT)) {
+            StatisticsContent(state.statistics, padding, onNavigateHome, consolidation)
+        }
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun StatisticsContent(stats: IpsumStatistics, padding: PaddingValues, onNavigateHome: () -> Unit, consolidation: ConsolidationProgress?) {
     var sectionName by rememberSaveable(stats.ownerHandle) { mutableStateOf(StatisticsSection.SUMMARY.name) }
     val section = StatisticsSection.valueOf(sectionName)
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(padding).testTag("statistics-list"),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        contentPadding = PaddingValues(24.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        item {
-            Text("Estatísticas", style = MaterialTheme.typography.headlineMedium)
-            Text("Treino de @${stats.ownerHandle}")
-            Text("Rating Lorem atual: ${stats.currentRating}", modifier = Modifier.testTag("statistics-current-rating"))
-            Button(onClick = onNavigateHome) { Text("Voltar ao Início") }
+        item(key = "header") {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text("Estatísticas", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.semantics { heading() })
+                Text("Seu progresso · @${stats.ownerHandle}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+                    Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("Rating Lorem atual: ${stats.currentRating}", style = MaterialTheme.typography.headlineSmall,
+                            modifier = Modifier.testTag("statistics-current-rating"))
+                        Text("Acompanhe seus resultados e consulte as avaliações salvas abaixo.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+                TextButton(onClick = onNavigateHome, modifier = Modifier.heightIn(min = 48.dp)) { Text("Voltar ao Início") }
+            }
         }
-        item {
-            Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        item(key = "sections") {
+            FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 StatisticsSection.entries.forEach { option ->
                     FilterChip(
-                        modifier = Modifier.testTag("statistics-section-${option.name}"),
+                        modifier = Modifier.testTag("statistics-section-${option.name}").heightIn(min = 48.dp),
                         selected = section == option,
                         onClick = { sectionName = option.name },
                         label = { Text(option.label) },
@@ -93,13 +107,14 @@ private fun StatisticsContent(stats: IpsumStatistics, padding: PaddingValues, on
                 if (consolidation != null) item { ConsolidationCard(consolidation) }
                 item { AttemptCard("Seu desempenho", stats.overall, "statistics-overall") }
                 item {
-                    Text("Evolução do Rating Lorem", style = MaterialTheme.typography.titleLarge)
-                    Text("Valores registrados ao encerrar cada Ipsum, do mais antigo ao mais recente.")
+                    Text("Evolução do Rating Lorem", style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
+                    Text("Valores salvos, em ordem de encerramento. Cada ponto representa uma avaliação; os valores completos estão abaixo.")
                     if (stats.ratingEvolution.isEmpty()) Text("Sem avaliações de rating registradas.")
                     if (stats.unratedAttempts > 0) {
                         Text("${stats.unratedAttempts} encerramento(s) sem avaliação completa; não entram na evolução.")
                     }
                 }
+                if (stats.ratingEvolution.isNotEmpty()) item { RatingEvolutionChart(stats.ratingEvolution) }
                 items(stats.ratingEvolution, key = { "evolution-${it.ipsumId}" }) { point ->
                     Card(Modifier.fillMaxWidth().testTag("statistics-evolution-${point.ipsumId}")) {
                         Column(Modifier.padding(16.dp)) {
@@ -112,7 +127,8 @@ private fun StatisticsContent(stats: IpsumStatistics, padding: PaddingValues, on
             }
             StatisticsSection.RATING -> {
                 item {
-                    Text("Desempenho por rating do problema", style = MaterialTheme.typography.titleLarge)
+                    Text("Desempenho por rating do problema", style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
+                    Text("As barras mostram a taxa de AC no Ipsum; cada grupo informa seus ACs e sua amostra.")
                     if (stats.byRating.isEmpty()) Text("Sem dados por rating.")
                 }
                 items(stats.byRating, key = { "rating-${it.problemRating}" }) { group ->
@@ -122,12 +138,13 @@ private fun StatisticsContent(stats: IpsumStatistics, padding: PaddingValues, on
             StatisticsSection.TAGS -> {
                 item {
                     Text("Desempenho por tag", style = MaterialTheme.typography.titleLarge)
-                    Text("Um problema conta para cada tag oficial, uma vez no total geral. Taxas com poucas tentativas ainda têm pouca evidência.")
-                    Text("Tags sem prática vêm do catálogo salvo e não indicam falha.")
+                    Text("Uma tentativa pode contribuir para várias tags oficiais. A soma das tags não equivale ao total de treinos. Taxas com poucas tentativas ainda têm pouca evidência.")
+                    Text("Tags sem prática vêm do catálogo salvo e não indicam falha. As barras mostram a taxa de AC no Ipsum; texto e frações permitem conferir cada grupo.")
                 }
                 item { TagRanking("Mais praticadas", stats.mostPracticed) }
                 item { TagRanking("Menos praticadas", stats.leastPracticed) }
-                item { TagRanking("Maior taxa de falha no Ipsum", stats.highestFailure, showFailure = true) }
+                item { TagRanking("Maior taxa de falha no Ipsum", stats.highestFailure, showFailure = true,
+                    emptyLabel = if (stats.byTag.any { it.attempts.total > 0 }) "Nenhuma falha nas tentativas com amostra." else "Sem amostra") }
                 if (stats.byTag.isEmpty()) item { Text("Sem tags no histórico ou no catálogo salvo.") }
                 items(stats.byTag, key = { "tag-${it.tag}" }) { group ->
                     AttemptCard(group.tag, group.attempts, "statistics-tag-${group.tag}")
@@ -141,28 +158,29 @@ private fun StatisticsContent(stats: IpsumStatistics, padding: PaddingValues, on
 private fun AttemptCard(title: String, stats: AttemptStatistics, testTag: String) {
     Card(Modifier.fillMaxWidth().testTag(testTag)) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text(title, style = MaterialTheme.typography.titleLarge)
-            Text("Ipsums encerrados: ${stats.total}")
+            Text(title, style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
+            Text("Ipsums encerrados: ${stats.total}", style = MaterialTheme.typography.titleLarge)
             Text("AC no Ipsum: ${stats.accepted}")
-            Text("Taxa de AC no Ipsum: ${formatRate(stats.acRate)}")
+            Text("Taxa de AC no Ipsum: ${formatRate(stats.acRate)}", style = MaterialTheme.typography.titleMedium)
+            SampleBar(stats.acRate)
             Text("AC sem dica: ${formatRate(stats.withoutHint)}")
             Text("AC com dica: ${formatRate(stats.withHint)}")
-            Text("Uso de dica: ${stats.hintCount}/${stats.total}")
-            Text("Falhas no Ipsum: ${stats.failures} (${formatPercent(stats.failurePercent)})")
+            Text("Uso de dica: ${stats.hintCount}/${stats.total}${if (stats.total == 0) " · Sem amostra" else ""}")
+            Text("Falhas no Ipsum: ${stats.failures} (${formatPercent(stats.failurePercent)}; ${stats.failures}/${stats.total})")
             Text("Pendentes atuais: ${stats.pending}")
             Text("AC posterior: ${stats.solvedOutside}")
-            Text("Tempo médio: ${stats.averageTimeMillis?.let { "${formatNumber(it / 60_000)} min" } ?: "Sem dados"} (${stats.timedAttempts} tentativa(s) com tempo)")
+            Text("Tempo médio: ${stats.averageTimeMillis?.let { "${formatNumber(it / 60_000)} min" } ?: "Sem amostra"} (${stats.timedAttempts} tentativa(s) com tempo)")
             Text("Erros antes do AC: ${stats.errorsBeforeAc}")
-            Text("Média de erros antes do AC: ${stats.averageErrorsBeforeAc?.let(::formatNumber) ?: "Sem dados"} (${stats.accepted} AC no Ipsum)")
+            Text("Média de erros antes do AC: ${stats.averageErrorsBeforeAc?.let(::formatNumber) ?: "Sem amostra"} (${stats.accepted} AC no Ipsum)")
         }
     }
 }
 
 @Composable
-private fun TagRanking(title: String, tags: List<TagStatistics>, showFailure: Boolean = false) {
+private fun TagRanking(title: String, tags: List<TagStatistics>, showFailure: Boolean = false, emptyLabel: String = "Sem amostra") {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(title, style = MaterialTheme.typography.titleMedium)
-        if (tags.isEmpty()) Text("Sem dados")
+        if (tags.isEmpty()) Text(emptyLabel)
         tags.take(3).forEach { tag ->
             Text(if (showFailure) {
                 "${tag.tag}: ${formatPercent(tag.attempts.failurePercent)} (${tag.attempts.failures}/${tag.attempts.total})"
@@ -173,7 +191,48 @@ private fun TagRanking(title: String, tags: List<TagStatistics>, showFailure: Bo
 }
 
 private fun formatRate(rate: AcRate): String = "${formatPercent(rate.percent)} (${rate.accepted}/${rate.attempts})"
-private fun formatPercent(value: Double?): String = value?.let { "${formatNumber(it)}%" } ?: "Sem dados"
+private fun formatPercent(value: Double?): String = value?.let { "${formatNumber(it)}%" } ?: "Sem amostra"
 private fun formatNumber(value: Double): String = String.format(Locale.forLanguageTag("pt-BR"), "%.1f", value)
 private fun formatStatisticsDate(epochMillis: Long): String = Instant.ofEpochMilli(epochMillis)
     .atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
+
+
+/** Decorative bars: the exact rate, numerator and denominator are in the adjacent text. */
+@Composable
+private fun SampleBar(rate: AcRate) {
+    if (rate.attempts > 0) LinearProgressIndicator(
+        progress = { (rate.accepted.toFloat() / rate.attempts).coerceIn(0f, 1f) },
+        modifier = Modifier.fillMaxWidth().height(8.dp).clearAndSetSemantics {},
+    )
+}
+
+/** Only persisted `after` values are plotted; no missing evaluation is reconstructed. */
+@Composable
+private fun RatingEvolutionChart(points: List<RatingEvolutionPoint>) {
+    val minimum = points.minOf { it.after }
+    val maximum = points.maxOf { it.after }
+    val color = MaterialTheme.colorScheme.primary
+    val axis = MaterialTheme.colorScheme.onSurfaceVariant
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text("${points.size} avaliação(ões) registrada(s) · rating de $minimum a $maximum")
+        Canvas(Modifier.fillMaxWidth().height(160.dp).testTag("statistics-evolution-chart").clearAndSetSemantics {}) {
+            val inset = 8.dp.toPx()
+            val width = (size.width - inset * 2).coerceAtLeast(0f)
+            val height = (size.height - inset * 2).coerceAtLeast(0f)
+            fun position(index: Int, value: Int): Offset = Offset(
+                if (points.size == 1) size.width / 2 else inset + width * index / (points.size - 1),
+                if (minimum == maximum) size.height / 2 else inset + height * (1f - (value.toFloat() - minimum) / (maximum.toFloat() - minimum)),
+            )
+            drawLine(axis, Offset(inset, size.height - inset), Offset(size.width - inset, size.height - inset), 1.dp.toPx())
+            val path = Path()
+            points.forEachIndexed { index, point ->
+                val offset = position(index, point.after)
+                if (index == 0) path.moveTo(offset.x, offset.y) else path.lineTo(offset.x, offset.y)
+            }
+            drawPath(path, color, style = Stroke(2.dp.toPx()))
+            // Dense series remain linear to draw and do not fill the curve with overlapping dots.
+            if (points.size <= 40) points.forEachIndexed { index, point -> drawCircle(color, 3.dp.toPx(), position(index, point.after)) }
+        }
+        Text("Mais antigo → mais recente. Dados por Ipsum a seguir.", style = MaterialTheme.typography.bodySmall)
+    }
+}

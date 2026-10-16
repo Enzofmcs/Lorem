@@ -6,13 +6,13 @@
 
 ## Estado atual
 
-**Foco atual:** Historia 20 concluida; proxima implementacao: Historia 21 - redesign do historico e estatisticas.
+**Foco atual:** Historia 21 concluida; bloco de automacao e apresentacao (15-21) verificado.
 
-**Ultima historia verificada:** Historia 20 - Redesign da experiencia do Ipsum e resultado, automaticamente em 2026-10-16. Historias 00-19 preservadas.
+**Ultima historia verificada:** Historia 21 - Redesign do historico e estatisticas, automaticamente em 2026-10-16. Historias 00-20 preservadas.
 
-**Primeiro item pendente:** redesign do historico e estatisticas (Historia 21), ultima historia planejada.
+**Primeiro item pendente:** nenhuma historia planejada pendente.
 
-**Proxima entrega demonstravel:** redesign de Historico/Estatisticas (21) e regressao do marco de apresentacao, sobre Historias 00-20 implementadas.
+**Proxima entrega demonstravel:** Historias 00-21 implementadas e marco de apresentacao verificado; demonstracao e manutencao conforme demanda.
 
 **Bloqueios conhecidos:** nenhum. Conferencia em dispositivo e opcional (D-014).
 
@@ -75,7 +75,7 @@ As Historias 00-14 e suas evidencias permanecem concluidas.
 Ordem proposta: **15 -> 16 -> 17**, seguida de **18 -> 19 -> 20 -> 21**.
 A 18 pode iniciar independentemente da automacao; 19 integra 16/17 e a 21 nao depende
 da 20. [SYNC.md](SYNC.md) e [DESIGN.md](DESIGN.md) detalham os planos.
-As Historias 15-17 foram implementadas e verificadas em 2026-10-15 e as Historias 18-20 em 2026-10-16; somente a Historia 21 continua com aceite pendente.
+As Historias 15-17 foram implementadas e verificadas em 2026-10-15 e as Historias 18-21 em 2026-10-16; o bloco planejado esta concluido.
 
 ## Sumario rapido
 
@@ -1402,7 +1402,7 @@ Semantica/renderizacoes automatizadas nao representam ensaio humano com TalkBack
 
 **Historia:** Como usuário, quero revisar minhas tentativas e entender minha evolução em telas organizadas e fáceis de ler.
 
-**Status:** planejada; implementacao e aceite pendentes.
+**Status:** implementada e verificada automaticamente em 2026-10-16; conferencia em dispositivo opcional (D-014).
 
 **GitHub:** [#36 — História 21 — Redesign do histórico e estatísticas](https://github.com/Enzofmcs/Lorem/issues/36).
 
@@ -1414,19 +1414,83 @@ Semantica/renderizacoes automatizadas nao representam ensaio humano com TalkBack
 
 #### Criterios de aceite
 
-- [ ] Histórico apresenta nome/id, data, tempo, dica e situação textual por card, distinguindo AC no Ipsum, pendente e AC posterior.
-- [ ] Filtros ativos, Limpar filtros e estados vazios explicam ausência de dados ou ausência de resultados; preservar filtros/rolagem entre abas.
-- [ ] Upsolve mostra data do AC posterior separada da avaliação original, sem alterar rating nem taxa original de AC.
-- [ ] Estatísticas destacam resumo, evolução pelos snapshots persistidos e grupos por rating/tag; usar gráficos apenas com alternativa textual acessível.
-- [ ] Exibir denominadores/amostras, distinguir Sem amostra de zero e explicar que uma tentativa pode contribuir para várias tags; manter rankings e agregados auditáveis.
-- [ ] Preservar escopo por perfil, exclusão de Ipsums ativos e atualização por dados locais; não introduzir pontuação, conquistas ou métricas sem contrato.
-- [ ] Validar dados vazios/pequenos/grandes e nomes/tags longos, claro/escuro, offline, 320 dp, paisagem, fonte 200% e leitura por TalkBack.
+- [x] Histórico apresenta nome/id, data, tempo, dica e situação textual por card, distinguindo AC no Ipsum, pendente e AC posterior.
+- [x] Filtros ativos, Limpar filtros e estados vazios explicam ausência de dados ou ausência de resultados; preservar filtros/rolagem entre abas.
+- [x] Upsolve mostra data do AC posterior separada da avaliação original, sem alterar rating nem taxa original de AC.
+- [x] Estatísticas destacam resumo, evolução pelos snapshots persistidos e grupos por rating/tag; usar gráficos apenas com alternativa textual acessível.
+- [x] Exibir denominadores/amostras, distinguir Sem amostra de zero e explicar que uma tentativa pode contribuir para várias tags; manter rankings e agregados auditáveis.
+- [x] Preservar escopo por perfil, exclusão de Ipsums ativos e atualização por dados locais; não introduzir pontuação, conquistas ou métricas sem contrato.
+- [x] Validar dados vazios/pequenos/grandes e nomes/tags longos, claro/escuro, offline, 320 dp, paisagem, fonte 200% e leitura por TalkBack.
 
-#### Verificacao planejada
+#### Verificacao e evidencias
 
 Nível 3 para UI/agregados existentes e Nível 4 se houver mudança de regra; reutilizar StatisticsFixtures e testes da D-013. Revisão visual e acessibilidade em dispositivo; regressão de marco ao concluir o bloco 18–21. Conferencias em dispositivo sao opcionais conforme D-014; criterios funcionais exigem evidencia automatizada proporcional ao risco.
 
 **Exemplo de aceite:** O conjunto de referência da História 11 produz os mesmos totais após o redesign; cada gráfico pode ser conferido sem depender de cor ou leitura visual.
+
+
+#### Implementacao
+
+- Historico em `LazyColumn` com chaves por Ipsum, ordem cronologica do contrato
+  existente e cards com nome/id, inicio, encerramento, tempo, dica e situacao textual.
+  AC no Ipsum, Pendente e AC posterior usam badges sem depender apenas de cor.
+- Rating e tag ficam em filtros avancados recolhidos. Filtros ativos e contagem
+  de resultados continuam visiveis ao recolher; Limpar filtros restaura AC no Ipsum
+  sem rating/tag. Estados vazios distinguem primeiro treino e ausencia de resultados.
+  Filtros, painel e rolagem sobrevivem a abas/restauracao; troca de perfil os reinicia.
+- Upsolve tem data propria e explica que preserva a avaliacao original, inclusive
+  rating e taxa de AC. O link continua derivado de `contestId + index`.
+- Estatisticas destacam rating atual, treinos, AC e amostras; curva mostra somente
+  valores finais persistidos, em ordem de encerramento. Cada ponto tem linha textual
+  com id, data, rating anterior, posterior e variacao. Series vazias, unitarias,
+  constantes e densas sao suportadas sem reconstruir avaliacoes ausentes.
+- Barras de AC por rating/tag acompanham percentuais e fracoes exatas. Graficos sao
+  decorativos na semantica, com todos os dados disponiveis em texto. Rankings e
+  indicadores reutilizam `buildIpsumStatistics` e a D-013 sem mudar o dominio.
+- Sem amostra difere de 0%; o ranking sem falhas com tentativas observadas informa
+  ausencia de falhas. Denominadores com/sem dica, tempos validos e erros antes do AC
+  permanecem explicitos. A tela explica a contribuicao de uma tentativa a varias tags.
+- Apenas dados locais do perfil sao exibidos; ativos nao entram e leituras nao
+  recalculam rating. Sem dependencia nova, mudanca de banco ou regra de produto.
+
+Evidencias automatizadas:
+
+- `HistoryScreenTest`: campos/URL, tres situacoes, filtros compostos/recolhidos,
+  restauracao, troca de perfil, vazios distintos, ativo oculto, erro recuperavel e
+  lista de 500 tentativas com acesso a mais antiga.
+- `StatisticsScreenTest` e suites originais `BuildIpsumStatisticsTest`/
+  `BuildIpsumHistoryTest`: conjunto `StatisticsFixtures` preserva 4 tentativas,
+  2 ACs, 50% de AC, media de 40 min e os snapshots; grupos, rankings e amostras,
+  legado sem avaliacao, zero exposicao/falhas, serie unitaria/constante de 200 pontos.
+- `AppearanceNavigationTest`: filtros reais de rating/tag/situacao e posicao do
+  card preservados entre abas e restauracao, tema/configuracoes e isolamento.
+- `HistoryStatisticsLayoutTest`: 30 imagens nativas nos dois temas, 360 dp,
+  320 dp/fonte 200% e paisagem; nomes/tags longos, upsolve, offline, curva e amostra
+  zero. Verifica texto sem corte/reticencias, controles de 48 dp e dados textuais.
+  `HistoryStatisticsPreviews` adiciona estados ilustrativos isolados do app.
+
+Verificacao Nivel 3 (UI/agregados existentes), seguida de Nivel 5 pelo marco 18-21.
+Comandos com Java 17, Gradle 8.11.1 e SDK 35:
+
+```bash
+./gradlew compileDebugKotlin --max-workers=2 --console=plain
+./gradlew testDebugUnitTest --tests '*HistoryScreenTest' --tests '*StatisticsScreenTest' --tests '*HistoryStatisticsLayoutTest' --tests '*AppearanceNavigationTest' --tests '*BuildIpsumStatisticsTest' --tests '*BuildIpsumHistoryTest' --max-workers=2 --console=plain
+./gradlew testDebugUnitTest --tests '*AppearanceNavigationTest' --max-workers=2 --console=plain
+./gradlew test lint assembleDebug --max-workers=2 --console=plain
+```
+
+O ambiente exigiu SDK/Java 17 e caches gravaveis em `work/`, proxy e trust store
+configurados apenas na sessao. O primeiro teste nao conseguiu criar o lock do
+Robolectric na home somente leitura; o cache foi redirecionado. Os testes de UI
+foram adaptados para localizar controles via rolagem da lista lazy. Testes de telas,
+layout, dominio e navegacao passaram apos os ajustes. Regressao final: **217 debug
++ 155 release**, zero falhas/erros; lint sem erros (somente o aviso preexistente
+`MissingApplicationIcon`) e APK debug gerado. Diff e links locais conferidos.
+Sete criterios concluidos; nenhuma historia planejada pendente.
+
+**TESTE MANUAL OPCIONAL - NAO EXECUTADO**, conforme D-014. Uso humano de TalkBack,
+Codeforces/rede reais e aparelho continuam conferencias opcionais. Semantica e
+renderizacoes automatizadas nao equivalem a ensaio humano com TalkBack.
 
 ---
 

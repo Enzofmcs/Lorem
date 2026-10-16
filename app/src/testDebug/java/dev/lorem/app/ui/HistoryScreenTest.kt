@@ -1,14 +1,8 @@
 package dev.lorem.app.ui
 
-import androidx.compose.ui.test.assertCountEquals
-import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.*
+import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onAllNodesWithText
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
-import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.runtime.mutableStateOf
 import dev.lorem.app.domain.IpsumHistorySituation
 import dev.lorem.app.domain.model.CodeforcesProblem
@@ -38,16 +32,19 @@ class HistoryScreenTest {
         val other = ipsum(2, "B", "Other problem", IpsumStatus.COMPLETED, 1500, setOf("math"))
         setContent(listOf(solved, other)) { openedUrl = it }
 
+        see("Filtros avançados")
+        composeRule.onNodeWithTag("history-advanced").performClick()
         composeRule.onNodeWithTag("rating-1400").performScrollTo().performClick()
         composeRule.onNodeWithTag("tag-dp").performScrollTo().performClick()
         composeRule.onAllNodesWithText("Other problem").assertCountEquals(0)
         listOf(
             "Selected problem", "Problema: 100A", "Rating: 1400", "Tags: dp, graphs",
             "Tempo: 00:01:00", "Dica utilizada: sim", "Erros: 3", "Data do Ipsum:",
-            "Resultado atual: Resolvidos em Ipsums", "Variação do Rating Lorem: +18",
-        ).forEach { composeRule.onNodeWithText(it, substring = true).performScrollTo().assertIsDisplayed() }
+            "Avaliação original: AC no Ipsum", "Variação do Rating Lorem: +18",
+        ).forEach { see(it, substring = true) }
 
-        composeRule.onNodeWithText("Abrir no Codeforces").performScrollTo().performClick()
+        see("Abrir no Codeforces")
+        composeRule.onNodeWithText("Abrir no Codeforces").performClick()
         assertEquals("https://codeforces.com/contest/100/problem/A", openedUrl)
     }
 
@@ -58,19 +55,22 @@ class HistoryScreenTest {
             ipsum(2, "B", "Pending", IpsumStatus.PENDING),
         ))
 
+        composeRule.onNodeWithTag("history-list").performScrollToNode(hasTestTag("situation-${IpsumHistorySituation.PENDING.name}"))
         composeRule.onNodeWithTag("situation-${IpsumHistorySituation.PENDING.name}").performScrollTo().performClick()
-        composeRule.onNodeWithText("Pending").performScrollTo().assertIsDisplayed()
+        see("Pending")
         composeRule.onAllNodesWithText("Solved").assertCountEquals(0)
 
+        composeRule.onNodeWithTag("history-list").performScrollToNode(hasTestTag("situation-${IpsumHistorySituation.SOLVED_OUTSIDE_IPSUM.name}"))
         composeRule.onNodeWithTag("situation-${IpsumHistorySituation.SOLVED_OUTSIDE_IPSUM.name}")
             .performScrollTo().performClick()
-        composeRule.onNodeWithText("Nenhum item nesta categoria com os filtros atuais.")
-            .performScrollTo().assertIsDisplayed()
+        see("Nenhum resultado para estes filtros.")
 
+        composeRule.onNodeWithTag("history-list").performScrollToNode(hasTestTag("situation-${IpsumHistorySituation.PENDING.name}"))
         composeRule.onNodeWithTag("situation-${IpsumHistorySituation.PENDING.name}").performScrollTo().performClick()
-        composeRule.onNodeWithText("Pending").performScrollTo().assertIsDisplayed()
-        composeRule.onNodeWithText("Limpar filtros").performScrollTo().performClick()
-        composeRule.onNodeWithText("Solved").performScrollTo().assertIsDisplayed()
+        see("Pending")
+        see("Limpar filtros")
+        composeRule.onNodeWithText("Limpar filtros").performClick()
+        see("Solved")
     }
 
     @Test
@@ -101,9 +101,57 @@ class HistoryScreenTest {
             .copy(solvedOutsideAtEpochMillis = 120_000)
         setContent(listOf(upsolved))
 
+        composeRule.onNodeWithTag("history-list").performScrollToNode(hasTestTag("situation-${IpsumHistorySituation.SOLVED_OUTSIDE_IPSUM.name}"))
         composeRule.onNodeWithTag("situation-${IpsumHistorySituation.SOLVED_OUTSIDE_IPSUM.name}")
             .performScrollTo().performClick()
-        composeRule.onNodeWithText("AC posterior:", substring = true).performScrollTo().assertIsDisplayed()
+        see("AC posterior:", substring = true)
+        see("Avaliação original: encerrado sem AC")
+        see("O AC posterior não altera o rating nem a taxa original de AC.")
+    }
+
+    @Test fun `empty history differs from filtered results and active attempts never leak`() {
+        val data = mutableStateOf(listOf(ipsum(1, "A", "Active secret", IpsumStatus.ACTIVE)))
+        composeRule.setContent { LoremTheme { HistoryScreen(data.value) } }
+        see("Seu histórico começa no primeiro Ipsum.")
+        composeRule.onNodeWithText("Active secret", useUnmergedTree = true).assertDoesNotExist()
+        composeRule.runOnIdle { data.value = listOf(ipsum(2, "B", "Pending", IpsumStatus.PENDING)) }
+        see("Nenhum resultado para estes filtros.")
+        composeRule.onNodeWithTag("history-list").performScrollToNode(hasTestTag("situation-PENDING"))
+        composeRule.onNodeWithTag("situation-PENDING").performScrollTo().performClick()
+        see("Pending")
+    }
+
+    @Test fun `filters survive collapsed panel and restoration then reset on profile switch`() {
+        val owner = mutableStateOf("tourist")
+        val attempts = listOf(ipsum(1, "A", "Solved", IpsumStatus.COMPLETED),
+            ipsum(2, "B", "Other account", IpsumStatus.COMPLETED).copy(ownerHandle = "other"))
+        val restorer = StateRestorationTester(composeRule)
+        restorer.setContent { LoremTheme { HistoryScreen(attempts, ownerHandle = owner.value) } }
+        composeRule.onNodeWithTag("history-advanced").performScrollTo().performClick()
+        composeRule.onNodeWithTag("rating-1200").performScrollTo().performClick()
+        composeRule.onNodeWithTag("tag-implementation").performScrollTo().performClick()
+        composeRule.onNodeWithTag("history-advanced").performScrollTo().performClick()
+        see("Filtros ativos: AC no Ipsum · rating 1200 · tag implementation")
+        restorer.emulateSavedInstanceStateRestore()
+        see("Filtros ativos: AC no Ipsum · rating 1200 · tag implementation")
+        composeRule.onNodeWithTag("rating-1200").assertDoesNotExist()
+        composeRule.runOnIdle { owner.value = "other" }
+        see("Filtros ativos: AC no Ipsum")
+        see("Other account")
+        composeRule.onNodeWithText("Solved", useUnmergedTree = true).assertDoesNotExist()
+    }
+
+    @Test fun `large history stays chronological and supports reaching oldest local attempt`() {
+        setContent((1L..500L).map { id -> ipsum(id, id.toString(), "Attempt $id", IpsumStatus.COMPLETED)
+            .copy(startedAtEpochMillis = id * 1000, endedAtEpochMillis = id * 1000 + 500) })
+        see("Attempt 500")
+        composeRule.onNodeWithTag("history-list").performScrollToIndex(500)
+        composeRule.onNodeWithText("Attempt 1").performScrollTo().assertIsDisplayed()
+    }
+
+    private fun see(text: String, substring: Boolean = false) {
+        composeRule.onNodeWithTag("history-list").performScrollToNode(hasText(text, substring = substring))
+        composeRule.onNodeWithText(text, substring = substring).performScrollTo().assertIsDisplayed()
     }
 
     private fun setContent(ipsums: List<Ipsum>, onOpen: (String) -> Unit = {}) {
