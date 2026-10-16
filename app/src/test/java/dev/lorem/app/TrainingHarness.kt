@@ -18,6 +18,7 @@ class TrainingHarness(scope: CoroutineScope) : AutoCloseable {
     val databaseFile = File(context.cacheDir, "journey-${System.nanoTime()}.db")
     private val preferencesFile = File(context.cacheDir, "journey-${System.nanoTime()}.preferences_pb")
     private val store = PreferenceDataStoreFactory.create(scope = scope, produceFile = { preferencesFile })
+    val appearance = dev.lorem.app.data.local.PreferencesAppearanceRepository(store)
     var database = openDatabase()
         private set
     var repository = openRepository()

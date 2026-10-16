@@ -1,6 +1,6 @@
 # Demonstracao do Lorem
 
-O roteiro percorre as Historias 00-17. O ensaio em dispositivo e opcional; o aceite
+O roteiro percorre as Historias 00-18. O ensaio em dispositivo e opcional; o aceite
 funcional usa os testes automatizados, conforme D-014.
 
 ## Preparacao
@@ -9,6 +9,20 @@ Use Java 17 e SDK Android 35 para gerar o APK com `./gradlew assembleDebug`.
 O artefato fica em `app/build/outputs/apk/debug/app-debug.apk`. Para a demonstracao
 real, instale-o em Android 8.0 ou superior e use seu proprio handle do Codeforces.
 O Lorem consulta somente dados publicos; as submissoes sao feitas no Codeforces.
+
+## Tema e navegacao (conferencia opcional)
+
+1. No cabecalho, abra Configuracoes. Em Aparencia, alterne Sistema, Claro e Escuro.
+   Reabra o app: a escolha deve permanecer. Sistema acompanha o modo do aparelho.
+2. Alterne Inicio, Historico e Estatisticas pela barra inferior. A aba selecionada
+   tem indicador e rotulo; filtros, secao e rolagem devem permanecer ao voltar.
+3. Abra Configuracoes a partir de uma aba e use Voltar: a mesma tela e retomada.
+4. Com Ipsum ativo, use Voltar no cabecalho. A tentativa continua; retome pelo Inicio.
+   Ipsum e Resultado usam telas dedicadas, sem barra de abas.
+5. Opcionalmente, confira fonte em 200%, paisagem e TalkBack: rotulos, estado
+   selecionado, acoes e mensagens devem continuar acessiveis por rolagem.
+
+**TESTE MANUAL OPCIONAL - NAO EXECUTADO** nesta sessao.
 
 ## Jornada com AC no Ipsum
 
@@ -22,7 +36,7 @@ O Lorem consulta somente dados publicos; as submissoes sao feitas no Codeforces.
    repete a cada 15 s com a tela em RESUMED. Confira erros definitivos e ultimo
    sucesso. Depois do AC, o Resultado mostra tempo, erros, dica, rating e fatores
    da recomendacao. `Atualizar agora`/`Tentar novamente` sao recuperacao opcional.
-5. Feche o Resultado, abra Historico e Estatisticas. Confira a tentativa em
+5. Feche o Resultado e use as abas Historico e Estatisticas. Confira a tentativa em
    `Resolvidos em Ipsums`, os indicadores originais e a evolucao persistida.
 6. Inicie outro Ipsum: o problema anterior nao participa do sorteio. A recomendacao
    prioriza tags ineditas, pouca pratica, maior falha, uso de dica e recencia, dentro
@@ -65,6 +79,13 @@ migracao 9-10 validada pelo Room, recuperacao de rating/consolidacao, cliques
 concorrentes, dica tardia e sincronizacao depois da troca de perfil. As jornadas
 automaticas tambem cobrem WA/TESTING/AC sem botoes e resultado apos trabalho em
 segundo plano/restauracao, aguardando RESUMED.
+
+`AppearanceNavigationTest` verifica abas, filtros, rolagem, secao, Configuracoes,
+tema e restauracao com Room/DataStore. `PreferencesAppearanceRepositoryTest` fecha
+e reabre o DataStore e confirma as tres opcoes e independencia do perfil.
+`FoundationLayoutTest` gera renderizacoes em `app/build/reports/visual/` e verifica
+fonte ampliada, paisagem, insets e semantica; `ThemeContrastTest` valida os pares
+semanticos efetivamente usados.
 
 ## Limites da avaliacao do TCC
 

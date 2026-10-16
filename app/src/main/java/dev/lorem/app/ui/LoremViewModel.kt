@@ -1,52 +1,55 @@
 package dev.lorem.app.ui
 
-import dev.lorem.app.domain.sync.ProfileLinkChanged
-import dev.lorem.app.domain.sync.SyncDataset
-import dev.lorem.app.domain.sync.SynchronizationState
-import dev.lorem.app.domain.sync.syncKey
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.withTimeoutOrNull
-import dev.lorem.app.domain.sync.ProfileLink
-import dev.lorem.app.domain.sync.SynchronizationCoordinator
-import kotlinx.coroutines.CancellationException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import dev.lorem.app.domain.model.LocalProfile
-import dev.lorem.app.domain.model.ProblemHistory
-import dev.lorem.app.domain.ProblemHistorySyncResult
+import dev.lorem.app.domain.ConsolidationProgress
+import dev.lorem.app.domain.IpsumStatistics
 import dev.lorem.app.domain.ProblemCatalogSyncResult
-import dev.lorem.app.domain.model.CodeforcesProblem
-import dev.lorem.app.domain.repository.CodeforcesRepository
-import dev.lorem.app.domain.repository.LoremRepository
-import dev.lorem.app.domain.repository.UserLookupResult
+import dev.lorem.app.domain.ProblemHistorySyncResult
 import dev.lorem.app.domain.RandomSource
 import dev.lorem.app.domain.RecommendIpsum
-import dev.lorem.app.domain.ConsolidationProgress
-import dev.lorem.app.domain.calculateConsolidatedRating
 import dev.lorem.app.domain.StartIpsum
 import dev.lorem.app.domain.StartIpsumResult
-import dev.lorem.app.domain.VerifyIpsumResult
 import dev.lorem.app.domain.UpdatePendingIpsumsResult
-import dev.lorem.app.domain.IpsumStatistics
+import dev.lorem.app.domain.VerifyIpsumResult
 import dev.lorem.app.domain.buildIpsumStatistics
+import dev.lorem.app.domain.calculateConsolidatedRating
+import dev.lorem.app.domain.model.CodeforcesProblem
 import dev.lorem.app.domain.model.Ipsum
 import dev.lorem.app.domain.model.IpsumFailureReason
 import dev.lorem.app.domain.model.IpsumResult
+import dev.lorem.app.domain.model.LocalProfile
+import dev.lorem.app.domain.model.ProblemHistory
+import dev.lorem.app.domain.model.ThemePreference
+import dev.lorem.app.domain.repository.AppearanceRepository
+import dev.lorem.app.domain.repository.CodeforcesRepository
+import dev.lorem.app.domain.repository.LoremRepository
+import dev.lorem.app.domain.repository.MemoryAppearanceRepository
+import dev.lorem.app.domain.repository.UserLookupResult
+import dev.lorem.app.domain.sync.ProfileLink
+import dev.lorem.app.domain.sync.ProfileLinkChanged
+import dev.lorem.app.domain.sync.SyncDataset
+import dev.lorem.app.domain.sync.SynchronizationCoordinator
+import dev.lorem.app.domain.sync.SynchronizationState
+import dev.lorem.app.domain.sync.syncKey
 import kotlin.random.Random
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 
 sealed interface LoremUiState {
     data object Loading : LoremUiState
@@ -136,7 +139,26 @@ class LoremViewModel(
     statisticsDispatcher: CoroutineDispatcher = Dispatchers.Default,
     synchronizationCoordinator: SynchronizationCoordinator? = null,
     submissionPollingWait: suspend (Long) -> Unit = { kotlinx.coroutines.delay(it) },
+    private val appearanceRepository: AppearanceRepository = MemoryAppearanceRepository(),
 ) : ViewModel() {
+    val themePreference: StateFlow<ThemePreference?> = appearanceRepository.themePreference
+        .map<ThemePreference, ThemePreference?> { it }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    private val mutableThemeError = MutableStateFlow<String?>(null)
+    val themeError = mutableThemeError.asStateFlow()
+
+    fun selectTheme(preference: ThemePreference) {
+        viewModelScope.launch {
+            try {
+                appearanceRepository.setThemePreference(preference)
+                mutableThemeError.value = null
+            } catch (error: Exception) {
+                if (error is CancellationException) throw error
+                mutableThemeError.value = "Não foi possível salvar o tema. Tente novamente."
+            }
+        }
+    }
+
     private val coordinator = synchronizationCoordinator ?: SynchronizationCoordinator(
         repository, codeforcesRepository, viewModelScope, nowMillis = nowMillis,
     )
@@ -547,11 +569,13 @@ class LoremViewModel(
             repository: LoremRepository,
             codeforcesRepository: CodeforcesRepository,
             synchronizationCoordinator: SynchronizationCoordinator? = null,
+            appearanceRepository: AppearanceRepository? = null,
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 require(modelClass.isAssignableFrom(LoremViewModel::class.java))
-                return LoremViewModel(repository, codeforcesRepository, synchronizationCoordinator = synchronizationCoordinator) as T
+                return LoremViewModel(repository, codeforcesRepository, synchronizationCoordinator = synchronizationCoordinator,
+                    appearanceRepository = appearanceRepository ?: MemoryAppearanceRepository()) as T
             }
         }
     }

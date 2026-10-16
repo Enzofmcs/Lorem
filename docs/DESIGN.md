@@ -1,13 +1,14 @@
 # Direção visual do Lorem
 
-Proposta de 13/10/2026 para as Histórias 18–21. A interface do app ainda usa o tema
-Material 3 claro padrão e telas predominantemente formadas por textos e botões.
+Direção de 13/10/2026 para as Histórias 18–21. A base da História 18 está implementada:
+paleta semântica clara/escura, preferência persistida, componentes e navegação.
+Os redesigns específicos das telas continuam nas Histórias 19–21.
 Este documento e a [referência visual](design/lorem-concept.svg) orientam o redesign;
 os números da referência são exemplos ilustrativos, não dados do usuário.
 
 ## Conceito
 
-Base conferida no GitHub em `485f413` (PR #29): Histórias 00–14 concluídas.
+Base do planejamento conferida no GitHub em `485f413` (PR #29): Histórias 00–14 concluídas.
 
 Um caderno de treino preciso e tranquilo: azul profundo, verde como destaque,
 superfícies discretas, bastante espaço e números legíveis. A ação principal é
@@ -121,3 +122,11 @@ offline e dados reais. Testar navegação e proteção de dados ocultos; reaprov
 testes do domínio e não criar testes que apenas repetem padding ou cores.
 Conferências em dispositivo são opcionais (D-014), sem bloquear avanço; critérios
 funcionais permanecem obrigatórios com evidência automatizada proporcional ao risco.
+
+
+A base implementada usa `LoremTheme`/`Color`/`Type` e os componentes em
+`ui/components`. `LoremFoundationPreview` cobre claro, escuro, 320 dp/fonte 200%
+e paisagem. `FoundationLayoutTest` renderiza os componentes e Configurações com
+gráficos nativos do Robolectric em `app/build/reports/visual/`, verifica texto
+completo, controles de 48 dp, semântica selecionável e insets simulados. Essas
+renderizações automatizadas não equivalem a ensaio humano em dispositivo.

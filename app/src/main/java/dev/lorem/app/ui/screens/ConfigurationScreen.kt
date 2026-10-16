@@ -12,7 +12,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -23,7 +22,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.lorem.app.domain.model.LocalProfile
+import dev.lorem.app.domain.model.ThemePreference
 import dev.lorem.app.ui.ConfigurationUiState
+import dev.lorem.app.ui.components.LoremPrimaryAction
 
 @Composable
 fun ConfigurationScreen(
@@ -36,54 +37,47 @@ fun ConfigurationScreen(
     onRefreshCatalog: () -> Unit = {},
     onRefreshPending: () -> Unit = {},
     onRefreshProfile: () -> Unit = {},
+    themePreference: ThemePreference = ThemePreference.SYSTEM,
+    onThemeChange: (ThemePreference) -> Unit = {},
+    themeError: String? = null,
 ) {
     var showChangeConfirmation by remember { mutableStateOf(false) }
     val isChanging = existingProfile != null &&
         !existingProfile.handle.equals(state.handle.trim(), ignoreCase = true)
 
-    Scaffold { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(24.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            Text("Vincular Codeforces", style = MaterialTheme.typography.headlineMedium)
-            Text("Informe seu handle público para validar e salvar seu perfil neste dispositivo.")
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
-                value = state.handle,
-                onValueChange = onHandleChange,
-                enabled = !state.isLoading,
-                label = { Text("Handle do Codeforces") },
-                singleLine = true,
-                isError = state.errorMessage != null,
-                supportingText = state.errorMessage?.let { message ->
-                    { Text(message) }
-                },
-            )
-            Button(
-                modifier = Modifier.fillMaxWidth(),
-                enabled = state.handle.isNotBlank() && !state.isLoading,
-                onClick = {
-                    if (isChanging) showChangeConfirmation = true else onConfirm()
-                },
-            ) {
-                if (state.isLoading) {
-                    CircularProgressIndicator()
-                } else {
-                    Text(if (existingProfile == null) "Validar e abrir Início" else "Atualizar handle")
-                }
-            }
-            if (existingProfile != null && preparation != null) {
-                PreparationStatus(preparation)
-                androidx.compose.material3.OutlinedButton(onClick = onRefreshHistory, enabled = !preparation.history.running) { Text("Atualizar histórico agora") }
-                androidx.compose.material3.OutlinedButton(onClick = onRefreshCatalog, enabled = !preparation.catalog.running) { Text("Atualizar catálogo agora") }
-                androidx.compose.material3.OutlinedButton(onClick = onRefreshPending, enabled = !preparation.pending.running) { Text("Atualizar pendências agora") }
-                androidx.compose.material3.OutlinedButton(onClick = onRefreshProfile, enabled = !preparation.metadata.running) { Text("Atualizar perfil agora") }
-            }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp)
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Text("Vincular Codeforces", style = MaterialTheme.typography.headlineMedium)
+        Text("Informe seu handle público para validar e salvar seu perfil neste dispositivo.")
+        OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = state.handle,
+            onValueChange = onHandleChange,
+            enabled = !state.isLoading,
+            label = { Text("Handle do Codeforces") },
+            singleLine = true,
+            isError = state.errorMessage != null,
+            supportingText = state.errorMessage?.let { message ->
+                { Text(message) }
+            },
+        )
+        LoremPrimaryAction(
+            label = if (existingProfile == null) "Validar e abrir Início" else "Atualizar handle",
+            enabled = state.handle.isNotBlank(), busy = state.isLoading,
+            onClick = { if (isChanging) showChangeConfirmation = true else onConfirm() },
+        )
+        ThemePicker(themePreference, onThemeChange, themeError)
+        if (existingProfile != null && preparation != null) {
+            PreparationStatus(preparation)
+            androidx.compose.material3.OutlinedButton(onClick = onRefreshHistory, enabled = !preparation.history.running) { Text("Atualizar histórico agora") }
+            androidx.compose.material3.OutlinedButton(onClick = onRefreshCatalog, enabled = !preparation.catalog.running) { Text("Atualizar catálogo agora") }
+            androidx.compose.material3.OutlinedButton(onClick = onRefreshPending, enabled = !preparation.pending.running) { Text("Atualizar pendências agora") }
+            androidx.compose.material3.OutlinedButton(onClick = onRefreshProfile, enabled = !preparation.metadata.running) { Text("Atualizar perfil agora") }
         }
     }
     if (showChangeConfirmation) {

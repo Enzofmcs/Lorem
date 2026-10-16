@@ -44,18 +44,18 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
-- **Foco:** Historia 17 concluida; proxima implementacao: Historia 18 - identidade visual, temas e navegacao.
-- **Ultima historia verificada:** Historia 17 - Deteccao automatica de submissoes e status de atualizacao, automaticamente em 2026-10-15.
-- **Primeiro item pendente:** identidade visual, temas e navegacao (Historia 18).
-- **Proxima entrega demonstravel:** redesign (18-21), com preparacao e acompanhamento automaticos implementados; Historias 00-17 preservadas.
+- **Foco:** Historia 18 concluida; proxima implementacao: Historia 19 - redesign da configuracao e tela inicial.
+- **Ultima historia verificada:** Historia 18 - Identidade visual, temas e navegacao, automaticamente em 2026-10-16.
+- **Primeiro item pendente:** redesign da configuracao e tela inicial (Historia 19).
+- **Proxima entrega demonstravel:** redesign das telas (19-21), sobre temas/navegacao e automacao implementados; Historias 00-18 preservadas.
 - **Bloqueios conhecidos:** nenhum; teste manual e opcional (D-014).
 
-Regressao da Historia 17: 184 testes debug e 150 release sem falhas, lint sem erros
+Regressao da Historia 18: 193 testes debug e 154 release sem falhas, lint sem erros
 (apenas aviso preexistente de icone) e `assembleDebug` concluido.
 Progresso e aceite: [`docs/ROADMAP.md`](docs/ROADMAP.md).
 Roteiro: [`docs/DEMO.md`](docs/DEMO.md).
 Planejamento: [sincronizacao](docs/SYNC.md), [design](docs/DESIGN.md) e
-[Historia 18](docs/ROADMAP.md#historia-18---identidade-visual-temas-e-navegacao-do-lorem).
+[Historia 19](docs/ROADMAP.md#historia-19---redesign-da-configuracao-e-tela-inicial).
 
 ## Politica de contexto
 

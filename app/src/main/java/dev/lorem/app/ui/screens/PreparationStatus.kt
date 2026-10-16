@@ -1,11 +1,12 @@
 package dev.lorem.app.ui.screens
 
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import dev.lorem.app.domain.sync.SynchronizationState
 import dev.lorem.app.domain.sync.SyncFailureKind
+import dev.lorem.app.domain.sync.SynchronizationState
 import dev.lorem.app.ui.PreparationUiState
+import dev.lorem.app.ui.components.LoremSyncStatus
+import dev.lorem.app.ui.components.LoremTone
 
 @Composable
 internal fun PreparationStatus(state: PreparationUiState) {
@@ -19,7 +20,12 @@ internal fun PreparationStatus(state: PreparationUiState) {
         stages.all { it.lastSuccessEpochMillis != null } -> "Dados atualizados"
         else -> "Preparação em andamento"
     }
-    Text(summary, style = MaterialTheme.typography.titleMedium)
+    LoremSyncStatus(summary, when {
+        stages.any { it.failureKind == SyncFailureKind.NETWORK } || state.hasExpiredData -> LoremTone.ATTENTION
+        stages.any { it.failure != null } -> LoremTone.ERROR
+        stages.all { it.lastSuccessEpochMillis != null && !it.running } -> LoremTone.SUCCESS
+        else -> LoremTone.NEUTRAL
+    })
     SynchronizationStage("Histórico", state.history)
     SynchronizationStage("Catálogo", state.catalog)
     SynchronizationStage("Pendências", state.pending)

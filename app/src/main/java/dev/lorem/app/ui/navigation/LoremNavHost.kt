@@ -1,41 +1,43 @@
 package dev.lorem.app.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import dev.lorem.app.domain.model.Ipsum
+import dev.lorem.app.domain.model.IpsumFailureReason
 import dev.lorem.app.domain.model.LocalProfile
 import dev.lorem.app.domain.model.ProblemHistory
-import dev.lorem.app.ui.ConfigurationUiState
+import dev.lorem.app.domain.model.ThemePreference
 import dev.lorem.app.ui.CatalogSyncUiState
+import dev.lorem.app.ui.ConfigurationUiState
+import dev.lorem.app.ui.ConsolidationUiState
 import dev.lorem.app.ui.HistorySyncUiState
-import dev.lorem.app.ui.screens.ConfigurationScreen
-import dev.lorem.app.ui.screens.HomeScreen
-import dev.lorem.app.ui.screens.PlaceholderScreen
-import dev.lorem.app.ui.screens.IpsumScreen
-import dev.lorem.app.domain.model.Ipsum
-import dev.lorem.app.ui.StartIpsumUiState
-import dev.lorem.app.ui.SubmissionCheckUiState
 import dev.lorem.app.ui.IpsumResultUiState
 import dev.lorem.app.ui.PendingUpdateUiState
-import dev.lorem.app.domain.model.IpsumFailureReason
-import dev.lorem.app.ui.screens.IpsumResultScreen
-import dev.lorem.app.ui.screens.HistoryScreen
+import dev.lorem.app.ui.StartIpsumUiState
 import dev.lorem.app.ui.StatisticsUiState
-import dev.lorem.app.ui.ConsolidationUiState
+import dev.lorem.app.ui.SubmissionCheckUiState
+import dev.lorem.app.ui.components.LoremScaffold
+import dev.lorem.app.ui.screens.ConfigurationScreen
+import dev.lorem.app.ui.screens.HistoryScreen
+import dev.lorem.app.ui.screens.HomeScreen
+import dev.lorem.app.ui.screens.IpsumResultScreen
+import dev.lorem.app.ui.screens.IpsumScreen
+import dev.lorem.app.ui.screens.PlaceholderScreen
 import dev.lorem.app.ui.screens.StatisticsScreen
-import androidx.navigation.NavType
-import androidx.navigation.navArgument
 
 @Composable
 fun LoremNavHost(
@@ -71,6 +73,9 @@ fun LoremNavHost(
     trackingState: dev.lorem.app.ui.IpsumTrackingUiState? = null,
     onMonitorIpsum: suspend (Long) -> Unit = {},
     onRefreshProfile: () -> Unit = {},
+    themePreference: ThemePreference = ThemePreference.SYSTEM,
+    onThemeChange: (ThemePreference) -> Unit = {},
+    themeError: String? = null,
     navController: NavHostController = rememberNavController(),
 ) {
     val profile = initialProfile ?: configurationState.savedProfile
@@ -81,7 +86,18 @@ fun LoremNavHost(
     } else {
         LoremDestination.Home.route
     }
-    var resumedActive by remember { mutableStateOf(false) }
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val destination = LoremDestination.entries.firstOrNull {
+        it.route == backStackEntry?.destination?.route?.substringBefore('/')
+    }
+    fun navigateTab(tab: LoremDestination) {
+        navController.navigate(tab.route) {
+            popUpTo(LoremDestination.Home.route) { saveState = true }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
+    var resumedActive by rememberSaveable { mutableStateOf(false) }
     var requestedIpsumId by rememberSaveable { mutableStateOf<Long?>(null) }
     LaunchedEffect(activeIpsum?.id) {
         if (!resumedActive && activeIpsum != null) {
@@ -108,143 +124,151 @@ fun LoremNavHost(
             onIpsumNavigationHandled()
         }
     }
-    NavHost(navController = navController, startDestination = startDestination) {
-        composable(LoremDestination.Configuration.route) {
-            ConfigurationScreen(
-                state = configurationState,
-                existingProfile = profile,
-                onHandleChange = onHandleChange,
-                onConfirm = onConfirmHandle,
-                preparation = preparationState,
-                onRefreshHistory = onSynchronizeHistory,
-                onRefreshCatalog = onSynchronizeCatalog,
-                onRefreshPending = onUpdatePendingIpsums,
-                onRefreshProfile = onRefreshProfile,
-            )
-        }
-        composable(LoremDestination.Home.route) {
-            profile?.let {
-                HomeScreen(
-                    profile = it,
-                    syncState = historySyncState,
-                    problemHistory = problemHistory,
-                    onSynchronize = onSynchronizeHistory,
-                    problemCatalogCount = problemCatalogCount,
-                    catalogUpdatedAtEpochMillis = catalogUpdatedAtEpochMillis,
-                    catalogSyncState = catalogSyncState,
-                    onSynchronizeCatalog = onSynchronizeCatalog,
-                    hasActiveIpsum = activeIpsum != null,
-                    latestFinishedIpsumId = ownedIpsums.lastOrNull { it.endedAtEpochMillis != null }?.id,
-                    startIpsumState = startIpsumState,
-                    onStartIpsum = onStartIpsum,
-                    onNavigate = { route ->
-                        if (route == LoremDestination.Ipsum.route) requestedIpsumId = activeIpsum?.id
-                        navController.navigate(route)
-                    },
-                    consolidation = consolidation,
-                    preparation = preparationState?.takeIf { state -> state.owner?.handle == dev.lorem.app.domain.sync.ProfileLink.of(it.handle, 0).handle },
-                    dataSourceNotice = dataSourceNotice,
+    LoremScaffold(
+        destination = destination,
+        showSettings = profile != null && destination in listOf(LoremDestination.Home, LoremDestination.History, LoremDestination.Statistics),
+        canGoBack = profile != null && destination in listOf(LoremDestination.Configuration, LoremDestination.Ipsum, LoremDestination.Result),
+        onBack = { if (!navController.popBackStack()) navigateTab(LoremDestination.Home) },
+        onSettings = { navController.navigate(LoremDestination.Configuration.route) { launchSingleTop = true } },
+        onTab = ::navigateTab,
+    ) {
+        NavHost(navController = navController, startDestination = startDestination) {
+            composable(LoremDestination.Configuration.route) {
+                ConfigurationScreen(
+                    state = configurationState,
+                    existingProfile = profile,
+                    onHandleChange = onHandleChange,
+                    onConfirm = onConfirmHandle,
+                    preparation = preparationState,
+                    onRefreshHistory = onSynchronizeHistory,
+                    onRefreshCatalog = onSynchronizeCatalog,
+                    onRefreshPending = onUpdatePendingIpsums,
+                    onRefreshProfile = onRefreshProfile,
+                    themePreference = themePreference,
+                    onThemeChange = onThemeChange,
+                    themeError = themeError,
                 )
             }
-        }
-        composable(LoremDestination.Ipsum.route) {
-            var viewedIpsumId by rememberSaveable { mutableStateOf(requestedIpsumId) }
-            val lifecycleState by LocalLifecycleOwner.current.lifecycle.currentStateFlow.collectAsState()
-            LaunchedEffect(activeIpsum?.id) { activeIpsum?.id?.let { viewedIpsumId = it } }
-            val savedCompletion = viewedIpsumId?.let { id -> ownedIpsums.firstOrNull { it.id == id && it.endedAtEpochMillis != null }?.id }
-            val manualCompletion = (submissionCheckState as? SubmissionCheckUiState.Success)?.takeIf { it.completed }?.ipsumId
-                ?: (ipsumResultState as? IpsumResultUiState.Ready)?.result?.ipsum
-                    ?.takeIf { it.ownerHandle.trim().equals(profile?.handle?.trim(), true) }?.id
-            // A restored Ipsum route may load after a worker already completed it. Raw repository
-            // streams in trackingState distinguish that case from the initial null StateFlow cache.
-            val restoredCompletion = trackingState?.takeIf {
-                viewedIpsumId == null && it.activeIpsumId == null && activeIpsum == null &&
-                    ownedIpsums.none { attempt -> attempt.status == dev.lorem.app.domain.model.IpsumStatus.ACTIVE }
-            }?.lastFinishedIpsumId
-            val completedId = savedCompletion ?: manualCompletion ?: restoredCompletion
-            LaunchedEffect(completedId, viewedIpsumId, lifecycleState) {
-                if (completedId != null && (viewedIpsumId == null || completedId == viewedIpsumId) && lifecycleState == Lifecycle.State.RESUMED) {
-                    navController.navigate("${LoremDestination.Result.route}/$completedId") {
-                        popUpTo(LoremDestination.Ipsum.route) { inclusive = true }
-                        launchSingleTop = true
-                    }
+            composable(LoremDestination.Home.route) {
+                profile?.let {
+                    HomeScreen(
+                        profile = it,
+                        syncState = historySyncState,
+                        problemHistory = problemHistory,
+                        onSynchronize = onSynchronizeHistory,
+                        problemCatalogCount = problemCatalogCount,
+                        catalogUpdatedAtEpochMillis = catalogUpdatedAtEpochMillis,
+                        catalogSyncState = catalogSyncState,
+                        onSynchronizeCatalog = onSynchronizeCatalog,
+                        hasActiveIpsum = activeIpsum != null,
+                        latestFinishedIpsumId = ownedIpsums.lastOrNull { it.endedAtEpochMillis != null }?.id,
+                        startIpsumState = startIpsumState,
+                        onStartIpsum = onStartIpsum,
+                        onNavigate = { route ->
+                            if (route == LoremDestination.Ipsum.route) requestedIpsumId = activeIpsum?.id
+                            navController.navigate(route)
+                        },
+                        consolidation = consolidation,
+                        preparation = preparationState?.takeIf { state -> state.owner?.handle == dev.lorem.app.domain.sync.ProfileLink.of(it.handle, 0).handle },
+                        dataSourceNotice = dataSourceNotice,
+                    )
                 }
             }
-            IpsumScreen(
-                ipsum = activeIpsum,
-                dataSourceNotice = dataSourceNotice,
-                trackingState = trackingState,
-                onMonitorIpsum = onMonitorIpsum,
-                onRevealHint = onRevealIpsumHint,
-                submissionCheckState = submissionCheckState,
-                onVerifySubmissions = onVerifyIpsumSubmissions,
-                onEndWithoutAc = onEndIpsum,
-                onNavigateHome = {
-                    if (!navController.popBackStack(LoremDestination.Home.route, inclusive = false)) {
-                        navController.navigate(LoremDestination.Home.route) { launchSingleTop = true }
+            composable(LoremDestination.Ipsum.route) {
+                var viewedIpsumId by rememberSaveable { mutableStateOf(requestedIpsumId) }
+                val lifecycleState by LocalLifecycleOwner.current.lifecycle.currentStateFlow.collectAsState()
+                LaunchedEffect(activeIpsum?.id) { activeIpsum?.id?.let { viewedIpsumId = it } }
+                val savedCompletion = viewedIpsumId?.let { id -> ownedIpsums.firstOrNull { it.id == id && it.endedAtEpochMillis != null }?.id }
+                val manualCompletion = (submissionCheckState as? SubmissionCheckUiState.Success)?.takeIf { it.completed }?.ipsumId
+                    ?: (ipsumResultState as? IpsumResultUiState.Ready)?.result?.ipsum
+                        ?.takeIf { it.ownerHandle.trim().equals(profile?.handle?.trim(), true) }?.id
+                // A restored Ipsum route may load after a worker already completed it. Raw repository
+                // streams in trackingState distinguish that case from the initial null StateFlow cache.
+                val restoredCompletion = trackingState?.takeIf {
+                    viewedIpsumId == null && it.activeIpsumId == null && activeIpsum == null &&
+                        ownedIpsums.none { attempt -> attempt.status == dev.lorem.app.domain.model.IpsumStatus.ACTIVE }
+                }?.lastFinishedIpsumId
+                val completedId = savedCompletion ?: manualCompletion ?: restoredCompletion
+                LaunchedEffect(completedId, viewedIpsumId, lifecycleState) {
+                    if (completedId != null && (viewedIpsumId == null || completedId == viewedIpsumId) && lifecycleState == Lifecycle.State.RESUMED) {
+                        navController.navigate("${LoremDestination.Result.route}/$completedId") {
+                            popUpTo(LoremDestination.Ipsum.route) { inclusive = true }
+                            launchSingleTop = true
+                        }
                     }
-                },
-            )
-        }
-        composable(LoremDestination.History.route) {
-            HistoryScreen(
-                ipsums = ownedIpsums,
-                updateState = pendingUpdateState,
-                onUpdatePending = onUpdatePendingIpsums,
-                onNavigateHome = {
-                    if (!navController.popBackStack(LoremDestination.Home.route, false)) {
-                        navController.navigate(LoremDestination.Home.route) { launchSingleTop = true }
-                    }
-                },
-            )
-        }
-        composable(LoremDestination.Statistics.route) {
-            // A cached StateFlow snapshot must not show the previous account on a profile switch.
-            val visibleState = if (statisticsState is StatisticsUiState.Ready &&
-                !statisticsState.statistics.ownerHandle.trim().equals(profile?.handle?.trim(), ignoreCase = true)
-            ) StatisticsUiState.Loading else statisticsState
-            StatisticsScreen(
-                state = visibleState,
-                consolidation = consolidation,
-                onNavigateHome = {
-                    if (!navController.popBackStack(LoremDestination.Home.route, false)) {
-                        navController.navigate(LoremDestination.Home.route) { launchSingleTop = true }
-                    }
-                },
-            )
-        }
-        composable(
-            route = "${LoremDestination.Result.route}/{ipsumId}",
-            arguments = listOf(navArgument("ipsumId") { type = NavType.LongType }),
-        ) { entry ->
-            val ipsumId = entry.arguments?.getLong("ipsumId") ?: return@composable
-            LaunchedEffect(ipsumId, profile?.handle) {
-                val loaded = (ipsumResultState as? IpsumResultUiState.Ready)?.result?.ipsum
-                    ?.takeIf { it.ownerHandle.trim().equals(profile?.handle?.trim(), true) }?.id
-                if (loaded != ipsumId) onOpenIpsumResult(ipsumId)
-            }
-            IpsumResultScreen(
-                state = if (ipsumResultState is IpsumResultUiState.Ready &&
-                    !ipsumResultState.result.ipsum.ownerHandle.trim().equals(profile?.handle?.trim(), true)
-                ) IpsumResultUiState.Loading else ipsumResultState,
-                onClose = {
-                    if (!navController.popBackStack(LoremDestination.Home.route, false)) {
-                        navController.navigate(LoremDestination.Home.route) { launchSingleTop = true }
-                    }
-                },
-            )
-        }
-        LoremDestination.all.filterNot {
-            it == LoremDestination.Configuration || it == LoremDestination.Home ||
-                it == LoremDestination.Ipsum || it == LoremDestination.Result ||
-                it == LoremDestination.History || it == LoremDestination.Statistics
-        }.forEach { destination ->
-            composable(destination.route) {
-                PlaceholderScreen(
-                    destination = destination,
-                    profile = profile,
-                    onNavigate = navController::navigate,
+                }
+                IpsumScreen(
+                    ipsum = activeIpsum,
+                    dataSourceNotice = dataSourceNotice,
+                    trackingState = trackingState,
+                    onMonitorIpsum = onMonitorIpsum,
+                    onRevealHint = onRevealIpsumHint,
+                    submissionCheckState = submissionCheckState,
+                    onVerifySubmissions = onVerifyIpsumSubmissions,
+                    onEndWithoutAc = onEndIpsum,
+                    onNavigateHome = {
+                        if (!navController.popBackStack(LoremDestination.Home.route, inclusive = false)) {
+                            navController.navigate(LoremDestination.Home.route) { launchSingleTop = true }
+                        }
+                    },
                 )
+            }
+            composable(LoremDestination.History.route) {
+                HistoryScreen(
+                    ipsums = ownedIpsums,
+                    updateState = pendingUpdateState,
+                    onUpdatePending = onUpdatePendingIpsums,
+                    onNavigateHome = {
+                        navigateTab(LoremDestination.Home)
+                    },
+                )
+            }
+            composable(LoremDestination.Statistics.route) {
+                // A cached StateFlow snapshot must not show the previous account on a profile switch.
+                val visibleState = if (statisticsState is StatisticsUiState.Ready &&
+                    !statisticsState.statistics.ownerHandle.trim().equals(profile?.handle?.trim(), ignoreCase = true)
+                ) StatisticsUiState.Loading else statisticsState
+                StatisticsScreen(
+                    state = visibleState,
+                    consolidation = consolidation,
+                    onNavigateHome = {
+                        navigateTab(LoremDestination.Home)
+                    },
+                )
+            }
+            composable(
+                route = "${LoremDestination.Result.route}/{ipsumId}",
+                arguments = listOf(navArgument("ipsumId") { type = NavType.LongType }),
+            ) { entry ->
+                val ipsumId = entry.arguments?.getLong("ipsumId") ?: return@composable
+                LaunchedEffect(ipsumId, profile?.handle) {
+                    val loaded = (ipsumResultState as? IpsumResultUiState.Ready)?.result?.ipsum
+                        ?.takeIf { it.ownerHandle.trim().equals(profile?.handle?.trim(), true) }?.id
+                    if (loaded != ipsumId) onOpenIpsumResult(ipsumId)
+                }
+                IpsumResultScreen(
+                    state = if (ipsumResultState is IpsumResultUiState.Ready &&
+                        !ipsumResultState.result.ipsum.ownerHandle.trim().equals(profile?.handle?.trim(), true)
+                    ) IpsumResultUiState.Loading else ipsumResultState,
+                    onClose = {
+                        if (!navController.popBackStack(LoremDestination.Home.route, false)) {
+                            navController.navigate(LoremDestination.Home.route) { launchSingleTop = true }
+                        }
+                    },
+                )
+            }
+            LoremDestination.all.filterNot {
+                it == LoremDestination.Configuration || it == LoremDestination.Home ||
+                    it == LoremDestination.Ipsum || it == LoremDestination.Result ||
+                    it == LoremDestination.History || it == LoremDestination.Statistics
+            }.forEach { destination ->
+                composable(destination.route) {
+                    PlaceholderScreen(
+                        destination = destination,
+                        profile = profile,
+                        onNavigate = navController::navigate,
+                    )
+                }
             }
         }
     }

@@ -6,6 +6,8 @@ import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -49,7 +51,7 @@ class MainActivityTest {
     fun `statistics route uses saved training history offline and returns to home`() {
         val local = MemoryLoremRepository(StatisticsFixtures.profile, StatisticsFixtures.finished)
         setApp(local, UserLookupResult.NetworkFailure)
-        composeRule.onNodeWithText("Abrir Estatísticas").performScrollTo().performClick()
+        composeRule.onNodeWithTag("tab-statistics").performClick()
         composeRule.waitUntil(5_000) {
             composeRule.onAllNodesWithText("Rating Lorem atual: 1202").fetchSemanticsNodes().isNotEmpty()
         }
@@ -58,7 +60,7 @@ class MainActivityTest {
         composeRule.onNodeWithText("Taxa de AC no Ipsum: 50,0% (2/4)").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithTag("statistics-list").performScrollToNode(hasText("Voltar ao Início"))
         composeRule.onNodeWithText("Voltar ao Início").performScrollTo().performClick()
-        composeRule.onNodeWithText("Início").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithTag("tab-home").assertIsSelected()
     }
 
     @Test
@@ -70,7 +72,7 @@ class MainActivityTest {
         composeRule.onNodeWithText("Validar e abrir Início").performClick()
         composeRule.waitUntil(5_000) { local.profile.value != null }
 
-        composeRule.onNodeWithText("Início").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithTag("tab-home").assertIsSelected()
         composeRule.onNodeWithText("Gennady (@tourist)").performScrollTo().assertIsDisplayed()
         assertEquals(4009, local.profile.value?.loremRating)
     }
@@ -102,7 +104,7 @@ class MainActivityTest {
         val local = MemoryLoremRepository(original)
         setApp(local, UserLookupResult.Success(CodeforcesUser("new", "New User", 1500)))
 
-        composeRule.onNodeWithText("Abrir Configuração").performScrollTo().performClick()
+        composeRule.onNodeWithContentDescription("Configurações").performClick()
         composeRule.onNodeWithText("Handle do Codeforces").performTextReplacement("new")
         composeRule.onNodeWithText("Atualizar handle").performClick()
 
@@ -126,7 +128,7 @@ class MainActivityTest {
         val local = MemoryLoremRepository(original)
         setApp(local, UserLookupResult.UserNotFound)
 
-        composeRule.onNodeWithText("Abrir Configuração").performScrollTo().performClick()
+        composeRule.onNodeWithContentDescription("Configurações").performClick()
         composeRule.onNodeWithText("Handle do Codeforces").performTextReplacement("missing")
         composeRule.onNodeWithText("Atualizar handle").performClick()
         composeRule.onNodeWithText("Trocar").performClick()
