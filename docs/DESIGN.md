@@ -2,8 +2,8 @@
 
 Direção de 13/10/2026 para as Histórias 18–21. A base da História 18 está implementada:
 paleta semântica clara/escura, preferência persistida, componentes e navegação.
-Configuração e Início (19) também estão implementados. Os próximos redesigns são
-Ipsum/Resultado (20) e Histórico/Estatísticas (21).
+Configuração/Início (19) e Ipsum/Resultado (20) também estão implementados.
+O próximo e último redesign planejado é Histórico/Estatísticas (21).
 Este documento e a [referência visual](design/lorem-concept.svg) orientam o redesign;
 os números da referência são exemplos ilustrativos, não dados do usuário.
 
@@ -138,3 +138,10 @@ resumo dos treinos locais e progresso expansível da faixa. `HomeConfigurationPr
 e `HomeConfigurationLayoutTest` cobrem os estados e geram imagens em
 `app/build/reports/visual/`, incluindo primeiro acesso com erro/carregamento,
 recuperação offline e Continuar Ipsum, nos dois temas e tamanhos de referência.
+
+A História 20 aplica essa direção a Ipsum e Resultado. O timer tabular adapta o
+tamanho à largura e à fonte real; sua leitura acessível é acionada sob demanda,
+sem anúncio a cada segundo. Resultado usa snapshots de rating e distingue AC
+posterior da avaliação original. `IpsumPreviews` e `IpsumLayoutTest` cobrem os dois
+temas, 360 dp, 320 dp/fonte 200%, paisagem, textos longos e confirmações em outra
+janela com escala de fonte do Android. Imagens ficam em `app/build/reports/visual/`.

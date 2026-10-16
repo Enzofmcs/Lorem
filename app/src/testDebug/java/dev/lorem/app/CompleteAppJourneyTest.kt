@@ -91,7 +91,7 @@ class CompleteAppJourneyTest {
         assertEquals(1, saved.errorCount)
         assertEquals(1_002_000L, saved.endedAtEpochMillis)
         ticks.trySend(Unit)
-        click("Fechar resultado")
+        click("Voltar ao início")
         assertEquals(saved, runBlocking { env.repository.getIpsumResult(first.id)!!.ipsum })
     }
 
@@ -133,7 +133,7 @@ class CompleteAppJourneyTest {
         awaitDisplayed("Resultado do Ipsum")
         compose.onNodeWithText("Resultado do Ipsum").assertIsDisplayed()
         val result = (vm.ipsumResultState.value as IpsumResultUiState.Ready).result.ipsum
-        click("Fechar resultado")
+        click("Voltar ao início")
         compose.runOnIdle { owner.registry.currentState = Lifecycle.State.STARTED }
         compose.runOnIdle { owner.registry.currentState = Lifecycle.State.RESUMED }
         compose.onNodeWithText("Resultado do Ipsum").assertDoesNotExist()
@@ -182,7 +182,7 @@ class CompleteAppJourneyTest {
         awaitDisplayed("Resultado do Ipsum")
         compose.onNodeWithText("Resultado do Ipsum").assertIsDisplayed()
         compose.onNodeWithText("Por que este problema?").performScrollTo().assertIsDisplayed()
-        click("Fechar resultado")
+        click("Voltar ao início")
         now += 10_000
         click("Iniciar Ipsum")
         await { vm.activeIpsum.value?.id?.let { it != first.id } == true }
@@ -197,7 +197,7 @@ class CompleteAppJourneyTest {
         compose.onNodeWithText("Encerrar").performClick()
         await { (vm.ipsumResultState.value as? IpsumResultUiState.Ready)?.result?.ipsum?.id == second.id }
         val originalRating = (vm.uiState.value as LoremUiState.Ready).profile!!.loremRating
-        click("Fechar resultado")
+        click("Voltar ao início")
         compose.onNodeWithTag("tab-history").performClick()
         compose.onNodeWithText("Histórico e pendências").assertIsDisplayed()
         env.remote.submissions = SubmissionHistoryResult.Success(listOf(
