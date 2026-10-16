@@ -99,7 +99,7 @@ Na raiz do projeto:
 
 ## Entrega atual
 
-As **Histórias 00–17 estão implementadas**. Conectar um perfil agenda a importação
+As **Histórias 00–18 estão implementadas**. Conectar um perfil agenda a importação
 completa do histórico e catálogo. WorkManager mantém histórico/pendências a cada
 15 minutos desejados e catálogo/metadados a cada 24 horas, sujeito ao Android.
 Reabrir o app preserva a agenda e recupera dados ausentes ou vencidos.
@@ -111,7 +111,12 @@ originais permanecem preservados. O Ipsum consulta submissões ao entrar/retomar
 e a cada 15 segundos em RESUMED, com backoff nas falhas. O worker também verifica
 o ativo; o resultado é apresentado ao retornar à sua tela.
 
-Validação final: **184 testes debug e 150 release sem falhas**, lint sem erros
+A identidade visual usa azul profundo e verde, com temas Sistema/Claro/Escuro
+persistidos em Configurações. As abas Início, Histórico e Estatísticas preservam
+estado e rolagem; Configurações ficam no cabeçalho. Ipsum e Resultado têm navegação
+dedicada com voltar, mantendo a tentativa ativa ao sair da tela.
+
+Validação final: **193 testes debug e 154 release sem falhas**, lint sem erros
 (apenas aviso preexistente de ícone) e `assembleDebug` concluído. O APK está em
 `app/build/outputs/apk/debug/app-debug.apk`.
 
@@ -124,8 +129,9 @@ O planejamento de 13/10/2026 acrescenta **15–17 — Sincronização automátic
 **18–21 — Redesign**. As Histórias 00–14 e suas evidências permanecem preservadas;
 as Histórias 15–17 estão implementadas e verificadas: coordenador compartilhado,
 importação incremental retomável, proteção por vínculo, WorkManager e acompanhamento
-automático. As Histórias 18–21 seguem com implementação pendente. A próxima entrega
-é identidade visual, temas e navegação (História 18).
+automático. A base visual e a navegação da História 18 também estão verificadas.
+A próxima entrega é o redesign da configuração e tela inicial (História 19),
+seguido por Ipsum/Resultado (20) e Histórico/Estatísticas (21).
 
 A proposta combina WorkManager em segundo plano, consulta frequente durante o
 Ipsum visível e temas claro/escuro em azul profundo e verde. Consulte o

@@ -192,7 +192,7 @@ class CompleteAppJourneyTest {
         await { (vm.ipsumResultState.value as? IpsumResultUiState.Ready)?.result?.ipsum?.id == second.id }
         val originalRating = (vm.uiState.value as LoremUiState.Ready).profile!!.loremRating
         click("Fechar resultado")
-        click("Abrir Histórico")
+        compose.onNodeWithTag("tab-history").performClick()
         compose.onNodeWithText("Histórico e pendências").assertIsDisplayed()
         env.remote.submissions = SubmissionHistoryResult.Success(listOf(
             CodeforcesSubmission(12, second.problem.id, "OK", Instant.ofEpochMilli(now + 2000))))
@@ -201,7 +201,7 @@ class CompleteAppJourneyTest {
         click("Atualizar agora")
         await { (vm.pendingUpdateState.value as? PendingUpdateUiState.Success)?.movedCount == 0 }
         click("Voltar ao Início")
-        click("Abrir Estatísticas")
+        compose.onNodeWithTag("tab-statistics").performClick()
         await { (vm.statisticsState.value as? StatisticsUiState.Ready)?.statistics?.overall?.solvedOutside == 1 }
         compose.onNodeWithTag("statistics-list").performScrollToNode(hasTestTag("statistics-overall"))
         compose.onNodeWithText("Ipsums encerrados: 2").assertIsDisplayed()

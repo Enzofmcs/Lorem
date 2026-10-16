@@ -38,6 +38,31 @@ class LoremViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     @Test
+    fun `theme write failure keeps the saved selection and a retry clears the error`() = runTest {
+        val saved = MutableStateFlow(dev.lorem.app.domain.model.ThemePreference.SYSTEM)
+        var fail = true
+        val appearance = object : dev.lorem.app.domain.repository.AppearanceRepository {
+            override val themePreference = saved
+            override suspend fun setThemePreference(preference: dev.lorem.app.domain.model.ThemePreference) {
+                if (fail) throw java.io.IOException("disk full")
+                saved.value = preference
+            }
+        }
+        val model = LoremViewModel(MemoryRepository(profile()), CountingRepository(), appearanceRepository = appearance)
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { model.themePreference.collect {} }
+        advanceUntilIdle()
+        model.selectTheme(dev.lorem.app.domain.model.ThemePreference.DARK)
+        advanceUntilIdle()
+        assertEquals(dev.lorem.app.domain.model.ThemePreference.SYSTEM, model.themePreference.value)
+        assertTrue(model.themeError.value != null)
+        fail = false
+        model.selectTheme(dev.lorem.app.domain.model.ThemePreference.DARK)
+        advanceUntilIdle()
+        assertEquals(dev.lorem.app.domain.model.ThemePreference.DARK, model.themePreference.value)
+        assertEquals(null, model.themeError.value)
+    }
+
+    @Test
     fun `preparation distinguishes expired successes from a completed current refresh`() = runTest {
         val local = MemoryRepository(profile(lastSync = 1L))
         val remote = CountingRepository()

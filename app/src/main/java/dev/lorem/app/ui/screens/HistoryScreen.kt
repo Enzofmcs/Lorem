@@ -11,10 +11,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,6 +33,9 @@ import dev.lorem.app.domain.model.Ipsum
 import dev.lorem.app.domain.model.problemUrl
 import dev.lorem.app.domain.model.totalTimeMillis
 import dev.lorem.app.ui.PendingUpdateUiState
+import dev.lorem.app.ui.components.LoremBadge
+import dev.lorem.app.ui.components.LoremEmptyState
+import dev.lorem.app.ui.components.LoremTone
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -57,7 +60,7 @@ fun HistoryScreen(
     val visible = filterIpsumHistory(history, situation, IpsumHistoryFilters(rating, tag))
 
     Column(
-        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+        modifier = Modifier.testTag("history-list").fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text("Histórico e pendências", style = MaterialTheme.typography.headlineMedium)
@@ -124,7 +127,7 @@ fun HistoryScreen(
         ) { Text("Limpar filtros") }
 
         if (visible.isEmpty()) {
-            Text("Nenhum item nesta categoria com os filtros atuais.")
+            LoremEmptyState("Nenhum item nesta categoria com os filtros atuais.")
         } else {
             visible.forEach { item -> HistoryItem(item, openProblem) }
         }
@@ -144,7 +147,11 @@ private fun HistoryItem(item: IpsumHistoryItem, onOpenProblem: (String) -> Unit)
             Text("Dica utilizada: ${if (ipsum.hintRevealedAtEpochMillis != null) "sim" else "não"}")
             Text("Erros: ${ipsum.errorCount}")
             Text("Data do Ipsum: ${formatHistoryDate(ipsum.startedAtEpochMillis)}")
-            Text("Resultado atual: ${item.situation.label}")
+            LoremBadge("Resultado atual: ${item.situation.label}", when (item.situation) {
+                IpsumHistorySituation.SOLVED_IN_IPSUM -> LoremTone.SUCCESS
+                IpsumHistorySituation.SOLVED_OUTSIDE_IPSUM -> LoremTone.NEUTRAL
+                else -> LoremTone.ATTENTION
+            })
             if (item.situation == IpsumHistorySituation.SOLVED_OUTSIDE_IPSUM) {
                 Text("AC posterior: ${formatHistoryDate(requireNotNull(ipsum.solvedOutsideAtEpochMillis))}")
             }

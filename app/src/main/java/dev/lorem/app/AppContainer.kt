@@ -1,24 +1,25 @@
 package dev.lorem.app
 
-import dev.lorem.app.domain.sync.SynchronizationCoordinator
-import dev.lorem.app.domain.sync.BackgroundSynchronization
-import dev.lorem.app.data.sync.SynchronizationScheduler
-import dev.lorem.app.data.sync.SynchronizationWorkerFactory
-import dev.lorem.app.data.remote.CodeforcesRetryAfter
-import androidx.work.WorkManager
-import dev.lorem.app.data.local.PreferencesSynchronizationStore
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import android.content.Context
+import androidx.work.WorkManager
 import dev.lorem.app.data.local.LocalLoremRepository
 import dev.lorem.app.data.local.LoremDatabase
+import dev.lorem.app.data.local.PreferencesAppearanceRepository
+import dev.lorem.app.data.local.PreferencesSynchronizationStore
 import dev.lorem.app.data.local.profileDataStore
 import dev.lorem.app.data.remote.CodeforcesApiRepository
+import dev.lorem.app.data.remote.CodeforcesRetryAfter
 import dev.lorem.app.data.remote.TwoSecondCodeforcesRequestGate
+import dev.lorem.app.data.sync.SynchronizationScheduler
+import dev.lorem.app.data.sync.SynchronizationWorkerFactory
 import dev.lorem.app.domain.repository.CodeforcesRepository
 import dev.lorem.app.domain.repository.LoremRepository
+import dev.lorem.app.domain.sync.BackgroundSynchronization
+import dev.lorem.app.domain.sync.SynchronizationCoordinator
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 class AppContainer(context: Context) {
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -29,6 +30,7 @@ class AppContainer(context: Context) {
         problemCatalogDao = database.problemCatalogDao(),
         ipsumDao = database.ipsumDao(),
     )
+    val appearanceRepository = PreferencesAppearanceRepository(context.profileDataStore)
     private val synchronizationStore = PreferencesSynchronizationStore(context.profileDataStore)
     private val retryAfter = CodeforcesRetryAfter(synchronizationStore)
     val codeforcesRepository: CodeforcesRepository = CodeforcesApiRepository(

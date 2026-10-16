@@ -1,5 +1,6 @@
 package dev.lorem.app.ui.screens
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -9,12 +10,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,10 +27,11 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import dev.lorem.app.domain.AcRate
 import dev.lorem.app.domain.AttemptStatistics
+import dev.lorem.app.domain.ConsolidationProgress
 import dev.lorem.app.domain.IpsumStatistics
 import dev.lorem.app.domain.TagStatistics
-import dev.lorem.app.domain.ConsolidationProgress
 import dev.lorem.app.ui.StatisticsUiState
+import dev.lorem.app.ui.components.LoremEmptyState
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -41,18 +43,17 @@ private enum class StatisticsSection(val label: String) {
 
 @Composable
 fun StatisticsScreen(state: StatisticsUiState, onNavigateHome: () -> Unit = {}, consolidation: ConsolidationProgress? = null) {
-    Scaffold { padding ->
-        when (state) {
-            StatisticsUiState.Loading -> Column(Modifier.padding(padding).padding(16.dp)) {
-                CircularProgressIndicator()
-                Text("Carregando estatísticas…")
-            }
-            StatisticsUiState.NoProfile -> Column(Modifier.padding(padding).padding(16.dp)) {
-                Text("Vincule um handle para visualizar suas estatísticas.")
-                Button(onClick = onNavigateHome) { Text("Voltar ao Início") }
-            }
-            is StatisticsUiState.Ready -> StatisticsContent(state.statistics, padding, onNavigateHome, consolidation)
+    val padding = PaddingValues(0.dp)
+    when (state) {
+        StatisticsUiState.Loading -> Column(Modifier.padding(padding).padding(16.dp)) {
+            CircularProgressIndicator()
+            Text("Carregando estatísticas…")
         }
+        StatisticsUiState.NoProfile -> Column(Modifier.padding(padding).padding(16.dp)) {
+            LoremEmptyState("Vincule um handle para visualizar suas estatísticas.")
+            Button(onClick = onNavigateHome) { Text("Voltar ao Início") }
+        }
+        is StatisticsUiState.Ready -> StatisticsContent(state.statistics, padding, onNavigateHome, consolidation)
     }
 }
 
@@ -72,7 +73,7 @@ private fun StatisticsContent(stats: IpsumStatistics, padding: PaddingValues, on
             Button(onClick = onNavigateHome) { Text("Voltar ao Início") }
         }
         item {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 StatisticsSection.entries.forEach { option ->
                     FilterChip(
                         modifier = Modifier.testTag("statistics-section-${option.name}"),

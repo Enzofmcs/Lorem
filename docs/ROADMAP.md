@@ -6,13 +6,13 @@
 
 ## Estado atual
 
-**Foco atual:** Historia 17 concluida; proxima implementacao: Historia 18 - identidade visual, temas e navegacao.
+**Foco atual:** Historia 18 concluida; proxima implementacao: Historia 19 - redesign da configuracao e tela inicial.
 
-**Ultima historia verificada:** Historia 17 - Deteccao automatica de submissoes e status, automaticamente em 2026-10-15. Historias 00-16 preservadas.
+**Ultima historia verificada:** Historia 18 - Identidade visual, temas e navegacao, automaticamente em 2026-10-16. Historias 00-17 preservadas.
 
-**Primeiro item pendente:** identidade visual, temas e navegacao (Historia 18).
+**Primeiro item pendente:** redesign da configuracao e tela inicial (Historia 19).
 
-**Proxima entrega demonstravel:** redesign (18-21), com preparacao, manutencao e acompanhamento automaticos ja implementados.
+**Proxima entrega demonstravel:** redesign das telas (19-21), sobre temas/navegacao e sincronizacao automatica ja implementados.
 
 **Bloqueios conhecidos:** nenhum. Conferencia em dispositivo e opcional (D-014).
 
@@ -1109,7 +1109,7 @@ retomada e upsolve; nenhuma execucao em aparelho foi alegada.
 
 **Historia:** Como usuário, quero uma interface consistente, legível e confortável para acompanhar meu treino.
 
-**Status:** planejada; implementacao e aceite pendentes.
+**Status:** implementada e verificada automaticamente em 2026-10-16; conferencia em dispositivo opcional (D-014).
 
 **GitHub:** [#33 — História 18 — Identidade visual, temas e navegação do Lorem](https://github.com/Enzofmcs/Lorem/issues/33).
 
@@ -1121,19 +1121,72 @@ retomada e upsolve; nenhuma execucao em aparelho foi alegada.
 
 #### Criterios de aceite
 
-- [ ] Criar ColorScheme claro/escuro com papéis semânticos, Typography e Shape; padrão segue sistema, escolha Sistema/Claro/Escuro persiste em Configurações.
-- [ ] Usar fundo #0B1220, superfície #151F30 e ação #6EE7BE no escuro; fundo #F5F7FA, superfície #FFFFFF e ação #006B55 no claro, conforme DESIGN.md.
-- [ ] Implementar somente os componentes compartilhados necessários: scaffold/cabeçalho, card de métrica, status de sync, badge, estado vazio/erro e ação principal.
-- [ ] Adicionar barra inferior com Início, Histórico e Estatísticas, rótulos e estado selecionado; preservar rolagem/back stack. Configurações ficam no cabeçalho.
-- [ ] Ipsum/Resultado usam fluxo dedicado com voltar; sair da tela não encerra a tentativa e restauração do ativo continua funcionando.
-- [ ] Validar contraste 4,5:1 no texto normal e 3:1 no texto grande/indicadores necessários, áreas de toque de pelo menos 48 dp e significado além da cor.
-- [ ] Tema/componentes suportam 320 dp, fonte 200%, paisagem, insets e TalkBack, sem alturas fixas que cortem conteúdo; previews mostram estados relevantes nos dois temas.
+- [x] Criar ColorScheme claro/escuro com papéis semânticos, Typography e Shape; padrão segue sistema, escolha Sistema/Claro/Escuro persiste em Configurações.
+- [x] Usar fundo #0B1220, superfície #151F30 e ação #6EE7BE no escuro; fundo #F5F7FA, superfície #FFFFFF e ação #006B55 no claro, conforme DESIGN.md.
+- [x] Implementar somente os componentes compartilhados necessários: scaffold/cabeçalho, card de métrica, status de sync, badge, estado vazio/erro e ação principal.
+- [x] Adicionar barra inferior com Início, Histórico e Estatísticas, rótulos e estado selecionado; preservar rolagem/back stack. Configurações ficam no cabeçalho.
+- [x] Ipsum/Resultado usam fluxo dedicado com voltar; sair da tela não encerra a tentativa e restauração do ativo continua funcionando.
+- [x] Validar contraste 4,5:1 no texto normal e 3:1 no texto grande/indicadores necessários, áreas de toque de pelo menos 48 dp e significado além da cor.
+- [x] Tema/componentes suportam 320 dp, fonte 200%, paisagem, insets e TalkBack, sem alturas fixas que cortem conteúdo; previews mostram estados relevantes nos dois temas.
 
-#### Verificacao planejada
+#### Verificacao e evidencias
 
 Nível 1 para tokens/layout; Nível 3 para navegação e persistência de tema. Verificar compilação, smoke test visual e navegação. Testar comportamento necessário, sem testes que apenas espelhem cores/padding. Conferencias em dispositivo sao opcionais conforme D-014; criterios funcionais exigem evidencia automatizada proporcional ao risco.
 
 **Exemplo de aceite:** Trocar tema preserva preferência após reabrir o app. Navegar pelas três abas, abrir e retomar um Ipsum funciona com fonte ampliada e rótulos acessíveis.
+
+
+#### Implementacao
+
+- Paleta fixa clara/escura com papeis semanticos, tipografia do sistema, numeros
+  tabulares e formas de 14/20 dp. Sem cores dinamicas que substituam a identidade.
+  Barras do sistema acompanham o tema e conteudo respeita safe drawing/IME.
+- `PreferencesAppearanceRepository` usa o DataStore existente. Sistema e o padrao;
+  valores desconhecidos usam Sistema. Claro/Escuro persistem apos fechar/reabrir
+  o armazenamento e sobrevivem a troca/remocao do perfil. Falha de gravacao mantem
+  a selecao salva e permite tentar novamente.
+- Scaffold/cabecalho, metrica, acao principal, status de sync, badge e vazio/erro
+  estao usados nas telas reais. Os redesigns especificos ficam nas Historias 19-21.
+- Abas com icones vetoriais, rotulos sempre presentes e semantica selecionavel.
+  `saveState`/`restoreState` preservam rolagem, filtros e secao. Configuracoes abrem
+  no cabecalho e Voltar retorna a aba anterior. Ipsum/Resultado ficam fora das abas;
+  voltar do treino nao o encerra. A restauracao conserva a intencao de navegar
+  pelo Inicio, alem de continuar recuperando o ativo na abertura inicial.
+- `LoremFoundationPreview` cobre claro, escuro, 320 dp/fonte 200% e paisagem.
+  `FoundationLayoutTest` verifica rotulos completos, controles de 48 dp, semantica,
+  troca de tema sem reiniciar a composicao, paisagem e insets de sistema/cutout
+  simulados. Renderizacoes nativas conferidas em `app/build/reports/visual/`.
+- `ThemeContrastTest` mede os pares usados: texto minimo **5,26:1 no claro** e
+  **6,04:1 no escuro**; bordas necessarias sobre superficie **4,36:1 / 5,76:1**,
+  indicador selecionado **6,49:1 / 10,89:1**. Estados usam texto/icone e selecao
+  acessivel, sem depender somente da cor. As regras de dados ocultos permanecem
+  cobertas pelas jornadas existentes.
+
+Comandos com Java 17, Gradle 8.11.1 e SDK 35:
+
+```bash
+./gradlew compileDebugKotlin --max-workers=2 --console=plain
+./gradlew testDebugUnitTest --tests '*PreferencesAppearanceRepositoryTest' --tests '*ThemeContrastTest' --tests '*AppearanceNavigationTest' --tests '*MainActivityTest' --tests '*CompleteAppJourneyTest' --tests '*LoremViewModelTest' --max-workers=2 --console=plain
+./gradlew testDebugUnitTest --tests '*AppearanceNavigationTest' --tests '*FoundationLayoutTest' --max-workers=2 --console=plain
+./gradlew testDebugUnitTest --tests '*FoundationLayoutTest' --tests '*ThemeContrastTest' --max-workers=2 --console=plain
+./gradlew testDebugUnitTest --tests '*FoundationLayoutTest' --max-workers=2 --console=plain
+./gradlew test lint assembleDebug --max-workers=2 --console=plain
+```
+
+Compilacao passou. As primeiras iteracoes dos testes novos exigiram rolar conteudo
+fora do viewport, fornecer motivo valido no encerramento e usar desenho nativo
+em vez de PixelCopy. A verificacao de texto tolera apenas um pixel de
+arredondamento das metricas nativas; continua rejeitando corte e reticencias.
+O primeiro lint apontou atributo XML de API 27 no minimo 26 e a ordem do parametro
+Modifier. Removido o atributo (os icones usam WindowCompat) e corrigida a assinatura.
+Os testes direcionados finais e a regressao completa passaram: **193 testes debug
+e 154 release**, zero falhas/erros. Lint sem erros (somente o aviso preexistente
+`MissingApplicationIcon`) e APK debug gerado. Diff e 81 links/ancoras locais
+conferidos; sete criterios concluidos. Sem nova dependencia ou migracao Room.
+
+**TESTE MANUAL OPCIONAL - NAO EXECUTADO**, conforme D-014. TalkBack, teclado,
+rotacao, modos do aparelho e rede real permanecem conferencia humana opcional;
+renderizacoes/testes automatizados nao sao apresentados como uso em dispositivo.
 
 ---
 

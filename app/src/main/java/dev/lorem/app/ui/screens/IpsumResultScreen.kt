@@ -17,6 +17,8 @@ import androidx.compose.ui.unit.dp
 import dev.lorem.app.domain.model.IpsumStatus
 import dev.lorem.app.domain.model.totalTimeMillis
 import dev.lorem.app.ui.IpsumResultUiState
+import dev.lorem.app.ui.components.LoremErrorState
+import dev.lorem.app.ui.components.LoremPrimaryAction
 import kotlin.math.absoluteValue
 
 @Composable
@@ -28,7 +30,7 @@ fun IpsumResultScreen(state: IpsumResultUiState, onClose: () -> Unit) {
         Text("Resultado do Ipsum", style = MaterialTheme.typography.headlineMedium)
         when (state) {
             IpsumResultUiState.Idle, IpsumResultUiState.Loading -> CircularProgressIndicator()
-            is IpsumResultUiState.Error -> Text(state.message, color = MaterialTheme.colorScheme.error)
+            is IpsumResultUiState.Error -> LoremErrorState(state.message)
             is IpsumResultUiState.Ready -> {
                 val result = state.result
                 val ipsum = result.ipsum
@@ -83,7 +85,7 @@ fun IpsumResultScreen(state: IpsumResultUiState, onClose: () -> Unit) {
                 }
             }
         }
-        Button(modifier = Modifier.fillMaxWidth(), onClick = onClose) { Text("Fechar resultado") }
+        LoremPrimaryAction("Fechar resultado", onClose)
     }
 }
 

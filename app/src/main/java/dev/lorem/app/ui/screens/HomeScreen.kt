@@ -10,18 +10,20 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import dev.lorem.app.domain.ConsolidationProgress
 import dev.lorem.app.domain.model.LocalProfile
 import dev.lorem.app.domain.model.ProblemHistory
-import dev.lorem.app.ui.HistorySyncUiState
 import dev.lorem.app.ui.CatalogSyncUiState
-import dev.lorem.app.ui.navigation.LoremDestination
+import dev.lorem.app.ui.HistorySyncUiState
 import dev.lorem.app.ui.StartIpsumUiState
-import dev.lorem.app.domain.ConsolidationProgress
+import dev.lorem.app.ui.components.LoremErrorState
+import dev.lorem.app.ui.components.LoremMetricCard
+import dev.lorem.app.ui.components.LoremPrimaryAction
+import dev.lorem.app.ui.navigation.LoremDestination
 
 @Composable
 fun HomeScreen(
@@ -47,130 +49,99 @@ fun HomeScreen(
     val hasSynchronized = profile.lastSyncEpochMillis > 0L
     val latestCatalogUpdate = (catalogSyncState as? CatalogSyncUiState.Success)
         ?.updatedAtEpochMillis ?: catalogUpdatedAtEpochMillis
-    Scaffold { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(24.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp)
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text("Início", style = MaterialTheme.typography.headlineMedium)
+        Text("${profile.displayName} (@${profile.handle})")
+        Text("Rating oficial: ${profile.officialRating ?: "não disponível"}")
+        LoremMetricCard("Rating Lorem", profile.loremRating.toString())
+        LoremPrimaryAction(
+            label = if (hasActiveIpsum) "Voltar para o Ipsum ativo" else "Iniciar novo Ipsum",
+            onClick = { if (hasActiveIpsum) onNavigate(LoremDestination.Ipsum.route) else onStartIpsum() },
+            busy = startIpsumState == StartIpsumUiState.Loading,
+        )
+        if (latestFinishedIpsumId != null) {
+            Button(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = { onNavigate("${LoremDestination.Result.route}/$latestFinishedIpsumId") },
+            ) { Text("Abrir Resultado") }
+        }
+        when (startIpsumState) {
+            StartIpsumUiState.Idle, is StartIpsumUiState.Success -> Unit
+            StartIpsumUiState.Loading -> Text("Escolhendo e salvando um problema…")
+            is StartIpsumUiState.Error -> LoremErrorState(startIpsumState.message)
+        }
+        consolidation?.let { ConsolidationCard(it, compact = true) }
+
+        preparation?.let { PreparationStatus(it) }
+        dataSourceNotice?.let { Text(it) }
+
+        Text("Histórico do Codeforces", style = MaterialTheme.typography.titleMedium)
+        if (hasSynchronized) {
+            Text("Histórico salvo neste dispositivo.")
+            Text("Problemas tentados: $attemptedCount")
+            Text("Problemas resolvidos: $solvedCount")
+            Text("Última sincronização: ${formatSyncTime(profile.lastSyncEpochMillis)}")
+        }
+
+        when (syncState) {
+            HistorySyncUiState.Idle -> if (!hasSynchronized) {
+                Text("O histórico será importado automaticamente quando houver conexão.")
+            }
+            HistorySyncUiState.Loading -> {
+                CircularProgressIndicator()
+                Text("Sincronizando histórico…")
+            }
+            is HistorySyncUiState.Success -> Text(
+                "Sincronização concluída: ${syncState.problemCount} problemas importados.",
+            )
+            is HistorySyncUiState.Error -> Text(
+                syncState.message,
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
+
+        Button(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = onSynchronize,
+            enabled = syncState != HistorySyncUiState.Loading,
         ) {
-            Text("Início", style = MaterialTheme.typography.headlineMedium)
-            Text("${profile.displayName} (@${profile.handle})")
-            Text("Rating oficial: ${profile.officialRating ?: "não disponível"}")
-            Text("Rating Lorem: ${profile.loremRating}")
-            if (hasActiveIpsum) {
-                Button(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = { onNavigate(LoremDestination.Ipsum.route) },
-                ) {
-                    Text("Voltar para o Ipsum ativo")
-                }
-            } else {
-                Button(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = onStartIpsum,
-                    enabled = startIpsumState != StartIpsumUiState.Loading,
-                ) {
-                    Text("Iniciar novo Ipsum")
-                }
-            }
-            if (latestFinishedIpsumId != null) {
-                Button(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = { onNavigate("${LoremDestination.Result.route}/$latestFinishedIpsumId") },
-                ) { Text("Abrir Resultado") }
-            }
-            when (startIpsumState) {
-                StartIpsumUiState.Idle, is StartIpsumUiState.Success -> Unit
-                StartIpsumUiState.Loading -> Text("Escolhendo e salvando um problema…")
-                is StartIpsumUiState.Error -> Text(startIpsumState.message, color = MaterialTheme.colorScheme.error)
-            }
-            Button(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = { onNavigate(LoremDestination.Configuration.route) },
-            ) {
-                Text("Abrir ${LoremDestination.Configuration.title}")
-            }
-            consolidation?.let { ConsolidationCard(it, compact = true) }
+            Text(if (syncState is HistorySyncUiState.Error) "Tentar novamente" else "Atualizar histórico agora")
+        }
 
-            preparation?.let { PreparationStatus(it) }
-            dataSourceNotice?.let { Text(it) }
-
-            Text("Histórico do Codeforces", style = MaterialTheme.typography.titleMedium)
-            if (hasSynchronized) {
-                Text("Histórico salvo neste dispositivo.")
-                Text("Problemas tentados: $attemptedCount")
-                Text("Problemas resolvidos: $solvedCount")
-                Text("Última sincronização: ${formatSyncTime(profile.lastSyncEpochMillis)}")
+        Text("Catálogo de problemas", style = MaterialTheme.typography.titleMedium)
+        if (latestCatalogUpdate != null) {
+            Text("$problemCatalogCount problemas com rating disponíveis localmente.")
+            Text("Última atualização: ${formatSyncTime(latestCatalogUpdate)}")
+        }
+        when (catalogSyncState) {
+            CatalogSyncUiState.Idle -> if (latestCatalogUpdate == null) {
+                Text("O catálogo será preparado automaticamente quando houver conexão.")
             }
-
-            when (syncState) {
-                HistorySyncUiState.Idle -> if (!hasSynchronized) {
-                    Text("O histórico será importado automaticamente quando houver conexão.")
-                }
-                HistorySyncUiState.Loading -> {
-                    CircularProgressIndicator()
-                    Text("Sincronizando histórico…")
-                }
-                is HistorySyncUiState.Success -> Text(
-                    "Sincronização concluída: ${syncState.problemCount} problemas importados.",
-                )
-                is HistorySyncUiState.Error -> Text(
-                    syncState.message,
-                    color = MaterialTheme.colorScheme.error,
-                )
+            CatalogSyncUiState.Loading -> {
+                CircularProgressIndicator()
+                Text("Atualizando catálogo…")
             }
-
-            Button(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = onSynchronize,
-                enabled = syncState != HistorySyncUiState.Loading,
-            ) {
-                Text(if (syncState is HistorySyncUiState.Error) "Tentar novamente" else "Atualizar histórico agora")
-            }
-
-            Text("Catálogo de problemas", style = MaterialTheme.typography.titleMedium)
-            if (latestCatalogUpdate != null) {
-                Text("$problemCatalogCount problemas com rating disponíveis localmente.")
-                Text("Última atualização: ${formatSyncTime(latestCatalogUpdate)}")
-            }
-            when (catalogSyncState) {
-                CatalogSyncUiState.Idle -> if (latestCatalogUpdate == null) {
-                    Text("O catálogo será preparado automaticamente quando houver conexão.")
-                }
-                CatalogSyncUiState.Loading -> {
-                    CircularProgressIndicator()
-                    Text("Atualizando catálogo…")
-                }
-                is CatalogSyncUiState.Success -> Text(
-                    "Catálogo atualizado: ${catalogSyncState.problemCount} problemas elegíveis.",
-                )
-                is CatalogSyncUiState.Error -> {
-                    Text(catalogSyncUiMessage(catalogSyncState), color = MaterialTheme.colorScheme.error)
-                }
-            }
-            Button(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = onSynchronizeCatalog,
-                enabled = catalogSyncState != CatalogSyncUiState.Loading,
-            ) {
-                Text(if (catalogSyncState is CatalogSyncUiState.Error) "Tentar atualizar catálogo" else "Atualizar catálogo agora")
-            }
-
-            LoremDestination.all.filterNot {
-                it == LoremDestination.Home || it == LoremDestination.Configuration ||
-                    it == LoremDestination.Ipsum || it == LoremDestination.Result
-            }.forEach { destination ->
-                Button(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = { onNavigate(destination.route) },
-                ) {
-                    Text("Abrir ${destination.title}")
-                }
+            is CatalogSyncUiState.Success -> Text(
+                "Catálogo atualizado: ${catalogSyncState.problemCount} problemas elegíveis.",
+            )
+            is CatalogSyncUiState.Error -> {
+                Text(catalogSyncUiMessage(catalogSyncState), color = MaterialTheme.colorScheme.error)
             }
         }
+        Button(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = onSynchronizeCatalog,
+            enabled = catalogSyncState != CatalogSyncUiState.Loading,
+        ) {
+            Text(if (catalogSyncState is CatalogSyncUiState.Error) "Tentar atualizar catálogo" else "Atualizar catálogo agora")
+        }
+
     }
 }
 
