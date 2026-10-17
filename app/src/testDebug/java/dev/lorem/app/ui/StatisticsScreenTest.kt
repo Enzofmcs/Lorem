@@ -9,6 +9,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performScrollToNode
 import dev.lorem.app.StatisticsFixtures
 import dev.lorem.app.domain.buildIpsumStatistics
@@ -40,6 +41,7 @@ class StatisticsScreenTest {
         see("Média de erros antes do AC: 1,5 (2 AC no Ipsum)")
         see("Pendentes atuais: 1")
         see("AC posterior: 1")
+        see("4 avaliação(ões) registrada(s) · rating de 1202 a 1242")
         see("1200 → 1224 (+24)")
         see("1222 → 1202 (-20)")
     }
@@ -53,12 +55,13 @@ class StatisticsScreenTest {
         see("Rating 1400")
         see("Taxa de AC no Ipsum: 0,0% (0/2)")
         select("TAGS")
+        see("Uma tentativa pode contribuir para várias tags oficiais.", substring = true)
         see("dp: 3 tentativa(s)")
         see("greedy: 0 tentativa(s)")
         see("math: 100,0% (1/1)")
         see("dp: 66,7% (2/3)")
         see("Taxa de AC no Ipsum: 33,3% (1/3)")
-        see("Taxa de AC no Ipsum: Sem dados (0/0)")
+        see("Taxa de AC no Ipsum: Sem amostra (0/0)")
         select("SUMMARY")
         see("Ipsums encerrados: 4")
     }
@@ -74,7 +77,7 @@ class StatisticsScreenTest {
             state.value = StatisticsUiState.Ready(buildIpsumStatistics(StatisticsFixtures.profile, emptyList()))
         }
         see("Nenhum Ipsum encerrado. Conclua um treino para ver seu desempenho.")
-        see("Taxa de AC no Ipsum: Sem dados (0/0)")
+        see("Taxa de AC no Ipsum: Sem amostra (0/0)")
         see("Sem avaliações de rating registradas.")
         composeRule.runOnIdle {
             state.value = StatisticsUiState.Ready(buildIpsumStatistics(StatisticsFixtures.profile,
@@ -98,6 +101,31 @@ class StatisticsScreenTest {
         assertTrue(composeRule.onAllNodesWithText("1200 → 1224 (+24)").fetchSemanticsNodes().isEmpty())
     }
 
+    @Test fun `zero failure with an observed sample differs from no sample`() {
+        val stats = buildIpsumStatistics(StatisticsFixtures.profile, StatisticsFixtures.finished.take(2), StatisticsFixtures.catalog)
+        composeRule.setContent { LoremTheme { StatisticsScreen(StatisticsUiState.Ready(stats)) } }
+        select("TAGS")
+        see("Nenhuma falha nas tentativas com amostra.")
+        see("Taxa de AC no Ipsum: Sem amostra (0/0)")
+    }
+
+    @Test fun `single flat and large persisted rating series retain exact textual alternatives`() {
+        val data = mutableStateOf(StatisticsFixtures.finished.take(1))
+        composeRule.setContent { LoremTheme { StatisticsScreen(StatisticsUiState.Ready(
+            buildIpsumStatistics(StatisticsFixtures.profile, data.value))) } }
+        see("1 avaliação(ões) registrada(s) · rating de 1224 a 1224")
+        see("1200 → 1224 (+24)")
+        composeRule.runOnIdle {
+            data.value = (1L..200L).map { id -> StatisticsFixtures.attempt(id, dev.lorem.app.domain.model.IpsumStatus.COMPLETED)
+                .copy(ratingDelta = 0, finalLoremRating = 1200) }
+        }
+        see("200 avaliação(ões) registrada(s) · rating de 1200 a 1200")
+        // Jump through the lazy series, then inspect the last persisted row without scanning every card.
+        composeRule.onNodeWithTag("statistics-list").performScrollToIndex(204)
+        see("Ipsum #200", substring = true)
+        composeRule.onNodeWithTag("statistics-evolution-200").assertExists()
+    }
+
     private fun setReady() {
         val stats = buildIpsumStatistics(StatisticsFixtures.profile, StatisticsFixtures.finished, StatisticsFixtures.catalog)
         composeRule.setContent { LoremTheme { StatisticsScreen(StatisticsUiState.Ready(stats)) } }
@@ -108,8 +136,8 @@ class StatisticsScreenTest {
         composeRule.onNodeWithTag("statistics-section-$section").performClick()
     }
 
-    private fun see(text: String) {
-        composeRule.onNodeWithTag("statistics-list").performScrollToNode(hasText(text))
-        composeRule.onNodeWithText(text).performScrollTo().assertIsDisplayed()
+    private fun see(text: String, substring: Boolean = false) {
+        composeRule.onNodeWithTag("statistics-list").performScrollToNode(hasText(text, substring = substring))
+        composeRule.onNodeWithText(text, substring = substring).performScrollTo().assertIsDisplayed()
     }
 }

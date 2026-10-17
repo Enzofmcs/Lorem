@@ -205,6 +205,7 @@ fun LoremNavHost(
             composable(LoremDestination.History.route) {
                 HistoryScreen(
                     ipsums = ownedIpsums,
+                    ownerHandle = profile?.handle,
                     updateState = pendingUpdateState,
                     onUpdatePending = onUpdatePendingIpsums,
                     onNavigateHome = {

@@ -4,6 +4,8 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.lifecycle.ViewModelStore
+import dev.lorem.app.data.local.toEntity
+import dev.lorem.app.domain.model.Ipsum
 import dev.lorem.app.domain.model.ThemePreference
 import dev.lorem.app.ui.LoremApp
 import dev.lorem.app.ui.LoremViewModel
@@ -36,11 +38,12 @@ class AppearanceNavigationTest {
         compose.onNodeWithTag("tab-$route").performClick()
         await { runCatching { compose.onNodeWithTag("tab-$route").assertIsSelected(); true }.getOrDefault(false) }
     }
-    private fun setup(): Pair<LoremViewModel, StateRestorationTester> {
+    private fun setup(history: List<Ipsum> = emptyList()): Pair<LoremViewModel, StateRestorationTester> {
         val storage = TrainingHarness(scope).also { env = it }
         runBlocking {
             storage.repository.saveProfile(StatisticsFixtures.profile)
             storage.repository.replaceProblemCatalog(storage.remote.catalog, 1000)
+            history.forEach { storage.database.ipsumDao().insert(it.toEntity()) }
         }
         val model = LoremViewModel(storage.repository, storage.remote, nowMillis = { 1_000_000 },
             appearanceRepository = storage.appearance).also { models.put("app", it) }
@@ -56,12 +59,14 @@ class AppearanceNavigationTest {
         see("Histórico e pendências")
         compose.onNodeWithTag("rating-1200").assertDoesNotExist() // No fabricated history.
         compose.onNodeWithTag("situation-PENDING").performScrollTo().performClick()
-        compose.onNodeWithText("Nenhum item nesta categoria com os filtros atuais.").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithTag("history-list").performScrollToNode(hasText("Seu histórico começa no primeiro Ipsum."))
+        compose.onNodeWithText("Seu histórico começa no primeiro Ipsum.").performScrollTo().assertIsDisplayed()
         val historyScroll = compose.onNodeWithTag("history-list").fetchSemanticsNode()
             .config[androidx.compose.ui.semantics.SemanticsProperties.VerticalScrollAxisRange].value()
         tab("statistics")
         see("Rating Lorem atual: 1202")
-        compose.onNodeWithTag("statistics-section-TAGS").performClick()
+        compose.onNodeWithTag("statistics-list").performScrollToNode(hasTestTag("statistics-section-TAGS"))
+        compose.onNodeWithTag("statistics-section-TAGS").performScrollTo().performClick()
         compose.onNodeWithTag("statistics-list").performScrollToNode(hasText("greedy: 0 tentativa(s)"))
         val statisticsScroll = compose.onNodeWithTag("statistics-list").fetchSemanticsNode()
             .config[androidx.compose.ui.semantics.SemanticsProperties.VerticalScrollAxisRange].value()
@@ -84,6 +89,31 @@ class AppearanceNavigationTest {
         compose.onNodeWithTag("situation-PENDING").performScrollTo().assertIsSelected()
         tab("home")
         compose.onNodeWithText("Iniciar Ipsum").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test fun `real history filters and card position survive tab switching and recreation`() {
+        val (_, restorer) = setup(StatisticsFixtures.finished)
+        tab("history")
+        see("Histórico e pendências")
+        compose.onNodeWithTag("situation-PENDING").performScrollTo().performClick()
+        compose.onNodeWithTag("history-advanced").performScrollTo().performClick()
+        compose.onNodeWithTag("rating-1400").performScrollTo().performClick()
+        compose.onNodeWithTag("tag-dp").performScrollTo().performClick()
+        compose.onNodeWithTag("history-list").performScrollToNode(hasText("Variação do Rating Lorem: -20"))
+        val scroll = compose.onNodeWithTag("history-list").fetchSemanticsNode()
+            .config[androidx.compose.ui.semantics.SemanticsProperties.VerticalScrollAxisRange].value()
+        tab("statistics")
+        see("Rating Lorem atual: 1202")
+        tab("history")
+        assertEquals(scroll, compose.onNodeWithTag("history-list").fetchSemanticsNode()
+            .config[androidx.compose.ui.semantics.SemanticsProperties.VerticalScrollAxisRange].value(), 1f)
+        restorer.emulateSavedInstanceStateRestore()
+        assertEquals(scroll, compose.onNodeWithTag("history-list").fetchSemanticsNode()
+            .config[androidx.compose.ui.semantics.SemanticsProperties.VerticalScrollAxisRange].value(), 1f)
+        compose.onNodeWithTag("history-list").performScrollToNode(hasText("Filtros ativos: Pendente · rating 1400 · tag dp"))
+        compose.onNodeWithText("Filtros ativos: Pendente · rating 1400 · tag dp").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithTag("rating-1400").performScrollTo().assertIsSelected()
+        compose.onNodeWithTag("tag-dp").performScrollTo().assertIsSelected()
     }
 
     @Test fun `dedicated training back preserves active attempt and returning result has no tabs`() {

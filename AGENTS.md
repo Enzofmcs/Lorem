@@ -44,13 +44,13 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
-- **Foco:** Historia 20 concluida; proxima implementacao: Historia 21 - redesign do historico e estatisticas.
-- **Ultima historia verificada:** Historia 20 - Redesign da experiencia do Ipsum e resultado, automaticamente em 2026-10-16.
-- **Primeiro item pendente:** redesign do historico e estatisticas (Historia 21).
-- **Proxima entrega demonstravel:** redesign de Historico/Estatisticas (21), ultima historia planejada; Historias 00-20 preservadas.
+- **Foco:** Historia 21 concluida; bloco de automacao e apresentacao (15-21) verificado.
+- **Ultima historia verificada:** Historia 21 - Redesign do historico e estatisticas, automaticamente em 2026-10-16.
+- **Primeiro item pendente:** nenhuma historia planejada pendente.
+- **Proxima entrega demonstravel:** Historias 00-21 implementadas; demonstracao e manutencao conforme demanda.
 - **Bloqueios conhecidos:** nenhum; teste manual e opcional (D-014).
 
-Regressao da Historia 20: 208 testes debug e 155 release sem falhas, lint sem erros
+Regressao da Historia 21: 217 testes debug e 155 release sem falhas, lint sem erros
 (apenas aviso preexistente de icone) e `assembleDebug` concluido.
 Progresso e aceite: [`docs/ROADMAP.md`](docs/ROADMAP.md).
 Roteiro: [`docs/DEMO.md`](docs/DEMO.md).

@@ -3,7 +3,7 @@
 Direção de 13/10/2026 para as Histórias 18–21. A base da História 18 está implementada:
 paleta semântica clara/escura, preferência persistida, componentes e navegação.
 Configuração/Início (19) e Ipsum/Resultado (20) também estão implementados.
-O próximo e último redesign planejado é Histórico/Estatísticas (21).
+Histórico/Estatísticas (21) também estão implementados e verificados; o bloco visual está concluído.
 Este documento e a [referência visual](design/lorem-concept.svg) orientam o redesign;
 os números da referência são exemplos ilustrativos, não dados do usuário.
 
@@ -145,3 +145,13 @@ sem anúncio a cada segundo. Resultado usa snapshots de rating e distingue AC
 posterior da avaliação original. `IpsumPreviews` e `IpsumLayoutTest` cobrem os dois
 temas, 360 dp, 320 dp/fonte 200%, paisagem, textos longos e confirmações em outra
 janela com escala de fonte do Android. Imagens ficam em `app/build/reports/visual/`.
+
+
+A História 21 aplica essa direção a Histórico e Estatísticas. Cards cronológicos,
+filtros avançados recolhidos e estado salvo entre abas mantêm o foco na revisão.
+Upsolve distingue a data posterior da avaliação original. Curva pelos valores
+persistidos e barras de AC por rating/tag acompanham frações, amostras e linhas
+textuais completas; gráficos decorativos não duplicam a leitura acessível.
+`HistoryStatisticsPreviews` e `HistoryStatisticsLayoutTest` cobrem dois temas,
+360 dp, 320 dp/fonte 200%, paisagem, texto longo, offline e amostra zero, gerando
+imagens em `app/build/reports/visual/`. A D-013 e o domínio foram preservados.
