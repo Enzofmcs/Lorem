@@ -35,7 +35,7 @@
     "commands": [
       {
         "stage": "collect",
-        "seconds": 15.729,
+        "seconds": 27.158,
         "exit_code": 0,
         "stderr": "",
         "result": {
@@ -52,37 +52,37 @@
       },
       {
         "stage": "prepare",
-        "seconds": 81.95,
+        "seconds": 63.374,
         "exit_code": 0,
         "stderr": ""
       },
       {
         "stage": "split",
-        "seconds": 0.048,
+        "seconds": 0.047,
         "exit_code": 0,
         "stderr": ""
       },
       {
         "stage": "train-baseline",
-        "seconds": 13.98,
+        "seconds": 13.673,
         "exit_code": 0,
         "stderr": ""
       },
       {
         "stage": "train",
-        "seconds": 79.002,
+        "seconds": 78.222,
         "exit_code": 0,
         "stderr": ""
       },
       {
         "stage": "evaluate",
-        "seconds": 12.604,
+        "seconds": 14.187,
         "exit_code": 0,
         "stderr": ""
       },
       {
         "stage": "report",
-        "seconds": 2.527,
+        "seconds": 3.863,
         "exit_code": 0,
         "stderr": ""
       }
@@ -157,7 +157,7 @@
         "identical": true
       },
       "report/calibration-ipcw.svg": {
-        "sha256": "329e0c55c7a5d9e788ca9457ed0f8285023d5d93448245ba97e2b6fc347bf47c",
+        "sha256": "674ecd3ba335223ce9ab0f0c95b0711e5d1b9d5db80474c0b982bc03a6b6c323",
         "identical": true
       },
       "report/calibration-known.png": {
@@ -165,7 +165,7 @@
         "identical": true
       },
       "report/calibration-known.svg": {
-        "sha256": "abfb784b99928f10e1f4bd3a1dadb8bb1167a27e7c2094ccefd0cc3ddb6b8360",
+        "sha256": "dcc39517fccb0d7ec8d197a711102c0dd77fcee17ddb4a0845f3e5675502df62",
         "identical": true
       },
       "report/calibration.csv": {
@@ -177,7 +177,7 @@
         "identical": true
       },
       "report/manifest.json": {
-        "sha256": "4ff0c22f90615b425fd4a1a3d176642df8400585ad25a10b2927143300237bd2",
+        "sha256": "9faa0e476b48554aeaf3d04daa9b3ee3a8f09bd9a214fdc6e793da17c2fb9f7a",
         "identical": true
       },
       "report/metrics.csv": {
@@ -201,7 +201,7 @@
         "identical": true
       },
       "report/time-mae.svg": {
-        "sha256": "4d113a92da4d428ec8a8255d7ca934a0689ce636b4bcc1babb5f13da80b3cfb2",
+        "sha256": "107eb0e02b2fdfda6dff739064ef7de32990d2b8bf62e80aa8b133a1f927c70e",
         "identical": true
       }
     },
@@ -212,7 +212,7 @@
     "files": 29
   },
   "dependencies_lock_sha256": "ece8c75130dabbcdc0b99bfb4d166c6d972f4897d916f10858689baf860e928b",
-  "wheel_sha256": "8b3d1699348ccf2ff8e954e562f0601c87196c9242b65f73efd2cc95137bf2c1",
+  "wheel_sha256": "70f983ff7ebf000ab7a00c4fc33dc0b666be607c3293be3cc5f90e04e7a78bbd",
   "collection_cost": {
     "network_requests_reproduction": 0,
     "original_http_responses": 308,
@@ -228,5 +228,6 @@
     "No Android rating or model integration change in 27/28"
   ],
   "conclusion": "KM by delta has lower integrated Brier than frozen AFT in this limited cohort; retain D-012 and distinct ratings pending Ipsum validation",
-  "manual_test": "TESTE MANUAL OPCIONAL - NAO EXECUTADO"
+  "manual_test": "TESTE MANUAL OPCIONAL - NAO EXECUTADO",
+  "reproductions_completed": 3
 }

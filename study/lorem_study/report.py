@@ -50,6 +50,8 @@ def plots(output, result):
     def save(fig, stem):
         fig.tight_layout()
         fig.savefig(output / (stem + ".svg"), metadata={"Date": None, "Creator": "Lorem study"})
+        svg = output / (stem + ".svg")
+        svg.write_text("\n".join(line.rstrip() for line in svg.read_text(encoding="utf-8").splitlines()) + "\n", encoding="utf-8")
         fig.savefig(output / (stem + ".png"), dpi=160, metadata={"Software": "Lorem study"})
         plt.close(fig)
     fig, ax = plt.subplots(figsize=(8, 4))
