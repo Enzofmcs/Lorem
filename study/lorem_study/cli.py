@@ -52,16 +52,23 @@ def main(argv=None):
     parser.add_argument("--old-rating", type=int)
     parser.add_argument("--problem-rating", type=int)
     parser.add_argument("--budgets", type=float, nargs="+")
+    parser.add_argument("--model", choices=("baseline", "aft"), default="baseline")
     args = parser.parse_args(argv)
     try:
-        if args.command in ("train", "evaluate"):
-            raise StudyError("NOT IMPLEMENTED: AFT training/evaluation belong to Histories 26/27; no research metrics produced")
+        if args.command == "evaluate":
+            raise StudyError("NOT IMPLEMENTED: held-out evaluation belongs to History 27; no research metrics produced")
+        if args.command == "train" or (args.command == "predict" and args.model == "aft"):
+            try:
+                from .aft import predict_aft, train_aft
+            except ImportError as error:
+                raise StudyError("AFT requires optional dependencies: pip install -r requirements-model.lock") from error
         if args.command == "fixture":
             result = create_fixture(args.work, load_config(args.config), args.contests)
         elif args.command == "predict":
             if args.old_rating is None or args.problem_rating is None:
                 raise StudyError("predict requires --old-rating and --problem-rating")
-            result = predict(read_json(args.work / "baseline" / "model.json"), args.old_rating,
+            predictor = predict_aft if args.model == "aft" else predict
+            result = predictor(read_json(args.work / args.model / "model.json"), args.old_rating,
                              args.problem_rating, args.budgets or [30, 60, 120])
         else:
             with work_lock(args.work):
@@ -73,13 +80,16 @@ def main(argv=None):
                     result = split(args.work)
                 elif args.command == "train-baseline":
                     result = train_baseline(args.work)
+                elif args.command == "train":
+                    result = train_aft(args.work)
                 else:
                     prepared = args.work / "prepared" / "manifest.json"
                     result = {"schema_version": 1, "status": "pipeline_status_only; full report belongs to History 28",
                               "data_kind": read_json(prepared)["data_kind"] if prepared.exists() else "not_collected",
                               "stages": {stage: path.exists() for stage, path in {
                                   "snapshot": args.work / "snapshot.json", "prepared": prepared,
-                                  "split": args.work / "splits.json", "baseline": args.work / "baseline" / "model.json"}.items()},
+                                  "split": args.work / "splits.json", "baseline": args.work / "baseline" / "model.json",
+                                  "aft": args.work / "aft" / "model.json"}.items()},
                               "research_metrics": "NOT EXECUTED (History 27)"}
                     write_json(args.work / "status.json", result)
         print(json.dumps(result, ensure_ascii=False, allow_nan=False, sort_keys=True))

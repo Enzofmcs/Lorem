@@ -150,7 +150,7 @@ confundir verificacao sintetica com coleta real ou evidencia de precisao.
 
 Usar testes isolados em `study/` com fixtures sinteticas identificadas, sem rede
 ou Gradle. Comando verificado na continuacao: `cd study && python -m unittest discover
--s tests -v` (39 testes na continuacao da PR #57). Instalar o comando e reproduzir a jornada conforme
+-s tests -v` (51 testes com dependencias opcionais da 26 instaladas). Instalar o comando e reproduzir a jornada conforme
 [study/README.md](../study/README.md); wheel/default config e CLI fora da pasta verificados. Cobertura obrigatoria: corte inclusivo/data ausente, oldRating e
 joins, paginacao/429/retomada, 10/28/65 -> 10/18/37, primeiro AC/upsolve, salto,
 inversao/intercalacao, censura versus coleta incompleta, ausencia de tentativa,
@@ -163,6 +163,17 @@ de page_size) e metadados malformados cobertos por testes. Status com pagina fin
 curta, joins oficiais/oldRating, hashes, funis e recusa de split insuficiente
 conferidos nos dados reais. Cobertura valida zero por indices B1/B2 e E1/E2;
 [evidencia](../study/evidence/2026-10-18-pilot-real.json) nao comprova precisao.
+
+Historia 26: NumPy 2.3.5/SciPy 1.17.0 opcionais, fixados em requirements-model.lock.
+51 testes em venv: gradientes numericos/analiticos e sinal censurado nas duas
+familias, convergencia com gradiente (incluindo falso sucesso do otimizador), CDF/
+quantis, suporte e extrapolacao, IPCW interno/censura desconhecida, folds por grupos,
+rotulos do teste alterados sem mudar modelo e CLI train/predict. Core executado com
+`python -S` sem site-packages; falta de dependencias AFT gera erro explicito.
+Wheel 0.2.0 contem fontes/default exatos e CLI funciona fora da pasta.
+Amostra real: 20 adquiridos/19 elegiveis, particoes 11/4/4 e treino 193.527 tentativas
+com eventos e censuras. Teste reservado para 27; [evidencia](../study/evidence/2026-10-18-sample-aft.json).
+Nenhum codigo Android alterado; build/lint Android nao se aplicam a esta continuacao.
 
 No marco 28, executar suite Python e reproducao integral do snapshot ao relatorio
 em ambiente limpo, com hashes, sementes e denominadores. Testes sinteticos verificam

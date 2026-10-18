@@ -52,6 +52,7 @@ Upsolves, virtual/practice e submissoes fora da janela sao excluidos e contados.
 | `submission_ids`, refs (audit) | Rastreio a raw/status, ratingChanges, catalogo e metadados de origem. |
 
 Motivos incluem: missing_old_rating, conflicting_rating_changes,
+not_recognized_regular_cf_round,
 insufficient_prior_rating_history, ambiguous_problem_origin,
 origin_date_missing_or_before_cutoff, missing_problem_rating,
 unsupported_problem_order, incomplete_collection, conflicting_submission_identity,
@@ -76,3 +77,18 @@ ser null. `out_of_domain` sinaliza extrapolacao e `support` informa suporte por
 horizonte. `d012_expected_minutes` reproduz clamp(60+delta/10,30,120), com arredondamento
 positivo equivalente ao Kotlin; `d012_probability=null`. Artefatos e previsoes
 referenciam seu hash e versao. Intervalo preditivo empirico nao e intervalo de confianca.
+
+## AFT v1
+
+Metodo em [MODEL.md](MODEL.md). `aft/model.json` usa `model_version=aft-v1` e inclui
+`fit` (distribuicao, penalidade, coeficientes por 100 pontos, centros/escalas do
+treino, escala da distribuicao, fatores de tempo, dominio, convergencia e hash do
+treino). `selection` registra grade, folds, scores internos da validacao e gate de
+calibracao. A curva de censura e ajustada somente no treino. Versoes NumPy/SciPy
+ficam no artefato. Rotulos do teste nao participam de selecao/transformacoes.
+
+Previsoes incluem probabilidades por orcamento, mediana e quantis 10/90 em minutos,
+suporte de cada horizonte/quantil e extrapolacao de rating. Seguimento insuficiente
+ou gate falho retorna `null`; nenhum valor infinito. Intervalo e preditivo,
+parametrico, sem alegacao de IC ou precisao comprovada. `manifest.json` liga hashes
+de modelo, tabelas, particoes e previsoes. A avaliacao cientifica reservada e a 27.

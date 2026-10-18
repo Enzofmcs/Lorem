@@ -36,7 +36,7 @@ class CliTests(unittest.TestCase):
             models.append(read_json(root / "baseline" / "model.json"))
         self.assertEqual(models[0], models[1])
         self.assertEqual(read_json(roots[0] / "snapshot.json"), read_json(roots[1] / "snapshot.json"))
-        for command in ("train", "evaluate"):
+        for command in ("evaluate",):
             status, _, err = self.command(command)
             self.assertEqual(status, 2)
             self.assertIn("NOT IMPLEMENTED", err)

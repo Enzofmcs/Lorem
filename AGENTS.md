@@ -50,11 +50,11 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
-- **Foco:** Python 22-25 verificado; piloto real da 23 concluido em 2026-10-18. Historias 00-21 preservadas.
-- **Ultima historia verificada:** Historia 23 (piloto real), em 2026-10-18: 2 contests completos, cache offline e 39 testes Python. 22/24/25 verificados como software. Ultimo marco Android: Historia 21, em 2026-10-16.
-- **Primeiro item pendente:** amostra elegivel para treino e Historia 26 (AFT).
-- **Proxima entrega demonstravel:** amostra deterministica em novo diretorio e 26; o piloto permanece congelado, com cobertura valida zero.
-- **Bloqueios conhecidos:** piloto 1824/2062 tem B1/B2 e E1/E2, recusados pela regra de indices simples: 47.100 tentativas excluidas, nenhum intervalo valido. Acesso a API resolvido; minimo de 10 contests elegiveis ainda nao atingido. 32 depende da 31. Teste manual opcional (D-014).
+- **Foco:** estudo Python 22-26 implementado e verificado; amostra real e primeiro AFT ajustados. Historias 00-21 preservadas.
+- **Ultima historia verificada:** Historia 26 em 2026-10-18: 51 testes, amostra de 20 contests adquiridos/19 elegiveis e AFT Weibull selecionado na validacao. Ultimo marco Android: Historia 21, em 2026-10-16.
+- **Primeiro item pendente:** Historia 27 - avaliacao reservada de erros, probabilidades e incerteza.
+- **Proxima entrega demonstravel:** comparar modelos/referencias nos quatro contests de teste, sem retunar a escolha; relatorio completo na 28.
+- **Bloqueios conhecidos:** nenhum para iniciar 27. Amostra limitada a 19 contests elegiveis; 1589 excluido por ratings de problemas ausentes. 32 depende da 31. Teste manual opcional (D-014).
 
 Regressao da Historia 21: 217 testes debug e 155 release sem falhas, lint sem erros
 (apenas aviso preexistente de icone) e `assembleDebug` concluido.
@@ -64,8 +64,10 @@ Planejamento atual: [estudo quantitativo](docs/QUANTITATIVE.md) e
 [Historia 22](docs/ROADMAP.md#historia-22---base-python-e-protocolo-reproduzivel-do-estudo).
 Python: [guia e comandos](study/README.md), [contrato](study/DATA_DICTIONARY.md) e
 [evidencia sintetica](study/evidence/2026-10-18-validation.json) e
-[piloto real](study/evidence/2026-10-18-pilot-real.json). Baselines verificados em
-fixtures sinteticas; coleta real nao comprova ganho preditivo.
+[piloto real](study/evidence/2026-10-18-pilot-real.json). Amostra e modelo:
+[evidencia da 26](study/evidence/2026-10-18-sample-aft.json) e
+[metodo AFT](study/MODEL.md). Avaliacao reservada ainda nao executada; ganho
+preditivo nao comprovado. Usar configs/regular-simple-v1.json nas novas coletas.
 D-012 continua em producao. Comparacao entre epocas e correcao temporal fora do escopo.
 
 ## Politica de contexto

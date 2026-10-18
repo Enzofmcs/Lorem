@@ -214,6 +214,18 @@ class PreparationTests(unittest.TestCase):
         self.assertTrue(all(row["reason"] == "unsupported_problem_order" for row in prefix))
         self.assertTrue(all(row["duration_seconds"] is None and row["event"] is None for row in labels))
 
+    def test_special_contest_is_excluded_even_with_simple_indices(self):
+        def special(method, data):
+            if method == "contest.list":
+                for contest in data:
+                    contest["name"] = "April Fools Day Contest"
+            elif method == "contest.standings":
+                data["contest"]["name"] = "April Fools Day Contest"
+        _, report, _, labels = self.run_fixture(special)
+        self.assertEqual(report["complete_contest_ids"], [])
+        self.assertEqual(report["valid_events"] + report["valid_censored"], 0)
+        self.assertTrue(all(r["reason"] == "not_recognized_regular_cf_round" for r in labels))
+
     def test_missing_problem_rating_is_not_imputed_from_results(self):
         def modify(method, data):
             if method == "problemset.problems":

@@ -1,22 +1,23 @@
 # Estudo Python do Lorem
 
-Implementacao das Historias 22-25: coleta com proveniencia, preparacao de tentativas,
-particoes por contest e referencias Kaplan-Meier/D-012. **Piloto real da Historia 23
-concluido: 1824/2062 completos, com cache offline. Cobertura valida zero pela regra
-vigente de indices simples; nenhum modelo ou avaliacao real produzido.** Dados
-sinteticos verificam o codigo. AFT, avaliacao de precisao/calibracao/ICs e relatorio cientifico
-completo pertencem as Historias 26-28 e nao estao implementados.
+Implementacao das Historias 22-26: coleta com proveniencia, preparacao de tentativas,
+particoes por contest, referencias Kaplan-Meier/D-012 e AFT log-normal/Weibull.
+Nova amostra real: 20 contests coletados, 19 elegiveis; 274.073 tentativas validas,
+incluindo 39.128 censuras. Particoes 11/4/4; ajuste e selecao usam apenas treino e
+validacao. Avaliacao reservada de precisao/ICs e relatorio cientifico completo
+continuam nas Historias 27-28. Nenhum ganho preditivo esta comprovado.
 
 Protocolo: [QUANTITATIVE.md](../docs/QUANTITATIVE.md). Contratos:
 [DATA_DICTIONARY.md](DATA_DICTIONARY.md). O aplicativo Android e sua pontuacao nao mudam.
 
 ## Ambiente e comandos
 
-Python **>=3.11,<3.14**; verificado em 3.12.14. Runtime e testes usam somente a
+Python **>=3.11,<3.14**; verificado em 3.12.14. Coleta/preparo/baselines usam a
 biblioteca padrao: `urllib` preserva proxy/CA/TLS, `unittest` testa sem rede e o
 produto-limite Kaplan-Meier e pequeno e verificavel por conjuntos de risco. Nenhuma
-biblioteca estatistica e antecipada para as Historias 26/27. A dependencia opcional
-de empacotamento e fixada em `requirements.lock`/`pyproject.toml`.
+dependencia de modelo e exigida nessas etapas. AFT usa NumPy 2.3.5/SciPy 1.17.0,
+opcionais e fixados em `requirements-model.lock`; metodo em [MODEL.md](MODEL.md).
+A dependencia de empacotamento e fixada em `requirements.lock`/`pyproject.toml`.
 
 Na pasta `study/`, sem instalar pacotes:
 
@@ -61,15 +62,16 @@ esperado **somente na fixture**: 90 tentativas observadas, 40 eventos, 10 censur
 Para os ratings do exemplo, mediana 18 min, probabilidades 0,6/0,8/indisponivel em
 30/60/120 min; q90 nao identificado. Esses numeros nao medem a precisao do Lorem.
 
-`train` (AFT) e `evaluate` retornam erro explicito de etapa nao implementada. `report`
+`train` ajusta AFT com dependencias opcionais. `evaluate` retorna erro explicito de
+etapa nao implementada (27). `report`
 mostra apenas o estado do pipeline, sem fabricar metricas ou relatorio cientifico.
 
 ## Coleta real e retomada
 
 ```bash
-python -m lorem_study collect --work work/pilot-real --pilot
-python -m lorem_study collect --work work/pilot-real --pilot --offline
-python -m lorem_study prepare --work work/pilot-real
+python -m lorem_study collect --work work/pilot-regular --pilot --config configs/regular-simple-v1.json
+python -m lorem_study collect --work work/pilot-regular --pilot --config configs/regular-simple-v1.json --offline
+python -m lorem_study prepare --work work/pilot-regular
 ```
 
 O piloto congela dois contests. Um piloto nao satisfaz o minimo de dez contests
@@ -77,7 +79,7 @@ para particoes/ajuste; `split` retorna erro, sem produzir uma avaliacao aparente
 Depois de medir seu custo, use **outro diretorio** para a amostra-alvo:
 
 ```bash
-python -m lorem_study collect --work work/sample-real
+python -m lorem_study collect --work work/sample-real --config configs/regular-simple-v1.json
 python -m lorem_study prepare --work work/sample-real
 python -m lorem_study split --work work/sample-real
 python -m lorem_study train-baseline --work work/sample-real
@@ -91,6 +93,41 @@ Copie a configuracao e passe `--config caminho.json` **antes da primeira coleta*
 para registrar outro volume/custo. Corte, protocolo e versao nao podem mudar
 silenciosamente. A selecao congela antes do ajuste; a ordem usa hash/rodizio de
 divisoes, nunca desempenho ou AC. Id nao substitui data.
+
+Para novas coletas reais, usar [regular-simple-v1.json](configs/regular-simple-v1.json).
+O default original permanece para reproduzir fixtures/snapshots anteriores. A
+triagem conservadora reconhece CF FINISHED com Div. 1-4 ou Codeforces Global Round
+no nome, sem marcadores especiais, e exige problemas A/B/C simples em standings.
+Percorre a ordem de hash/rodizio ate 20 estruturas elegiveis (limite 100 candidatos),
+registrando tambem os recusados. Erro interrompe/retoma o candidato, sem substitui-lo.
+Nenhuma submissao, pontuacao ou desfecho escolhe a amostra. So depois congela
+selection.json e baixa os historicos. Ratings/completude podem reduzir o numero
+final elegivel; essa perda fica explicita antes do ajuste, sem trocar por sucesso.
+
+Na execucao de 18/10/2026: 44 candidatos verificados, 20 adquiridos; 1589 perdeu
+elegibilidade por falta de ratings verificaveis no catalogo. Os 19 restantes
+produziram 392.445 tentativas observadas: 234.945 eventos, 39.128 censuras e
+118.372 exclusoes. Treino 193.527, validacao 45.179 e teste reservado 35.367
+tentativas validas. O piloto anterior 1824/2062 foi preservado.
+
+## Modelo AFT (Historia 26)
+
+```bash
+.venv/bin/python -m pip install -r requirements-model.lock
+.venv/bin/python -m lorem_study train --work work/sample-real
+.venv/bin/python -m lorem_study predict --model aft --work work/sample-real --old-rating 1200 --problem-rating 1600 --budgets 30 60 120
+```
+
+No Windows, usar `.venv\Scripts\python.exe`. Para a amostra desta sessao,
+o diretorio e `work/sample-real-regular-v1/`. O comando de treino exige preparo e
+particoes validos. Compara seis candidatos (duas distribuicoes x tres penalidades),
+com folds por grupos dentro do treino e selecao na validacao. Teste permanece
+reservado para a 27. `--model baseline` continua sendo o padrao de `predict`.
+
+Exporta coeficientes/fatores por 100 pontos, CDF, mediana e quantis 10/90; os quantis
+sao intervalo preditivo, nao IC. Convergencia e gradiente sao conferidos; falha,
+gate de calibracao, seguimento insuficiente e extrapolacao ficam explicitos.
+[Metodo e limites](MODEL.md); modelos/previsoes ficam no diretorio `aft/`.
 
 Standings de contests comuns agora aceitam apenas GET anonimo com contestId; o
 coletor guarda a resposta oficial completa em uma referencia, sem from/count ou
@@ -113,6 +150,7 @@ coletor; nao execute coletores paralelos com outros diretorios/clients contra a 
 | Caminho no diretorio de trabalho | Conteudo |
 |---|---|
 | `selection.json` | Selecao congelada, config/hash, semente e referencia da lista de contests. |
+| `screening.json`, `screenings/<hash>.json` | Decisoes estruturais e fontes de todos os candidatos, checkpoint e versao imutavel anterior ao ajuste. |
 | `raw/<sha256>.json`, `responses/` | Bytes imutaveis (inclusive erros HTTP) e proveniencia por endpoint/parametros/data UTC. |
 | `cache.json` | Indice retomavel de respostas OK; nunca inclui FAILED como resultado vazio. |
 | `snapshots/<hash>.json`, `snapshot.json` | Versoes imutaveis e ponteiro/checkpoint de coleta. |
@@ -122,6 +160,7 @@ coletor; nao execute coletores paralelos com outros diretorios/clients contra a 
 | `splits.json` | Contests/grupos inteiros reservados; minimo 6/2/2, proximos de 60/20/20. |
 | `baseline/artifacts/<hash>.json`, `model.json` | Modelos versionados e ponteiro local; ajuste exclusivamente no treino. |
 | `baseline/predictions.jsonl`, `manifest.json` | Previsoes sem rotulos por particao e hashes do modelo/dados. |
+| `aft/artifacts/<hash>.json`, `model.json`, `manifest.json`, `predictions.jsonl` | AFT selecionado na validacao, coeficientes/diagnosticos/versoes e previsoes sem rotulos por particao. |
 | `status.json` | Estado de etapas executadas; nenhum resultado cientifico presumido. |
 
 Hashes de objetos JSON usam representacao canonica UTF-8, chaves ordenadas e sem
@@ -158,7 +197,43 @@ atingidos retornam `null`; faixas fora do treino sao marcadas como extrapolacao.
 Os quantis 10/90 representam variacao preditiva empirica, **nao IC**. D-012 e
 somente referencia operacional de tempo e nao recebe probabilidade inventada.
 
-## Evidencia e proximo marco
+## Evidencia atual e reproducao
+
+[Amostra/modelo de 18/10/2026](evidence/2026-10-18-sample-aft.json) e
+[inventario de respostas/hashes](evidence/2026-10-18-sample-responses.jsonl).
+Aquisicao: 308 respostas OK, 1.654.835.689 bytes, 633,889 s; 152.420 participacoes
+oficiais e 2.386.518 submissoes. A triagem recusou 24 dos 44 candidatos antes da
+selecao. Os 20 adquiridos produziram 19 elegiveis, sem substituicao por desfecho.
+
+Seis candidatos e seus folds convergiram com gradiente conferido; a validacao
+escolheu Weibull/L2 0,1. Isso nao comprova superioridade: teste/ICs sao a 27.
+Coleta offline (zero requisicoes), preparo, particoes, baselines e AFT foram
+repetidos no mesmo ambiente, produzindo os mesmos bytes/hashes em todas as tabelas,
+modelos e previsoes. O core tambem foi executado sem site-packages; wheel/CLI 0.2.0
+verificados com as dependencias fixadas.
+
+Backup local: `work/regular-simple-v1-2026-10-18.tar.gz` (157 MiB; SHA-256 na
+evidencia). Preserva brutos/cache/proveniencia, selecao/triagem/snapshots, features,
+labels, manifests, particoes e modelos. Contem handles publicos e fica fora do Git.
+Audit e previsoes grandes sao regeneraveis e foram omitidos desse backup.
+
+Para restaurar em outra copia do repositorio, extrair o arquivo em um diretorio
+`work/` vazio. Instalar os locks acima e executar:
+
+```bash
+python -m lorem_study collect --work work/sample-real-regular-v1 --config configs/regular-simple-v1.json --offline
+python -m lorem_study prepare --work work/sample-real-regular-v1
+python -m lorem_study split --work work/sample-real-regular-v1
+python -m lorem_study train-baseline --work work/sample-real-regular-v1
+python -m lorem_study train --work work/sample-real-regular-v1
+```
+
+Usar o Python do ambiente com os locks instalados. A evidencia registra hashes de
+arquivos e versoes; igualdade byte a byte foi verificada neste Linux/Python/NumPy/
+SciPy. Nova coleta da API pode mudar bytes, datas e julgamentos. Preservar o cache
+e necessario para a reproducao exata. `evaluate` continua indisponivel ate a 27.
+
+## Historico do piloto inicial
 
 [Evidencia do piloto real de 18/10/2026](evidence/2026-10-18-pilot-real.json):
 1824/2062 completos, 17.019 participacoes oficiais, 210.860 submissoes e 47.100

@@ -143,11 +143,13 @@ Consulte o [roadmap](docs/ROADMAP.md) e o [roteiro de demonstração](docs/DEMO.
 O planejamento de 18/10/2026 acrescenta **22–28 — Estudo quantitativo em Python**:
 coleta e preparo auditáveis, estimativa de tempo até AC, probabilidades para um
 orçamento explícito, avaliação e relatório reproduzível. São **24 horas estimadas**
-para uma primeira versão. O software das Histórias 22–25 já está implementado
-e verificado com 39 testes e jornada sintética. O [piloto real da 23](study/evidence/2026-10-18-pilot-real.json)
-coletou os contests 1824/2062, com reprodução offline. As 47.100 tentativas foram
-excluídas pela regra de índices simples (B1/B2 e E1/E2); cobertura válida zero,
-sem treino, avaliação ou ganho preditivo comprovado.
+para uma primeira versão. O software das Histórias 22–26 está implementado e
+verificado com 51 testes. A nova amostra coletou 20 contests regulares, com 19
+elegíveis e 274.073 tentativas válidas. O primeiro AFT foi ajustado e escolhido
+na validação; quatro contests permanecem reservados para a avaliação da 27.
+[Evidência da amostra/modelo](study/evidence/2026-10-18-sample-aft.json).
+Precisão e ganho preditivo ainda não foram comprovados. O piloto anterior, com
+contests em versões, permanece preservado e excluído da análise.
 Consulte os [comandos Python](study/README.md) e o [contrato de dados](study/DATA_DICTIONARY.md).
 
 **29–32** cobrem o corte verificável de problemas nas novas recomendações, validação

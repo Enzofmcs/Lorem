@@ -6,15 +6,15 @@
 
 ## Estado atual
 
-**Foco atual:** Python 22-25 verificado; piloto real da 23 concluido. Historias 00-21 preservadas.
+**Foco atual:** estudo Python 22-26 implementado e verificado; amostra real e AFT ajustados. Historias 00-21 preservadas.
 
-**Ultima historia verificada:** Historia 23 (piloto real), em 2026-10-18: 2 contests completos, cache offline e 39 testes Python. 22/24/25 verificados como software. Ultimo marco Android: Historia 21 em 2026-10-16.
+**Ultima historia verificada:** Historia 26, em 2026-10-18: 51 testes, 20 contests adquiridos/19 elegiveis e Weibull selecionado na validacao. Ultimo marco Android: Historia 21 em 2026-10-16.
 
-**Primeiro item pendente:** obter amostra elegivel para treino e implementar a Historia 26 (AFT).
+**Primeiro item pendente:** Historia 27 - avaliacao reservada de erros, probabilidades e incerteza.
 
-**Proxima entrega demonstravel:** amostra deterministica em novo diretorio e Historia 26 (AFT). Piloto congelado com cobertura valida zero; coleta/preparo/particoes/baselines (22-25) possuem jornada sintetica reproduzivel.
+**Proxima entrega demonstravel:** comparar modelos e referencias nos quatro contests de teste, sem retunar; relatorio completo na 28.
 
-**Bloqueios conhecidos:** nenhum de rede; 1824/2062 foram adquiridos por completo, mas B1/B2 e E1/E2 recusam todos os intervalos pelo protocolo atual. Minimo de 10 contests elegiveis ainda nao atingido; 32 depende da 31. Conferencia em dispositivo opcional (D-014).
+**Bloqueios conhecidos:** nenhum para iniciar 27. Amostra limitada a 19 contests elegiveis; 1589 excluido por ratings de problemas ausentes. 32 depende da 31. Conferencia em dispositivo opcional (D-014).
 
 ## Como atualizar
 
@@ -1522,7 +1522,12 @@ concluiu o piloto da Historia 23: 1824/2062 completos, 39 testes e reproducao of
 As 47.100 tentativas foram excluidas pela regra de indices simples; nenhum intervalo
 valido, treino ou avaliacao. [Evidencia real](../study/evidence/2026-10-18-pilot-real.json).
 22/24/25 possuem aceite de software; isso nao comprova precisao preditiva.
-26-32 continuam pendentes. Nenhuma mudanca Android. D-012 continua vigente; D-020 a D-025 registram as decisoes
+**Continuacao da Historia 26:** triagem de 44 candidatos, 20 aquisicoes completas,
+19 contests elegiveis (1589 sem rating verificavel dos problemas), 274.073 tentativas
+validas e particoes 11/4/4. Baselines reais e grade AFT ajustados; Weibull com L2 0,1
+selecionado apenas na validacao. 51 testes. [Evidencia](../study/evidence/2026-10-18-sample-aft.json)
+e [metodo](../study/MODEL.md). Teste reservado; nenhuma precisao superior comprovada.
+27-32 continuam pendentes. Nenhuma mudanca Android. D-012 continua vigente; D-020 a D-025 registram as decisoes
 solicitadas. Metodo e limites em [QUANTITATIVE.md](QUANTITATIVE.md).
 
 Primeira versao: **22 -> 23 -> 24 -> 25 -> 26 -> 27 -> 28 = 24 h estimadas**.
@@ -1755,7 +1760,7 @@ Comando: `cd study && .venv/bin/python -m unittest discover -s tests -v`:
 
 **Historia:** Como pesquisador, quero estimar uma distribuicao interpretavel de tempo a partir dos ratings, incluindo observacoes censuradas.
 
-**Status:** planejada; implementacao e verificacao ainda nao executadas.
+**Status:** implementada e verificada com dados sinteticos e amostra real em 2026-10-18; avaliacao reservada e ganho preditivo continuam pendentes na 27.
 
 **GitHub:** [#49 - Historia 26](https://github.com/Enzofmcs/Lorem/issues/49).
 
@@ -1769,21 +1774,41 @@ Comando: `cd study && .venv/bin/python -m unittest discover -s tests -v`:
 
 #### Criterios de aceite
 
-- [ ] Ajustar AFT com duracao observada e indicador de evento, sem eliminar os sem AC validos; justificar biblioteca, distribuicoes e hipoteses de censura.
-- [ ] Usar oldRating/100 e delta/100, preservando ratingProblema na base; evitar colinearidade dos tres termos e atributos de desfecho como rank, erros, AC ou tempo realizado.
-- [ ] Comparar log-normal/Weibull e regularizacao {0,0.01,0.1} so no treino/validacao, com GroupKFold quando houver suporte; nao inspecionar teste para ajustar.
-- [ ] Exportar F(b), mediana e quantis 10/90 em minutos, coeficientes/fatores de tempo, dominio de treino e versoes; distinguir intervalo preditivo de confianca.
-- [ ] Verificar convergencia, monotonicidade e suporte; sinalizar extrapolacao, falha ou indisponibilidade em vez de ocultar estimativas invalidas; nao afirmar ganho de precisao antes de 27.
+- [x] Ajustar AFT com duracao observada e indicador de evento, sem eliminar os sem AC validos; justificar biblioteca, distribuicoes e hipoteses de censura.
+- [x] Usar oldRating/100 e delta/100, preservando ratingProblema na base; evitar colinearidade dos tres termos e atributos de desfecho como rank, erros, AC ou tempo realizado.
+- [x] Comparar log-normal/Weibull e regularizacao {0,0.01,0.1} so no treino/validacao, com GroupKFold quando houver suporte; nao inspecionar teste para ajustar.
+- [x] Exportar F(b), mediana e quantis 10/90 em minutos, coeficientes/fatores de tempo, dominio de treino e versoes; distinguir intervalo preditivo de confianca.
+- [x] Verificar convergencia, monotonicidade e suporte; sinalizar extrapolacao, falha ou indisponibilidade em vez de ocultar estimativas invalidas; nao afirmar ganho de precisao antes de 27.
 
-#### Verificacao planejada
+#### Verificacao e evidencias
 
 Nivel 2: dados sinteticos com censura para recuperacao aproximada de sinal, invariantes da CDF/quantis, ausencia de features vazadas, reproducao de artefatos e falha de convergencia.
 
 **Entrega demonstravel:** Comparar previsoes e fatores de tempo para pares de ratings e orcamentos explicitos, mostrando os limites de suporte.
 
-Conferencias humanas opcionais (D-014); criterios automatizados e evidencia
-cientifica exigidos acima continuam obrigatorios. Sem resultados comprovados
-neste planejamento.
+Amostra regular-simple-v1 congelada apos verificar somente formato/problemas de
+44 candidatos: 20 contests coletados integralmente, 19 elegiveis. Nenhum contest
+substituido por sucesso; 1589 excluido por ratings ausentes. Dos 392.445 registros
+observados, 234.945 eventos, 39.128 censuras e 118.372 exclusoes. Particoes por
+contest/grupo: 11 treino, 4 validacao, 4 teste; 193.527/45.179/35.367 tentativas validas.
+
+CLI `train` e `predict --model aft` implementadas. NumPy 2.3.5/SciPy 1.17.0 opcionais
+e fixados; [likelihoods, gradientes e regras de selecao](../study/MODEL.md).
+Log-normal/Weibull x L2 {0,0.01,0.1}, tres folds agrupados no treino e selecao na
+validacao. Os seis candidatos convergiram com gradiente conferido; Weibull 0,1 foi
+selecionado. Ajuste final: 193.527 observacoes = 167.618 eventos + 25.909 censuras.
+Modelos/previsoes versionados localmente; teste nao usado no tuning.
+
+51 testes sem falhas: gradientes analiticos versus numericos, recuperacao de sinal
+com censura nas duas distribuicoes, falsa convergencia do otimizador, censura
+conhecida/desconhecida no scoring interno, grupos, mutacao dos rotulos do teste
+sem alterar modelo, determinismo, suporte/quantis/extrapolacao e CLI instalada.
+Core sem site-packages e dependencias opcionais ausentes tambem verificados.
+[Evidencia e hashes](../study/evidence/2026-10-18-sample-aft.json).
+
+O scoring interno escolhe o modelo; nao e avaliacao reservada, IC ou comprovacao
+de superioridade. Esses resultados pertencem a 27. Nenhuma mudanca Android.
+**TESTE MANUAL OPCIONAL - NAO EXECUTADO** (D-014).
 
 ---
 

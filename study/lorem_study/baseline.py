@@ -168,17 +168,20 @@ def train_baseline(root):
                 "domain": {k: [min(f[k] for f, _ in train), max(f[k] for f, _ in train)]
                            for k in ("old_rating", "problem_rating", "delta")}}
     output = root / "baseline"
-    archived = output / "artifacts" / f"{digest(artifact)}.json"
+    artifact_sha = digest(artifact)
+    archived = output / "artifacts" / f"{artifact_sha}.json"
     if not archived.exists():
         write_json(archived, artifact)
     write_json(output / "model.json", artifact)
     # Prediction exports contain no labels, ranks, scores or realized durations.
     part_for = {i: p for p, ids in partitions.items() for i in ids}
     predictions = []
+    curve_summaries = {}
     for f in features:
         if f["contest_id"] in part_for and type(f["old_rating"]) is int and f["old_rating"] > 0 and type(f["problem_rating"]) is int:
             predictions.append({"sample_id": f["sample_id"], "partition": part_for[f["contest_id"]],
-                                **predict(artifact, f["old_rating"], f["problem_rating"], config["budgets_minutes"])})
+                                **predict(artifact, f["old_rating"], f["problem_rating"], config["budgets_minutes"],
+                                          _sha=artifact_sha, _summaries=curve_summaries)})
     write_rows(output / "predictions.jsonl", predictions)
     write_json(output / "manifest.json", {"schema_version": 1, "data_kind": artifact["data_kind"],
                                          "artifact_sha256": digest(artifact), "prepared_sha256": digest(prepared),
@@ -187,7 +190,7 @@ def train_baseline(root):
     return artifact
 
 
-def predict(artifact, old_rating, problem_rating, budgets):
+def predict(artifact, old_rating, problem_rating, budgets, *, _sha=None, _summaries=None):
     check_version(artifact)
     if artifact.get("model_version") != "kaplan-meier-v1":
         raise StudyError("Unsupported model version")
@@ -198,17 +201,23 @@ def predict(artifact, old_rating, problem_rating, budgets):
     delta = problem_rating - old_rating
     bucket = str((delta // artifact["delta_bin_width"]) * artifact["delta_bin_width"])
     curve = artifact["delta_bins"].get(bucket, artifact["global"])
+    cache = {} if _summaries is None else _summaries
+    key = (bucket if bucket in artifact["delta_bins"] else "global", tuple(budgets))
+    if key not in cache:
+        cache[key] = ([km_probability(curve, b * 60) for b in budgets], km_quantile(curve, .5),
+                      [km_quantile(curve, .1), km_quantile(curve, .9)])
+    probabilities, median, interval = cache[key]
     domain_values = {"old_rating": old_rating, "problem_rating": problem_rating, "delta": delta}
     outside = [k for k, v in domain_values.items() if not artifact["domain"][k][0] <= v <= artifact["domain"][k][1]]
     return {"data_kind": artifact["data_kind"], "model_version": artifact["model_version"],
-            "artifact_sha256": digest(artifact),
+            "artifact_sha256": _sha or digest(artifact),
             "reference": "delta_bin" if bucket in artifact["delta_bins"] else "global_fallback",
             "out_of_domain": outside, "training_attempts": curve["n"],
-            "probabilities": [{"budget_minutes": b, "p_ac": km_probability(curve, b * 60),
-                               "support": "extrapolation" if outside else ("available" if km_probability(curve, b * 60) is not None else "insufficient_followup")}
-                              for b in budgets],
-            "median_minutes": km_quantile(curve, .5),
-            "predictive_interval_80_minutes": [km_quantile(curve, .1), km_quantile(curve, .9)],
+            "probabilities": [{"budget_minutes": b, "p_ac": p,
+                               "support": "extrapolation" if outside else ("available" if p is not None else "insufficient_followup")}
+                              for b, p in zip(budgets, probabilities)],
+            "median_minutes": median,
+            "predictive_interval_80_minutes": interval,
             "interval_kind": "empirical predictive quantiles, not a confidence interval",
             "d012_expected_minutes": expected_d012_minutes(old_rating, problem_rating),
             "d012_probability": None}

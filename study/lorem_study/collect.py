@@ -6,6 +6,7 @@ import re
 from .api import ApiClient
 from .config import cutoff_seconds
 from .io import StudyError, digest, raw_json, read_json, write_json
+from .selection import POLICY, screen_selection
 
 
 def eligible_contest(contest, cutoff):
@@ -103,12 +104,20 @@ def collect(root, config, *, pilot=False, offline=False, client=None):
         contests, list_ref = client.request("contest.list", {"gym": "false"})
         if not isinstance(contests, list) or len({c["id"] for c in contests}) != len(contests):
             raise StudyError("Malformed/conflicting contest.list")
-        ids = select_contests(contests, config, config["pilot_contests"] if pilot else config["target_contests"])
+        count = config["pilot_contests"] if pilot else config["target_contests"]
+        screening_sha = None
+        if config.get("selection_policy") == POLICY:
+            candidates = select_contests(contests, config, len(contests))
+            ids, screening_sha = screen_selection(root, client, config, contests, list_ref, candidates, count)
+        else:
+            ids = select_contests(contests, config, count)
         if not ids:
             raise StudyError("No eligible contests with verified dates")
         selection = {"schema_version": 1, "config_sha256": digest(config), "pilot": pilot,
                      "seed": config["seed"], "contest_ids": ids, "list_ref": list_ref,
                      "method": "seeded-sha256-round-robin-division; no outcome selection"}
+        if screening_sha:
+            selection.update(selection_policy=POLICY, screening_sha256=screening_sha)
         write_json(selection_path, selection)
     manifest_path = root / "snapshot.json"
     manifest = read_json(manifest_path) if manifest_path.exists() else {

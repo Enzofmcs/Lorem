@@ -5,6 +5,7 @@ from pathlib import Path
 
 from .config import cutoff_seconds
 from .io import StudyError, check_version, digest, raw_json, read_json, write_json, write_rows
+from .selection import regular_round, simple_order
 
 
 def individual(party):
@@ -109,7 +110,8 @@ def prepare(root):
         meta_ok = type(start) is int and type(duration) is int and duration > 0
         end = start + duration if meta_ok else 0
         order = [p.get("index") for p in problems]
-        order_ok = bool(order) and len(order) <= 26 and order == [chr(65 + i) for i in range(len(order))]
+        order_ok = simple_order(problems)
+        regular_ok = regular_round(meta)
         rows = [row for p in pages for row in p["rows"]]
         standings = defaultdict(list)
         for row in rows:
@@ -159,6 +161,8 @@ def prepare(root):
             person_reason = None
             if not entry["complete"] or inconsistent_pages:
                 person_reason = "incomplete_collection"
+            elif not regular_ok:
+                person_reason = "not_recognized_regular_cf_round"
             elif handle in conflict_people:
                 person_reason = "conflicting_submission_identity"
             elif len(standings.get(handle, [])) != 1:
@@ -227,7 +231,7 @@ def prepare(root):
                           metadata[p["contestId"]]["startTimeSeconds"] >= cutoff_seconds(config) and
                           type(catalog.get((p["contestId"], p.get("index")), {}).get("rating")) is int and
                           catalog[(p["contestId"], p.get("index"))]["rating"] > 0 for p in problems)
-        usable = (entry["complete"] and not inconsistent_pages and order_ok and has_population and has_problem and
+        usable = (entry["complete"] and not inconsistent_pages and regular_ok and order_ok and has_population and has_problem and
                   meta.get("type") == "CF" and meta.get("phase") == "FINISHED" and meta_ok and start >= cutoff_seconds(config))
         if usable:
             complete_ids.append(contest_id)

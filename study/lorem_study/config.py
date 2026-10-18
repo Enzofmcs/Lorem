@@ -16,6 +16,12 @@ def load_config(path=None):
         raise StudyError("Unsupported protocol_version")
     if config.get("eligibility_version") != "origin-20200701-v1":
         raise StudyError("Unsupported eligibility_version")
+    if config.get("selection_policy") not in (None, "regular-simple-v1"):
+        raise StudyError("Unsupported selection_policy")
+    if "max_screened_candidates" in config and (
+        type(config["max_screened_candidates"]) is not int or config["max_screened_candidates"] < config["target_contests"]
+    ):
+        raise StudyError("Invalid max_screened_candidates")
     for field in ("seed", "target_contests", "pilot_contests", "minimum_contests",
                   "page_size", "max_pages", "max_retries", "pending_rechecks",
                   "delta_bin_width", "bin_min_attempts", "bin_min_events"):
