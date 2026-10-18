@@ -56,7 +56,10 @@ def main(argv=None):
     args = parser.parse_args(argv)
     try:
         if args.command == "evaluate":
-            raise StudyError("NOT IMPLEMENTED: held-out evaluation belongs to History 27; no research metrics produced")
+            try:
+                from .evaluate import evaluate
+            except ImportError as error:
+                raise StudyError("Evaluation requires optional dependencies: pip install -r requirements-model.lock") from error
         if args.command == "train" or (args.command == "predict" and args.model == "aft"):
             try:
                 from .aft import predict_aft, train_aft
@@ -82,6 +85,8 @@ def main(argv=None):
                     result = train_baseline(args.work)
                 elif args.command == "train":
                     result = train_aft(args.work)
+                elif args.command == "evaluate":
+                    result = evaluate(args.work)
                 else:
                     prepared = args.work / "prepared" / "manifest.json"
                     result = {"schema_version": 1, "status": "pipeline_status_only; full report belongs to History 28",
