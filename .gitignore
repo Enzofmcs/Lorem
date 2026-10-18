@@ -9,3 +9,8 @@ captures/
 app/build/
 gradle/wrapper/gradle-wrapper.jar
 .kotlin/
+study/.venv/
+study/work/
+study/*.egg-info/
+__pycache__/
+*.py[cod]

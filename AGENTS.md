@@ -31,6 +31,9 @@ Prioridades, nesta ordem:
 - Novas recomendacoes deverao exigir data verificavel do contest de origem >=
   01/07/2020; implementacao pendente na Historia 29. Preservar historicos antigos
   e sua exclusao de repeticoes. Nao inferir data pelo id.
+- Estudo Python: contests especiais e contests com qualquer problema em duas
+  versoes (ex.: B1/B2, facil/dificil) ficam integralmente fora da analise, inclusive
+  seus problemas simples. Exclusao intencional do usuario (D-026); preservar brutos.
 
 As regras completas e o escopo fechado estao em [`docs/SPEC.md`](docs/SPEC.md).
 
@@ -47,11 +50,11 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
-- **Foco:** extensao quantitativa planejada; Historias 00-21 permanecem concluidas.
-- **Ultima historia verificada:** Historia 21 - Redesign do historico e estatisticas, automaticamente em 2026-10-16.
-- **Primeiro item pendente:** Historia 22 - Base Python e protocolo reproduzivel do estudo.
-- **Proxima entrega demonstravel:** estudo Python (22-28), estimado em 24 h; corte no app e validacao posterior (29-32).
-- **Bloqueios conhecidos:** nenhum para iniciar 22; 32 condicionada a evidencia/decisao da 31. Teste manual e opcional (D-014).
+- **Foco:** Python 22-25 verificado; piloto real da 23 concluido em 2026-10-18. Historias 00-21 preservadas.
+- **Ultima historia verificada:** Historia 23 (piloto real), em 2026-10-18: 2 contests completos, cache offline e 39 testes Python. 22/24/25 verificados como software. Ultimo marco Android: Historia 21, em 2026-10-16.
+- **Primeiro item pendente:** amostra elegivel para treino e Historia 26 (AFT).
+- **Proxima entrega demonstravel:** amostra deterministica em novo diretorio e 26; o piloto permanece congelado, com cobertura valida zero.
+- **Bloqueios conhecidos:** piloto 1824/2062 tem B1/B2 e E1/E2, recusados pela regra de indices simples: 47.100 tentativas excluidas, nenhum intervalo valido. Acesso a API resolvido; minimo de 10 contests elegiveis ainda nao atingido. 32 depende da 31. Teste manual opcional (D-014).
 
 Regressao da Historia 21: 217 testes debug e 155 release sem falhas, lint sem erros
 (apenas aviso preexistente de icone) e `assembleDebug` concluido.
@@ -59,7 +62,10 @@ Progresso e aceite: [`docs/ROADMAP.md`](docs/ROADMAP.md).
 Roteiro: [`docs/DEMO.md`](docs/DEMO.md).
 Planejamento atual: [estudo quantitativo](docs/QUANTITATIVE.md) e
 [Historia 22](docs/ROADMAP.md#historia-22---base-python-e-protocolo-reproduzivel-do-estudo).
-Nesta tarefa apenas documentacao e issues; estudo/modelos ainda nao executados.
+Python: [guia e comandos](study/README.md), [contrato](study/DATA_DICTIONARY.md) e
+[evidencia sintetica](study/evidence/2026-10-18-validation.json) e
+[piloto real](study/evidence/2026-10-18-pilot-real.json). Baselines verificados em
+fixtures sinteticas; coleta real nao comprova ganho preditivo.
 D-012 continua em producao. Comparacao entre epocas e correcao temporal fora do escopo.
 
 ## Politica de contexto

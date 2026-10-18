@@ -8,7 +8,7 @@ Abra somente o documento necessario para a tarefa:
 - [`TESTING.md`](TESTING.md): estrategia de verificacao proporcional ao risco.
 - [`SESSIONS.md`](SESSIONS.md): cinco sessoes recentes e continuidade do trabalho.
 - [`DEMO.md`](DEMO.md): roteiro do fluxo completo, reproducao automatizada e limites da avaliacao do TCC.
-- [`QUANTITATIVE.md`](QUANTITATIVE.md): protocolo planejado da extensao Python (22-28, ~24 h), corte no app e validacao com Ipsums (29-32). Experimentos ainda nao executados.
+- [`QUANTITATIVE.md`](QUANTITATIVE.md): protocolo planejado da extensao Python (22-28, ~24 h), corte no app e validacao com Ipsums (29-32). Software 22-25 verificado; piloto real 23 completo com cobertura valida zero por indices nao suportados. [Comandos Python](../study/README.md).
 
 - [`SYNC.md`](SYNC.md): automacao do Codeforces (Historias 15-17 implementadas e verificadas).
 - [`DESIGN.md`](DESIGN.md): direcao visual e criterios de interface para Historias 18-21.

@@ -1,0 +1,918 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-18",
+  "data_kind": "real",
+  "implementation_base_sha": "56548f5fc36b99c1612d335fca86c48b28868fc7",
+  "python": "3.12.14",
+  "work_directory": "study/work/pilot-real (Git-ignored; contains public handles)",
+  "config_sha256": "27f55be4809e43210de290b2a7bc3430493c60ea454dc9cab93237c3a4cefc69",
+  "selection": {
+    "config_sha256": "27f55be4809e43210de290b2a7bc3430493c60ea454dc9cab93237c3a4cefc69",
+    "contest_ids": [
+      1824,
+      2062
+    ],
+    "list_ref": {
+      "collected_at_utc": "2026-10-18T17:04:58.502504Z",
+      "data_kind": "real",
+      "http_status": 200,
+      "method": "contest.list",
+      "params": {
+        "gym": "false"
+      },
+      "sha256": "655ed1a8d2b0b1dce0970c5811d5f1f189cca525bb8e1aa9ba3aae7fed797b24",
+      "url": "https://codeforces.com/api/contest.list?gym=false"
+    },
+    "method": "seeded-sha256-round-robin-division; no outcome selection",
+    "pilot": true,
+    "schema_version": 1,
+    "seed": 20261018
+  },
+  "snapshot_sha256": "8e3f358a6525114b7ccd404f9b87c2c6e95767d3dcac7d8034542924ffd410a0",
+  "collection_runs": [
+    {
+      "command": "python -m lorem_study collect --work work/pilot-real --pilot",
+      "started_at_utc": "2026-10-18T17:04:57.984501+00:00",
+      "finished_at_utc": "2026-10-18T17:05:08.302005+00:00",
+      "elapsed_seconds": 10.318,
+      "exit_code": 0,
+      "stderr": "",
+      "result": {
+        "api_calls_this_run": 6,
+        "complete": 0,
+        "data_kind": "real",
+        "incomplete": 2,
+        "minimum_complete_count_met": false,
+        "network_requests_this_run": 6,
+        "selected": 2,
+        "snapshot_sha256": "63bc68d8ebfb019bafc3b74db59afc30aebcef67d34aa7e33a8fb7eef399573b",
+        "status": "pilot_only"
+      }
+    },
+    {
+      "command": "python -m lorem_study collect --work work/pilot-real --pilot",
+      "started_at_utc": "2026-10-18T17:06:27.631020+00:00",
+      "finished_at_utc": "2026-10-18T17:07:13.966059+00:00",
+      "elapsed_seconds": 46.335,
+      "exit_code": 0,
+      "stderr": "",
+      "result": {
+        "api_calls_this_run": 22,
+        "complete": 2,
+        "data_kind": "real",
+        "incomplete": 0,
+        "minimum_complete_count_met": false,
+        "network_requests_this_run": 22,
+        "selected": 2,
+        "snapshot_sha256": "8e3f358a6525114b7ccd404f9b87c2c6e95767d3dcac7d8034542924ffd410a0",
+        "status": "pilot_only"
+      }
+    }
+  ],
+  "cost": {
+    "scope": "All HTTP responses retained by the pilot client, including 2 diagnostic calls; excludes connectivity smoke",
+    "http_requests": 30,
+    "diagnostic_http_requests": 2,
+    "http_status_counts": {
+      "200": 28,
+      "400": 2
+    },
+    "requests_by_endpoint": {
+      "contest.list": 1,
+      "problemset.problems": 1,
+      "contest.ratingChanges": 2,
+      "contest.standings": 4,
+      "contest.status": 22
+    },
+    "http_body_bytes": 143381349,
+    "unique_raw_objects": 29,
+    "unique_raw_bytes": 143381114,
+    "first_response_utc": "2026-10-18T17:04:58.502504Z",
+    "last_response_utc": "2026-10-18T17:07:12.952759Z",
+    "measured_collector_elapsed_seconds": 56.653,
+    "diagnostic_elapsed_seconds": null,
+    "elapsed_note": "Collector elapsed excludes two diagnostic calls and time spent adapting code; first-to-last span includes those pauses",
+    "request_interval_seconds": 2.0,
+    "timeout_seconds": 30,
+    "page_size": 10000,
+    "monetary_cost": null,
+    "max_status_pages_per_contest": 200
+  },
+  "api_contract_change": {
+    "observed_http_status": 400,
+    "rejected_parameters": [
+      "from",
+      "count",
+      "showUnofficial"
+    ],
+    "resolution": "Anonymous full official contest.standings GET with contestId only; contest.status remains paginated",
+    "previous_error_responses_preserved": true
+  },
+  "contests": [
+    {
+      "contest_id": 1824,
+      "name": "Codeforces Round 872 (Div. 1)",
+      "start_time_seconds": 1683547500,
+      "duration_seconds": 7200,
+      "problem_indices": [
+        "A",
+        "B1",
+        "B2",
+        "C",
+        "D",
+        "E"
+      ],
+      "complete": true,
+      "standings_scope": "full_official_response; contestId only, no from/count/showUnofficial",
+      "official_individuals": 785,
+      "rating_changes": 785,
+      "official_standings_rating_changes_join_exact": true,
+      "positive_old_rating": 785,
+      "zero_or_negative_old_rating": 0,
+      "status_page_sizes": [
+        10000,
+        10000,
+        10000,
+        7741
+      ],
+      "pending_verdicts": 0
+    },
+    {
+      "contest_id": 2062,
+      "name": "Ethflow Round 1 (Codeforces Round 1001, Div. 1 + Div. 2)",
+      "start_time_seconds": 1737902100,
+      "duration_seconds": 9000,
+      "problem_indices": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E1",
+        "E2",
+        "F",
+        "G",
+        "H"
+      ],
+      "complete": true,
+      "standings_scope": "full_official_response; contestId only, no from/count/showUnofficial",
+      "official_individuals": 16234,
+      "rating_changes": 16234,
+      "official_standings_rating_changes_join_exact": true,
+      "positive_old_rating": 15111,
+      "zero_or_negative_old_rating": 1123,
+      "status_page_sizes": [
+        10000,
+        10000,
+        10000,
+        10000,
+        10000,
+        10000,
+        10000,
+        10000,
+        10000,
+        10000,
+        10000,
+        10000,
+        10000,
+        10000,
+        10000,
+        10000,
+        10000,
+        3119
+      ],
+      "pending_verdicts": 0
+    }
+  ],
+  "prepared": {
+    "by_delta_band_400": {
+      "-1200": {
+        "excluded": 4197,
+        "observed": 4197
+      },
+      "-1600": {
+        "excluded": 1664,
+        "observed": 1664
+      },
+      "-2000": {
+        "excluded": 404,
+        "observed": 404
+      },
+      "-2400": {
+        "excluded": 97,
+        "observed": 97
+      },
+      "-2800": {
+        "excluded": 21,
+        "observed": 21
+      },
+      "-3200": {
+        "excluded": 4,
+        "observed": 4
+      },
+      "-3600": {
+        "excluded": 1,
+        "observed": 1
+      },
+      "-400": {
+        "excluded": 16454,
+        "observed": 16454
+      },
+      "-800": {
+        "excluded": 10538,
+        "observed": 10538
+      },
+      "0": {
+        "excluded": 8472,
+        "observed": 8472
+      },
+      "1200": {
+        "excluded": 480,
+        "observed": 480
+      },
+      "1600": {
+        "excluded": 74,
+        "observed": 74
+      },
+      "2000": {
+        "excluded": 139,
+        "observed": 139
+      },
+      "2400": {
+        "excluded": 41,
+        "observed": 41
+      },
+      "2800": {
+        "excluded": 68,
+        "observed": 68
+      },
+      "3200": {
+        "excluded": 40,
+        "observed": 40
+      },
+      "400": {
+        "excluded": 2385,
+        "observed": 2385
+      },
+      "800": {
+        "excluded": 2021,
+        "observed": 2021
+      }
+    },
+    "by_participant_rating_band_400": {
+      "-400": {
+        "excluded": 9,
+        "observed": 9
+      },
+      "0": {
+        "excluded": 3037,
+        "observed": 3037
+      },
+      "1200": {
+        "excluded": 13027,
+        "observed": 13027
+      },
+      "1600": {
+        "excluded": 7069,
+        "observed": 7069
+      },
+      "2000": {
+        "excluded": 4828,
+        "observed": 4828
+      },
+      "2400": {
+        "excluded": 1501,
+        "observed": 1501
+      },
+      "2800": {
+        "excluded": 413,
+        "observed": 413
+      },
+      "3200": {
+        "excluded": 134,
+        "observed": 134
+      },
+      "3600": {
+        "excluded": 14,
+        "observed": 14
+      },
+      "400": {
+        "excluded": 3406,
+        "observed": 3406
+      },
+      "4000": {
+        "excluded": 7,
+        "observed": 7
+      },
+      "800": {
+        "excluded": 13655,
+        "observed": 13655
+      }
+    },
+    "by_problem_rating_band_400": {
+      "1200": {
+        "excluded": 11173,
+        "observed": 11173
+      },
+      "1600": {
+        "excluded": 749,
+        "observed": 749
+      },
+      "2000": {
+        "excluded": 4560,
+        "observed": 4560
+      },
+      "2400": {
+        "excluded": 302,
+        "observed": 302
+      },
+      "2800": {
+        "excluded": 484,
+        "observed": 484
+      },
+      "3200": {
+        "excluded": 141,
+        "observed": 141
+      },
+      "800": {
+        "excluded": 29691,
+        "observed": 29691
+      }
+    },
+    "complete_contest_ids": [],
+    "config": {
+      "bin_min_attempts": 50,
+      "bin_min_events": 20,
+      "budgets_minutes": [
+        30,
+        60,
+        120
+      ],
+      "cutoff_utc": "2020-07-01T00:00:00Z",
+      "delta_bin_width": 400,
+      "eligibility_version": "origin-20200701-v1",
+      "max_pages": 200,
+      "max_retries": 3,
+      "minimum_contests": 10,
+      "page_size": 10000,
+      "pending_rechecks": 1,
+      "pilot_contests": 2,
+      "protocol_version": "sequential-v1",
+      "request_interval_seconds": 2.0,
+      "schema_version": 1,
+      "seed": 20261018,
+      "shared_contest_groups": [],
+      "target_contests": 20,
+      "timeout_seconds": 30
+    },
+    "contests": [
+      {
+        "complete": true,
+        "conflicting_submission_ids": 0,
+        "contest_id": 1824,
+        "duplicate_submissions": 0,
+        "eligible_for_split": false,
+        "excluded": 2451,
+        "observed_attempts": 2451,
+        "official_individuals": 785,
+        "participants_with_observed_attempts": 785,
+        "participations_all": 785,
+        "raw_submissions": 37741,
+        "reasons": {
+          "unsupported_problem_order": 2451
+        },
+        "simple_problem_order": false,
+        "valid_censored": 0,
+        "valid_events": 0
+      },
+      {
+        "complete": true,
+        "conflicting_submission_ids": 0,
+        "contest_id": 2062,
+        "duplicate_submissions": 0,
+        "eligible_for_split": false,
+        "excluded": 44649,
+        "observed_attempts": 44649,
+        "official_individuals": 16234,
+        "participants_with_observed_attempts": 16234,
+        "participations_all": 16234,
+        "raw_submissions": 173119,
+        "reasons": {
+          "insufficient_prior_rating_history": 2148,
+          "unsupported_problem_order": 42501
+        },
+        "simple_problem_order": false,
+        "valid_censored": 0,
+        "valid_events": 0
+      }
+    ],
+    "coverage": 0.0,
+    "data_kind": "real",
+    "excluded": 47100,
+    "features_sha256": "c7a225d79a25ca66839685db8c1b1e49387159456e42c666b5e6f306e2dffd67",
+    "labels_sha256": "aa9fea2bbabaf01e3418448c4241e6fc49cd5ad523c229dbb93c756f3cfb0e3d",
+    "limitations": [
+      "Sequential wall-clock approximation, not effective dedication",
+      "Informative censoring/abandonment and selected prefixes",
+      "Problem rating available at collection, not guaranteed historical",
+      "Public handle hashes are pseudonyms, not anonymization"
+    ],
+    "observed_attempts": 47100,
+    "origin_links": [
+      {
+        "contest_ids": [
+          1824
+        ],
+        "source": "verified problem contestId in standings"
+      },
+      {
+        "contest_ids": [
+          2062
+        ],
+        "source": "verified problem contestId in standings"
+      }
+    ],
+    "reasons": {
+      "insufficient_prior_rating_history": 2148,
+      "unsupported_problem_order": 44952
+    },
+    "schema_version": 1,
+    "snapshot_sha256": "8e3f358a6525114b7ccd404f9b87c2c6e95767d3dcac7d8034542924ffd410a0",
+    "submission_exclusions": {
+      "not_official_individual": 133052
+    },
+    "valid_censored": 0,
+    "valid_events": 0
+  },
+  "prepared_file_sha256": {
+    "features.jsonl": "05f1f07bebaf0ba98579e9d7f27083c777888ca1a0695cf75ea122c57ebc721e",
+    "labels.jsonl": "26a8d45d5df656624b67289e0ed99767be9bce941be2a5206d92296a5ead4b2b",
+    "audit.jsonl": "3176da9ebdf9f8499ed6f0c2a4b8a23d9a1293e2e1b6a4f9c5b3287d29ac035d",
+    "manifest.json": "53798ed65b69cef433652ac001ea1f2acd5fb87378a7b837cba7f514df23a295"
+  },
+  "provenance_example": {
+    "contest_id": 1824,
+    "problem_contest_id": 1824,
+    "problem_index": "A",
+    "old_rating": 2159,
+    "problem_rating": 1400,
+    "delta": -759,
+    "origin_start_seconds": 1683547500,
+    "quality": "excluded",
+    "reason": "unsupported_problem_order",
+    "origin_metadata_sha256": "655ed1a8d2b0b1dce0970c5811d5f1f189cca525bb8e1aa9ba3aae7fed797b24",
+    "rating_changes_sha256": "03a7ac2e76bf15ed89a4f0626b7ee7515a66f4035076da73748b51deeb689382",
+    "problem_catalog_sha256": "02f5c3d0a51538a3c75ca6309e3594b94deffb0db497166d92be95c69cebbf3e",
+    "old_rating_join_verified": true,
+    "identifiers_published": false
+  },
+  "checks": {
+    "raw_sha256_verified": 29,
+    "response_provenance_verified": 30,
+    "selection_recomputed": true,
+    "same_frozen_selection_after_resume": true,
+    "offline_collect": {
+      "api_calls_this_run": 0,
+      "complete": 2,
+      "data_kind": "real",
+      "incomplete": 0,
+      "minimum_complete_count_met": false,
+      "network_requests_this_run": 0,
+      "selected": 2,
+      "snapshot_sha256": "8e3f358a6525114b7ccd404f9b87c2c6e95767d3dcac7d8034542924ffd410a0",
+      "status": "pilot_only"
+    },
+    "offline_tables_byte_identical": true,
+    "feature_label_audit_unique_join": true,
+    "all_rating_deltas_verified": true,
+    "funnel_and_rating_slices_reconciled": true,
+    "split_expected_exit_code": 2,
+    "split_expected_stderr": "ERROR: Insufficient complete contests (0); pilot only, no evaluation split",
+    "no_split_or_model_created": true,
+    "unit_tests": {
+      "command": "python -m unittest discover -s tests -v",
+      "passed": 39,
+      "failures": 0
+    }
+  },
+  "responses": [
+    {
+      "collected_at_utc": "2026-10-18T17:04:58.502504Z",
+      "data_kind": "real",
+      "http_status": 200,
+      "method": "contest.list",
+      "params": {
+        "gym": "false"
+      },
+      "sha256": "655ed1a8d2b0b1dce0970c5811d5f1f189cca525bb8e1aa9ba3aae7fed797b24",
+      "url": "https://codeforces.com/api/contest.list?gym=false",
+      "response_bytes": 411157
+    },
+    {
+      "collected_at_utc": "2026-10-18T17:05:01.014468Z",
+      "data_kind": "real",
+      "http_status": 200,
+      "method": "problemset.problems",
+      "params": {},
+      "sha256": "02f5c3d0a51538a3c75ca6309e3594b94deffb0db497166d92be95c69cebbf3e",
+      "url": "https://codeforces.com/api/problemset.problems?",
+      "response_bytes": 2277579
+    },
+    {
+      "collected_at_utc": "2026-10-18T17:05:02.484607Z",
+      "data_kind": "real",
+      "http_status": 200,
+      "method": "contest.ratingChanges",
+      "params": {
+        "contestId": "1824"
+      },
+      "sha256": "03a7ac2e76bf15ed89a4f0626b7ee7515a66f4035076da73748b51deeb689382",
+      "url": "https://codeforces.com/api/contest.ratingChanges?contestId=1824",
+      "response_bytes": 131577
+    },
+    {
+      "collected_at_utc": "2026-10-18T17:05:04.312511Z",
+      "data_kind": "real",
+      "http_status": 400,
+      "method": "contest.standings",
+      "params": {
+        "contestId": "1824",
+        "count": "10000",
+        "from": "1",
+        "showUnofficial": "true"
+      },
+      "sha256": "c2c4cb09f443f59e61b5531f668569245ba71e7881eb9bc61c8604519e3c9c03",
+      "url": "https://codeforces.com/api/contest.standings?contestId=1824&count=10000&from=1&showUnofficial=true",
+      "response_bytes": 235
+    },
+    {
+      "collected_at_utc": "2026-10-18T17:05:07.662101Z",
+      "data_kind": "real",
+      "http_status": 200,
+      "method": "contest.ratingChanges",
+      "params": {
+        "contestId": "2062"
+      },
+      "sha256": "11da18ee899796c4155e6fc0c72050de7eb245264bab32fcdf079f55ae8a165d",
+      "url": "https://codeforces.com/api/contest.ratingChanges?contestId=2062",
+      "response_bytes": 3192152
+    },
+    {
+      "collected_at_utc": "2026-10-18T17:05:08.289194Z",
+      "data_kind": "real",
+      "http_status": 400,
+      "method": "contest.standings",
+      "params": {
+        "contestId": "2062",
+        "count": "10000",
+        "from": "1",
+        "showUnofficial": "true"
+      },
+      "sha256": "c2c4cb09f443f59e61b5531f668569245ba71e7881eb9bc61c8604519e3c9c03",
+      "url": "https://codeforces.com/api/contest.standings?contestId=2062&count=10000&from=1&showUnofficial=true",
+      "response_bytes": 235
+    },
+    {
+      "collected_at_utc": "2026-10-18T17:05:26.737715Z",
+      "data_kind": "real",
+      "http_status": 200,
+      "method": "contest.standings",
+      "params": {
+        "contestId": "1824"
+      },
+      "sha256": "a0651c9f6d244adbf4e5cc2770e0ede8880cbfbac08d158a3d538c242e2c7bb3",
+      "url": "https://codeforces.com/api/contest.standings?contestId=1824",
+      "response_bytes": 553540
+    },
+    {
+      "collected_at_utc": "2026-10-18T17:05:29.737723Z",
+      "data_kind": "real",
+      "http_status": 200,
+      "method": "contest.status",
+      "params": {
+        "contestId": "1824",
+        "count": "10000",
+        "from": "1"
+      },
+      "sha256": "d3710e1e6bc2cd5dac92df6780a1405c96a4b987a7a6c1b02aad9405ca10c07c",
+      "url": "https://codeforces.com/api/contest.status?contestId=1824&count=10000&from=1",
+      "response_bytes": 6103292
+    },
+    {
+      "collected_at_utc": "2026-10-18T17:06:29.514162Z",
+      "data_kind": "real",
+      "http_status": 200,
+      "method": "contest.status",
+      "params": {
+        "contestId": "1824",
+        "count": "10000",
+        "from": "10001"
+      },
+      "sha256": "aca6c7fdd027c3567cb8ce8816f8ce243f38c75f493f08ef1aade3baaf6f5b3f",
+      "url": "https://codeforces.com/api/contest.status?contestId=1824&count=10000&from=10001",
+      "response_bytes": 6026055
+    },
+    {
+      "collected_at_utc": "2026-10-18T17:06:31.483866Z",
+      "data_kind": "real",
+      "http_status": 200,
+      "method": "contest.status",
+      "params": {
+        "contestId": "1824",
+        "count": "10000",
+        "from": "20001"
+      },
+      "sha256": "9c0f6d55411461db7ec2984e173322f9fff05f470c190bf486fbdd0f7c61cc12",
+      "url": "https://codeforces.com/api/contest.status?contestId=1824&count=10000&from=20001",
+      "response_bytes": 6003088
+    },
+    {
+      "collected_at_utc": "2026-10-18T17:06:33.254386Z",
+      "data_kind": "real",
+      "http_status": 200,
+      "method": "contest.status",
+      "params": {
+        "contestId": "1824",
+        "count": "10000",
+        "from": "30001"
+      },
+      "sha256": "166e32827794bed7801ee768bcaaab7935e1e9c3c677992e5e4b595a5dc5ce5d",
+      "url": "https://codeforces.com/api/contest.status?contestId=1824&count=10000&from=30001",
+      "response_bytes": 4767190
+    },
+    {
+      "collected_at_utc": "2026-10-18T17:06:36.395501Z",
+      "data_kind": "real",
+      "http_status": 200,
+      "method": "contest.standings",
+      "params": {
+        "contestId": "2062"
+      },
+      "sha256": "f5467f05227aa77e354a77dc1fc22a35cccd50f4ba8b8ae1fd925bddd6d28839",
+      "url": "https://codeforces.com/api/contest.standings?contestId=2062",
+      "response_bytes": 13991102
+    },
+    {
+      "collected_at_utc": "2026-10-18T17:06:38.502782Z",
+      "data_kind": "real",
+      "http_status": 200,
+      "method": "contest.status",
+      "params": {
+        "contestId": "2062",
+        "count": "10000",
+        "from": "1"
+      },
+      "sha256": "733ef4af852ada9c3302e29de71898c3dafa6b50a940de7c612584a1723d4373",
+      "url": "https://codeforces.com/api/contest.status?contestId=2062&count=10000&from=1",
+      "response_bytes": 5759180
+    },
+    {
+      "collected_at_utc": "2026-10-18T17:06:40.401976Z",
+      "data_kind": "real",
+      "http_status": 200,
+      "method": "contest.status",
+      "params": {
+        "contestId": "2062",
+        "count": "10000",
+        "from": "10001"
+      },
+      "sha256": "894730fe9b6d840ccf1ed3c5dfb5af43336cc38cd7cda8ed9882689dfbceb204",
+      "url": "https://codeforces.com/api/contest.status?contestId=2062&count=10000&from=10001",
+      "response_bytes": 5773772
+    },
+    {
+      "collected_at_utc": "2026-10-18T17:06:42.386365Z",
+      "data_kind": "real",
+      "http_status": 200,
+      "method": "contest.status",
+      "params": {
+        "contestId": "2062",
+        "count": "10000",
+        "from": "20001"
+      },
+      "sha256": "57f34b97d3672a48eee379befb8e718d24a7fb2067061af7b5ac3c7dd8afc02d",
+      "url": "https://codeforces.com/api/contest.status?contestId=2062&count=10000&from=20001",
+      "response_bytes": 5817108
+    },
+    {
+      "collected_at_utc": "2026-10-18T17:06:44.416177Z",
+      "data_kind": "real",
+      "http_status": 200,
+      "method": "contest.status",
+      "params": {
+        "contestId": "2062",
+        "count": "10000",
+        "from": "30001"
+      },
+      "sha256": "aae90f03a45e3dc3356d77c5e9b5ce8472ba0a7c18da59c24a6cd1ec2b726b38",
+      "url": "https://codeforces.com/api/contest.status?contestId=2062&count=10000&from=30001",
+      "response_bytes": 5765423
+    },
+    {
+      "collected_at_utc": "2026-10-18T17:06:46.409219Z",
+      "data_kind": "real",
+      "http_status": 200,
+      "method": "contest.status",
+      "params": {
+        "contestId": "2062",
+        "count": "10000",
+        "from": "40001"
+      },
+      "sha256": "253a27a6338bb4d56c0638f1143d8c26e3b527e35273fbe5ee390e42aee2cc94",
+      "url": "https://codeforces.com/api/contest.status?contestId=2062&count=10000&from=40001",
+      "response_bytes": 5721407
+    },
+    {
+      "collected_at_utc": "2026-10-18T17:06:48.409068Z",
+      "data_kind": "real",
+      "http_status": 200,
+      "method": "contest.status",
+      "params": {
+        "contestId": "2062",
+        "count": "10000",
+        "from": "50001"
+      },
+      "sha256": "7ac202b3735fbb2595821264b90251a08df60e72fff4ed5ef9dbaa5dbae3591d",
+      "url": "https://codeforces.com/api/contest.status?contestId=2062&count=10000&from=50001",
+      "response_bytes": 5720706
+    },
+    {
+      "collected_at_utc": "2026-10-18T17:06:50.410611Z",
+      "data_kind": "real",
+      "http_status": 200,
+      "method": "contest.status",
+      "params": {
+        "contestId": "2062",
+        "count": "10000",
+        "from": "60001"
+      },
+      "sha256": "fb66a774ccc550efbdacfa0816f9c4f2a4ad41bea704773270d90f8308c58b9e",
+      "url": "https://codeforces.com/api/contest.status?contestId=2062&count=10000&from=60001",
+      "response_bytes": 5779832
+    },
+    {
+      "collected_at_utc": "2026-10-18T17:06:52.479353Z",
+      "data_kind": "real",
+      "http_status": 200,
+      "method": "contest.status",
+      "params": {
+        "contestId": "2062",
+        "count": "10000",
+        "from": "70001"
+      },
+      "sha256": "e3b68eb63e8f608d9fbe9881157ba6aa14b8279c43e231648bfcb60845f9b7c8",
+      "url": "https://codeforces.com/api/contest.status?contestId=2062&count=10000&from=70001",
+      "response_bytes": 5768509
+    },
+    {
+      "collected_at_utc": "2026-10-18T17:06:54.565095Z",
+      "data_kind": "real",
+      "http_status": 200,
+      "method": "contest.status",
+      "params": {
+        "contestId": "2062",
+        "count": "10000",
+        "from": "80001"
+      },
+      "sha256": "c9046714f0335bfd74dfdc8370308f6b59616832f1d5ae117a77f4f591b84521",
+      "url": "https://codeforces.com/api/contest.status?contestId=2062&count=10000&from=80001",
+      "response_bytes": 5750537
+    },
+    {
+      "collected_at_utc": "2026-10-18T17:06:56.511914Z",
+      "data_kind": "real",
+      "http_status": 200,
+      "method": "contest.status",
+      "params": {
+        "contestId": "2062",
+        "count": "10000",
+        "from": "90001"
+      },
+      "sha256": "08bc8b31fbaade91759bc6e46ff1ab6d3d0ee42ee89343079607113e61648439",
+      "url": "https://codeforces.com/api/contest.status?contestId=2062&count=10000&from=90001",
+      "response_bytes": 5833589
+    },
+    {
+      "collected_at_utc": "2026-10-18T17:06:58.654957Z",
+      "data_kind": "real",
+      "http_status": 200,
+      "method": "contest.status",
+      "params": {
+        "contestId": "2062",
+        "count": "10000",
+        "from": "100001"
+      },
+      "sha256": "ff29c1b0f5cf4f93945625ab603fb34d4da175a2253424d99372fffb4811a2d7",
+      "url": "https://codeforces.com/api/contest.status?contestId=2062&count=10000&from=100001",
+      "response_bytes": 5941339
+    },
+    {
+      "collected_at_utc": "2026-10-18T17:07:01.438649Z",
+      "data_kind": "real",
+      "http_status": 200,
+      "method": "contest.status",
+      "params": {
+        "contestId": "2062",
+        "count": "10000",
+        "from": "110001"
+      },
+      "sha256": "6ba222a4bf020745ca407662ca018870ae94ecbf2e7a8c97802eaa6438be2e86",
+      "url": "https://codeforces.com/api/contest.status?contestId=2062&count=10000&from=110001",
+      "response_bytes": 5830171
+    },
+    {
+      "collected_at_utc": "2026-10-18T17:07:03.481854Z",
+      "data_kind": "real",
+      "http_status": 200,
+      "method": "contest.status",
+      "params": {
+        "contestId": "2062",
+        "count": "10000",
+        "from": "120001"
+      },
+      "sha256": "3ad1cd148eec90ec87ef05494be77d7ece4668cec164c8301ac5b47fbe540f13",
+      "url": "https://codeforces.com/api/contest.status?contestId=2062&count=10000&from=120001",
+      "response_bytes": 5775045
+    },
+    {
+      "collected_at_utc": "2026-10-18T17:07:05.537487Z",
+      "data_kind": "real",
+      "http_status": 200,
+      "method": "contest.status",
+      "params": {
+        "contestId": "2062",
+        "count": "10000",
+        "from": "130001"
+      },
+      "sha256": "0a699d6aad4473c705b43851e6fbf483b1309e6f35fefe620731c88e998db561",
+      "url": "https://codeforces.com/api/contest.status?contestId=2062&count=10000&from=130001",
+      "response_bytes": 5724695
+    },
+    {
+      "collected_at_utc": "2026-10-18T17:07:07.663011Z",
+      "data_kind": "real",
+      "http_status": 200,
+      "method": "contest.status",
+      "params": {
+        "contestId": "2062",
+        "count": "10000",
+        "from": "140001"
+      },
+      "sha256": "6a0c7847eb1cff3351f635feacfc201bd2d38b4c5853c4c92146143d62df385e",
+      "url": "https://codeforces.com/api/contest.status?contestId=2062&count=10000&from=140001",
+      "response_bytes": 5693886
+    },
+    {
+      "collected_at_utc": "2026-10-18T17:07:09.659377Z",
+      "data_kind": "real",
+      "http_status": 200,
+      "method": "contest.status",
+      "params": {
+        "contestId": "2062",
+        "count": "10000",
+        "from": "150001"
+      },
+      "sha256": "873a3f9c9c546db3108e68ec9ba43a39087a7ffdaa8c0a616f1763bf51a516a3",
+      "url": "https://codeforces.com/api/contest.status?contestId=2062&count=10000&from=150001",
+      "response_bytes": 5689568
+    },
+    {
+      "collected_at_utc": "2026-10-18T17:07:11.702167Z",
+      "data_kind": "real",
+      "http_status": 200,
+      "method": "contest.status",
+      "params": {
+        "contestId": "2062",
+        "count": "10000",
+        "from": "160001"
+      },
+      "sha256": "91db5c038c59cd171ebf6253ae7c0892835bace27f599fae8f8385cd7ed45d77",
+      "url": "https://codeforces.com/api/contest.status?contestId=2062&count=10000&from=160001",
+      "response_bytes": 5766860
+    },
+    {
+      "collected_at_utc": "2026-10-18T17:07:12.952759Z",
+      "data_kind": "real",
+      "http_status": 200,
+      "method": "contest.status",
+      "params": {
+        "contestId": "2062",
+        "count": "10000",
+        "from": "170001"
+      },
+      "sha256": "fbab86dc947ff8830cff47fe3b2d584fb44206f81677ffa8f6ddf8cb49701f80",
+      "url": "https://codeforces.com/api/contest.status?contestId=2062&count=10000&from=170001",
+      "response_bytes": 1812520
+    }
+  ],
+  "limitations": [
+    "Only two complete acquired contests; zero contests eligible for training/evaluation under the current simple A/B/C order rule",
+    "Both contests contain easy/hard indices: 1824 B1/B2 and 2062 E1/E2. No protocol expansion or replacement of selected contests",
+    "Zero valid intervals; 47100 excluded observed attempts. No predictive accuracy, probabilities or research evaluation produced",
+    "origin_links record API contestId links only; no cross-contest link detected in these two responses, not proof that aliases across divisions do not exist",
+    "Raw data and tables remain local and Git-ignored; future API calls may change bytes or pagination; exact replay requires this cache",
+    "Availability under sequential assumptions is not effective dedication; problem ratings are available at collection, not historical"
+  ],
+  "android_changes": false,
+  "research_evaluation_executed": false,
+  "manual_test": "TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014)"
+}
