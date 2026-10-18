@@ -128,6 +128,29 @@ Use o formato abaixo. Nao apagar decisoes antigas; marque quando forem substitui
 | D-023 | 2026-10-18 | Primeira entrega: estudo Python reproduzivel com referencia simples, modelo interpretavel, erros de tempo, probabilidades para orcamento explicito e incerteza. Separar contests completos de treino/teste e impedir atributos de desfecho. Historias 22-28 somam 24 h estimadas; nenhum resultado esta comprovado. | Escopo e restricao de esforco do usuario; protocolo inicial KM/AFT e escolha por validacao permanecem testaveis. | 22-28 |
 | D-024 | 2026-10-18 | Validar posteriormente com Ipsums de inicio registrado e comparar Rating CF anterior ao inicio com Rating Lorem inicial antes de transportar o modelo. Tamanho/limiares definidos antes do teste; correlacao nao prova equivalencia e evidencia insuficiente impede integracao. | Evitar aplicar diretamente estimativas de contest ao treino ou ratings de significados diferentes. | 30-32 |
 | D-025 | 2026-10-18 | Integracao eventual local, com regras/modelos/snapshots versionados, avaliacoes antigas preservadas e sem requisito de backend/login/nuvem. D-012 continua vigente; corte de recomendacoes nao depende de sucesso do modelo. | Preservar funcionamento local e invariantes solicitados pelo usuario. | 29-32 |
+| D-026 | 2026-10-18 | Por instrucao explicita do usuario, contests especiais ficam fora da analise. Qualquer contest com um problema em duas versoes (ex.: B1/B2, facil/dificil) e excluido integralmente, inclusive seus problemas simples e prefixos validos. Preservar brutos e registrar exclusoes; nao relaxar o filtro para obter amostra. O recorte vigente exige formato CF e ordem simples A/B/C. | Confirmar que a exclusao desses contests e intencional, e nao uma limitacao a remover para treinar o modelo. | 23-28 |
+| D-027 | 2026-10-18 | Nova amostra regular-simple-v1: percorrer a ordem de hash/rodizio existente e verificar estrutura antes de congelar 20 contests. Reconhecimento conservador: CF FINISHED com Div. 1-4 ou Codeforces Global Round no nome, sem marcadores especiais; exigir A/B/C simples em standings. Registrar todos os candidatos/recusas e fontes; erros interrompem/retomam, sem pular candidato por falha. Nenhuma submissao, score ou resultado do modelo escolhe a amostra. Piloto anterior permanece imutavel. | Aplicar D-026 antes da coleta completa e evitar selecionar por sucesso ou descartar somente apos ajustar modelos. | 23-28 |
+| D-028 | 2026-10-18 | AFT v1 usa NumPy 2.3.5/SciPy 1.17.0 opcionais, likelihoods log-normal/Weibull explicitas com censura e L2 {0,0.01,0.1}; centros/curva de censura apenas no treino. Selecao na validacao por Brier IPCW integrado de 0-120 min, grade 5 min, G>=0,05, ECE de casos conhecidos <=KM global+0,05; CV por grupos no treino e MAE como desempates. Gate falho exporta apenas diagnostico indisponivel. Regras fixadas antes do ajuste real; metodo e limites em study/MODEL.md. | Implementar a Historia 26 com numerica auditavel e poucas dependencias; manter teste reservado e nao presumir ganho de precisao. | 26-28 |
+
+### Implementacao inicial do protocolo (22-25), 18/10/2026
+
+- Python >=3.11,<3.14, runtime/testes somente stdlib; setuptools 75.8.0 para
+  empacotar. KM pequeno com risco/empates verificaveis; nenhuma dependencia AFT
+  antecipada. Configuracao e dicionario em [study/](../study/README.md).
+- Selecao por hash/rodizio de divisao antes do ajuste; campos ausentes/quarentena
+  separados, grupos transitivos, 6/2/2 minimo e treino exclusivo dos baselines.
+  Sao realizacoes do protocolo D-021/023, nao mudancas de produto.
+- Zero/negativo oldRating separado por historico insuficiente, sem imputacao pelo
+  futuro; nenhum user.rating por linha. Expansao dessa populacao exige evidencia.
+- Na implementacao inicial, o dominio autorizado estava bloqueado por 403; nenhuma
+  tentativa de contorno. Bloqueio resolvido na continuacao de 18/10/2026: piloto
+  1824/2062 adquirido por completo, com reproducao offline e 39 testes.
+- A API agora exige standings anonimo completo com apenas contestId; status continua
+  paginado. Adaptacao do contrato sem mudar populacao oficial, corte ou protocolo.
+- Piloto manteve selecao congelada e exclusao integral por indices B1/B2 e E1/E2:
+  zero intervalos validos. Nao ampliar a ordem nem substituir contests para melhorar
+  cobertura; qualquer revisao futura exige protocolo versionado antes de novo ajuste.
+  Nenhum ganho de precisao ou transporte comprovado.
 
 ### Tabela de cenarios da D-012
 

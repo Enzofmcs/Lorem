@@ -6,15 +6,15 @@
 
 ## Estado atual
 
-**Foco atual:** extensao quantitativa planejada em 18/10/2026; Historias 00-21 preservadas e concluidas.
+**Foco atual:** estudo Python 22-26 implementado e verificado; amostra real e AFT ajustados. Historias 00-21 preservadas.
 
-**Ultima historia verificada:** Historia 21 - Redesign do historico e estatisticas, automaticamente em 2026-10-16. Historias 00-20 preservadas.
+**Ultima historia verificada:** Historia 26, em 2026-10-18: 51 testes, 20 contests adquiridos/19 elegiveis e Weibull selecionado na validacao. Ultimo marco Android: Historia 21 em 2026-10-16.
 
-**Primeiro item pendente:** Historia 22 - Base Python e protocolo reproduzivel do estudo.
+**Primeiro item pendente:** Historia 27 - avaliacao reservada de erros, probabilidades e incerteza.
 
-**Proxima entrega demonstravel:** estudo Python reproduzivel (22-28, aproximadamente 24 h de trabalho), seguido do corte no app e validacao com Ipsums (29-32).
+**Proxima entrega demonstravel:** comparar modelos e referencias nos quatro contests de teste, sem retunar; relatorio completo na 28.
 
-**Bloqueios conhecidos:** nenhum para iniciar 22. Historia 32 depende de evidencia e decisao da 31; amostra insuficiente mantem o gate fechado. Conferencia em dispositivo e opcional (D-014).
+**Bloqueios conhecidos:** nenhum para iniciar 27. Amostra limitada a 19 contests elegiveis; 1589 excluido por ratings de problemas ausentes. 32 depende da 31. Conferencia em dispositivo opcional (D-014).
 
 ## Como atualizar
 
@@ -1515,9 +1515,19 @@ aberto antes deste bloco. As Historias 00-21 e seus checklists/evidencias perman
 inalterados. A referencia local `origin/main` estava antiga; o SHA acima foi
 confirmado diretamente no GitHub e coincide com o HEAD usado neste planejamento.
 
-**Esta tarefa entrega somente planejamento, documentos e issues.** Nenhuma coleta,
-modelo, resultado de pesquisa ou mudanca Android foi implementada. Todos os aceites
-22-32 ficam pendentes. D-012 continua vigente; D-020 a D-025 registram as decisoes
+**Planejamento inicial:** entregou somente documentos e issues, com aceites pendentes.
+**Implementacao de 22-25 em 18/10/2026:** subprojeto [study/](../study/README.md),
+Instalacao limpa/wheel e jornada sintetica verificadas. A continuacao da PR #57
+concluiu o piloto da Historia 23: 1824/2062 completos, 39 testes e reproducao offline.
+As 47.100 tentativas foram excluidas pela regra de indices simples; nenhum intervalo
+valido, treino ou avaliacao. [Evidencia real](../study/evidence/2026-10-18-pilot-real.json).
+22/24/25 possuem aceite de software; isso nao comprova precisao preditiva.
+**Continuacao da Historia 26:** triagem de 44 candidatos, 20 aquisicoes completas,
+19 contests elegiveis (1589 sem rating verificavel dos problemas), 274.073 tentativas
+validas e particoes 11/4/4. Baselines reais e grade AFT ajustados; Weibull com L2 0,1
+selecionado apenas na validacao. 51 testes. [Evidencia](../study/evidence/2026-10-18-sample-aft.json)
+e [metodo](../study/MODEL.md). Teste reservado; nenhuma precisao superior comprovada.
+27-32 continuam pendentes. Nenhuma mudanca Android. D-012 continua vigente; D-020 a D-025 registram as decisoes
 solicitadas. Metodo e limites em [QUANTITATIVE.md](QUANTITATIVE.md).
 
 Primeira versao: **22 -> 23 -> 24 -> 25 -> 26 -> 27 -> 28 = 24 h estimadas**.
@@ -1562,7 +1572,7 @@ explicita adicional. Veja DA-07 em [DECISIONS.md](DECISIONS.md).
 
 **Historia:** Como pesquisador, quero executar um protocolo versionado em Python para reproduzir o estudo sem depender do app Android.
 
-**Status:** planejada; implementacao e verificacao ainda nao executadas.
+**Status:** implementada e verificada automaticamente (software/fixtures), em 2026-10-18; sem conclusao empirica.
 
 **GitHub:** [#45 - Historia 22](https://github.com/Enzofmcs/Lorem/issues/45).
 
@@ -1576,21 +1586,25 @@ explicita adicional. Veja DA-07 em [DECISIONS.md](DECISIONS.md).
 
 #### Criterios de aceite
 
-- [ ] Documentar Python 3.11+, ambiente virtual, dependencias fixadas e justificadas, semente, esquema e versoes de protocolo/modelo; instalacao independe de Gradle.
-- [ ] Disponibilizar comandos de coleta, preparo, treino, avaliacao e relatorio com configuracao explicita e modo offline por snapshot; mensagens distinguem etapas nao executadas de resultados reais.
-- [ ] Versionar dicionario e configuracao do corte inclusivo em 2020-07-01 UTC, populacao oficial individual, oldRating, delta, hipotese sequencial e censura conforme QUANTITATIVE.md.
-- [ ] Definir manifesto de selecao por contest/grupo, sementes, hashes, completude, cache e diretorios ignorados para brutos/artefatos grandes; nao versionar handles reais em fixtures.
-- [ ] Uma fixture sintetica percorre a interface minima do pipeline e produz manifesto deterministico; componentes ainda nao implementados sao identificados, sem simular resultado empirico.
+- [x] Documentar Python 3.11+, ambiente virtual, dependencias fixadas e justificadas, semente, esquema e versoes de protocolo/modelo; instalacao independe de Gradle.
+- [x] Disponibilizar comandos de coleta, preparo, treino, avaliacao e relatorio com configuracao explicita e modo offline por snapshot; mensagens distinguem etapas nao executadas de resultados reais.
+- [x] Versionar dicionario e configuracao do corte inclusivo em 2020-07-01 UTC, populacao oficial individual, oldRating, delta, hipotese sequencial e censura conforme QUANTITATIVE.md.
+- [x] Definir manifesto de selecao por contest/grupo, sementes, hashes, completude, cache e diretorios ignorados para brutos/artefatos grandes; nao versionar handles reais em fixtures.
+- [x] Uma fixture sintetica percorre a interface minima do pipeline e produz manifesto deterministico; componentes ainda nao implementados sao identificados, sem simular resultado empirico.
 
-#### Verificacao planejada
+#### Verificacao e evidencias
 
 Nivel 2: smoke automatizado do comando minimo, configuracao invalida, determinismo e separacao entre fixtures e dados reais. Nao exigir treino/coleta que pertencem a 23-27.
 
 **Entrega demonstravel:** Em ambiente virtual limpo, executar a jornada sintetica e inspecionar o manifesto e o dicionario sem instalar Android.
 
-Conferencias humanas opcionais (D-014); criterios automatizados e evidencia
-cientifica exigidos acima continuam obrigatorios. Sem resultados comprovados
-neste planejamento.
+Ambiente virtual Python 3.12.14, setuptools 75.8.0 fixado, instalacao editavel, wheel com configuracao e CLI fora do diretorio do projeto passaram. Fixture deterministica percorre comandos e marca etapas 26-28 como nao implementadas. Sem dependencia externa de runtime/teste.
+
+Comando: `cd study && .venv/bin/python -m unittest discover -s tests -v`:
+**37 testes sem falhas**. [Guia](../study/README.md),
+[contrato](../study/DATA_DICTIONARY.md) e
+[evidencia registrada](../study/evidence/2026-10-18-validation.json).
+**TESTE MANUAL OPCIONAL - NAO EXECUTADO** (D-014).
 
 ---
 
@@ -1598,7 +1612,7 @@ neste planejamento.
 
 **Historia:** Como pesquisador, quero snapshots completos da API para associar cada participante ao rating anterior ao contest e preservar a proveniencia.
 
-**Status:** planejada; implementacao e verificacao ainda nao executadas.
+**Status:** implementada e verificada automaticamente com piloto real em 2026-10-18; 2 contests completos, cobertura valida zero pelo protocolo atual. Sem avaliacao preditiva.
 
 **GitHub:** [#46 - Historia 23](https://github.com/Enzofmcs/Lorem/issues/46).
 
@@ -1608,26 +1622,56 @@ neste planejamento.
 
 **Escopo:** Coletor centralizado para metadados, problemas, participacoes, ratingChanges e submissoes. Piloto de dois contests e manifesto limitado antes do ajuste; alvo 20, minimo de avaliacao 10 completos.
 
+**Regra confirmada pelo usuario (D-026):** contests especiais e contests com qualquer
+problema em duas versoes (facil/dificil, como B1/B2) ficam integralmente fora da
+analise, inclusive seus problemas simples. Preservar brutos e exclusoes; o proximo
+conjunto de dados deve manter esse filtro. Regressao: 41 testes Python sem falhas.
+
 **Referencia:** [QUANTITATIVE.md](QUANTITATIVE.md) e [TESTING.md](TESTING.md).
 
 #### Criterios de aceite
 
-- [ ] Verificar inicio real do contest de origem >= 2020-07-01T00:00:00Z; nao inferir data por id; excluir origem/data nao verificavel e problemas sem rating com motivos.
-- [ ] Selecionar contests CF FINISHED e unir participacoes CONTESTANT individuais com contest.ratingChanges por contest/handle normalizado; usar oldRating, separar estreantes e quarentenar ausencias/conflitos sem imputacao futura.
-- [ ] Coletar todas as paginas necessarias de standings/status, com gate global >=2 s, cache, retry/backoff/Retry-After e retomada; falha parcial nunca vira contest completo ou historico vazio.
-- [ ] Preservar JSON bruto imutavel, origem, parametros, coleta UTC, hashes, vereditos finais e versao de snapshot; registrar rating do problema como disponivel na coleta, sem alegar snapshot historico.
-- [ ] Executar piloto de 2 contests; congelar selecao deterministica sem filtrar por sucesso, registrar volume/custo e grupos de problemas compartilhados; minimo insuficiente resulta em piloto declarado, sem metricas conclusivas.
-- [ ] Emitir funil de elegibilidade/completude e tabelas com ambos os ratings e delta; brutos e historicos antigos permanecem preservados.
+- [x] Verificar inicio real do contest de origem >= 2020-07-01T00:00:00Z; nao inferir data por id; excluir origem/data nao verificavel e problemas sem rating com motivos.
+- [x] Selecionar contests CF FINISHED e unir participacoes CONTESTANT individuais com contest.ratingChanges por contest/handle normalizado; usar oldRating, separar estreantes e quarentenar ausencias/conflitos sem imputacao futura.
+- [x] Coletar todas as paginas necessarias de standings/status, com gate global >=2 s, cache, retry/backoff/Retry-After e retomada; falha parcial nunca vira contest completo ou historico vazio.
+- [x] Preservar JSON bruto imutavel, origem, parametros, coleta UTC, hashes, vereditos finais e versao de snapshot; registrar rating do problema como disponivel na coleta, sem alegar snapshot historico.
+- [x] Executar piloto de 2 contests; congelar selecao deterministica sem filtrar por sucesso, registrar volume/custo e grupos de problemas compartilhados; minimo insuficiente resulta em piloto declarado, sem metricas conclusivas.
+- [x] Emitir funil de elegibilidade/completude e tabelas com ambos os ratings e delta; brutos e historicos antigos permanecem preservados.
 
-#### Verificacao planejada
+#### Verificacao e evidencias
 
 Nivel 3: API roteirizada para OK/FAILED, 429, pagina faltante, duplicata e retomada; limites de data, oldRating zero/ausente, equipe/virtual e origem ambigua. Confirmar piloto real e hashes sem exigir rede nos testes.
 
 **Entrega demonstravel:** Retomar uma coleta interrompida e reconstruir as mesmas tabelas pelo cache, mostrando a fonte da data e do oldRating de uma participacao.
 
-Conferencias humanas opcionais (D-014); criterios automatizados e evidencia
-cientifica exigidos acima continuam obrigatorios. Sem resultados comprovados
-neste planejamento.
+Piloto real concluido apos resolver o acesso de rede. Selecao original preservada:
+1824 (Div. 1) e 2062 (Div. 1 + Div. 2). A API rejeitou paginacao em standings
+(HTTP 400); coletor adaptado para resposta oficial completa com apenas contestId.
+Status continua paginado: 4 + 18 paginas, 210.860 submissoes; 17.019 participacoes
+oficiais com join exato de ratingChanges, nenhum veredito oficial pendente.
+
+Custo auditado: 30 respostas HTTP (28 OK, 2 recusas preservadas), incluindo duas
+consultas diagnosticas; 143.381.349 bytes HTTP e 29 objetos brutos unicos.
+Coletores medidos: 10,318 + 46,335 s; esse tempo exclui diagnostico e edicao do codigo.
+Snapshot `8e3f358a6525114b7ccd404f9b87c2c6e95767d3dcac7d8034542924ffd410a0`.
+Retomada aproveitou cache; repeticao offline fez zero requisicoes e reconstruiu
+features/labels/audit/manifest byte a byte. Hashes dos brutos e funis conferidos.
+
+Qualidade: 47.100 tentativas observadas = 0 eventos + 0 censuras + 47.100 exclusoes
+(44.952 por ordem nao suportada, 2.148 por historico insuficiente). Indices B1/B2
+em 1824 e E1/E2 em 2062 tornam ambos inelegiveis pelo protocolo vigente. Nao trocar
+os contests nem ampliar o protocolo apos observar a cobertura. Links de origem da
+API registrados, sem vinculo cruzado detectado nestes dois; aliases entre divisoes
+continuam sendo limitacao. `split` recusou os zero contests elegiveis; nenhum modelo
+ou avaliacao produzido. Brutos/tabelas preservados em `study/work/pilot-real/`,
+ignorados pelo Git; [evidencia sem handles](../study/evidence/2026-10-18-pilot-real.json)
+registra custo, hashes por resposta, fatias, exclusoes e rastreio de oldRating/data.
+
+Comando: `cd study && python -m unittest discover -s tests -v`:
+**39 testes sem falhas**, incluindo contrato de standings completo e resposta malformada. [Guia](../study/README.md),
+[contrato](../study/DATA_DICTIONARY.md) e
+[evidencia registrada](../study/evidence/2026-10-18-pilot-real.json).
+**TESTE MANUAL OPCIONAL - NAO EXECUTADO** (D-014).
 
 ---
 
@@ -1635,7 +1679,7 @@ neste planejamento.
 
 **Historia:** Como pesquisador, quero rotulos auditaveis de tempo e tentativas sem AC para testar a hipotese sequencial sem confundir disponibilidade com dedicacao.
 
-**Status:** planejada; implementacao e verificacao ainda nao executadas.
+**Status:** implementada e verificada automaticamente (software/fixtures), em 2026-10-18; sem conclusao empirica.
 
 **GitHub:** [#47 - Historia 24](https://github.com/Enzofmcs/Lorem/issues/47).
 
@@ -1649,22 +1693,26 @@ neste planejamento.
 
 #### Criterios de aceite
 
-- [ ] Usar creationTimeSeconds do primeiro envio com veredito final OK em [inicio, fimContest), excluindo upsolves; A ancora no inicio e B/C no primeiro AC do predecessor imediato.
-- [ ] Reproduzir ACs aos 10/28/65 minutos como duracoes 10/18/37 e identificar prefixo valido; definir ordem por problemas do contest, recusando indices ambiguos sem ordenacao ingenua.
-- [ ] Marcar saltos, inversoes, intercalacoes, retornos a problema aceito, empates/tempos nao positivos e inconsistencias; invalidar o intervalo contaminado e sucessores, preservando prefixos anteriores validos.
-- [ ] Preservar tentativas observadas sem AC como Y=C e evento=0 quando sequenciais e completas, com C=fimContest-ancora; disponibilidade nao equivale a dedicacao; sem submissao nao e tentativa negativa.
-- [ ] Representar coleta incompleta, veredito pendente e ancora invalida separadamente de censura; nao usar zero/infinito nem classificar abandono observavel como trabalho ate o fim.
-- [ ] Exportar funil e motivos por contest/faixa de rating com eventos, censuras e cobertura, alem da sensibilidade pela ultima submissao; features ficam separadas dos rotulos e da auditoria.
+- [x] Usar creationTimeSeconds do primeiro envio com veredito final OK em [inicio, fimContest), excluindo upsolves; A ancora no inicio e B/C no primeiro AC do predecessor imediato.
+- [x] Reproduzir ACs aos 10/28/65 minutos como duracoes 10/18/37 e identificar prefixo valido; definir ordem por problemas do contest, recusando indices ambiguos sem ordenacao ingenua.
+- [x] Marcar saltos, inversoes, intercalacoes, retornos a problema aceito, empates/tempos nao positivos e inconsistencias; invalidar o intervalo contaminado e sucessores, preservando prefixos anteriores validos.
+- [x] Preservar tentativas observadas sem AC como Y=C e evento=0 quando sequenciais e completas, com C=fimContest-ancora; disponibilidade nao equivale a dedicacao; sem submissao nao e tentativa negativa.
+- [x] Representar coleta incompleta, veredito pendente e ancora invalida separadamente de censura; nao usar zero/infinito nem classificar abandono observavel como trabalho ate o fim.
+- [x] Exportar funil e motivos por contest/faixa de rating com eventos, censuras e cobertura, alem da sensibilidade pela ultima submissao; features ficam separadas dos rotulos e da auditoria.
 
-#### Verificacao planejada
+#### Verificacao e evidencias
 
 Nivel 2 para transformacoes e Nivel 3 para esquema: fixtures de 10/28/65, WA->AC, multiplos ACs, limites do contest, salto, inversao, intercalacao, censura e incompletude; somas do funil reconciliadas.
 
 **Entrega demonstravel:** Inspecionar uma linha desde as submissoes brutas ate seu tempo/evento ou motivo de exclusao, incluindo um caso sem AC.
 
-Conferencias humanas opcionais (D-014); criterios automatizados e evidencia
-cientifica exigidos acima continuam obrigatorios. Sem resultados comprovados
-neste planejamento.
+Testes verificam 10/28/65 -> 10/18/37, primeiro AC, limites/upsolve, salto/inversao/intercalacao, prefixos preservados, censura versus incompletude, joins oldRating e origem/data/rating ausentes. Funil sintetico: 90 observadas = 40 eventos + 10 censuras + 40 excluidas; reconciliado por contest e faixas dos dois ratings/delta. Nao e resultado empirico.
+
+Comando: `cd study && .venv/bin/python -m unittest discover -s tests -v`:
+**37 testes sem falhas**. [Guia](../study/README.md),
+[contrato](../study/DATA_DICTIONARY.md) e
+[evidencia registrada](../study/evidence/2026-10-18-validation.json).
+**TESTE MANUAL OPCIONAL - NAO EXECUTADO** (D-014).
 
 ---
 
@@ -1672,7 +1720,7 @@ neste planejamento.
 
 **Historia:** Como pesquisador, quero referencias simples e uma separacao sem vazamento para medir se um modelo mais elaborado acrescenta utilidade.
 
-**Status:** planejada; implementacao e verificacao ainda nao executadas.
+**Status:** implementada e verificada automaticamente (software/fixtures), em 2026-10-18; sem conclusao empirica.
 
 **GitHub:** [#48 - Historia 25](https://github.com/Enzofmcs/Lorem/issues/48).
 
@@ -1686,21 +1734,25 @@ neste planejamento.
 
 #### Criterios de aceite
 
-- [ ] Persistir manifesto 60/20/20 por contest/grupo com semente, pelo menos 6/2/2 contests completos no minimo de 10; impedir contest ou grupo compartilhado em mais de uma particao.
-- [ ] Ajustar Kaplan-Meier com eventos e censuras do treino, global e por delta de 400 pontos com minimo de 50 tentativas/20 eventos; usar fallback global quando faltar suporte.
-- [ ] Produzir P(AC ate 30/60/120 min), mediana e quantis quando identificaveis; ausencia de mediana/seguimento e indisponibilidade explicita, nunca infinito.
-- [ ] Reproduzir a formula de tempo D-012 como comparador operacional, sem modifica-la no Android nem atribuir probabilidade inventada.
-- [ ] Garantir que transformacoes, faixas, fallback e funcao de censura sejam ajustados somente no treino; gravar artefato versionado e previsoes identificadas por particao.
+- [x] Persistir manifesto 60/20/20 por contest/grupo com semente, pelo menos 6/2/2 contests completos no minimo de 10; impedir contest ou grupo compartilhado em mais de uma particao.
+- [x] Ajustar Kaplan-Meier com eventos e censuras do treino, global e por delta de 400 pontos com minimo de 50 tentativas/20 eventos; usar fallback global quando faltar suporte.
+- [x] Produzir P(AC ate 30/60/120 min), mediana e quantis quando identificaveis; ausencia de mediana/seguimento e indisponibilidade explicita, nunca infinito.
+- [x] Reproduzir a formula de tempo D-012 como comparador operacional, sem modifica-la no Android nem atribuir probabilidade inventada.
+- [x] Garantir que transformacoes, faixas, fallback e funcao de censura sejam ajustados somente no treino; gravar artefato versionado e previsoes identificadas por particao.
 
-#### Verificacao planejada
+#### Verificacao e evidencias
 
 Nivel 2: vazamento por contest/grupo, CDF monotona em [0,1], censura total, mediana nao atingida, fallback de faixa e equivalencia numerica da D-012.
 
 **Entrega demonstravel:** Consultar as probabilidades e quantis do baseline para um par de ratings e conferir o manifesto sem contests compartilhados.
 
-Conferencias humanas opcionais (D-014); criterios automatizados e evidencia
-cientifica exigidos acima continuam obrigatorios. Sem resultados comprovados
-neste planejamento.
+Fixture sintetica de 10 contests gera 6/2/2; grupos transitivos e minimo inviavel testados. Treino: 30 tentativas, 24 eventos e 6 censuras. KM global/bins e curva de censura ajustados apenas no treino; alterar dados reservados nao altera o modelo. Limites 49/50 tentativas e 19/20 eventos, CDF/quantis/seguimento e D-012 conferidos. Nao houve ajuste ou avaliacao com dados reais.
+
+Comando: `cd study && .venv/bin/python -m unittest discover -s tests -v`:
+**37 testes sem falhas**. [Guia](../study/README.md),
+[contrato](../study/DATA_DICTIONARY.md) e
+[evidencia registrada](../study/evidence/2026-10-18-validation.json).
+**TESTE MANUAL OPCIONAL - NAO EXECUTADO** (D-014).
 
 ---
 
@@ -1708,7 +1760,7 @@ neste planejamento.
 
 **Historia:** Como pesquisador, quero estimar uma distribuicao interpretavel de tempo a partir dos ratings, incluindo observacoes censuradas.
 
-**Status:** planejada; implementacao e verificacao ainda nao executadas.
+**Status:** implementada e verificada com dados sinteticos e amostra real em 2026-10-18; avaliacao reservada e ganho preditivo continuam pendentes na 27.
 
 **GitHub:** [#49 - Historia 26](https://github.com/Enzofmcs/Lorem/issues/49).
 
@@ -1722,21 +1774,41 @@ neste planejamento.
 
 #### Criterios de aceite
 
-- [ ] Ajustar AFT com duracao observada e indicador de evento, sem eliminar os sem AC validos; justificar biblioteca, distribuicoes e hipoteses de censura.
-- [ ] Usar oldRating/100 e delta/100, preservando ratingProblema na base; evitar colinearidade dos tres termos e atributos de desfecho como rank, erros, AC ou tempo realizado.
-- [ ] Comparar log-normal/Weibull e regularizacao {0,0.01,0.1} so no treino/validacao, com GroupKFold quando houver suporte; nao inspecionar teste para ajustar.
-- [ ] Exportar F(b), mediana e quantis 10/90 em minutos, coeficientes/fatores de tempo, dominio de treino e versoes; distinguir intervalo preditivo de confianca.
-- [ ] Verificar convergencia, monotonicidade e suporte; sinalizar extrapolacao, falha ou indisponibilidade em vez de ocultar estimativas invalidas; nao afirmar ganho de precisao antes de 27.
+- [x] Ajustar AFT com duracao observada e indicador de evento, sem eliminar os sem AC validos; justificar biblioteca, distribuicoes e hipoteses de censura.
+- [x] Usar oldRating/100 e delta/100, preservando ratingProblema na base; evitar colinearidade dos tres termos e atributos de desfecho como rank, erros, AC ou tempo realizado.
+- [x] Comparar log-normal/Weibull e regularizacao {0,0.01,0.1} so no treino/validacao, com GroupKFold quando houver suporte; nao inspecionar teste para ajustar.
+- [x] Exportar F(b), mediana e quantis 10/90 em minutos, coeficientes/fatores de tempo, dominio de treino e versoes; distinguir intervalo preditivo de confianca.
+- [x] Verificar convergencia, monotonicidade e suporte; sinalizar extrapolacao, falha ou indisponibilidade em vez de ocultar estimativas invalidas; nao afirmar ganho de precisao antes de 27.
 
-#### Verificacao planejada
+#### Verificacao e evidencias
 
 Nivel 2: dados sinteticos com censura para recuperacao aproximada de sinal, invariantes da CDF/quantis, ausencia de features vazadas, reproducao de artefatos e falha de convergencia.
 
 **Entrega demonstravel:** Comparar previsoes e fatores de tempo para pares de ratings e orcamentos explicitos, mostrando os limites de suporte.
 
-Conferencias humanas opcionais (D-014); criterios automatizados e evidencia
-cientifica exigidos acima continuam obrigatorios. Sem resultados comprovados
-neste planejamento.
+Amostra regular-simple-v1 congelada apos verificar somente formato/problemas de
+44 candidatos: 20 contests coletados integralmente, 19 elegiveis. Nenhum contest
+substituido por sucesso; 1589 excluido por ratings ausentes. Dos 392.445 registros
+observados, 234.945 eventos, 39.128 censuras e 118.372 exclusoes. Particoes por
+contest/grupo: 11 treino, 4 validacao, 4 teste; 193.527/45.179/35.367 tentativas validas.
+
+CLI `train` e `predict --model aft` implementadas. NumPy 2.3.5/SciPy 1.17.0 opcionais
+e fixados; [likelihoods, gradientes e regras de selecao](../study/MODEL.md).
+Log-normal/Weibull x L2 {0,0.01,0.1}, tres folds agrupados no treino e selecao na
+validacao. Os seis candidatos convergiram com gradiente conferido; Weibull 0,1 foi
+selecionado. Ajuste final: 193.527 observacoes = 167.618 eventos + 25.909 censuras.
+Modelos/previsoes versionados localmente; teste nao usado no tuning.
+
+51 testes sem falhas: gradientes analiticos versus numericos, recuperacao de sinal
+com censura nas duas distribuicoes, falsa convergencia do otimizador, censura
+conhecida/desconhecida no scoring interno, grupos, mutacao dos rotulos do teste
+sem alterar modelo, determinismo, suporte/quantis/extrapolacao e CLI instalada.
+Core sem site-packages e dependencias opcionais ausentes tambem verificados.
+[Evidencia e hashes](../study/evidence/2026-10-18-sample-aft.json).
+
+O scoring interno escolhe o modelo; nao e avaliacao reservada, IC ou comprovacao
+de superioridade. Esses resultados pertencem a 27. Nenhuma mudanca Android.
+**TESTE MANUAL OPCIONAL - NAO EXECUTADO** (D-014).
 
 ---
 

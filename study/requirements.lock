@@ -1,0 +1,5 @@
+# Python >=3.11,<3.14. Collection/preparation/baselines use stdlib.
+# Optional AFT numerical dependencies/tests: requirements-model.lock.
+# HTTP/TLS: urllib with the inherited proxy/CA configuration.
+# Optional editable installation build dependency (not needed for python -m):
+setuptools==75.8.0

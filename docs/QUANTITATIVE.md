@@ -1,6 +1,13 @@
 # Estudo quantitativo de tempo e AC
 
-Planejamento de 18/10/2026; **experimentos ainda nao executados**. Este protocolo
+Planejamento de 18/10/2026; **avaliacao preditiva com dados reais ainda nao executada**.
+Software 22-26 verificado com 51 testes. Nova amostra: 20 contests coletados,
+19 elegiveis, 274.073 tentativas validas; baselines e AFT ajustados com particoes
+11/4/4. Weibull 0,1 selecionado na validacao. [Evidencia atual](../study/evidence/2026-10-18-sample-aft.json)
+e [metodo AFT](../study/MODEL.md). Precisao/teste reservado continuam na 27.
+O [piloto anterior](../study/evidence/2026-10-18-pilot-real.json), com variantes
+B1/B2 e E1/E2, permanece preservado e excluido.
+[Guia Python](../study/README.md) e [contrato](../study/DATA_DICTIONARY.md). Este protocolo
 orienta as Historias 22-28 (primeira versao em aproximadamente 24 h de trabalho) e
 29-32 (aplicacao e validacao posteriores). Progresso e issues em [ROADMAP.md](ROADMAP.md).
 As Historias 00-21 permanecem concluidas. A D-012 continua sendo a regra em producao.
@@ -38,6 +45,11 @@ protocolo, medidas de erro e discussao de validade; nao comprova ganho pedagogic
   sem equipe) e presentes em `contest.ratingChanges`. Excluir virtual, practice,
   unofficial, equipes e formatos/indices ambiguos da analise primaria, preservando
   brutos e contagens. Nao ordenar `A1/A2` lexicograficamente como se fossem A/B.
+- Por orientacao explicita do usuario (D-026), contests especiais ficam fora da
+  analise. Se **qualquer problema** tiver duas versoes, como B1/B2 (facil/dificil),
+  excluir **todo o contest**, incluindo problemas simples e prefixos A/B/C.
+  Essa exclusao e intencional; preservar os brutos, contabilizar o motivo e manter
+  a regra na proxima amostra. Nao aproveitar somente a versao facil ou dificil.
 - Associar `oldRating` por `(contestId, handle normalizado)` a participacao oficial.
   Nao usar rating atual, `newRating`, rank ou resultado do proprio contest como entrada.
   Conflitos, mudancas sem correspondencia e rating ausente ficam em quarentena.
@@ -55,17 +67,21 @@ protocolo, medidas de erro e discussao de validade; nao comprova ganho pedagogic
 
 ## Coleta limitada e reproduzivel
 
-Criar posteriormente um subprojeto Python isolado em `study/`, executavel sem
-Android. Prever Python 3.11+, ambiente virtual, dependencias fixadas, semente e
-configuracao versionadas, CLI para coleta/preparo/treino/avaliacao/relatorio e
-notebook opcional como leitura dos mesmos artefatos. Os comandos definitivos serao
-implementados/documentados na Historia 22; nenhum comando Python existe hoje.
+O subprojeto Python isolado em `study/` esta implementado, executavel sem Android,
+com Python >=3.11,<3.14, ambiente virtual, core stdlib, empacotamento fixado,
+semente e configuracao versionadas. CLI de coleta/preparo, particoes, baselines e
+AFT implementada; modelo usa NumPy 2.3.5/SciPy 1.17.0 opcionais. Avaliacao reservada
+e relatorio cientifico 27-28 continuam identificados como nao implementados. Comandos no
+[guia Python](../study/README.md); notebook nao e necessario neste bloco.
 
-Fontes planejadas: `contest.list`, `contest.standings`, `contest.status`,
+Fontes do cliente centralizado (user.rating reservado para ambiguidades, nao usado no recorte inicial): `contest.list`, `contest.standings`, `contest.status`,
 `contest.ratingChanges`, `problemset.problems` e `user.rating` para verificar
 historico anterior quando necessario. Centralizar requisicoes (intervalo minimo
 de 2 s), cache por endpoint/parametros, paginacao completa, retry com backoff,
-`Retry-After`, retomada e erros `OK/FAILED`. Uma falha de pagina nao equivale a
+`Retry-After`, retomada e erros `OK/FAILED`. No contrato observado no piloto,
+standings de contests comuns exigem GET anonimo apenas com contestId: coletar a
+resposta oficial completa sem from/count/showUnofficial. Status segue paginado;
+o filtro oficial/individual aplica-se a todos os dados. Uma falha de pagina nao equivale a
 ausencia de submissao. Nunca treinar/avaliar um contest com coleta incompleta.
 
 Piloto: 2 contests completos para testar volume e qualidade. Alvo inicial: 20
@@ -77,6 +93,14 @@ o manifesto antes de ajustar modelos. Se o volume exceder o orcamento, reduzir
 contests completos e registrar a mudanca antes do treino, mantendo pelo menos 10
 (6 treino, 2 validacao, 2 teste); abaixo disso, entregar somente piloto e declarar
 avaliacao insuficiente. As 24 h sao trabalho estimado, nao prazo de coleta garantido.
+
+A configuracao regular-simple-v1 aplica triagem de metadados/estrutura na ordem de
+hash/rodizio antes de congelar os 20 selecionados. Reconhecimento conservador de
+round regular: CF FINISHED com Div. 1-4 ou Codeforces Global Round, sem marcadores
+especiais; exigir ordem A/B/C simples. Salvar todos os candidatos/recusas e refs.
+Limite inicial 100 candidatos. Erro interrompe e retoma o mesmo candidato; nunca
+selecionar por submissao/score/AC. Essa triagem nao garante ratings/populacao
+posteriores: manter perdas auditadas, sem trocar contests por sucesso (D-027).
 
 Preservar JSON bruto imutavel, parametros, coleta UTC, versao do esquema e hashes;
 novas consultas/rejulgamentos geram nova versao. Manifesto registra paginas,
@@ -161,6 +185,13 @@ metricas no subconjunto com status conhecido, com seu vies de selecao explicitad
    Rank, score, AC, erros, numero de submissoes, duracao realizada, sucessor e
    timestamps de resultado nao entram como preditores. Orcamento `b` e parametro
    de consulta da CDF, nao informacao sobre o desfecho.
+
+AFT v1 implementado conforme [MODEL.md](../study/MODEL.md), com likelihoods
+explicitas e SciPy numerico fixado. Selecao interna usa Brier IPCW integrado em
+0-120 min/5 min, G>=0,05 e gate ECE conhecido <=KM global+0,05, definidos antes do
+ajuste (D-028). Gradiente <=1e-3 valida convergencia independentemente da mensagem
+do otimizador. As coordenadas numericas usam apenas o desvio padrao do treino;
+coeficientes exportados continuam por 100 pontos. Avaliacao reservada/ICs sao a 27.
 
 Exportar `P(T<=b)=F(b|ratings)`, mediana e quantis 10/90 em minutos. Probabilidades
 devem pertencer a [0,1] e nao diminuir com `b`. Fora do dominio observado ou sem

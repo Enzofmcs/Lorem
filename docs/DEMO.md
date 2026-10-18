@@ -113,7 +113,13 @@ limiares da D-015. Consulte o metodo de avaliacao em `SPEC.md`.
 
 ## Demonstracao planejada do estudo quantitativo (22-28)
 
-Ainda nao implementada nem executada. O roteiro futuro devera reconstruir a base
+Software 22-26 implementado e verificado com 51 testes. Jornada sintetica e
+comandos reais no [guia Python](../study/README.md). Nova amostra: 20 aquisicoes,
+19 contests elegiveis, 274.073 tentativas validas e particoes 11/4/4. AFT Weibull
+selecionado na validacao; CLI mostra probabilidades/quantis com suporte explicito.
+[Evidencia](../study/evidence/2026-10-18-sample-aft.json) e [metodo](../study/MODEL.md).
+Avaliacao preditiva reservada e relatorio completo 27-28 continuam pendentes;
+nenhum ganho de precisao comprovado. O roteiro empirico futuro devera reconstruir a base
 por snapshot, mostrar uma tentativa desde os brutos ate seu tempo/censura e exibir
 previsoes para dois ratings com orcamento de 30/60/120 min. Apresentar referencias,
 erros, calibracao, cobertura e intervalos com tamanhos de amostra; nao usar fixtures

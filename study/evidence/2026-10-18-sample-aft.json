@@ -1,0 +1,2927 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-18",
+  "data_kind": "real",
+  "history": 26,
+  "python": "3.12.14",
+  "platform": "Linux",
+  "repository_base_main": "25dd754",
+  "integrates_merged_prs": [
+    56,
+    57
+  ],
+  "work_directory": "study/work/sample-real-regular-v1 (Git-ignored; raw data contain public handles)",
+  "sampling": {
+    "policy": "regular-simple-v1",
+    "seed": 20261018,
+    "config_sha256": "2621df9703a6a676c418ffde33c5f219ec81657a0f35647f80ac94a75c035fc7",
+    "screening_sha256": "621436b710aff8b662e7ce1244a17ddaead3f19383b45a31a6462ba816ebd269",
+    "snapshot_sha256": "a07ec41a97bf858b07f69d01f119b11baf8f2ffce75d94485ecf069ea662b5da",
+    "selection": {
+      "config_sha256": "2621df9703a6a676c418ffde33c5f219ec81657a0f35647f80ac94a75c035fc7",
+      "contest_ids": [
+        1407,
+        1936,
+        1517,
+        1530,
+        1492,
+        2096,
+        1758,
+        1528,
+        1687,
+        1738,
+        1874,
+        1589,
+        2165,
+        1586,
+        1536,
+        1988,
+        1641,
+        1842,
+        2238,
+        1848
+      ],
+      "list_ref": {
+        "collected_at_utc": "2026-10-18T18:36:53.170143Z",
+        "data_kind": "real",
+        "http_status": 200,
+        "method": "contest.list",
+        "params": {
+          "gym": "false"
+        },
+        "sha256": "68e587122ccbde0c5263482d2c008fcb87f91e018ef3a0414ef8b8e4061d11aa",
+        "url": "https://codeforces.com/api/contest.list?gym=false"
+      },
+      "method": "seeded-sha256-round-robin-division; no outcome selection",
+      "pilot": false,
+      "schema_version": 1,
+      "screening_sha256": "621436b710aff8b662e7ce1244a17ddaead3f19383b45a31a6462ba816ebd269",
+      "seed": 20261018,
+      "selection_policy": "regular-simple-v1"
+    },
+    "screened_candidates": 44,
+    "screening_reasons": {
+      "unsupported_problem_order": 17,
+      "eligible_structure": 20,
+      "not_recognized_regular_cf_round": 7
+    },
+    "decisions": [
+      {
+        "contest_id": 1824,
+        "eligible_structure": false,
+        "reason": "unsupported_problem_order",
+        "problem_indices": [
+          "A",
+          "B1",
+          "B2",
+          "C",
+          "D",
+          "E"
+        ]
+      },
+      {
+        "contest_id": 2062,
+        "eligible_structure": false,
+        "reason": "unsupported_problem_order",
+        "problem_indices": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E1",
+          "E2",
+          "F",
+          "G",
+          "H"
+        ]
+      },
+      {
+        "contest_id": 1407,
+        "eligible_structure": true,
+        "reason": null,
+        "problem_indices": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E"
+        ]
+      },
+      {
+        "contest_id": 1883,
+        "eligible_structure": false,
+        "reason": "unsupported_problem_order",
+        "problem_indices": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F",
+          "G1",
+          "G2"
+        ]
+      },
+      {
+        "contest_id": 1672,
+        "eligible_structure": false,
+        "reason": "unsupported_problem_order",
+        "problem_indices": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F1",
+          "F2",
+          "G",
+          "H",
+          "I"
+        ]
+      },
+      {
+        "contest_id": 1936,
+        "eligible_structure": true,
+        "reason": null,
+        "problem_indices": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F"
+        ]
+      },
+      {
+        "contest_id": 1517,
+        "eligible_structure": true,
+        "reason": null,
+        "problem_indices": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F",
+          "G",
+          "H"
+        ]
+      },
+      {
+        "contest_id": 1625,
+        "eligible_structure": false,
+        "reason": "unsupported_problem_order",
+        "problem_indices": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E1",
+          "E2"
+        ]
+      },
+      {
+        "contest_id": 1585,
+        "eligible_structure": false,
+        "reason": "not_recognized_regular_cf_round"
+      },
+      {
+        "contest_id": 2089,
+        "eligible_structure": false,
+        "reason": "unsupported_problem_order",
+        "problem_indices": [
+          "A",
+          "B1",
+          "B2",
+          "C1",
+          "C2",
+          "D",
+          "E"
+        ]
+      },
+      {
+        "contest_id": 1530,
+        "eligible_structure": true,
+        "reason": null,
+        "problem_indices": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F",
+          "G",
+          "H"
+        ]
+      },
+      {
+        "contest_id": 1492,
+        "eligible_structure": true,
+        "reason": null,
+        "problem_indices": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E"
+        ]
+      },
+      {
+        "contest_id": 2183,
+        "eligible_structure": false,
+        "reason": "not_recognized_regular_cf_round"
+      },
+      {
+        "contest_id": 1943,
+        "eligible_structure": false,
+        "reason": "unsupported_problem_order",
+        "problem_indices": [
+          "A",
+          "B",
+          "C",
+          "D1",
+          "D2",
+          "E1",
+          "E2",
+          "F"
+        ]
+      },
+      {
+        "contest_id": 2096,
+        "eligible_structure": true,
+        "reason": null,
+        "problem_indices": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F",
+          "G",
+          "H"
+        ]
+      },
+      {
+        "contest_id": 1758,
+        "eligible_structure": true,
+        "reason": null,
+        "problem_indices": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F"
+        ]
+      },
+      {
+        "contest_id": 1415,
+        "eligible_structure": false,
+        "reason": "not_recognized_regular_cf_round"
+      },
+      {
+        "contest_id": 1528,
+        "eligible_structure": true,
+        "reason": null,
+        "problem_indices": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F"
+        ]
+      },
+      {
+        "contest_id": 1782,
+        "eligible_structure": false,
+        "reason": "unsupported_problem_order",
+        "problem_indices": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F",
+          "G",
+          "H1",
+          "H2"
+        ]
+      },
+      {
+        "contest_id": 1658,
+        "eligible_structure": false,
+        "reason": "unsupported_problem_order",
+        "problem_indices": [
+          "A",
+          "B",
+          "C",
+          "D1",
+          "D2",
+          "E",
+          "F"
+        ]
+      },
+      {
+        "contest_id": 1746,
+        "eligible_structure": false,
+        "reason": "unsupported_problem_order",
+        "problem_indices": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E1",
+          "E2",
+          "F",
+          "G"
+        ]
+      },
+      {
+        "contest_id": 1687,
+        "eligible_structure": true,
+        "reason": null,
+        "problem_indices": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F"
+        ]
+      },
+      {
+        "contest_id": 2147,
+        "eligible_structure": false,
+        "reason": "unsupported_problem_order",
+        "problem_indices": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F",
+          "G",
+          "H",
+          "I1",
+          "I2"
+        ]
+      },
+      {
+        "contest_id": 1486,
+        "eligible_structure": false,
+        "reason": "unsupported_problem_order",
+        "problem_indices": [
+          "A",
+          "B",
+          "C1",
+          "C2",
+          "D",
+          "E",
+          "F"
+        ]
+      },
+      {
+        "contest_id": 1738,
+        "eligible_structure": true,
+        "reason": null,
+        "problem_indices": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F",
+          "G",
+          "H"
+        ]
+      },
+      {
+        "contest_id": 1874,
+        "eligible_structure": true,
+        "reason": null,
+        "problem_indices": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F",
+          "G"
+        ]
+      },
+      {
+        "contest_id": 1774,
+        "eligible_structure": false,
+        "reason": "unsupported_problem_order",
+        "problem_indices": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F1",
+          "F2",
+          "G",
+          "H"
+        ]
+      },
+      {
+        "contest_id": 1589,
+        "eligible_structure": true,
+        "reason": null,
+        "problem_indices": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F"
+        ]
+      },
+      {
+        "contest_id": 1584,
+        "eligible_structure": false,
+        "reason": "not_recognized_regular_cf_round"
+      },
+      {
+        "contest_id": 2165,
+        "eligible_structure": true,
+        "reason": null,
+        "problem_indices": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F"
+        ]
+      },
+      {
+        "contest_id": 1586,
+        "eligible_structure": true,
+        "reason": null,
+        "problem_indices": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F",
+          "G",
+          "H",
+          "I"
+        ]
+      },
+      {
+        "contest_id": 1536,
+        "eligible_structure": true,
+        "reason": null,
+        "problem_indices": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F"
+        ]
+      },
+      {
+        "contest_id": 1770,
+        "eligible_structure": false,
+        "reason": "not_recognized_regular_cf_round"
+      },
+      {
+        "contest_id": 2190,
+        "eligible_structure": false,
+        "reason": "unsupported_problem_order",
+        "problem_indices": [
+          "A",
+          "B1",
+          "B2",
+          "C",
+          "D",
+          "E",
+          "F",
+          "G"
+        ]
+      },
+      {
+        "contest_id": 1909,
+        "eligible_structure": false,
+        "reason": "unsupported_problem_order",
+        "problem_indices": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F1",
+          "F2",
+          "G",
+          "H",
+          "I"
+        ]
+      },
+      {
+        "contest_id": 1988,
+        "eligible_structure": true,
+        "reason": null,
+        "problem_indices": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F"
+        ]
+      },
+      {
+        "contest_id": 1482,
+        "eligible_structure": false,
+        "reason": "not_recognized_regular_cf_round"
+      },
+      {
+        "contest_id": 1641,
+        "eligible_structure": true,
+        "reason": null,
+        "problem_indices": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F"
+        ]
+      },
+      {
+        "contest_id": 1842,
+        "eligible_structure": true,
+        "reason": null,
+        "problem_indices": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F",
+          "G",
+          "H",
+          "I"
+        ]
+      },
+      {
+        "contest_id": 2238,
+        "eligible_structure": true,
+        "reason": null,
+        "problem_indices": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F"
+        ]
+      },
+      {
+        "contest_id": 1410,
+        "eligible_structure": false,
+        "reason": "not_recognized_regular_cf_round"
+      },
+      {
+        "contest_id": 2150,
+        "eligible_structure": false,
+        "reason": "unsupported_problem_order",
+        "problem_indices": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E1",
+          "E2",
+          "F",
+          "G"
+        ]
+      },
+      {
+        "contest_id": 2039,
+        "eligible_structure": false,
+        "reason": "unsupported_problem_order",
+        "problem_indices": [
+          "A",
+          "B",
+          "C1",
+          "C2",
+          "D",
+          "E",
+          "F1",
+          "F2",
+          "G",
+          "H1",
+          "H2"
+        ]
+      },
+      {
+        "contest_id": 1848,
+        "eligible_structure": true,
+        "reason": null,
+        "problem_indices": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F"
+        ]
+      }
+    ],
+    "selection_uses_outcomes": false,
+    "original_pilot_unchanged": true
+  },
+  "acquisition": {
+    "started_at_utc": "2026-10-18T18:36:51.644519+00:00",
+    "finished_at_utc": "2026-10-18T18:47:25.533818+00:00",
+    "elapsed_seconds": 633.889,
+    "exit_code": 0,
+    "network_requests": 308,
+    "http_status_counts": {
+      "200": 308
+    },
+    "requests_by_endpoint": {
+      "contest.list": 1,
+      "contest.standings": 37,
+      "problemset.problems": 1,
+      "contest.ratingChanges": 20,
+      "contest.status": 249
+    },
+    "http_body_bytes": 1654835689,
+    "unique_raw_objects": 308,
+    "unique_raw_bytes": 1654835689,
+    "request_interval_seconds": 2,
+    "response_inventory": "2026-10-18-sample-responses.jsonl",
+    "response_inventory_sha256": "657baada900360d6b544f57439381de28c6c40d565c150396d6a15f6b5d484be"
+  },
+  "funnel": {
+    "observed_attempts": 392445,
+    "valid_events": 234945,
+    "valid_censored": 39128,
+    "excluded": 118372,
+    "coverage": 0.698373020423244,
+    "reasons": {
+      "insufficient_prior_rating_history": 13062,
+      "interleaved_or_skipped_problem": 22324,
+      "missing_or_conflicting_official_participation": 7206,
+      "missing_problem_rating": 32052,
+      "predecessor_not_valid": 43728
+    },
+    "submission_exclusions": {
+      "not_official_individual": 1644655,
+      "outside_contest_window": 4
+    },
+    "contests": [
+      {
+        "complete": true,
+        "conflicting_submission_ids": 0,
+        "contest_id": 1407,
+        "duplicate_submissions": 0,
+        "eligible_for_split": true,
+        "excluded": 6445,
+        "observed_attempts": 23753,
+        "official_individuals": 11250,
+        "participants_with_observed_attempts": 11250,
+        "participations_all": 11250,
+        "raw_submissions": 188884,
+        "reasons": {
+          "insufficient_prior_rating_history": 576,
+          "interleaved_or_skipped_problem": 2121,
+          "predecessor_not_valid": 3748
+        },
+        "simple_problem_order": true,
+        "valid_censored": 4210,
+        "valid_events": 13098
+      },
+      {
+        "complete": true,
+        "conflicting_submission_ids": 0,
+        "contest_id": 1492,
+        "duplicate_submissions": 0,
+        "eligible_for_split": true,
+        "excluded": 5974,
+        "observed_attempts": 23632,
+        "official_individuals": 9174,
+        "participants_with_observed_attempts": 9174,
+        "participations_all": 9174,
+        "raw_submissions": 210845,
+        "reasons": {
+          "insufficient_prior_rating_history": 1269,
+          "interleaved_or_skipped_problem": 1748,
+          "predecessor_not_valid": 2957
+        },
+        "simple_problem_order": true,
+        "valid_censored": 3667,
+        "valid_events": 13991
+      },
+      {
+        "complete": true,
+        "conflicting_submission_ids": 0,
+        "contest_id": 1517,
+        "duplicate_submissions": 0,
+        "eligible_for_split": true,
+        "excluded": 4229,
+        "observed_attempts": 28134,
+        "official_individuals": 11248,
+        "participants_with_observed_attempts": 11248,
+        "participations_all": 11248,
+        "raw_submissions": 148028,
+        "reasons": {
+          "insufficient_prior_rating_history": 741,
+          "interleaved_or_skipped_problem": 1262,
+          "predecessor_not_valid": 2226
+        },
+        "simple_problem_order": true,
+        "valid_censored": 3505,
+        "valid_events": 20400
+      },
+      {
+        "complete": true,
+        "conflicting_submission_ids": 0,
+        "contest_id": 1528,
+        "duplicate_submissions": 0,
+        "eligible_for_split": true,
+        "excluded": 267,
+        "observed_attempts": 2737,
+        "official_individuals": 943,
+        "participants_with_observed_attempts": 943,
+        "participations_all": 943,
+        "raw_submissions": 55528,
+        "reasons": {
+          "interleaved_or_skipped_problem": 81,
+          "predecessor_not_valid": 186
+        },
+        "simple_problem_order": true,
+        "valid_censored": 171,
+        "valid_events": 2299
+      },
+      {
+        "complete": true,
+        "conflicting_submission_ids": 0,
+        "contest_id": 1530,
+        "duplicate_submissions": 0,
+        "eligible_for_split": true,
+        "excluded": 6011,
+        "observed_attempts": 37539,
+        "official_individuals": 11705,
+        "participants_with_observed_attempts": 11705,
+        "participations_all": 11705,
+        "raw_submissions": 174066,
+        "reasons": {
+          "insufficient_prior_rating_history": 1038,
+          "interleaved_or_skipped_problem": 1651,
+          "predecessor_not_valid": 3322
+        },
+        "simple_problem_order": true,
+        "valid_censored": 3980,
+        "valid_events": 27548
+      },
+      {
+        "complete": true,
+        "conflicting_submission_ids": 0,
+        "contest_id": 1536,
+        "duplicate_submissions": 0,
+        "eligible_for_split": true,
+        "excluded": 4851,
+        "observed_attempts": 23899,
+        "official_individuals": 11230,
+        "participants_with_observed_attempts": 11230,
+        "participations_all": 11230,
+        "raw_submissions": 161805,
+        "reasons": {
+          "insufficient_prior_rating_history": 612,
+          "interleaved_or_skipped_problem": 1583,
+          "predecessor_not_valid": 2656
+        },
+        "simple_problem_order": true,
+        "valid_censored": 3094,
+        "valid_events": 15954
+      },
+      {
+        "complete": true,
+        "conflicting_submission_ids": 0,
+        "contest_id": 1586,
+        "duplicate_submissions": 0,
+        "eligible_for_split": true,
+        "excluded": 17780,
+        "observed_attempts": 17781,
+        "official_individuals": 6610,
+        "participants_with_observed_attempts": 6610,
+        "participations_all": 6610,
+        "raw_submissions": 77723,
+        "reasons": {
+          "insufficient_prior_rating_history": 489,
+          "missing_problem_rating": 17277,
+          "predecessor_not_valid": 14
+        },
+        "simple_problem_order": true,
+        "valid_censored": 1,
+        "valid_events": 0
+      },
+      {
+        "complete": true,
+        "conflicting_submission_ids": 0,
+        "contest_id": 1589,
+        "duplicate_submissions": 0,
+        "eligible_for_split": false,
+        "excluded": 15493,
+        "observed_attempts": 15493,
+        "official_individuals": 5318,
+        "participants_with_observed_attempts": 5318,
+        "participations_all": 5318,
+        "raw_submissions": 72793,
+        "reasons": {
+          "insufficient_prior_rating_history": 718,
+          "missing_problem_rating": 14775
+        },
+        "simple_problem_order": true,
+        "valid_censored": 0,
+        "valid_events": 0
+      },
+      {
+        "complete": true,
+        "conflicting_submission_ids": 0,
+        "contest_id": 1641,
+        "duplicate_submissions": 0,
+        "eligible_for_split": true,
+        "excluded": 683,
+        "observed_attempts": 2402,
+        "official_individuals": 872,
+        "participants_with_observed_attempts": 885,
+        "participations_all": 872,
+        "raw_submissions": 46419,
+        "reasons": {
+          "interleaved_or_skipped_problem": 193,
+          "missing_or_conflicting_official_participation": 41,
+          "predecessor_not_valid": 449
+        },
+        "simple_problem_order": true,
+        "valid_censored": 178,
+        "valid_events": 1541
+      },
+      {
+        "complete": true,
+        "conflicting_submission_ids": 0,
+        "contest_id": 1687,
+        "duplicate_submissions": 0,
+        "eligible_for_split": true,
+        "excluded": 230,
+        "observed_attempts": 1972,
+        "official_individuals": 703,
+        "participants_with_observed_attempts": 703,
+        "participations_all": 703,
+        "raw_submissions": 29041,
+        "reasons": {
+          "interleaved_or_skipped_problem": 73,
+          "predecessor_not_valid": 157
+        },
+        "simple_problem_order": true,
+        "valid_censored": 255,
+        "valid_events": 1487
+      },
+      {
+        "complete": true,
+        "conflicting_submission_ids": 0,
+        "contest_id": 1738,
+        "duplicate_submissions": 0,
+        "eligible_for_split": true,
+        "excluded": 8903,
+        "observed_attempts": 24393,
+        "official_individuals": 9118,
+        "participants_with_observed_attempts": 9118,
+        "participations_all": 9118,
+        "raw_submissions": 184901,
+        "reasons": {
+          "insufficient_prior_rating_history": 581,
+          "interleaved_or_skipped_problem": 2966,
+          "predecessor_not_valid": 5356
+        },
+        "simple_problem_order": true,
+        "valid_censored": 2671,
+        "valid_events": 12819
+      },
+      {
+        "complete": true,
+        "conflicting_submission_ids": 0,
+        "contest_id": 1758,
+        "duplicate_submissions": 0,
+        "eligible_for_split": true,
+        "excluded": 5354,
+        "observed_attempts": 28367,
+        "official_individuals": 11586,
+        "participants_with_observed_attempts": 11586,
+        "participations_all": 11586,
+        "raw_submissions": 176144,
+        "reasons": {
+          "insufficient_prior_rating_history": 1101,
+          "interleaved_or_skipped_problem": 1450,
+          "predecessor_not_valid": 2803
+        },
+        "simple_problem_order": true,
+        "valid_censored": 3297,
+        "valid_events": 19716
+      },
+      {
+        "complete": true,
+        "conflicting_submission_ids": 0,
+        "contest_id": 1842,
+        "duplicate_submissions": 0,
+        "eligible_for_split": true,
+        "excluded": 6053,
+        "observed_attempts": 29713,
+        "official_individuals": 11529,
+        "participants_with_observed_attempts": 11529,
+        "participations_all": 11529,
+        "raw_submissions": 200205,
+        "reasons": {
+          "insufficient_prior_rating_history": 1191,
+          "interleaved_or_skipped_problem": 1617,
+          "predecessor_not_valid": 3245
+        },
+        "simple_problem_order": true,
+        "valid_censored": 3500,
+        "valid_events": 20160
+      },
+      {
+        "complete": true,
+        "conflicting_submission_ids": 0,
+        "contest_id": 1848,
+        "duplicate_submissions": 0,
+        "eligible_for_split": true,
+        "excluded": 5343,
+        "observed_attempts": 19177,
+        "official_individuals": 9944,
+        "participants_with_observed_attempts": 9944,
+        "participations_all": 9944,
+        "raw_submissions": 137163,
+        "reasons": {
+          "insufficient_prior_rating_history": 1064,
+          "interleaved_or_skipped_problem": 1398,
+          "predecessor_not_valid": 2881
+        },
+        "simple_problem_order": true,
+        "valid_censored": 2452,
+        "valid_events": 11382
+      },
+      {
+        "complete": true,
+        "conflicting_submission_ids": 0,
+        "contest_id": 1874,
+        "duplicate_submissions": 0,
+        "eligible_for_split": true,
+        "excluded": 871,
+        "observed_attempts": 2534,
+        "official_individuals": 1021,
+        "participants_with_observed_attempts": 1021,
+        "participations_all": 1021,
+        "raw_submissions": 37462,
+        "reasons": {
+          "interleaved_or_skipped_problem": 298,
+          "predecessor_not_valid": 573
+        },
+        "simple_problem_order": true,
+        "valid_censored": 267,
+        "valid_events": 1396
+      },
+      {
+        "complete": true,
+        "conflicting_submission_ids": 0,
+        "contest_id": 1936,
+        "duplicate_submissions": 0,
+        "eligible_for_split": true,
+        "excluded": 260,
+        "observed_attempts": 1878,
+        "official_individuals": 851,
+        "participants_with_observed_attempts": 851,
+        "participations_all": 851,
+        "raw_submissions": 25369,
+        "reasons": {
+          "interleaved_or_skipped_problem": 76,
+          "predecessor_not_valid": 184
+        },
+        "simple_problem_order": true,
+        "valid_censored": 123,
+        "valid_events": 1495
+      },
+      {
+        "complete": true,
+        "conflicting_submission_ids": 0,
+        "contest_id": 1988,
+        "duplicate_submissions": 0,
+        "eligible_for_split": true,
+        "excluded": 12223,
+        "observed_attempts": 43076,
+        "official_individuals": 16438,
+        "participants_with_observed_attempts": 16438,
+        "participations_all": 16438,
+        "raw_submissions": 220544,
+        "reasons": {
+          "insufficient_prior_rating_history": 1783,
+          "interleaved_or_skipped_problem": 3630,
+          "predecessor_not_valid": 6810
+        },
+        "simple_problem_order": true,
+        "valid_censored": 5075,
+        "valid_events": 25778
+      },
+      {
+        "complete": true,
+        "conflicting_submission_ids": 0,
+        "contest_id": 2096,
+        "duplicate_submissions": 0,
+        "eligible_for_split": true,
+        "excluded": 6466,
+        "observed_attempts": 30005,
+        "official_individuals": 12771,
+        "participants_with_observed_attempts": 12771,
+        "participations_all": 12771,
+        "raw_submissions": 115687,
+        "reasons": {
+          "insufficient_prior_rating_history": 1899,
+          "interleaved_or_skipped_problem": 1174,
+          "predecessor_not_valid": 3393
+        },
+        "simple_problem_order": true,
+        "valid_censored": 1900,
+        "valid_events": 21639
+      },
+      {
+        "complete": true,
+        "conflicting_submission_ids": 0,
+        "contest_id": 2165,
+        "duplicate_submissions": 0,
+        "eligible_for_split": true,
+        "excluded": 405,
+        "observed_attempts": 2662,
+        "official_individuals": 821,
+        "participants_with_observed_attempts": 821,
+        "participations_all": 821,
+        "raw_submissions": 40411,
+        "reasons": {
+          "interleaved_or_skipped_problem": 113,
+          "predecessor_not_valid": 292
+        },
+        "simple_problem_order": true,
+        "valid_censored": 211,
+        "valid_events": 2046
+      },
+      {
+        "complete": true,
+        "conflicting_submission_ids": 0,
+        "contest_id": 2238,
+        "duplicate_submissions": 0,
+        "eligible_for_split": true,
+        "excluded": 10531,
+        "observed_attempts": 33298,
+        "official_individuals": 9288,
+        "participants_with_observed_attempts": 12498,
+        "participations_all": 9288,
+        "raw_submissions": 83500,
+        "reasons": {
+          "interleaved_or_skipped_problem": 890,
+          "missing_or_conflicting_official_participation": 7165,
+          "predecessor_not_valid": 2476
+        },
+        "simple_problem_order": true,
+        "valid_censored": 571,
+        "valid_events": 22196
+      }
+    ],
+    "by_participant_rating_band_400": {
+      "-400": {
+        "excluded": 24,
+        "observed": 24
+      },
+      "0": {
+        "censored": 1308,
+        "event": 2750,
+        "excluded": 16779,
+        "observed": 20837
+      },
+      "1200": {
+        "censored": 10448,
+        "event": 82473,
+        "excluded": 33003,
+        "observed": 125924
+      },
+      "1600": {
+        "censored": 4988,
+        "event": 49294,
+        "excluded": 17872,
+        "observed": 72154
+      },
+      "2000": {
+        "censored": 1760,
+        "event": 21262,
+        "excluded": 7414,
+        "observed": 30436
+      },
+      "2400": {
+        "censored": 269,
+        "event": 5046,
+        "excluded": 1988,
+        "observed": 7303
+      },
+      "2800": {
+        "censored": 56,
+        "event": 1461,
+        "excluded": 647,
+        "observed": 2164
+      },
+      "3200": {
+        "censored": 11,
+        "event": 355,
+        "excluded": 176,
+        "observed": 542
+      },
+      "3600": {
+        "censored": 3,
+        "event": 91,
+        "excluded": 41,
+        "observed": 135
+      },
+      "400": {
+        "censored": 5018,
+        "event": 12020,
+        "excluded": 10332,
+        "observed": 27370
+      },
+      "800": {
+        "censored": 15267,
+        "event": 60193,
+        "excluded": 30096,
+        "observed": 105556
+      }
+    },
+    "by_problem_rating_band_400": {
+      "1200": {
+        "censored": 14353,
+        "event": 56238,
+        "excluded": 30164,
+        "observed": 100755
+      },
+      "1600": {
+        "censored": 5576,
+        "event": 17112,
+        "excluded": 7760,
+        "observed": 30448
+      },
+      "2000": {
+        "censored": 4573,
+        "event": 6577,
+        "excluded": 6941,
+        "observed": 18091
+      },
+      "2400": {
+        "censored": 1323,
+        "event": 2023,
+        "excluded": 2925,
+        "observed": 6271
+      },
+      "2800": {
+        "censored": 135,
+        "event": 205,
+        "excluded": 716,
+        "observed": 1056
+      },
+      "3200": {
+        "censored": 54,
+        "event": 63,
+        "excluded": 757,
+        "observed": 874
+      },
+      "800": {
+        "censored": 13114,
+        "event": 152727,
+        "excluded": 35854,
+        "observed": 201695
+      },
+      "missing": {
+        "excluded": 33255,
+        "observed": 33255
+      }
+    },
+    "by_delta_band_400": {
+      "-1200": {
+        "censored": 32,
+        "event": 24327,
+        "excluded": 2359,
+        "observed": 26718
+      },
+      "-1600": {
+        "censored": 4,
+        "event": 5657,
+        "excluded": 415,
+        "observed": 6076
+      },
+      "-2000": {
+        "event": 1180,
+        "excluded": 97,
+        "observed": 1277
+      },
+      "-2400": {
+        "event": 272,
+        "excluded": 28,
+        "observed": 300
+      },
+      "-2800": {
+        "event": 55,
+        "excluded": 8,
+        "observed": 63
+      },
+      "-3200": {
+        "event": 10,
+        "excluded": 2,
+        "observed": 12
+      },
+      "-400": {
+        "censored": 8822,
+        "event": 93763,
+        "excluded": 22299,
+        "observed": 124884
+      },
+      "-800": {
+        "censored": 630,
+        "event": 65163,
+        "excluded": 9154,
+        "observed": 74947
+      },
+      "0": {
+        "censored": 21435,
+        "event": 37127,
+        "excluded": 22085,
+        "observed": 80647
+      },
+      "1200": {
+        "censored": 136,
+        "event": 111,
+        "excluded": 3399,
+        "observed": 3646
+      },
+      "1600": {
+        "censored": 17,
+        "event": 15,
+        "excluded": 1110,
+        "observed": 1142
+      },
+      "2000": {
+        "excluded": 710,
+        "observed": 710
+      },
+      "2400": {
+        "excluded": 375,
+        "observed": 375
+      },
+      "2800": {
+        "excluded": 155,
+        "observed": 155
+      },
+      "3200": {
+        "excluded": 191,
+        "observed": 191
+      },
+      "400": {
+        "censored": 7288,
+        "event": 6638,
+        "excluded": 10343,
+        "observed": 24269
+      },
+      "800": {
+        "censored": 764,
+        "event": 627,
+        "excluded": 12387,
+        "observed": 13778
+      },
+      "missing": {
+        "excluded": 33255,
+        "observed": 33255
+      }
+    },
+    "origin_links": [
+      {
+        "contest_ids": [
+          1407
+        ],
+        "source": "verified problem contestId in standings"
+      },
+      {
+        "contest_ids": [
+          1492
+        ],
+        "source": "verified problem contestId in standings"
+      },
+      {
+        "contest_ids": [
+          1517
+        ],
+        "source": "verified problem contestId in standings"
+      },
+      {
+        "contest_ids": [
+          1528
+        ],
+        "source": "verified problem contestId in standings"
+      },
+      {
+        "contest_ids": [
+          1530
+        ],
+        "source": "verified problem contestId in standings"
+      },
+      {
+        "contest_ids": [
+          1536
+        ],
+        "source": "verified problem contestId in standings"
+      },
+      {
+        "contest_ids": [
+          1586
+        ],
+        "source": "verified problem contestId in standings"
+      },
+      {
+        "contest_ids": [
+          1589
+        ],
+        "source": "verified problem contestId in standings"
+      },
+      {
+        "contest_ids": [
+          1641
+        ],
+        "source": "verified problem contestId in standings"
+      },
+      {
+        "contest_ids": [
+          1687
+        ],
+        "source": "verified problem contestId in standings"
+      },
+      {
+        "contest_ids": [
+          1738
+        ],
+        "source": "verified problem contestId in standings"
+      },
+      {
+        "contest_ids": [
+          1758
+        ],
+        "source": "verified problem contestId in standings"
+      },
+      {
+        "contest_ids": [
+          1842
+        ],
+        "source": "verified problem contestId in standings"
+      },
+      {
+        "contest_ids": [
+          1848
+        ],
+        "source": "verified problem contestId in standings"
+      },
+      {
+        "contest_ids": [
+          1874
+        ],
+        "source": "verified problem contestId in standings"
+      },
+      {
+        "contest_ids": [
+          1936
+        ],
+        "source": "verified problem contestId in standings"
+      },
+      {
+        "contest_ids": [
+          1988
+        ],
+        "source": "verified problem contestId in standings"
+      },
+      {
+        "contest_ids": [
+          2096
+        ],
+        "source": "verified problem contestId in standings"
+      },
+      {
+        "contest_ids": [
+          2165
+        ],
+        "source": "verified problem contestId in standings"
+      },
+      {
+        "contest_ids": [
+          2238
+        ],
+        "source": "verified problem contestId in standings"
+      }
+    ]
+  },
+  "eligible_contest_ids": [
+    1407,
+    1492,
+    1517,
+    1528,
+    1530,
+    1536,
+    1586,
+    1641,
+    1687,
+    1738,
+    1758,
+    1842,
+    1848,
+    1874,
+    1936,
+    1988,
+    2096,
+    2165,
+    2238
+  ],
+  "complete_but_ineligible": {
+    "1589": "No verified problem rating in problemset.problems; no substitution based on outcomes"
+  },
+  "partitions": {
+    "test": {
+      "contests": [
+        1492,
+        1848,
+        1936,
+        2165
+      ],
+      "valid_attempts": 35367,
+      "events": 28914,
+      "censored": 6453
+    },
+    "train": {
+      "contests": [
+        1407,
+        1517,
+        1530,
+        1641,
+        1687,
+        1738,
+        1758,
+        1874,
+        1988,
+        2096,
+        2238
+      ],
+      "valid_attempts": 193527,
+      "events": 167618,
+      "censored": 25909
+    },
+    "validation": {
+      "contests": [
+        1528,
+        1536,
+        1586,
+        1842
+      ],
+      "valid_attempts": 45179,
+      "events": 38413,
+      "censored": 6766
+    }
+  },
+  "acquisition_totals": {
+    "participations_all": 152420,
+    "official_individuals": 152420,
+    "raw_submissions": 2386518,
+    "duplicate_submissions": 0,
+    "conflicting_submission_ids": 0
+  },
+  "baseline": {
+    "artifact_sha256": "7549c4e98d2e2ea50ef4c7a3d61db490f7914d181d55968858040692cd666f6a",
+    "training_attempts": 193527,
+    "training_events": 167618,
+    "delta_bin_lower_bounds": [
+      -2400,
+      -2000,
+      -1600,
+      -1200,
+      -800,
+      -400,
+      0,
+      400,
+      800,
+      1200
+    ],
+    "fit_exclusive_to_train": true
+  },
+  "aft": {
+    "artifact_sha256": "2bb92b581b909e9a6b95002d99a4e2602e2b0c2309f7df81b0a4184b55b7899f",
+    "model_version": "aft-v1",
+    "fit": {
+      "center": [
+        13.92667229895674,
+        -2.7618270835593255
+      ],
+      "coefficients": [
+        3.6117191692268573,
+        0.04523754066593529,
+        0.20755398798366967
+      ],
+      "convergence": {
+        "gradient_max_abs": 2.906312555382186e-06,
+        "iterations": 12,
+        "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+        "objective": 3.815960957233248,
+        "success": true
+      },
+      "domain": {
+        "delta": [
+          -3051,
+          1869
+        ],
+        "old_rating": [
+          8,
+          3879
+        ],
+        "problem_rating": [
+          800,
+          3500
+        ]
+      },
+      "family": "weibull",
+      "feature_spec": [
+        "intercept",
+        "oldRating/100 centered on training",
+        "delta/100 centered on training"
+      ],
+      "max_followup_minutes": 180.0,
+      "optimizer_rating_scale_train_only": [
+        4.679620887693549,
+        4.517162839269186
+      ],
+      "penalty": 0.1,
+      "scale": 0.8285981336392082,
+      "time_factors_per_100_rating": {
+        "delta_at_fixed_old_rating": 1.2306641561229785,
+        "old_rating_at_fixed_delta": 1.0462763635768415
+      },
+      "time_unit": "minutes",
+      "training_censored": 25909,
+      "training_events": 167618,
+      "training_n": 193527,
+      "training_sha256": "bb65f7c75db2677e89f07fb3a8dac24ebaebefaa2c65719bbdf131eb590e3e56"
+    },
+    "chosen": "weibull:0.1",
+    "selection_status": "selected",
+    "selection_method": "minimum validation integrated IPCW Brier; calibration tolerance to training global KM 0.05; grouped CV/MAE tie-break",
+    "validation_only_reference_global_km": {
+      "n": 45179,
+      "integrated_brier_ipcw": 0.18558479986659857,
+      "integration_range_minutes": [
+        0.0,
+        120.0
+      ],
+      "known_case_ece_mean": 0.02495043010905133,
+      "event_mae_minutes": null,
+      "query_horizons": [
+        {
+          "brier_ipcw": 0.2504043302536002,
+          "censoring_survival_left": 0.9947435431008742,
+          "known": 45128,
+          "known_case_bins": [
+            {
+              "bin": 2,
+              "n": 45128,
+              "observed": 0.5438751994327247,
+              "prediction": 0.5851430549548535
+            }
+          ],
+          "known_case_ece": 0.04126785552212886,
+          "minutes": 30.0,
+          "unknown": 51
+        },
+        {
+          "brier_ipcw": 0.19514882581751344,
+          "censoring_survival_left": 0.9379031192232989,
+          "known": 44709,
+          "known_case_bins": [
+            {
+              "bin": 3,
+              "n": 44709,
+              "observed": 0.7527567156500928,
+              "prediction": 0.7818407124046624
+            }
+          ],
+          "known_case_ece": 0.02908399675456952,
+          "minutes": 60.0,
+          "unknown": 470
+        },
+        {
+          "brier_ipcw": 0.17073004202760628,
+          "censoring_survival_left": 0.497496652439848,
+          "known": 42531,
+          "known_case_bins": [
+            {
+              "bin": 4,
+              "n": 42531,
+              "observed": 0.8929486727328302,
+              "prediction": 0.8884492346823746
+            }
+          ],
+          "known_case_ece": 0.004499438050455606,
+          "minutes": 120.0,
+          "unknown": 2648
+        }
+      ]
+    },
+    "grouped_cv_folds": [
+      [
+        1407,
+        1530,
+        1874,
+        2238
+      ],
+      [
+        1641,
+        1687,
+        1738,
+        1758
+      ],
+      [
+        1517,
+        1988,
+        2096
+      ]
+    ],
+    "candidates": [
+      {
+        "candidate": "lognormal:0",
+        "status": "converged",
+        "calibration_eligible": true,
+        "convergence": {
+          "gradient_max_abs": 2.1402909152223684e-06,
+          "iterations": 10,
+          "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+          "objective": 3.7484166716577567,
+          "success": true
+        },
+        "grouped_cv_mean_brier": 0.12244711079713451,
+        "grouped_training_cv": [
+          {
+            "heldout_contest_ids": [
+              1407,
+              1530,
+              1874,
+              2238
+            ],
+            "integrated_brier_ipcw": 0.12137065731526894,
+            "status": "converged"
+          },
+          {
+            "heldout_contest_ids": [
+              1641,
+              1687,
+              1738,
+              1758
+            ],
+            "integrated_brier_ipcw": 0.12418351510454465,
+            "status": "converged"
+          },
+          {
+            "heldout_contest_ids": [
+              1517,
+              1988,
+              2096
+            ],
+            "integrated_brier_ipcw": 0.12178715997158997,
+            "status": "converged"
+          }
+        ],
+        "internal_validation_only": {
+          "n": 45179,
+          "integrated_brier_ipcw": 0.14392516817452763,
+          "integration_range_minutes": [
+            0.0,
+            120.0
+          ],
+          "known_case_ece_mean": 0.04326393500617295,
+          "event_mae_minutes": 17.671065236917833,
+          "query_horizons": [
+            {
+              "brier_ipcw": 0.16795567497119782,
+              "censoring_survival_left": 0.9947435431008742,
+              "known": 45128,
+              "known_case_bins": [
+                {
+                  "bin": 0,
+                  "n": 4933,
+                  "observed": 0.14696938982363672,
+                  "prediction": 0.1145218678067558
+                },
+                {
+                  "bin": 1,
+                  "n": 8494,
+                  "observed": 0.22356957852601836,
+                  "prediction": 0.3017594288649809
+                },
+                {
+                  "bin": 2,
+                  "n": 10546,
+                  "observed": 0.43902901574056513,
+                  "prediction": 0.5029878719593617
+                },
+                {
+                  "bin": 3,
+                  "n": 11305,
+                  "observed": 0.7121627598407784,
+                  "prediction": 0.7000685813521715
+                },
+                {
+                  "bin": 4,
+                  "n": 9850,
+                  "observed": 0.9379695431472082,
+                  "prediction": 0.8991103168318109
+                }
+              ],
+              "known_case_ece": 0.04472182191969982,
+              "minutes": 30.0,
+              "unknown": 51
+            },
+            {
+              "brier_ipcw": 0.1520026113651921,
+              "censoring_survival_left": 0.9379031192232989,
+              "known": 44709,
+              "known_case_bins": [
+                {
+                  "bin": 0,
+                  "n": 672,
+                  "observed": 0.5104166666666666,
+                  "prediction": 0.13581431961013518
+                },
+                {
+                  "bin": 1,
+                  "n": 2628,
+                  "observed": 0.3816590563165906,
+                  "prediction": 0.3117393072316381
+                },
+                {
+                  "bin": 2,
+                  "n": 5420,
+                  "observed": 0.43431734317343174,
+                  "prediction": 0.512161191803667
+                },
+                {
+                  "bin": 3,
+                  "n": 10709,
+                  "observed": 0.6296572976001494,
+                  "prediction": 0.7137343354160797
+                },
+                {
+                  "bin": 4,
+                  "n": 25280,
+                  "observed": 0.9181962025316456,
+                  "prediction": 0.9187124053278438
+                }
+              ],
+              "known_case_ece": 0.03960782263194901,
+              "minutes": 60.0,
+              "unknown": 470
+            },
+            {
+              "brier_ipcw": 0.16069001676420985,
+              "censoring_survival_left": 0.497496652439848,
+              "known": 42531,
+              "known_case_bins": [
+                {
+                  "bin": 0,
+                  "n": 62,
+                  "observed": 0.8709677419354839,
+                  "prediction": 0.10776443997602474
+                },
+                {
+                  "bin": 1,
+                  "n": 202,
+                  "observed": 0.8564356435643564,
+                  "prediction": 0.3209233105891677
+                },
+                {
+                  "bin": 2,
+                  "n": 1092,
+                  "observed": 0.7783882783882784,
+                  "prediction": 0.5241154105163767
+                },
+                {
+                  "bin": 3,
+                  "n": 3911,
+                  "observed": 0.6791102019943749,
+                  "prediction": 0.7258320108342806
+                },
+                {
+                  "bin": 4,
+                  "n": 37264,
+                  "observed": 0.9189834693001289,
+                  "prediction": 0.9543437120208509
+                }
+              ],
+              "known_case_ece": 0.04546216046687,
+              "minutes": 120.0,
+              "unknown": 2648
+            }
+          ]
+        }
+      },
+      {
+        "candidate": "lognormal:0.01",
+        "status": "converged",
+        "calibration_eligible": true,
+        "convergence": {
+          "gradient_max_abs": 2.117209680149051e-06,
+          "iterations": 10,
+          "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+          "objective": 3.7486758683930814,
+          "success": true
+        },
+        "grouped_cv_mean_brier": 0.1224398975100529,
+        "grouped_training_cv": [
+          {
+            "heldout_contest_ids": [
+              1407,
+              1530,
+              1874,
+              2238
+            ],
+            "integrated_brier_ipcw": 0.12136982167682756,
+            "status": "converged"
+          },
+          {
+            "heldout_contest_ids": [
+              1641,
+              1687,
+              1738,
+              1758
+            ],
+            "integrated_brier_ipcw": 0.12417246715043756,
+            "status": "converged"
+          },
+          {
+            "heldout_contest_ids": [
+              1517,
+              1988,
+              2096
+            ],
+            "integrated_brier_ipcw": 0.12177740370289354,
+            "status": "converged"
+          }
+        ],
+        "internal_validation_only": {
+          "n": 45179,
+          "integrated_brier_ipcw": 0.14391625832497212,
+          "integration_range_minutes": [
+            0.0,
+            120.0
+          ],
+          "known_case_ece_mean": 0.043338003829490025,
+          "event_mae_minutes": 17.658710505782018,
+          "query_horizons": [
+            {
+              "brier_ipcw": 0.1679479311301348,
+              "censoring_survival_left": 0.9947435431008742,
+              "known": 45128,
+              "known_case_bins": [
+                {
+                  "bin": 0,
+                  "n": 4928,
+                  "observed": 0.1471185064935065,
+                  "prediction": 0.11469359954498178
+                },
+                {
+                  "bin": 1,
+                  "n": 8486,
+                  "observed": 0.22354466179589913,
+                  "prediction": 0.3017410275595899
+                },
+                {
+                  "bin": 2,
+                  "n": 10558,
+                  "observed": 0.4387194544421292,
+                  "prediction": 0.5029170368622647
+                },
+                {
+                  "bin": 3,
+                  "n": 11306,
+                  "observed": 0.7120997700336105,
+                  "prediction": 0.6999943081791543
+                },
+                {
+                  "bin": 4,
+                  "n": 9850,
+                  "observed": 0.9379695431472082,
+                  "prediction": 0.899022539058474
+                }
+              ],
+              "known_case_ece": 0.044798234322489694,
+              "minutes": 30.0,
+              "unknown": 51
+            },
+            {
+              "brier_ipcw": 0.15199036518266187,
+              "censoring_survival_left": 0.9379031192232989,
+              "known": 44709,
+              "known_case_bins": [
+                {
+                  "bin": 0,
+                  "n": 671,
+                  "observed": 0.511177347242921,
+                  "prediction": 0.13614890243033798
+                },
+                {
+                  "bin": 1,
+                  "n": 2625,
+                  "observed": 0.38133333333333336,
+                  "prediction": 0.312114462058971
+                },
+                {
+                  "bin": 2,
+                  "n": 5415,
+                  "observed": 0.43416435826408123,
+                  "prediction": 0.5122506488255958
+                },
+                {
+                  "bin": 3,
+                  "n": 10718,
+                  "observed": 0.6295950737077813,
+                  "prediction": 0.7137709009957584
+                },
+                {
+                  "bin": 4,
+                  "n": 25280,
+                  "observed": 0.9181962025316456,
+                  "prediction": 0.9186958473125377
+                }
+              ],
+              "known_case_ece": 0.03961189970450104,
+              "minutes": 60.0,
+              "unknown": 470
+            },
+            {
+              "brier_ipcw": 0.16068652265397687,
+              "censoring_survival_left": 0.497496652439848,
+              "known": 42531,
+              "known_case_bins": [
+                {
+                  "bin": 0,
+                  "n": 62,
+                  "observed": 0.8709677419354839,
+                  "prediction": 0.10816887928009267
+                },
+                {
+                  "bin": 1,
+                  "n": 196,
+                  "observed": 0.8622448979591837,
+                  "prediction": 0.3192455797628843
+                },
+                {
+                  "bin": 2,
+                  "n": 1086,
+                  "observed": 0.7817679558011049,
+                  "prediction": 0.5233084755620115
+                },
+                {
+                  "bin": 3,
+                  "n": 3912,
+                  "observed": 0.6781697341513292,
+                  "prediction": 0.7256303629902774
+                },
+                {
+                  "bin": 4,
+                  "n": 37275,
+                  "observed": 0.9189268947015425,
+                  "prediction": 0.9543260668250958
+                }
+              ],
+              "known_case_ece": 0.04560387746147933,
+              "minutes": 120.0,
+              "unknown": 2648
+            }
+          ]
+        }
+      },
+      {
+        "candidate": "lognormal:0.1",
+        "status": "converged",
+        "calibration_eligible": true,
+        "convergence": {
+          "gradient_max_abs": 1.8520923917332566e-06,
+          "iterations": 10,
+          "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+          "objective": 3.750983639100184,
+          "success": true
+        },
+        "grouped_cv_mean_brier": 0.12237918016347366,
+        "grouped_training_cv": [
+          {
+            "heldout_contest_ids": [
+              1407,
+              1530,
+              1874,
+              2238
+            ],
+            "integrated_brier_ipcw": 0.12136564211712568,
+            "status": "converged"
+          },
+          {
+            "heldout_contest_ids": [
+              1641,
+              1687,
+              1738,
+              1758
+            ],
+            "integrated_brier_ipcw": 0.1240777613979865,
+            "status": "converged"
+          },
+          {
+            "heldout_contest_ids": [
+              1517,
+              1988,
+              2096
+            ],
+            "integrated_brier_ipcw": 0.12169413697530877,
+            "status": "converged"
+          }
+        ],
+        "internal_validation_only": {
+          "n": 45179,
+          "integrated_brier_ipcw": 0.1438409663448675,
+          "integration_range_minutes": [
+            0.0,
+            120.0
+          ],
+          "known_case_ece_mean": 0.04372426365642886,
+          "event_mae_minutes": 17.551123544355693,
+          "query_horizons": [
+            {
+              "brier_ipcw": 0.16788340062607307,
+              "censoring_survival_left": 0.9947435431008742,
+              "known": 45128,
+              "known_case_bins": [
+                {
+                  "bin": 0,
+                  "n": 4848,
+                  "observed": 0.14645214521452146,
+                  "prediction": 0.11561976255048159
+                },
+                {
+                  "bin": 1,
+                  "n": 8494,
+                  "observed": 0.22109724511419826,
+                  "prediction": 0.30166442061986465
+                },
+                {
+                  "bin": 2,
+                  "n": 10628,
+                  "observed": 0.4378057960105382,
+                  "prediction": 0.5027799704000834
+                },
+                {
+                  "bin": 3,
+                  "n": 11370,
+                  "observed": 0.7133685136323659,
+                  "prediction": 0.699937085885089
+                },
+                {
+                  "bin": 4,
+                  "n": 9788,
+                  "observed": 0.9391091131998366,
+                  "prediction": 0.8988606900171681
+                }
+              ],
+              "known_case_ece": 0.04589224882359022,
+              "minutes": 30.0,
+              "unknown": 51
+            },
+            {
+              "brier_ipcw": 0.15188603906639242,
+              "censoring_survival_left": 0.9379031192232989,
+              "known": 44709,
+              "known_case_bins": [
+                {
+                  "bin": 0,
+                  "n": 629,
+                  "observed": 0.5103338632750397,
+                  "prediction": 0.13582239995883885
+                },
+                {
+                  "bin": 1,
+                  "n": 2596,
+                  "observed": 0.3832819722650231,
+                  "prediction": 0.31283370695651
+                },
+                {
+                  "bin": 2,
+                  "n": 5419,
+                  "observed": 0.4316294519284001,
+                  "prediction": 0.5125379764383319
+                },
+                {
+                  "bin": 3,
+                  "n": 10756,
+                  "observed": 0.6278356266269989,
+                  "prediction": 0.7139957163437282
+                },
+                {
+                  "bin": 4,
+                  "n": 25309,
+                  "observed": 0.9185270062033268,
+                  "prediction": 0.9184080057415601
+                }
+              ],
+              "known_case_ece": 0.03996162761784215,
+              "minutes": 60.0,
+              "unknown": 470
+            },
+            {
+              "brier_ipcw": 0.16065851656641358,
+              "censoring_survival_left": 0.497496652439848,
+              "known": 42531,
+              "known_case_bins": [
+                {
+                  "bin": 0,
+                  "n": 58,
+                  "observed": 0.8793103448275862,
+                  "prediction": 0.10565169046183696
+                },
+                {
+                  "bin": 1,
+                  "n": 190,
+                  "observed": 0.8526315789473684,
+                  "prediction": 0.3189847055050911
+                },
+                {
+                  "bin": 2,
+                  "n": 1025,
+                  "observed": 0.7834146341463415,
+                  "prediction": 0.5233417180141196
+                },
+                {
+                  "bin": 3,
+                  "n": 3924,
+                  "observed": 0.6794087665647298,
+                  "prediction": 0.7257338342899456
+                },
+                {
+                  "bin": 4,
+                  "n": 37334,
+                  "observed": 0.9186264530990518,
+                  "prediction": 0.9543268693707517
+                }
+              ],
+              "known_case_ece": 0.04531891452785419,
+              "minutes": 120.0,
+              "unknown": 2648
+            }
+          ]
+        }
+      },
+      {
+        "candidate": "weibull:0",
+        "status": "converged",
+        "calibration_eligible": true,
+        "convergence": {
+          "gradient_max_abs": 3.735845455453687e-06,
+          "iterations": 12,
+          "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+          "objective": 3.813677662799264,
+          "success": true
+        },
+        "grouped_cv_mean_brier": 0.12173062698815505,
+        "grouped_training_cv": [
+          {
+            "heldout_contest_ids": [
+              1407,
+              1530,
+              1874,
+              2238
+            ],
+            "integrated_brier_ipcw": 0.12070575830661111,
+            "status": "converged"
+          },
+          {
+            "heldout_contest_ids": [
+              1641,
+              1687,
+              1738,
+              1758
+            ],
+            "integrated_brier_ipcw": 0.12337299967081211,
+            "status": "converged"
+          },
+          {
+            "heldout_contest_ids": [
+              1517,
+              1988,
+              2096
+            ],
+            "integrated_brier_ipcw": 0.1211131229870419,
+            "status": "converged"
+          }
+        ],
+        "internal_validation_only": {
+          "n": 45179,
+          "integrated_brier_ipcw": 0.14037552895360783,
+          "integration_range_minutes": [
+            0.0,
+            120.0
+          ],
+          "known_case_ece_mean": 0.039110900329982635,
+          "event_mae_minutes": 18.163700100894,
+          "query_horizons": [
+            {
+              "brier_ipcw": 0.16506377294382624,
+              "censoring_survival_left": 0.9947435431008742,
+              "known": 45128,
+              "known_case_bins": [
+                {
+                  "bin": 0,
+                  "n": 3920,
+                  "observed": 0.14183673469387756,
+                  "prediction": 0.14570010333650885
+                },
+                {
+                  "bin": 1,
+                  "n": 11382,
+                  "observed": 0.22878228782287824,
+                  "prediction": 0.300619705031
+                },
+                {
+                  "bin": 2,
+                  "n": 11621,
+                  "observed": 0.4946218053523793,
+                  "prediction": 0.49633127296646534
+                },
+                {
+                  "bin": 3,
+                  "n": 9330,
+                  "observed": 0.7702036441586281,
+                  "prediction": 0.6957866675385812
+                },
+                {
+                  "bin": 4,
+                  "n": 8875,
+                  "observed": 0.952112676056338,
+                  "prediction": 0.918291661359562
+                }
+              ],
+              "known_case_ece": 0.040931029697397946,
+              "minutes": 30.0,
+              "unknown": 51
+            },
+            {
+              "brier_ipcw": 0.1459397580835233,
+              "censoring_survival_left": 0.9379031192232989,
+              "known": 44709,
+              "known_case_bins": [
+                {
+                  "bin": 0,
+                  "n": 376,
+                  "observed": 0.523936170212766,
+                  "prediction": 0.1442526854082139
+                },
+                {
+                  "bin": 1,
+                  "n": 3224,
+                  "observed": 0.3774813895781638,
+                  "prediction": 0.31826812362438517
+                },
+                {
+                  "bin": 2,
+                  "n": 7072,
+                  "observed": 0.4519230769230769,
+                  "prediction": 0.5009857701261492
+                },
+                {
+                  "bin": 3,
+                  "n": 10469,
+                  "observed": 0.6666348266310058,
+                  "prediction": 0.7077422986517083
+                },
+                {
+                  "bin": 4,
+                  "n": 23568,
+                  "observed": 0.9362695179904956,
+                  "prediction": 0.9345871472746305
+                }
+              ],
+              "known_case_ece": 0.025736208899100044,
+              "minutes": 60.0,
+              "unknown": 470
+            },
+            {
+              "brier_ipcw": 0.15759618542270368,
+              "censoring_survival_left": 0.497496652439848,
+              "known": 42531,
+              "known_case_bins": [
+                {
+                  "bin": 0,
+                  "n": 46,
+                  "observed": 0.8260869565217391,
+                  "prediction": 0.12514234493484946
+                },
+                {
+                  "bin": 1,
+                  "n": 233,
+                  "observed": 0.8583690987124464,
+                  "prediction": 0.31715026631812476
+                },
+                {
+                  "bin": 2,
+                  "n": 1282,
+                  "observed": 0.7316692667706708,
+                  "prediction": 0.5188852466681545
+                },
+                {
+                  "bin": 3,
+                  "n": 4406,
+                  "observed": 0.6783931003177486,
+                  "prediction": 0.7168681696405225
+                },
+                {
+                  "bin": 4,
+                  "n": 36564,
+                  "observed": 0.9247620610436494,
+                  "prediction": 0.9672682166001361
+                }
+              ],
+              "known_case_ece": 0.05066546239344992,
+              "minutes": 120.0,
+              "unknown": 2648
+            }
+          ]
+        }
+      },
+      {
+        "candidate": "weibull:0.01",
+        "status": "converged",
+        "calibration_eligible": true,
+        "convergence": {
+          "gradient_max_abs": 3.63714705267572e-06,
+          "iterations": 12,
+          "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+          "objective": 3.813908468712375,
+          "success": true
+        },
+        "grouped_cv_mean_brier": 0.1217256091531254,
+        "grouped_training_cv": [
+          {
+            "heldout_contest_ids": [
+              1407,
+              1530,
+              1874,
+              2238
+            ],
+            "integrated_brier_ipcw": 0.12070608197499907,
+            "status": "converged"
+          },
+          {
+            "heldout_contest_ids": [
+              1641,
+              1687,
+              1738,
+              1758
+            ],
+            "integrated_brier_ipcw": 0.12336231004287172,
+            "status": "converged"
+          },
+          {
+            "heldout_contest_ids": [
+              1517,
+              1988,
+              2096
+            ],
+            "integrated_brier_ipcw": 0.12110843544150543,
+            "status": "converged"
+          }
+        ],
+        "internal_validation_only": {
+          "n": 45179,
+          "integrated_brier_ipcw": 0.14036846185540391,
+          "integration_range_minutes": [
+            0.0,
+            120.0
+          ],
+          "known_case_ece_mean": 0.03916511457395982,
+          "event_mae_minutes": 18.150504415448594,
+          "query_horizons": [
+            {
+              "brier_ipcw": 0.16506124492551993,
+              "censoring_survival_left": 0.9947435431008742,
+              "known": 45128,
+              "known_case_bins": [
+                {
+                  "bin": 0,
+                  "n": 3908,
+                  "observed": 0.14176049129989765,
+                  "prediction": 0.14574503873728173
+                },
+                {
+                  "bin": 1,
+                  "n": 11379,
+                  "observed": 0.22857896124439758,
+                  "prediction": 0.3005211450867863
+                },
+                {
+                  "bin": 2,
+                  "n": 11631,
+                  "observed": 0.49419654371937066,
+                  "prediction": 0.4961870825770777
+                },
+                {
+                  "bin": 3,
+                  "n": 9332,
+                  "observed": 0.7702528932704672,
+                  "prediction": 0.6956245287761451
+                },
+                {
+                  "bin": 4,
+                  "n": 8878,
+                  "observed": 0.9521288578508673,
+                  "prediction": 0.9181668355697526
+                }
+              ],
+              "known_case_ece": 0.041111957322606335,
+              "minutes": 30.0,
+              "unknown": 51
+            },
+            {
+              "brier_ipcw": 0.14592562652369087,
+              "censoring_survival_left": 0.9379031192232989,
+              "known": 44709,
+              "known_case_bins": [
+                {
+                  "bin": 0,
+                  "n": 374,
+                  "observed": 0.5240641711229946,
+                  "prediction": 0.14420722259399288
+                },
+                {
+                  "bin": 1,
+                  "n": 3215,
+                  "observed": 0.37729393468118194,
+                  "prediction": 0.31835628098761776
+                },
+                {
+                  "bin": 2,
+                  "n": 7071,
+                  "observed": 0.45142129826050065,
+                  "prediction": 0.5009265470734856
+                },
+                {
+                  "bin": 3,
+                  "n": 10474,
+                  "observed": 0.6666030169944624,
+                  "prediction": 0.7076780606576774
+                },
+                {
+                  "bin": 4,
+                  "n": 23575,
+                  "observed": 0.9362460233297986,
+                  "prediction": 0.9345407782724112
+                }
+              ],
+              "known_case_ece": 0.025767157156001957,
+              "minutes": 60.0,
+              "unknown": 470
+            },
+            {
+              "brier_ipcw": 0.15759693294443583,
+              "censoring_survival_left": 0.497496652439848,
+              "known": 42531,
+              "known_case_bins": [
+                {
+                  "bin": 0,
+                  "n": 46,
+                  "observed": 0.8260869565217391,
+                  "prediction": 0.12543370326372494
+                },
+                {
+                  "bin": 1,
+                  "n": 231,
+                  "observed": 0.8571428571428571,
+                  "prediction": 0.3169473693648105
+                },
+                {
+                  "bin": 2,
+                  "n": 1276,
+                  "observed": 0.7311912225705329,
+                  "prediction": 0.5188579841330986
+                },
+                {
+                  "bin": 3,
+                  "n": 4400,
+                  "observed": 0.6781818181818182,
+                  "prediction": 0.7168018147934214
+                },
+                {
+                  "bin": 4,
+                  "n": 36578,
+                  "observed": 0.9247361802176172,
+                  "prediction": 0.9672447493379012
+                }
+              ],
+              "known_case_ece": 0.050616229243271166,
+              "minutes": 120.0,
+              "unknown": 2648
+            }
+          ]
+        }
+      },
+      {
+        "candidate": "weibull:0.1",
+        "status": "converged",
+        "calibration_eligible": true,
+        "convergence": {
+          "gradient_max_abs": 2.906312555382186e-06,
+          "iterations": 12,
+          "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+          "objective": 3.815960957233248,
+          "success": true
+        },
+        "grouped_cv_mean_brier": 0.12168540734760562,
+        "grouped_training_cv": [
+          {
+            "heldout_contest_ids": [
+              1407,
+              1530,
+              1874,
+              2238
+            ],
+            "integrated_brier_ipcw": 0.12071292499465085,
+            "status": "converged"
+          },
+          {
+            "heldout_contest_ids": [
+              1641,
+              1687,
+              1738,
+              1758
+            ],
+            "integrated_brier_ipcw": 0.12327278381645249,
+            "status": "converged"
+          },
+          {
+            "heldout_contest_ids": [
+              1517,
+              1988,
+              2096
+            ],
+            "integrated_brier_ipcw": 0.12107051323171356,
+            "status": "converged"
+          }
+        ],
+        "internal_validation_only": {
+          "n": 45179,
+          "integrated_brier_ipcw": 0.1403112638152167,
+          "integration_range_minutes": [
+            0.0,
+            120.0
+          ],
+          "known_case_ece_mean": 0.039721059833768106,
+          "event_mae_minutes": 18.036647703784215,
+          "query_horizons": [
+            {
+              "brier_ipcw": 0.16504434107083213,
+              "censoring_survival_left": 0.9947435431008742,
+              "known": 45128,
+              "known_case_bins": [
+                {
+                  "bin": 0,
+                  "n": 3842,
+                  "observed": 0.14081207704320667,
+                  "prediction": 0.14668936522935136
+                },
+                {
+                  "bin": 1,
+                  "n": 11406,
+                  "observed": 0.2280378748027354,
+                  "prediction": 0.30082999361747287
+                },
+                {
+                  "bin": 2,
+                  "n": 11703,
+                  "observed": 0.4939759036144578,
+                  "prediction": 0.49637915570734803
+                },
+                {
+                  "bin": 3,
+                  "n": 9334,
+                  "observed": 0.7712663381187058,
+                  "prediction": 0.6956655550536073
+                },
+                {
+                  "bin": 4,
+                  "n": 8843,
+                  "observed": 0.9523917222661993,
+                  "prediction": 0.9178747383671857
+                }
+              ],
+              "known_case_ece": 0.04192217925464821,
+              "minutes": 30.0,
+              "unknown": 51
+            },
+            {
+              "brier_ipcw": 0.14580680991066217,
+              "censoring_survival_left": 0.9379031192232989,
+              "known": 44709,
+              "known_case_bins": [
+                {
+                  "bin": 0,
+                  "n": 359,
+                  "observed": 0.5264623955431755,
+                  "prediction": 0.14412359607552833
+                },
+                {
+                  "bin": 1,
+                  "n": 3138,
+                  "observed": 0.3769917144678139,
+                  "prediction": 0.3193359776810739
+                },
+                {
+                  "bin": 2,
+                  "n": 7079,
+                  "observed": 0.44879220228845884,
+                  "prediction": 0.5007980209053271
+                },
+                {
+                  "bin": 3,
+                  "n": 10547,
+                  "observed": 0.6651180430454158,
+                  "prediction": 0.7077823571394805
+                },
+                {
+                  "bin": 4,
+                  "n": 23586,
+                  "observed": 0.9366149410667345,
+                  "prediction": 0.9344177251943071
+                }
+              ],
+              "known_case_ece": 0.02657488593687307,
+              "minutes": 60.0,
+              "unknown": 470
+            },
+            {
+              "brier_ipcw": 0.15760846772554202,
+              "censoring_survival_left": 0.497496652439848,
+              "known": 42531,
+              "known_case_bins": [
+                {
+                  "bin": 0,
+                  "n": 43,
+                  "observed": 0.8604651162790697,
+                  "prediction": 0.12286954425315112
+                },
+                {
+                  "bin": 1,
+                  "n": 225,
+                  "observed": 0.8488888888888889,
+                  "prediction": 0.3166259318844219
+                },
+                {
+                  "bin": 2,
+                  "n": 1217,
+                  "observed": 0.7321281840591619,
+                  "prediction": 0.5194511582683373
+                },
+                {
+                  "bin": 3,
+                  "n": 4383,
+                  "observed": 0.677389915582934,
+                  "prediction": 0.7170068057605883
+                },
+                {
+                  "bin": 4,
+                  "n": 36663,
+                  "observed": 0.9243651637891062,
+                  "prediction": 0.9672131566633982
+                }
+              ],
+              "known_case_ece": 0.05066611430978304,
+              "minutes": 120.0,
+              "unknown": 2648
+            }
+          ]
+        }
+      }
+    ],
+    "dependencies": {
+      "numpy": "2.3.5",
+      "scipy": "1.17.0"
+    },
+    "query_examples": [
+      {
+        "old_rating": 1200,
+        "problem_rating": 1600,
+        "prediction": {
+          "data_kind": "real",
+          "model_version": "aft-v1",
+          "artifact_sha256": "2bb92b581b909e9a6b95002d99a4e2602e2b0c2309f7df81b0a4184b55b7899f",
+          "family": "weibull",
+          "out_of_domain": [],
+          "probabilities": [
+            {
+              "budget_minutes": 30,
+              "p_ac": 0.1464905837038334,
+              "support": "available"
+            },
+            {
+              "budget_minutes": 60,
+              "p_ac": 0.306246487505447,
+              "support": "available"
+            },
+            {
+              "budget_minutes": 120,
+              "p_ac": 0.5700211313736483,
+              "support": "available"
+            }
+          ],
+          "median_minutes": 101.93277303038917,
+          "predictive_interval_80_minutes": [
+            21.399236901590854,
+            null
+          ],
+          "quantile_support_10_50_90": [
+            "available",
+            "available",
+            "insufficient_followup_or_model_unavailable"
+          ],
+          "interval_kind": "parametric predictive quantiles, not confidence intervals"
+        },
+        "note": "Unvalidated model query, not observed accuracy"
+      },
+      {
+        "old_rating": 1600,
+        "problem_rating": 1600,
+        "prediction": {
+          "data_kind": "real",
+          "model_version": "aft-v1",
+          "artifact_sha256": "2bb92b581b909e9a6b95002d99a4e2602e2b0c2309f7df81b0a4184b55b7899f",
+          "family": "weibull",
+          "out_of_domain": [],
+          "probabilities": [
+            {
+              "budget_minutes": 30,
+              "p_ac": 0.293038204640045,
+              "support": "available"
+            },
+            {
+              "budget_minutes": 60,
+              "p_ac": 0.5508885024564956,
+              "support": "available"
+            },
+            {
+              "budget_minutes": 120,
+              "p_ac": 0.842415257577843,
+              "support": "available"
+            }
+          ],
+          "median_minutes": 53.252657997086004,
+          "predictive_interval_80_minutes": [
+            11.17958641014605,
+            144.0005858913507
+          ],
+          "quantile_support_10_50_90": [
+            "available",
+            "available",
+            "available"
+          ],
+          "interval_kind": "parametric predictive quantiles, not confidence intervals"
+        },
+        "note": "Unvalidated model query, not observed accuracy"
+      }
+    ],
+    "test_labels_used_for_tuning": false,
+    "heldout_evaluation_executed": false,
+    "verification_fix": "Scale numerical optimizer coordinates using training only and reject optimizer success if max absolute exported gradient exceeds 1e-3"
+  },
+  "reproduction": {
+    "commands": [
+      {
+        "stage": [
+          "collect",
+          "--config",
+          "configs/regular-simple-v1.json",
+          "--offline"
+        ],
+        "elapsed_seconds": 16.854,
+        "exit_code": 0,
+        "stderr": "",
+        "result": {
+          "api_calls_this_run": 0,
+          "complete": 20,
+          "data_kind": "real",
+          "incomplete": 0,
+          "minimum_complete_count_met": true,
+          "network_requests_this_run": 0,
+          "selected": 20,
+          "snapshot_sha256": "a07ec41a97bf858b07f69d01f119b11baf8f2ffce75d94485ecf069ea662b5da",
+          "status": "requires_preparation"
+        }
+      },
+      {
+        "stage": [
+          "prepare"
+        ],
+        "elapsed_seconds": 63.565,
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "stage": [
+          "split"
+        ],
+        "elapsed_seconds": 0.047,
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "stage": [
+          "train-baseline"
+        ],
+        "elapsed_seconds": 13.368,
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "stage": [
+          "train"
+        ],
+        "elapsed_seconds": 65.962,
+        "exit_code": 0,
+        "stderr": ""
+      }
+    ],
+    "files_sha256": {
+      "prepared/features.jsonl": "76659041179fded9d13bb85616edeace8a9b94964d334daae7e404abbc841232",
+      "prepared/labels.jsonl": "522c76b680989d4bdf159e086d50e907b57fbb6eb2feafa78cf5c81eb9048356",
+      "prepared/audit.jsonl": "063407895066a2ad92efa30c301ddb6b62495e3deabd11e51899f3e0994d6a3d",
+      "prepared/manifest.json": "df2b49820d4e6deeb5469aea655679fdced20e1248fc9afa94f144f1097591ad",
+      "splits.json": "f979ece8fc64ad339b3da667266ce2dbcc5f325c24019574232a41e4459209b8",
+      "baseline/model.json": "dc5567c853dcbd62233794d8ac6dc76f59411367f9766c824afe8149bb990cc0",
+      "baseline/predictions.jsonl": "eda53e5d75adf9f3ff6490336e623cad7fe7377ce7a42ed4920a4f4423d33c26",
+      "baseline/manifest.json": "39e798598f02b7df5b04829073a1330b5df110377bf17eb706a62b65dc2d6395",
+      "aft/model.json": "fefdbe4e25df8052b560e835584c401623c377f1cf99fa7dde28658ada240866",
+      "aft/predictions.jsonl": "9a6df58783ae6b574c8e69f529b187361a08724654580a4f6c250e0542c5353e",
+      "aft/manifest.json": "ab763de4578b84b23b106cf01e0faa5b51d78cf4016385c391d155536aab891d"
+    },
+    "byte_identical": true
+  },
+  "verification": {
+    "unit_test_command": ".venv/bin/python -m unittest discover -s tests -q",
+    "tests_passed": 51,
+    "test_failures": 0,
+    "all_raw_hashes_verified": true,
+    "all_response_refs_verified": true,
+    "funnel_and_rating_slices_reconciled": true,
+    "selected_and_cv_candidates_converged": true,
+    "test_label_mutation_does_not_change_model": "passed in synthetic regression",
+    "core_without_site_packages": "fixture/prepare/split/KM passed via python -S; AFT dependency absence explicit",
+    "wheel_version": "0.2.0",
+    "wheel_sha256": "0b6ff3a32542df77fa2091d19d4f86361abcf9eaaf870ed40a764dd2eea899c8",
+    "wheel_matches_source": true,
+    "installed_cli_outside_project": "AFT prediction passed from /tmp"
+  },
+  "local_backup": {
+    "path": "study/work/regular-simple-v1-2026-10-18.tar.gz",
+    "bytes": 163846376,
+    "sha256": "86305d7f0c7152c80733b1019aae95480f03bea07b52742266b72ea4b94012c9",
+    "includes": "Immutable raw responses, refs/cache, screening/selection/snapshots, prepared features/labels/manifests, splits and models",
+    "rebuild_after_restore": [
+      "prepare",
+      "split",
+      "train-baseline",
+      "train"
+    ],
+    "omitted_regenerable_files": [
+      "prepared/audit.jsonl",
+      "baseline/predictions.jsonl",
+      "aft/predictions.jsonl"
+    ],
+    "contains_public_handles": true,
+    "published_to_git": false
+  },
+  "limitations": [
+    "Sequential wall-clock approximation, not effective dedication",
+    "Informative censoring/abandonment and selected prefixes",
+    "Problem rating available at collection, not guaranteed historical",
+    "Public handle hashes are pseudonyms, not anonymization",
+    "Conservative CF regular-round recognition and metadata-only selection do not represent all Codeforces contests",
+    "Only 19 independent eligible contests; initial target was 20 acquired and one lacked problem ratings",
+    "No shared cross-contest origin link detected; aliases between divisions may remain undetected",
+    "Internal validation scores select a model; predictive superiority/uncertainty must be evaluated on four reserved contests in History 27",
+    "Exact byte reproduction verified in this Linux/Python/NumPy/SciPy environment, not promised after new API calls or on arbitrary platforms"
+  ],
+  "android_changes": false,
+  "manual_test": "TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014)"
+}
