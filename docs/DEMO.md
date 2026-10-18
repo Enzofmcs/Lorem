@@ -113,7 +113,10 @@ limiares da D-015. Consulte o metodo de avaliacao em `SPEC.md`.
 
 ## Demonstracao planejada do estudo quantitativo (22-28)
 
-Ainda nao implementada nem executada. O roteiro futuro devera reconstruir a base
+Software 22-25 implementado e verificado com 37 testes. Jornada sintetica
+reproduzivel no [guia Python](../study/README.md); nenhuma pesquisa real executada.
+Piloto 23 bloqueado por politica de rede (403); AFT/avaliacao/relatorio 26-28
+continuam planejados. O roteiro empirico futuro devera reconstruir a base
 por snapshot, mostrar uma tentativa desde os brutos ate seu tempo/censura e exibir
 previsoes para dois ratings com orcamento de 30/60/120 min. Apresentar referencias,
 erros, calibracao, cobertura e intervalos com tamanhos de amostra; nao usar fixtures

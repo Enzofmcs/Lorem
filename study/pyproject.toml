@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools==75.8.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lorem-study"
+version = "0.1.0"
+description = "Reproducible Codeforces time-to-AC study (Histories 22-25)"
+requires-python = ">=3.11,<3.14"
+dependencies = []
+
+[project.scripts]
+lorem-study = "lorem_study.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["lorem_study*"]
+
+[tool.setuptools.package-data]
+lorem_study = ["default.json"]

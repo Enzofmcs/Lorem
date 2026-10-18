@@ -129,6 +129,20 @@ Use o formato abaixo. Nao apagar decisoes antigas; marque quando forem substitui
 | D-024 | 2026-10-18 | Validar posteriormente com Ipsums de inicio registrado e comparar Rating CF anterior ao inicio com Rating Lorem inicial antes de transportar o modelo. Tamanho/limiares definidos antes do teste; correlacao nao prova equivalencia e evidencia insuficiente impede integracao. | Evitar aplicar diretamente estimativas de contest ao treino ou ratings de significados diferentes. | 30-32 |
 | D-025 | 2026-10-18 | Integracao eventual local, com regras/modelos/snapshots versionados, avaliacoes antigas preservadas e sem requisito de backend/login/nuvem. D-012 continua vigente; corte de recomendacoes nao depende de sucesso do modelo. | Preservar funcionamento local e invariantes solicitados pelo usuario. | 29-32 |
 
+### Implementacao inicial do protocolo (22-25), 18/10/2026
+
+- Python >=3.11,<3.14, runtime/testes somente stdlib; setuptools 75.8.0 para
+  empacotar. KM pequeno com risco/empates verificaveis; nenhuma dependencia AFT
+  antecipada. Configuracao e dicionario em [study/](../study/README.md).
+- Selecao por hash/rodizio de divisao antes do ajuste; campos ausentes/quarentena
+  separados, grupos transitivos, 6/2/2 minimo e treino exclusivo dos baselines.
+  Sao realizacoes do protocolo D-021/023, nao mudancas de produto.
+- Zero/negativo oldRating separado por historico insuficiente, sem imputacao pelo
+  futuro; nenhum user.rating por linha. Expansao dessa populacao exige evidencia.
+- Usuario autorizou codeforces.com, mas politica aplicada continua bloqueando o
+  dominio com 403; nenhuma tentativa de contorno. Piloto real 23 permanece pendente.
+  37 testes/fixtures comprovam software; nao ganho de precisao nem transporte.
+
 ### Tabela de cenarios da D-012
 
 Exemplos para Rating Lorem anterior 1200, sem calibracao:

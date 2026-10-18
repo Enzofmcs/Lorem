@@ -47,11 +47,11 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
-- **Foco:** extensao quantitativa planejada; Historias 00-21 permanecem concluidas.
-- **Ultima historia verificada:** Historia 21 - Redesign do historico e estatisticas, automaticamente em 2026-10-16.
-- **Primeiro item pendente:** Historia 22 - Base Python e protocolo reproduzivel do estudo.
-- **Proxima entrega demonstravel:** estudo Python (22-28), estimado em 24 h; corte no app e validacao posterior (29-32).
-- **Bloqueios conhecidos:** nenhum para iniciar 22; 32 condicionada a evidencia/decisao da 31. Teste manual e opcional (D-014).
+- **Foco:** Python 22-25 implementado; 22/24/25 verificados automaticamente, 23 aguarda piloto real. Historias 00-21 preservadas.
+- **Ultima historia verificada:** Historia 25 (software), em 2026-10-18: 37 testes Python e jornada sintetica. Ultimo marco Android: Historia 21, em 2026-10-16.
+- **Primeiro item pendente:** piloto real de 2 contests da Historia 23; codeforces.com bloqueado pelo proxy (403).
+- **Proxima entrega demonstravel:** coletar piloto real e amostra; depois Historia 26 (AFT). Jornada sintetica 22-25 ja reproduzivel em study/.
+- **Bloqueios conhecidos:** politica aplicada nao permite codeforces.com; autorizacao do usuario registrada, falta aplicar a configuracao. Historia 23 nao concluida; 32 depende da 31. Teste manual opcional (D-014).
 
 Regressao da Historia 21: 217 testes debug e 155 release sem falhas, lint sem erros
 (apenas aviso preexistente de icone) e `assembleDebug` concluido.
@@ -59,7 +59,9 @@ Progresso e aceite: [`docs/ROADMAP.md`](docs/ROADMAP.md).
 Roteiro: [`docs/DEMO.md`](docs/DEMO.md).
 Planejamento atual: [estudo quantitativo](docs/QUANTITATIVE.md) e
 [Historia 22](docs/ROADMAP.md#historia-22---base-python-e-protocolo-reproduzivel-do-estudo).
-Nesta tarefa apenas documentacao e issues; estudo/modelos ainda nao executados.
+Python: [guia e comandos](study/README.md), [contrato](study/DATA_DICTIONARY.md) e
+[evidencia](study/evidence/2026-10-18-validation.json). Baselines verificados em
+fixtures sinteticas; nenhum resultado empirico ou ganho preditivo comprovado.
 D-012 continua em producao. Comparacao entre epocas e correcao temporal fora do escopo.
 
 ## Politica de contexto

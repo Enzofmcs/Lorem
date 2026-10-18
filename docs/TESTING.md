@@ -144,13 +144,14 @@ integram a matriz obrigatoria.
 
 ### Planejamento e estudo Python
 
-Esta tarefa e somente documental (Nivel 1): conferir diff, links/ancoras,
-numeração, dependencias/estimativas e paridade entre roadmap e issues. Nao executar
-build Android nem alegar coleta, ajuste ou metricas de pesquisa.
+O planejamento inicial foi documental (Nivel 1). A implementacao 22-25 aplica
+Niveis 2/3 para regras, API/cache e pipeline; build Android nao se aplica. Nao
+confundir verificacao sintetica com coleta real ou evidencia de precisao.
 
-Na implementacao de 22-28, usar testes isolados em `study/` com fixtures sinteticas
-identificadas, sem depender da rede ou Gradle. Os comandos Python definitivos serao
-fixados na 22. Cobertura obrigatoria: corte inclusivo/data ausente, oldRating e
+Usar testes isolados em `study/` com fixtures sinteticas identificadas, sem rede
+ou Gradle. Comando verificado: `cd study && .venv/bin/python -m unittest discover
+-s tests -v` (37 testes). Instalar o comando e reproduzir a jornada conforme
+[study/README.md](../study/README.md); wheel/default config e CLI fora da pasta verificados. Cobertura obrigatoria: corte inclusivo/data ausente, oldRating e
 joins, paginacao/429/retomada, 10/28/65 -> 10/18/37, primeiro AC/upsolve, salto,
 inversao/intercalacao, censura versus coleta incompleta, ausencia de tentativa,
 split por contest/grupo, transformacoes somente no treino, metricas de censura e
