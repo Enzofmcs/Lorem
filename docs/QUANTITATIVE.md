@@ -1,6 +1,10 @@
 # Estudo quantitativo de tempo e AC
 
-Planejamento de 18/10/2026; **experimentos ainda nao executados**. Este protocolo
+Planejamento de 18/10/2026; **avaliacao preditiva com dados reais ainda nao executada**.
+Software 22-25 verificado com 39 testes; piloto real 23 concluido com 1824/2062
+completos e reproducao offline. Cobertura valida zero: B1/B2 e E1/E2 recusados pela
+regra vigente de indices simples. [Evidencia](../study/evidence/2026-10-18-pilot-real.json).
+[Guia Python](../study/README.md) e [contrato](../study/DATA_DICTIONARY.md). Este protocolo
 orienta as Historias 22-28 (primeira versao em aproximadamente 24 h de trabalho) e
 29-32 (aplicacao e validacao posteriores). Progresso e issues em [ROADMAP.md](ROADMAP.md).
 As Historias 00-21 permanecem concluidas. A D-012 continua sendo a regra em producao.
@@ -38,6 +42,11 @@ protocolo, medidas de erro e discussao de validade; nao comprova ganho pedagogic
   sem equipe) e presentes em `contest.ratingChanges`. Excluir virtual, practice,
   unofficial, equipes e formatos/indices ambiguos da analise primaria, preservando
   brutos e contagens. Nao ordenar `A1/A2` lexicograficamente como se fossem A/B.
+- Por orientacao explicita do usuario (D-026), contests especiais ficam fora da
+  analise. Se **qualquer problema** tiver duas versoes, como B1/B2 (facil/dificil),
+  excluir **todo o contest**, incluindo problemas simples e prefixos A/B/C.
+  Essa exclusao e intencional; preservar os brutos, contabilizar o motivo e manter
+  a regra na proxima amostra. Nao aproveitar somente a versao facil ou dificil.
 - Associar `oldRating` por `(contestId, handle normalizado)` a participacao oficial.
   Nao usar rating atual, `newRating`, rank ou resultado do proprio contest como entrada.
   Conflitos, mudancas sem correspondencia e rating ausente ficam em quarentena.
@@ -55,17 +64,21 @@ protocolo, medidas de erro e discussao de validade; nao comprova ganho pedagogic
 
 ## Coleta limitada e reproduzivel
 
-Criar posteriormente um subprojeto Python isolado em `study/`, executavel sem
-Android. Prever Python 3.11+, ambiente virtual, dependencias fixadas, semente e
-configuracao versionadas, CLI para coleta/preparo/treino/avaliacao/relatorio e
-notebook opcional como leitura dos mesmos artefatos. Os comandos definitivos serao
-implementados/documentados na Historia 22; nenhum comando Python existe hoje.
+O subprojeto Python isolado em `study/` esta implementado, executavel sem Android,
+com Python >=3.11,<3.14, ambiente virtual, sem dependencia externa de runtime/teste,
+empacotamento fixado, semente e configuracao versionadas. CLI de coleta/preparo,
+particoes e treino de baselines implementada; AFT/avaliacao/relatorio cientifico
+26-28 identificados explicitamente como nao implementados. Comandos no
+[guia Python](../study/README.md); notebook nao e necessario neste bloco.
 
-Fontes planejadas: `contest.list`, `contest.standings`, `contest.status`,
+Fontes do cliente centralizado (user.rating reservado para ambiguidades, nao usado no recorte inicial): `contest.list`, `contest.standings`, `contest.status`,
 `contest.ratingChanges`, `problemset.problems` e `user.rating` para verificar
 historico anterior quando necessario. Centralizar requisicoes (intervalo minimo
 de 2 s), cache por endpoint/parametros, paginacao completa, retry com backoff,
-`Retry-After`, retomada e erros `OK/FAILED`. Uma falha de pagina nao equivale a
+`Retry-After`, retomada e erros `OK/FAILED`. No contrato observado no piloto,
+standings de contests comuns exigem GET anonimo apenas com contestId: coletar a
+resposta oficial completa sem from/count/showUnofficial. Status segue paginado;
+o filtro oficial/individual aplica-se a todos os dados. Uma falha de pagina nao equivale a
 ausencia de submissao. Nunca treinar/avaliar um contest com coleta incompleta.
 
 Piloto: 2 contests completos para testar volume e qualidade. Alvo inicial: 20

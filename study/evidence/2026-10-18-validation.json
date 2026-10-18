@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-18",
+  "python": "3.12.14",
+  "runtime_dependencies": [],
+  "tests": {
+    "command": ".venv/bin/python -m unittest discover -s tests -q",
+    "passed": 37,
+    "failures": 0
+  },
+  "packaging": {
+    "setuptools": "75.8.0",
+    "editable_install": "passed",
+    "wheel_contains_default_config": true,
+    "installed_cli_from_other_directory": "passed"
+  },
+  "synthetic_journey": {
+    "data_kind": "synthetic",
+    "snapshot_sha256": "87e7cb341c54022262fc468d1af7ebb6f270071f7f41dde9fa95100c4eb82955",
+    "observed_attempts": 90,
+    "valid_events": 40,
+    "valid_censored": 10,
+    "excluded": 40,
+    "partitions": {
+      "train": 6,
+      "validation": 2,
+      "test": 2
+    },
+    "baseline_train_attempts": 30,
+    "artifact_sha256": "0ab9db75bbeff7315db3cdba0f3bf4d8b99e16ba38903a802d60a283ecd43a0c",
+    "research_results": false
+  },
+  "real_pilot": {
+    "command": "python -m lorem_study collect --work work/pilot-real --pilot",
+    "exit_code": 2,
+    "stdout": "",
+    "stderr": "ERROR: Network failure: <urlopen error Tunnel connection failed: 403 Forbidden>",
+    "completed_real_contests": 0
+  },
+  "android_changes": false,
+  "research_evaluation_executed": false
+}
