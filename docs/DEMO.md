@@ -1,6 +1,6 @@
 # Demonstracao do Lorem
 
-O roteiro percorre as Historias 00-20. O ensaio em dispositivo e opcional; o aceite
+O roteiro percorre as Historias 00-21. O ensaio em dispositivo e opcional; o aceite
 funcional usa os testes automatizados, conforme D-014.
 
 ## Preparacao
@@ -110,3 +110,14 @@ antes/depois do periodo de uso. Colete percepcao de confianca e controle de temp
 separadamente. O rating interno e a consolidacao sao indicadores do aplicativo;
 sozinhos nao demonstram melhora de aprendizagem nem validam pedagogicamente os
 limiares da D-015. Consulte o metodo de avaliacao em `SPEC.md`.
+
+## Demonstracao planejada do estudo quantitativo (22-28)
+
+Ainda nao implementada nem executada. O roteiro futuro devera reconstruir a base
+por snapshot, mostrar uma tentativa desde os brutos ate seu tempo/censura e exibir
+previsoes para dois ratings com orcamento de 30/60/120 min. Apresentar referencias,
+erros, calibracao, cobertura e intervalos com tamanhos de amostra; nao usar fixtures
+como resultados reais. A [metodologia](QUANTITATIVE.md) e o
+[roadmap](ROADMAP.md#extensao-quantitativa-em-python) definem o aceite e as 24 h.
+Validacao posterior com Ipsums e transporte dos ratings antecedem qualquer uso do
+modelo no app. O corte de problemas no app sera demonstrado na Historia 29.

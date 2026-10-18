@@ -75,6 +75,21 @@ historicas permite recuperar um marco mesmo apos interrupcao da persistencia.
 - Historias 15-17 definem implementacao/aceite; intervalos e limitacoes em [SYNC.md](SYNC.md).
 - Estado do codigo: coordenacao, WorkManager, polling em RESUMED e verificacao do ativo no worker implementados (15-17).
 
+### DA-07 - Transporte do estudo para Ipsums e integracao
+
+O protocolo de [QUANTITATIVE.md](QUANTITATIVE.md) registra escolhas metodologicas
+iniciais testaveis, nao resultados. As decisoes fornecidas pelo usuario estao nas
+D-020 a D-025. Nao ha escolha pendente que impeca iniciar a Historia 22.
+
+- [ ] Historia 28: avaliar resultados reais, suporte, erros e necessidade de novos experimentos.
+- [ ] Historia 31: fixar tamanho/precisao e limiares aceitaveis antes do teste Ipsum;
+  decidir identidade/mapeamento entre Rating CF e Lorem ou nao integrar.
+- [ ] Historia 32: registrar dominio e apresentacao da integracao somente se a 31
+  fornecer evidencia favoravel; manter bloqueada se a evidencia for insuficiente.
+
+A formula D-012 nao foi substituida. Mudanca de pontuacao exige decisao propria.
+Espera por amostra real e gate cientifico, nao exigencia de teste manual do app.
+
 ---
 
 ## 14. Registro de decisoes
@@ -102,6 +117,17 @@ Use o formato abaixo. Nao apagar decisoes antigas; marque quando forem substitui
 | D-017 | 2026-10-13 | O primeiro Ipsum exige uma importacao bem-sucedida do historico do perfil; ausencia de sincronizacao nao representa historico vazio. Depois disso, recomendacao e estatisticas podem usar dados locais. | Preservar o ineditismo confirmado pela D-002 no primeiro acesso e permitir recuperacao sem rede com dados existentes. | 04, 14 |
 | D-018 | 2026-10-13 | O usuario solicita atualizacao automatica e sugere WorkManager. Proposta: preparacao unica, historico/pendencias a cada 15 min, catalogo/metadados a cada 24 h e submissoes a cada 15 s apenas com Ipsum visivel em RESUMED; verificar ativo tambem no worker. Intervalos desejados sujeitos ao Android. Reutilizar gate/coordenador, escritas parciais existentes, cache e politica offline D-017. | Eliminar cliques obrigatorios de sincronizacao, preservando rating, consolidacao e invariantes. Substitui a restricao da D-011. Historias 15-17 implementadas e verificadas. | 15-17 |
 | D-019 | 2026-10-13 | Direcao visual proposta: azul profundo e verde, temas claro/escuro, tokens semanticos, navegacao inferior, hierarquia centrada no treino e dados com amostra. DESIGN.md e referencia SVG detalham a proposta; nao altera metricas ou introduz gamificacao. | Atender a solicitacao de tornar o app bonito e apresentavel, preservando Compose/Material 3 e comportamento do bloco 00-14. Base da Historia 18 implementada e verificada: escolha Sistema/Claro/Escuro global no DataStore, sem depender do perfil; abas restauram estado. Configuracao e Inicio (19) implementados e verificados, reutilizando consolidacao, preparacao/cache e coordenador existentes; sem nova regra de produto. Ipsum/Resultado (20) implementados e verificados: cronometro adaptavel com leitura acessivel sob demanda, confirmacoes restauraveis e resultado pelos snapshots existentes. Historico/Estatisticas (21) implementados e verificados: cards e filtros restauraveis, curva persistida e barras com alternativas textuais e amostras; D-013 preservada. Bloco 18-21 concluido. | 18-21 |
+
+### Extensao quantitativa solicitada em 18/10/2026
+
+| ID | Data | Decisao | Motivo | Historias afetadas |
+|---|---|---|---|---|
+| D-020 | 2026-10-18 | Base e novas recomendacoes usam exclusivamente problemas cujo contest de origem iniciou em ou apos 01/07/2020 UTC, com data verificavel; ausencia/ambiguidade torna inelegivel. Nunca inferir pelo id. Historicos, avaliacoes e impedimentos de repeticao antigos sao preservados. | Recorte explicito do usuario; data e criterio de elegibilidade, nao feature temporal. Implementacao futura no estudo e na 29. | 22-24, 29-32 |
+| D-021 | 2026-10-18 | Comecar com participacoes oficiais individuais em contests encerrados e oldRating de contest.ratingChanges associado ao participante/contest. Guardar os dois ratings e delta. Auditar estreantes, ausencias e conflitos sem imputacao futura. Comparacao entre epocas, analises por ano e correcao temporal ficam fora do escopo. | Evitar rating posterior e ampliar a auditabilidade da populacao definida pelo usuario. | 22-28 |
+| D-022 | 2026-10-18 | Hipotese operacional sequencial A/B/C: tempo de A desde inicio, seguintes desde primeiro AC do predecessor. Usar horario da primeira submissao com veredito final OK dentro do contest, sem upsolve. Preservar brutos, marcar saltos/inversoes/intercalacoes e medir cobertura. Sem AC nao vira zero/infinito/incapacidade; distinguir disponibilidade, dedicacao e observacao incompleta. | Medida aproximada solicitada; protocolo de censura e selecao em QUANTITATIVE.md e hipotese a verificar. | 24-28, 30-31 |
+| D-023 | 2026-10-18 | Primeira entrega: estudo Python reproduzivel com referencia simples, modelo interpretavel, erros de tempo, probabilidades para orcamento explicito e incerteza. Separar contests completos de treino/teste e impedir atributos de desfecho. Historias 22-28 somam 24 h estimadas; nenhum resultado esta comprovado. | Escopo e restricao de esforco do usuario; protocolo inicial KM/AFT e escolha por validacao permanecem testaveis. | 22-28 |
+| D-024 | 2026-10-18 | Validar posteriormente com Ipsums de inicio registrado e comparar Rating CF anterior ao inicio com Rating Lorem inicial antes de transportar o modelo. Tamanho/limiares definidos antes do teste; correlacao nao prova equivalencia e evidencia insuficiente impede integracao. | Evitar aplicar diretamente estimativas de contest ao treino ou ratings de significados diferentes. | 30-32 |
+| D-025 | 2026-10-18 | Integracao eventual local, com regras/modelos/snapshots versionados, avaliacoes antigas preservadas e sem requisito de backend/login/nuvem. D-012 continua vigente; corte de recomendacoes nao depende de sucesso do modelo. | Preservar funcionamento local e invariantes solicitados pelo usuario. | 29-32 |
 
 ### Tabela de cenarios da D-012
 

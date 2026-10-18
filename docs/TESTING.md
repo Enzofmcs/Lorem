@@ -142,6 +142,34 @@ integram a matriz obrigatoria.
 
 ## Ambiente e comandos completos
 
+### Planejamento e estudo Python
+
+Esta tarefa e somente documental (Nivel 1): conferir diff, links/ancoras,
+numeração, dependencias/estimativas e paridade entre roadmap e issues. Nao executar
+build Android nem alegar coleta, ajuste ou metricas de pesquisa.
+
+Na implementacao de 22-28, usar testes isolados em `study/` com fixtures sinteticas
+identificadas, sem depender da rede ou Gradle. Os comandos Python definitivos serao
+fixados na 22. Cobertura obrigatoria: corte inclusivo/data ausente, oldRating e
+joins, paginacao/429/retomada, 10/28/65 -> 10/18/37, primeiro AC/upsolve, salto,
+inversao/intercalacao, censura versus coleta incompleta, ausencia de tentativa,
+split por contest/grupo, transformacoes somente no treino, metricas de censura e
+probabilidades/quantis. IPCW sem suporte deve produzir indisponibilidade explicita.
+
+No marco 28, executar suite Python e reproducao integral do snapshot ao relatorio
+em ambiente limpo, com hashes, sementes e denominadores. Testes sinteticos verificam
+implementacao; resultados empiricos exigem dados reais, avaliacao reservada e ICs.
+Nao marcar superioridade ou transporte comprovado por fixture.
+
+Historia 29 e Niveis 3/4: datas/cache/migracao e recomendacao com historico antigo,
+offline/fallback, ativo e rating preservados. Historias 30/31 exigem splits por
+participante, ratings anteriores e tratamento de dica/pausas/ausencias. Historia
+32 exige gate cientifico da 31, paridade numerica Python/Android, versoes, snapshots,
+offline/fallback e regressao dos invariantes. Android test/lint/assembleDebug so
+quando o respectivo codigo for implementado e o risco justificar, nos marcos.
+
+### Aplicativo Android
+
 O repositorio nao versiona JARs. Use Gradle 8.11 ou superior com Java 17. Os scripts
 `./gradlew` e `gradlew.bat` baixam e validam o bootstrap oficial quando necessario.
 Nos marcos de Nivel 5:

@@ -58,6 +58,10 @@ Competidores de nivel iniciante-intermediario ou intermediario que ja utilizam o
 - Recomendacao que favorece variedade e pontos fracos.
 - Indicacao de consolidacao da faixa de rating.
 - Interface Compose com temas claro/escuro e navegacao organizada, conforme proposta D-019 e Historias 18-21.
+- Estudo reproduzivel em Python de tempo ate AC e probabilidade com orcamento
+  explicito, conforme [QUANTITATIVE.md](QUANTITATIVE.md) e Historias 22-28.
+- Corte verificavel de problemas nas novas recomendacoes (29) e validacao posterior
+  com Ipsums e relacao Rating CF/Lorem (30-31); integracao local condicionada (32).
 
 ### Fora do escopo
 
@@ -70,6 +74,7 @@ Competidores de nivel iniciante-intermediario ou intermediario que ja utilizam o
 - Login com senha, rede social ou backend proprio, salvo decisao posterior registrada.
 - Firebase, sincronizacao em nuvem ou multiplos dispositivos, salvo decisao posterior registrada.
 - Recursos especulativos apresentados como "versao futura".
+- Comparacao entre epocas, analises por ano e correcao temporal dos ratings.
 
 ---
 
@@ -130,10 +135,18 @@ A categoria sorteada nao deve ser mostrada durante o Ipsum.
 O problema precisa:
 
 - possuir rating;
+- ter contest de origem com inicio verificavel em ou apos `2020-07-01T00:00:00Z`;
 - nunca ter recebido submissao anterior do usuario;
 - nunca ter participado de outro Ipsum;
 - nao estar pendente;
 - nao ser o problema do Ipsum ativo.
+
+O corte e requisito aprovado em 18/10/2026, **ainda nao implementado** (Historia 29).
+Usar a data do contest, nunca o identificador como aproximacao. Origem/data nao
+verificavel torna o problema inelegivel. Preservar qualquer historico antigo,
+avaliacao, pendencia ou Ipsum ativo; tentativas antigas continuam impedindo repeticao.
+Cache verificado deve permitir uso local; fallback nao relaxa o corte. O mesmo
+recorte se aplica a base do estudo, sem limitar a importacao do historico do app.
 
 ### Prioridade de variedade
 
@@ -159,6 +172,8 @@ Os nomes tecnicos podem mudar, mas o sistema precisa representar:
 
 - **Perfil:** handle, Rating Lorem, faixa consolidada e ultima sincronizacao.
 - **Problema:** `contestId`, `index`, nome, rating, tags e URL.
+- **Elegibilidade futura (29):** inicio/fonte do contest de origem e versao da regra;
+  cache legado sem data nao habilita novos candidatos ate verificacao.
 - **Ipsum:** problema, rating inicial, categoria, horarios, estado, dica, submissoes, erros, tempo, motivo do fracasso, variacao de rating e eventual AC posterior.
 - **Desempenho por tag:** tentativas, AC no Ipsum, pendencias, uso de dica, tempo medio e faixa de rating.
 
@@ -178,6 +193,11 @@ Opcao inicial para manter o TCC simples; preservar outra estrutura se o reposito
 - `user.info`: validar e carregar o usuario.
 - `user.status`: importar e atualizar submissoes.
 - `problemset.problems`: carregar problemas, ratings e tags.
+
+Extensao planejada: `contest.list` para datas verificaveis (estudo e Historia 29);
+`contest.standings`, `contest.status`, `contest.ratingChanges` e, quando necessario,
+`user.rating` no estudo Python. Estes endpoints novos ainda nao estao implementados
+no aplicativo. O subprojeto Python sera separado e nao e requisito de runtime Android.
 
 A API publica retorna `OK` ou `FAILED` e permite no maximo uma chamada a cada dois segundos. Centralizar chamadas e limitar a frequencia; nao deixar cada tela consultar livremente.
 
@@ -200,6 +220,22 @@ No Windows sem WSL, use os mesmos comandos em um terminal no qual o Gradle estej
 Antes e depois de um periodo de uso, avaliar: exercicios tentados, AC durante Ipsums, tempo medio, AC sem dica, variedade de tags, desempenho por rating, upsolves e percepcao sobre confianca e controle do tempo.
 
 Nao afirmar que o Lorem melhora aprendizagem apenas com base em rating interno. Separar metricas objetivas de percepcao subjetiva e documentar as limitacoes da avaliacao.
+
+### Extensao quantitativa planejada
+
+Estimar tempo ate AC e `P(AC ate b)` com `b` explicito (30/60/120 min inicialmente),
+usando rating anterior ao contest (`oldRating`) e rating do problema. Registrar a
+diferenca e tratar tempo sequencial como aproximacao. Preservar tentativas sem AC
+e observacoes incompletas com estados distintos; usar censura e medir cobertura.
+Referencias simples precedem modelo interpretavel; medir erros de tempo,
+calibracao/probabilidades e incerteza com contests completos reservados e sem
+features de desfecho. Protocolo em [QUANTITATIVE.md](QUANTITATIVE.md).
+
+A primeira entrega e o estudo reproduzivel, sem resultado empirico comprovado neste
+planejamento. Aplicacao ao Lorem exige validar Ipsums e a relacao entre Rating CF
+anterior e Rating Lorem inicial, sem pressupor equivalencia. Qualquer integracao
+deve ser local, versionada e preservar avaliacoes antigas; D-012 permanece vigente
+ate decisao explicita posterior. Nao exige backend, login ou nuvem.
 
 ---
 
