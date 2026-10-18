@@ -89,7 +89,7 @@ def predictions(features, baseline, aft):
     return result
 
 
-def metric_terms(times, events, pred, censoring):
+def metric_terms(times, events, pred, censoring, *, integration_end=120):
     """Per-row contributions; NaN means unavailable, unknown IPCW contributes zero."""
     times, events = np.asarray(times, float), np.asarray(events)
     if (not len(times) or not np.all(np.isfinite(times)) or np.any(times <= 0) or
@@ -131,7 +131,7 @@ def metric_terms(times, events, pred, censoring):
             brier[negative] = prob[negative] ** 2 / gh
             brier[~np.isfinite(prob)] = np.nan
         # Integration uses a common supported prefix, never bridges unavailable gaps.
-        if available and np.all(np.isfinite(prob)) and len(supported_horizons) == j:
+        if available and horizon <= integration_end and np.all(np.isfinite(prob)) and len(supported_horizons) == j:
             contributions.append(brier)
             supported_horizons.append(horizon)
         if horizon not in BUDGETS:
@@ -233,9 +233,17 @@ def evaluate(root):
         terms_by_model[name] = terms
     differences = {}
     for name in ("km_global", "km_delta", "d012"):
+        # Different KM curves can have shorter followup; integrate both on the same grid.
+        ranges = [models[n]["support"]["integration_range_minutes"] for n in ("aft", name)]
+        common_end = min(r[1] for r in ranges) if all(ranges) else None
+        comparable = {n: dict(terms_by_model[n]) for n in ("aft", name)}
+        if common_end is not None:
+            for n in comparable:
+                comparable[n]["distribution/integrated_brier_ipcw"] = metric_terms(
+                    times, events, preds[n], censoring, integration_end=common_end)[0]["distribution/integrated_brier_ipcw"]
         left, right = {}, {}
-        for key, a in terms_by_model["aft"].items():
-            b = terms_by_model[name][key]
+        for key, a in comparable["aft"].items():
+            b = comparable[name][key]
             mask = np.isfinite(a) & np.isfinite(b)
             left[key], right[key] = np.where(mask, a, np.nan), np.where(mask, b, np.nan)
         lm, lb = summarize(left, indices, draws)

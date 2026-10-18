@@ -71,6 +71,16 @@ class EvaluationTests(unittest.TestCase):
         self.assertTrue(np.isnan(terms["time/mae"]).all())
         self.assertTrue(np.isnan(terms["interval80/coverage"]).all())
 
+    def test_integration_never_bridges_missing_horizons_and_can_share_support(self):
+        pred = self.prediction(3)
+        pred["p"][:, HORIZONS.index(20)] = np.nan
+        censoring = km_fit([(7200, 1)], reverse=True)
+        terms, support = metric_terms([5, 30, 40], [1, 0, 1], pred, censoring)
+        self.assertEqual(support["integration_range_minutes"], [0, 15])
+        _, common = metric_terms([5, 30, 40], [1, 0, 1], pred, censoring, integration_end=10)
+        self.assertEqual(common["integration_range_minutes"], [0, 10])
+        self.assertTrue(np.isfinite(terms["distribution/integrated_brier_ipcw"]).all())
+
     def test_frozen_pipeline_replay_pairing_and_model_tampering(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

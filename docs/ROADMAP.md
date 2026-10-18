@@ -6,15 +6,15 @@
 
 ## Estado atual
 
-**Foco atual:** estudo Python 22-26 implementado e verificado; amostra real e AFT ajustados. Historias 00-21 preservadas.
+**Foco atual:** estudo Python 22-28 implementado e verificado; avaliacao reservada e relatorio reais. Historias 00-21 preservadas.
 
-**Ultima historia verificada:** Historia 26, em 2026-10-18: 51 testes, 20 contests adquiridos/19 elegiveis e Weibull selecionado na validacao. Ultimo marco Android: Historia 21 em 2026-10-16.
+**Ultima historia verificada:** Historia 28, em 2026-10-18: 59 testes, 35.367 tentativas de teste em quatro contests, relatorio/tabelas/figuras e reproducao limpa.
 
-**Primeiro item pendente:** Historia 27 - avaliacao reservada de erros, probabilidades e incerteza.
+**Primeiro item pendente:** Historia 29 - corte verificavel de data nas novas recomendacoes.
 
-**Proxima entrega demonstravel:** comparar modelos e referencias nos quatro contests de teste, sem retunar; relatorio completo na 28.
+**Proxima entrega demonstravel:** recomendar somente problemas com origem/data >=2020-07-01 verificada, preservando historicos.
 
-**Bloqueios conhecidos:** nenhum para iniciar 27. Amostra limitada a 19 contests elegiveis; 1589 excluido por ratings de problemas ausentes. 32 depende da 31. Conferencia em dispositivo opcional (D-014).
+**Bloqueios conhecidos:** 31 exige dados reais de Ipsums da 30; 32 depende da decisao favoravel da 31 e da 29. Quatro grupos de teste limitam a evidencia. Conferencia manual opcional (D-014).
 
 ## Como atualizar
 
@@ -919,7 +919,7 @@ configura proxy e diretorio de cache para os testes Robolectric, sem alterar o a
 /workspace/toolchains/gradle-8.11.1/bin/gradle test lint assembleDebug --max-workers=2 --console=plain --init-script /workspace/toolchains/test-runtime.init.gradle
 ```
 
-Resultado final: **158 testes debug e 127 release sem falhas**, lint sem erros (apenas
+Resultado final: **159 testes debug e 127 release sem falhas**, lint sem erros (apenas
 `MissingApplicationIcon` preexistente), APK debug gerado. Testes direcionados passaram;
 a ultima regressao inclui o caso adicional de resposta do Ipsum anterior e a
 protecao correspondente no ViewModel. As iteracoes iniciais corrigiram chamadas
@@ -1816,7 +1816,7 @@ de superioridade. Esses resultados pertencem a 27. Nenhuma mudanca Android.
 
 **Historia:** Como pesquisador, quero medir os erros fora da amostra e a calibracao das probabilidades para conhecer a utilidade e a incerteza reais do estudo.
 
-**Status:** planejada; implementacao e verificacao ainda nao executadas.
+**Status:** implementada e verificada em 2026-10-18; aguardando revisao/integracao da PR.
 
 **GitHub:** [#50 - Historia 27](https://github.com/Enzofmcs/Lorem/issues/50).
 
@@ -1830,12 +1830,12 @@ de superioridade. Esses resultados pertencem a 27. Nenhuma mudanca Android.
 
 #### Criterios de aceite
 
-- [ ] Selecionar na validacao por Brier integrado suportado e calibracao, usando MAE/interpretabilidade como secundarios; registrar escolha antes de abrir o teste, sem retunar nele.
-- [ ] Medir MAE, mediana do erro absoluto, RMSE e vies de tempo nos eventos do teste com denominador e ressalva de selecao; comparar D-012 e referencias.
-- [ ] Avaliar P(AC ate 30/60/120) com Brier/log-loss nos casos conhecidos, calibracao por bins com amostras e Brier IPCW/integrado com censuras; censurado antes do horizonte nao vira negativo.
-- [ ] Estimar censura somente no treino, informar suporte/pesos extremos e horizontes indisponiveis; medir cobertura/largura do intervalo preditivo de 80% e declarar os limites da avaliacao nos resolvidos.
-- [ ] Produzir ICs de 95% por bootstrap pareado de contests/grupos, 200 replicacoes com semente, incluindo diferencas contra o baseline; nao tratar linhas como independentes.
-- [ ] Reportar erros por faixas predefinidas dos dois ratings/delta e qualidade, funil de cobertura e sensibilidade de censura; sem analise por ano, correcao temporal ou alegacao de superioridade sem evidencia.
+- [x] Selecionar na validacao por Brier integrado suportado e calibracao, usando MAE/interpretabilidade como secundarios; registrar escolha antes de abrir o teste, sem retunar nele.
+- [x] Medir MAE, mediana do erro absoluto, RMSE e vies de tempo nos eventos do teste com denominador e ressalva de selecao; comparar D-012 e referencias.
+- [x] Avaliar P(AC ate 30/60/120) com Brier/log-loss nos casos conhecidos, calibracao por bins com amostras e Brier IPCW/integrado com censuras; censurado antes do horizonte nao vira negativo.
+- [x] Estimar censura somente no treino, informar suporte/pesos extremos e horizontes indisponiveis; medir cobertura/largura do intervalo preditivo de 80% e declarar os limites da avaliacao nos resolvidos.
+- [x] Produzir ICs de 95% por bootstrap pareado de contests/grupos, 200 replicacoes com semente, incluindo diferencas contra o baseline; nao tratar linhas como independentes.
+- [x] Reportar erros por faixas predefinidas dos dois ratings/delta e qualidade, funil de cobertura e sensibilidade de censura; sem analise por ano, correcao temporal ou alegacao de superioridade sem evidencia.
 
 #### Verificacao planejada
 
@@ -1844,8 +1844,16 @@ Nivel 2: metricas conferidas em exemplos pequenos, censura antes/depois de b, IP
 **Entrega demonstravel:** Abrir tabela comparativa e calibracao em 30/60/120 minutos com erros, ICs, tamanhos de amostra e horizontes sem suporte claramente indicados.
 
 Conferencias humanas opcionais (D-014); criterios automatizados e evidencia
-cientifica exigidos acima continuam obrigatorios. Sem resultados comprovados
-neste planejamento.
+cientifica exigidos acima continuam obrigatorios. Resultados e limitacoes no [relatorio real](../study/results/2026-10-18/report/REPORT.md).
+
+
+Evidencia: 59 testes Python; plano vinculado ao AFT Weibull 0,1 antes dos rotulos,
+200 replicacoes pareadas por grupo, quatro contests de teste/35.367 tentativas.
+KM por delta apresentou MAE 15,135 min e Brier integrado 0,122746; AFT 15,892 e
+0,126693. Comparacao de tempo pareada usa suporte comum. Relatorio contem n/ICs,
+calibracao conhecida/IPCW, qualidade, fatias e sensibilidade. Nenhum retuning,
+transporte para Ipsums ou mudanca Android. Reproducao limpa e hashes registrados
+na [evidencia](../study/evidence/2026-10-18-evaluation-report.json).
 
 ---
 
@@ -1853,7 +1861,7 @@ neste planejamento.
 
 **Historia:** Como autor do TCC, quero apresentar metodos e resultados reproduziveis com limitacoes para sustentar conclusoes proporcionais a evidencia.
 
-**Status:** planejada; implementacao e verificacao ainda nao executadas.
+**Status:** implementada e verificada em 2026-10-18; aguardando revisao/integracao da PR.
 
 **GitHub:** [#51 - Historia 28](https://github.com/Enzofmcs/Lorem/issues/51).
 
@@ -1867,11 +1875,11 @@ neste planejamento.
 
 #### Criterios de aceite
 
-- [ ] Reproduzir do snapshot congelado ao relatorio em ambiente limpo com comandos documentados; registrar versoes, sementes, hashes, manifesto, tempo/custo e dependencias.
-- [ ] Publicar codigo, dicionario, tabelas, figuras e relatorio com populacao, cobertura, erros de tempo, qualidade das probabilidades, ICs e incerteza preditiva separados.
-- [ ] Documentar hipotese sequencial, selecao por tentativa/prefixo, rating do problema na coleta, dados ausentes, censura/abandono, repeticao de participantes e limites de transporte para Ipsums.
-- [ ] Demonstrar dois ratings + orcamento -> estimativas, suporte e incerteza; resultados reais separados de fixtures, incluindo baseline vencedor ou evidencia insuficiente quando ocorrer.
-- [ ] Registrar conclusoes ainda abertas, decisao sobre novos experimentos e protocolo de validacao posterior com Ipsums/ratings; nao alegar melhoria pedagogica nem precisao comprovada sem experimento.
+- [x] Reproduzir do snapshot congelado ao relatorio em ambiente limpo com comandos documentados; registrar versoes, sementes, hashes, manifesto, tempo/custo e dependencias.
+- [x] Publicar codigo, dicionario, tabelas, figuras e relatorio com populacao, cobertura, erros de tempo, qualidade das probabilidades, ICs e incerteza preditiva separados.
+- [x] Documentar hipotese sequencial, selecao por tentativa/prefixo, rating do problema na coleta, dados ausentes, censura/abandono, repeticao de participantes e limites de transporte para Ipsums.
+- [x] Demonstrar dois ratings + orcamento -> estimativas, suporte e incerteza; resultados reais separados de fixtures, incluindo baseline vencedor ou evidencia insuficiente quando ocorrer.
+- [x] Registrar conclusoes ainda abertas, decisao sobre novos experimentos e protocolo de validacao posterior com Ipsums/ratings; nao alegar melhoria pedagogica nem precisao comprovada sem experimento.
 
 #### Verificacao planejada
 
@@ -1880,8 +1888,16 @@ Marco Python: testes de study/ e reproducao completa offline pelo snapshot; conf
 **Entrega demonstravel:** Outra pessoa executa o roteiro local a partir do snapshot e confere hashes e tabelas do relatorio apresentado no TCC.
 
 Conferencias humanas opcionais (D-014); criterios automatizados e evidencia
-cientifica exigidos acima continuam obrigatorios. Sem resultados comprovados
-neste planejamento.
+cientifica exigidos acima continuam obrigatorios. Resultados e limitacoes no [relatorio real](../study/results/2026-10-18/report/REPORT.md).
+
+
+Evidencia: 59 testes Python; plano vinculado ao AFT Weibull 0,1 antes dos rotulos,
+200 replicacoes pareadas por grupo, quatro contests de teste/35.367 tentativas.
+KM por delta apresentou MAE 15,135 min e Brier integrado 0,122746; AFT 15,892 e
+0,126693. Comparacao de tempo pareada usa suporte comum. Relatorio contem n/ICs,
+calibracao conhecida/IPCW, qualidade, fatias e sensibilidade. Nenhum retuning,
+transporte para Ipsums ou mudanca Android. Reproducao limpa e hashes registrados
+na [evidencia](../study/evidence/2026-10-18-evaluation-report.json).
 
 ---
 

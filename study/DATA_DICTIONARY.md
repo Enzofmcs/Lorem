@@ -92,3 +92,22 @@ suporte de cada horizonte/quantil e extrapolacao de rating. Seguimento insuficie
 ou gate falho retorna `null`; nenhum valor infinito. Intervalo e preditivo,
 parametrico, sem alegacao de IC ou precisao comprovada. `manifest.json` liga hashes
 de modelo, tabelas, particoes e previsoes. A avaliacao cientifica reservada e a 27.
+
+## Avaliacao e relatorio (27-28)
+
+- `evaluation/plan.json`: hashes dos dois modelos, preparo/particoes, seed, grade,
+  bins, suporte minimo, 200 replicacoes e regra de sensibilidade, antes dos rotulos.
+- `evaluation/metrics.json`: agregados reais/sinteticos identificados, n e eventos/
+  censuras, quatro referencias, cada metrica com `estimate`, `n`, `ci95` e
+  `bootstrap_valid`; ausencias ficam null. Diferencas usam `n_common`. Sem ids de
+  participante, previsoes por linha ou handles nos agregados publicados.
+- `quality_funnel_test` conta validos/exclusoes por motivo; excluidos nao recebem
+  erros imputados. `rating_slices`: faixas fixas de 400 pontos, incluindo delta
+  negativo por piso; contagens, metricas e ICs por metodo.
+- `support`: conhecidos/desconhecidos, G esquerdo, maior peso e intervalo continuo
+  de integracao. `sensitivity_last_submission`: previsoes fixas, G do treino
+  alternativo e ausencias explicitas. Nao e novo rotulo de dedicacao real.
+- `report/`: REPORT/REPRODUCE, CSVs, SVG/PNG, demo e manifesto SHA-256. IC das
+  metricas nao e intervalo preditivo 10/90. Log-loss limita somente log em 1e-15.
+- `scripts/reproduce.py`: reconstrucao offline em destino novo; `reproduction.json`
+  registra versoes/tempos, zero requisicoes e igualdade de cada arquivo.

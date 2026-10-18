@@ -1,11 +1,14 @@
 # Estudo Python do Lorem
 
-Implementacao das Historias 22-26: coleta com proveniencia, preparacao de tentativas,
-particoes por contest, referencias Kaplan-Meier/D-012 e AFT log-normal/Weibull.
-Nova amostra real: 20 contests coletados, 19 elegiveis; 274.073 tentativas validas,
-incluindo 39.128 censuras. Particoes 11/4/4; ajuste e selecao usam apenas treino e
-validacao. Avaliacao reservada de precisao/ICs e relatorio cientifico completo
-continuam nas Historias 27-28. Nenhum ganho preditivo esta comprovado.
+Implementacao das Historias 22-28: coleta auditavel, tentativas sequenciais,
+particoes por contest, Kaplan-Meier/D-012, AFT censurado e avaliacao reservada.
+Amostra real: 19 contests elegiveis, 274.073 tentativas validas. Teste: quatro
+contests e 35.367 tentativas. KM por delta apresentou menor erro que o AFT nesta
+amostra; transporte para Ipsums ainda nao foi validado.
+
+[Relatorio real](results/2026-10-18/report/REPORT.md),
+[tabelas/figuras](results/2026-10-18/report/manifest.json) e
+[metricas/ICs completos](results/2026-10-18/evaluation/metrics.json).
 
 Protocolo: [QUANTITATIVE.md](../docs/QUANTITATIVE.md). Contratos:
 [DATA_DICTIONARY.md](DATA_DICTIONARY.md). O aplicativo Android e sua pontuacao nao mudam.
@@ -62,9 +65,9 @@ esperado **somente na fixture**: 90 tentativas observadas, 40 eventos, 10 censur
 Para os ratings do exemplo, mediana 18 min, probabilidades 0,6/0,8/indisponivel em
 30/60/120 min; q90 nao identificado. Esses numeros nao medem a precisao do Lorem.
 
-`train` ajusta AFT com dependencias opcionais. `evaluate` retorna erro explicito de
-etapa nao implementada (27). `report`
-mostra apenas o estado do pipeline, sem fabricar metricas ou relatorio cientifico.
+`train` ajusta AFT com dependencias opcionais. `evaluate` abre o teste com modelos
+congelados e plano/hash imutavel. `report` produz relatorio, CSVs, figuras SVG/PNG e
+manifesto; sem avaliacao previa retorna apenas status explicito, sem metricas.
 
 ## Coleta real e retomada
 
@@ -206,7 +209,7 @@ oficiais e 2.386.518 submissoes. A triagem recusou 24 dos 44 candidatos antes da
 selecao. Os 20 adquiridos produziram 19 elegiveis, sem substituicao por desfecho.
 
 Seis candidatos e seus folds convergiram com gradiente conferido; a validacao
-escolheu Weibull/L2 0,1. Isso nao comprova superioridade: teste/ICs sao a 27.
+escolheu Weibull/L2 0,1. A avaliacao reservada posterior esta no relatorio da 28; o candidato nao foi retunado.
 Coleta offline (zero requisicoes), preparo, particoes, baselines e AFT foram
 repetidos no mesmo ambiente, produzindo os mesmos bytes/hashes em todas as tabelas,
 modelos e previsoes. O core tambem foi executado sem site-packages; wheel/CLI 0.2.0
@@ -231,7 +234,7 @@ python -m lorem_study train --work work/sample-real-regular-v1
 Usar o Python do ambiente com os locks instalados. A evidencia registra hashes de
 arquivos e versoes; igualdade byte a byte foi verificada neste Linux/Python/NumPy/
 SciPy. Nova coleta da API pode mudar bytes, datas e julgamentos. Preservar o cache
-e necessario para a reproducao exata. `evaluate` continua indisponivel ate a 27.
+e necessario para a reproducao exata. Avaliacao e relatorio tambem sao deterministas.
 
 ## Historico do piloto inicial
 
@@ -260,3 +263,41 @@ nao sao descartados por essa ausencia. Nenhum handle ou tabela real foi ao Git.
 retomada offline e metadados malformados. Testes e jornada sintetica verificam
 software; nenhuma melhoria preditiva esta comprovada. Politica de rede deve permitir
 `codeforces.com` pela rota normal do ambiente, preservando proxy/TLS.
+
+## Avaliacao, relatorio e reproducao limpa (27-28)
+
+Instalar `requirements-report.lock` (inclui NumPy/SciPy do modelo e Matplotlib
+3.10.8 com dependencias transitivas fixadas, compativeis com Python >=3.11).
+Matplotlib gera figuras cientificas independentes SVG/PNG; nenhuma dependencia
+nova e exigida na coleta/preparo/KM. Metodos em [MODEL.md](MODEL.md).
+
+```bash
+.venv/bin/python -m pip install -r requirements-report.lock
+.venv/bin/python -m lorem_study evaluate --work work/sample-real-regular-v1
+.venv/bin/python -m lorem_study report --work work/sample-real-regular-v1
+```
+
+`evaluation/plan.json` vincula modelos/particoes antes dos rotulos do teste. Entradas
+alteradas sao recusadas, sem retuning; repetir as mesmas entradas e reproducao.
+200 replicacoes pareadas de grupos inteiros, seed 20261018, ICs de 95%. Quatro
+grupos limitam a incerteza estimada; participantes repetidos nao sao independentes.
+MAE nos resolvidos tem vies; comparacoes usam o mesmo suporte. Intervalo preditivo
+10/90 e IC da metrica sao objetos diferentes. IPCW nao transforma censura precoce
+em negativo nem trunca pesos sem suporte. CSVs incluem n, IC, bins e ausencias.
+
+Para reconstruir **todos os estagios** em ambiente limpo, a partir do snapshot:
+
+```bash
+python -m venv work/reproduction-venv
+work/reproduction-venv/bin/python -m pip install -r requirements.lock -r requirements-report.lock
+work/reproduction-venv/bin/python -m pip install --no-build-isolation --no-deps .
+work/reproduction-venv/bin/python scripts/reproduce.py work/sample-real-regular-v1 work/reproduced
+```
+
+O destino deve ser novo. O script usa o pacote instalado, fora da arvore de fontes;
+reconstroi collect offline -> prepare -> split -> baselines -> AFT -> evaluate ->
+report. `reproduction.json` registra tempos/versoes/hashes e compara os artefatos
+com o original; codigo de saida nao zero indica falha/diferenca. Brutos imutaveis
+podem ser hardlinks locais; ponteiros mutaveis sao copiados. Instalacao pode usar
+rede; a reproducao dos dados nao faz requisicoes. Nova coleta nao e reproducao.
+Resultados publicados sao agregados e sem handles; backup bruto permanece local.

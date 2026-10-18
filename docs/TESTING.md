@@ -175,10 +175,15 @@ Amostra real: 20 adquiridos/19 elegiveis, particoes 11/4/4 e treino 193.527 tent
 com eventos e censuras. Teste reservado para 27; [evidencia](../study/evidence/2026-10-18-sample-aft.json).
 Nenhum codigo Android alterado; build/lint Android nao se aplicam a esta continuacao.
 
-No marco 28, executar suite Python e reproducao integral do snapshot ao relatorio
-em ambiente limpo, com hashes, sementes e denominadores. Testes sinteticos verificam
-implementacao; resultados empiricos exigem dados reais, avaliacao reservada e ICs.
-Nao marcar superioridade ou transporte comprovado por fixture.
+Marco 27-28: 59 testes Python aprovados, incluindo exemplos calculados de MAE/RMSE/
+vies, censura no limite, casos desconhecidos, G/pesos sem suporte, bootstrap de
+clusters/mediana com multiplicidade, zeros/uns no log-loss, hashes/gate/modelo
+congelado e reproducao de CSV/SVG/PNG. Rodar `cd study && .venv/bin/python -m
+unittest discover -s tests -q`. `scripts/reproduce.py` usa pacote instalado em venv
+novo e diretorio vazio, do cache/snapshot ao relatorio, com zero requisicoes.
+[Relatorio](../study/results/2026-10-18/report/REPORT.md) e
+[evidencia de reproducao](../study/evidence/2026-10-18-evaluation-report.json).
+Nenhuma melhoria pedagogica ou transporte para Ipsums foi demonstrado.
 
 Historia 29 e Niveis 3/4: datas/cache/migracao e recomendacao com historico antigo,
 offline/fallback, ativo e rating preservados. Historias 30/31 exigem splits por

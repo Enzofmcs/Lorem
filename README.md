@@ -143,13 +143,14 @@ Consulte o [roadmap](docs/ROADMAP.md) e o [roteiro de demonstração](docs/DEMO.
 O planejamento de 18/10/2026 acrescenta **22–28 — Estudo quantitativo em Python**:
 coleta e preparo auditáveis, estimativa de tempo até AC, probabilidades para um
 orçamento explícito, avaliação e relatório reproduzível. São **24 horas estimadas**
-para uma primeira versão. O software das Histórias 22–26 está implementado e
-verificado com 51 testes. A nova amostra coletou 20 contests regulares, com 19
-elegíveis e 274.073 tentativas válidas. O primeiro AFT foi ajustado e escolhido
-na validação; quatro contests permanecem reservados para a avaliação da 27.
-[Evidência da amostra/modelo](study/evidence/2026-10-18-sample-aft.json).
-Precisão e ganho preditivo ainda não foram comprovados. O piloto anterior, com
-contests em versões, permanece preservado e excluído da análise.
+para uma primeira versão. As Histórias 22–28 estão implementadas, com 59 testes.
+A amostra tem 19 contests elegíveis e 274.073 tentativas válidas. A avaliação de
+35.367 tentativas em quatro contests reservados favoreceu a referência simples
+por delta em relação ao AFT: MAE 15,1 vs 15,9 min nos resolvidos, com denominadores
+e ICs documentados. O AFT foi preservado sem retuning. D-012 continua no app.
+[Relatório, tabelas e gráficos reais](study/results/2026-10-18/report/REPORT.md).
+O estudo ainda não valida transporte para Ipsums nem melhoria pedagógica. Contests
+especiais e com versões permanecem integralmente excluídos.
 Consulte os [comandos Python](study/README.md) e o [contrato de dados](study/DATA_DICTIONARY.md).
 
 **29–32** cobrem o corte verificável de problemas nas novas recomendações, validação

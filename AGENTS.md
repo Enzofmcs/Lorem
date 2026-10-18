@@ -50,11 +50,11 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
-- **Foco:** estudo Python 22-26 implementado e verificado; amostra real e primeiro AFT ajustados. Historias 00-21 preservadas.
-- **Ultima historia verificada:** Historia 26 em 2026-10-18: 51 testes, amostra de 20 contests adquiridos/19 elegiveis e AFT Weibull selecionado na validacao. Ultimo marco Android: Historia 21, em 2026-10-16.
-- **Primeiro item pendente:** Historia 27 - avaliacao reservada de erros, probabilidades e incerteza.
-- **Proxima entrega demonstravel:** comparar modelos/referencias nos quatro contests de teste, sem retunar a escolha; relatorio completo na 28.
-- **Bloqueios conhecidos:** nenhum para iniciar 27. Amostra limitada a 19 contests elegiveis; 1589 excluido por ratings de problemas ausentes. 32 depende da 31. Teste manual opcional (D-014).
+- **Foco:** estudo Python 22-28 implementado; avaliacao real favorece a referencia KM por delta. Historias 00-21 preservadas.
+- **Ultima historia verificada:** Historia 28 em 2026-10-18: 59 testes, avaliacao de 35.367 tentativas em quatro contests, relatorio e reproducao limpa. Ultimo marco Android: Historia 21, em 2026-10-16.
+- **Primeiro item pendente:** Historia 29 - corte verificavel de data nas novas recomendacoes.
+- **Proxima entrega demonstravel:** novas recomendacoes com origem/data >=2020-07-01 verificada, preservando historicos.
+- **Bloqueios conhecidos:** transporte para Ipsums nao validado; 31 precisa de dados reais da 30 e 32 permanece bloqueada. Teste manual opcional (D-014).
 
 Regressao da Historia 21: 217 testes debug e 155 release sem falhas, lint sem erros
 (apenas aviso preexistente de icone) e `assembleDebug` concluido.
@@ -66,9 +66,13 @@ Python: [guia e comandos](study/README.md), [contrato](study/DATA_DICTIONARY.md)
 [evidencia sintetica](study/evidence/2026-10-18-validation.json) e
 [piloto real](study/evidence/2026-10-18-pilot-real.json). Amostra e modelo:
 [evidencia da 26](study/evidence/2026-10-18-sample-aft.json) e
-[metodo AFT](study/MODEL.md). Avaliacao reservada ainda nao executada; ganho
-preditivo nao comprovado. Usar configs/regular-simple-v1.json nas novas coletas.
-D-012 continua em producao. Comparacao entre epocas e correcao temporal fora do escopo.
+[metodo AFT](study/MODEL.md). Avaliacao reservada documentada na 28; ganho do AFT sobre a melhor referencia nao comprovado. Usar configs/regular-simple-v1.json nas novas coletas.
+[Relatorio real](study/results/2026-10-18/report/REPORT.md) e
+[metricas/ICs](study/results/2026-10-18/evaluation/metrics.json): KM por delta teve
+MAE 15,135 min e Brier integrado 0,122746; AFT 15,892/0,126693. Somente quatro grupos
+reservados; erros de tempo nos resolvidos tem vies e suporte diferente. D-012
+continua em producao; nenhum retuning no teste ou transporte para Ipsums autorizado.
+Comparacao entre epocas e correcao temporal fora do escopo.
 
 ## Politica de contexto
 

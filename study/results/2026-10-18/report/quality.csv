@@ -1,0 +1,5 @@
+quality,test_attempts
+excluded:insufficient_prior_rating_history,2333
+excluded:interleaved_or_skipped_problem,3335
+excluded:predecessor_not_valid,6314
+valid,35367

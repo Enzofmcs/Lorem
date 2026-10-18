@@ -1,7 +1,7 @@
 # AFT v1: metodo de ajuste e selecao
 
 Estas regras foram fixadas na implementacao da Historia 26, antes do ajuste da
-amostra real. O teste permanece reservado para a Historia 27. O modelo nao muda
+amostra real. Naquele marco o teste permaneceu reservado para a Historia 27. O modelo nao muda
 o aplicativo Android nem a D-012.
 
 ## Dependencias e verossimilhanca

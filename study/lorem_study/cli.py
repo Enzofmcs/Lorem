@@ -88,15 +88,11 @@ def main(argv=None):
                 elif args.command == "evaluate":
                     result = evaluate(args.work)
                 else:
-                    prepared = args.work / "prepared" / "manifest.json"
-                    result = {"schema_version": 1, "status": "pipeline_status_only; full report belongs to History 28",
-                              "data_kind": read_json(prepared)["data_kind"] if prepared.exists() else "not_collected",
-                              "stages": {stage: path.exists() for stage, path in {
-                                  "snapshot": args.work / "snapshot.json", "prepared": prepared,
-                                  "split": args.work / "splits.json", "baseline": args.work / "baseline" / "model.json",
-                                  "aft": args.work / "aft" / "model.json"}.items()},
-                              "research_metrics": "NOT EXECUTED (History 27)"}
-                    write_json(args.work / "status.json", result)
+                    from .report import report
+                    try:
+                        result = report(args.work)
+                    except ImportError as error:
+                        raise StudyError("Report requires optional dependencies: pip install -r requirements-report.lock") from error
         print(json.dumps(result, ensure_ascii=False, allow_nan=False, sort_keys=True))
         return 0
     except (StudyError, OSError, KeyError, TypeError, json.JSONDecodeError) as error:

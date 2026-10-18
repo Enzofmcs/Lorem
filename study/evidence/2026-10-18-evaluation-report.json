@@ -1,0 +1,232 @@
+{
+  "schema_version": 1,
+  "data_kind": "real",
+  "stories": [
+    27,
+    28
+  ],
+  "tests": {
+    "command": "PYTHONPATH=study study/.venv/bin/python -m unittest discover -s study/tests -q",
+    "passed": 59
+  },
+  "evaluation_implementation_committed_before_opening_test": "b9b695f",
+  "frozen_aft_sha256": "2bb92b581b909e9a6b95002d99a4e2602e2b0c2309f7df81b0a4184b55b7899f",
+  "snapshot_sha256": "a07ec41a97bf858b07f69d01f119b11baf8f2ffce75d94485ecf069ea662b5da",
+  "test": {
+    "contests": [
+      1492,
+      1848,
+      1936,
+      2165
+    ],
+    "n": 35367,
+    "events": 28914,
+    "censored": 6453
+  },
+  "reproduction_clean_installed_wheel": {
+    "python": "3.12.14",
+    "packages": {
+      "lorem-study": "0.3.0",
+      "numpy": "2.3.5",
+      "scipy": "1.17.0",
+      "matplotlib": "3.10.8",
+      "contourpy": "1.3.3"
+    },
+    "commands": [
+      {
+        "stage": "collect",
+        "seconds": 15.729,
+        "exit_code": 0,
+        "stderr": "",
+        "result": {
+          "api_calls_this_run": 0,
+          "complete": 20,
+          "data_kind": "real",
+          "incomplete": 0,
+          "minimum_complete_count_met": true,
+          "network_requests_this_run": 0,
+          "selected": 20,
+          "snapshot_sha256": "a07ec41a97bf858b07f69d01f119b11baf8f2ffce75d94485ecf069ea662b5da",
+          "status": "requires_preparation"
+        }
+      },
+      {
+        "stage": "prepare",
+        "seconds": 81.95,
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "stage": "split",
+        "seconds": 0.048,
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "stage": "train-baseline",
+        "seconds": 13.98,
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "stage": "train",
+        "seconds": 79.002,
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "stage": "evaluate",
+        "seconds": 12.604,
+        "exit_code": 0,
+        "stderr": ""
+      },
+      {
+        "stage": "report",
+        "seconds": 2.527,
+        "exit_code": 0,
+        "stderr": ""
+      }
+    ],
+    "files": {
+      "prepared/features.jsonl": {
+        "sha256": "76659041179fded9d13bb85616edeace8a9b94964d334daae7e404abbc841232",
+        "identical": true
+      },
+      "prepared/labels.jsonl": {
+        "sha256": "522c76b680989d4bdf159e086d50e907b57fbb6eb2feafa78cf5c81eb9048356",
+        "identical": true
+      },
+      "prepared/audit.jsonl": {
+        "sha256": "063407895066a2ad92efa30c301ddb6b62495e3deabd11e51899f3e0994d6a3d",
+        "identical": true
+      },
+      "prepared/manifest.json": {
+        "sha256": "df2b49820d4e6deeb5469aea655679fdced20e1248fc9afa94f144f1097591ad",
+        "identical": true
+      },
+      "splits.json": {
+        "sha256": "f979ece8fc64ad339b3da667266ce2dbcc5f325c24019574232a41e4459209b8",
+        "identical": true
+      },
+      "baseline/model.json": {
+        "sha256": "dc5567c853dcbd62233794d8ac6dc76f59411367f9766c824afe8149bb990cc0",
+        "identical": true
+      },
+      "baseline/predictions.jsonl": {
+        "sha256": "eda53e5d75adf9f3ff6490336e623cad7fe7377ce7a42ed4920a4f4423d33c26",
+        "identical": true
+      },
+      "baseline/manifest.json": {
+        "sha256": "39e798598f02b7df5b04829073a1330b5df110377bf17eb706a62b65dc2d6395",
+        "identical": true
+      },
+      "aft/model.json": {
+        "sha256": "fefdbe4e25df8052b560e835584c401623c377f1cf99fa7dde28658ada240866",
+        "identical": true
+      },
+      "aft/predictions.jsonl": {
+        "sha256": "9a6df58783ae6b574c8e69f529b187361a08724654580a4f6c250e0542c5353e",
+        "identical": true
+      },
+      "aft/manifest.json": {
+        "sha256": "ab763de4578b84b23b106cf01e0faa5b51d78cf4016385c391d155536aab891d",
+        "identical": true
+      },
+      "evaluation/plan.json": {
+        "sha256": "a201263ea1224c4845e14bd3195e7665f1ea77d10e2603a4d15e1eeb86fd6594",
+        "identical": true
+      },
+      "evaluation/metrics.json": {
+        "sha256": "cc5433e93e9b4d78c2eac3d02fcc37d94ea004eebb50f79c63d58903a701b355",
+        "identical": true
+      },
+      "evaluation/manifest.json": {
+        "sha256": "39a309d7ef76a17a3449112a4e7bd8fa4bd02d69aeeaaf102f87871e65aca659",
+        "identical": true
+      },
+      "report/REPORT.md": {
+        "sha256": "86343fa3f15a4fdad183cbfc23528560b6710656c7335490b1e94086f3dd931a",
+        "identical": true
+      },
+      "report/REPRODUCE.md": {
+        "sha256": "8774ae74f1124a5cbc33db710751404ae8a78966af21f6804cf08138e391e807",
+        "identical": true
+      },
+      "report/calibration-ipcw.png": {
+        "sha256": "ba25c4f9d504d32a79c6097a8ddfe153451666df3bdfa91229ed5b71c0b22e64",
+        "identical": true
+      },
+      "report/calibration-ipcw.svg": {
+        "sha256": "329e0c55c7a5d9e788ca9457ed0f8285023d5d93448245ba97e2b6fc347bf47c",
+        "identical": true
+      },
+      "report/calibration-known.png": {
+        "sha256": "dfae64814ef3a3526d2e01b26fab12ecd131cd4f00730cea4247646d9ef453b3",
+        "identical": true
+      },
+      "report/calibration-known.svg": {
+        "sha256": "abfb784b99928f10e1f4bd3a1dadb8bb1167a27e7c2094ccefd0cc3ddb6b8360",
+        "identical": true
+      },
+      "report/calibration.csv": {
+        "sha256": "ac41e30a4a4466dc6f895bc2a4b5fa4b4cdf888f1b15e7c746730a32ab4d3a1e",
+        "identical": true
+      },
+      "report/demo.json": {
+        "sha256": "9a5ec5afeacc9042286114661341749f9da0fe1cb13d8a3148ccac442c73f8a7",
+        "identical": true
+      },
+      "report/manifest.json": {
+        "sha256": "4ff0c22f90615b425fd4a1a3d176642df8400585ad25a10b2927143300237bd2",
+        "identical": true
+      },
+      "report/metrics.csv": {
+        "sha256": "c30af2a26155a453b41baa243193d13796f2bd696cab9517fd29953943c0c3a6",
+        "identical": true
+      },
+      "report/paired-differences.csv": {
+        "sha256": "ba61a9eb6d4c13fd51b320b475ec22ea4af0796f4ef15a319be828fa4691dcf1",
+        "identical": true
+      },
+      "report/quality.csv": {
+        "sha256": "73309465707f61b2f1641fddc93b2c5a85048196ff26c7e046b424a51e187f5f",
+        "identical": true
+      },
+      "report/rating-slices.csv": {
+        "sha256": "ec67345aee0a6e8411ceb67af0d3bf0617f56305a830fbb233967efcb477d888",
+        "identical": true
+      },
+      "report/time-mae.png": {
+        "sha256": "1a7714855613237e8ecf2ace98b04ea9eb4af4dfc2065b7aebb348803523cb27",
+        "identical": true
+      },
+      "report/time-mae.svg": {
+        "sha256": "4d113a92da4d428ec8a8255d7ca934a0689ce636b4bcc1babb5f13da80b3cfb2",
+        "identical": true
+      }
+    },
+    "all_identical": true
+  },
+  "original_reproduction": {
+    "all_identical": true,
+    "files": 29
+  },
+  "dependencies_lock_sha256": "ece8c75130dabbcdc0b99bfb4d166c6d972f4897d916f10858689baf860e928b",
+  "wheel_sha256": "8b3d1699348ccf2ff8e954e562f0601c87196c9242b65f73efd2cc95137bf2c1",
+  "collection_cost": {
+    "network_requests_reproduction": 0,
+    "original_http_responses": 308,
+    "original_bytes": 1654835689,
+    "original_seconds": 633.889,
+    "monetary_cost": "not measured"
+  },
+  "method_notes": [
+    "Models remain frozen; test never used for fitting/tuning",
+    "Common support for pairwise time scores and integration grids",
+    "200 paired group-bootstrap replicates; only four held-out groups",
+    "Resolved-only time/interval scoring is selected; no population precision claim",
+    "No Android rating or model integration change in 27/28"
+  ],
+  "conclusion": "KM by delta has lower integrated Brier than frozen AFT in this limited cohort; retain D-012 and distinct ratings pending Ipsum validation",
+  "manual_test": "TESTE MANUAL OPCIONAL - NAO EXECUTADO"
+}

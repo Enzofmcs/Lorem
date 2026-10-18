@@ -25,7 +25,7 @@ class CliTests(unittest.TestCase):
             status = main([command, "--work", str(root or self.root)])
         return status, out.getvalue(), err.getvalue()
 
-    def test_synthetic_pipeline_is_deterministic_and_unimplemented_stages_explicit(self):
+    def test_synthetic_pipeline_is_deterministic_and_missing_evaluation_explicit(self):
         roots = [self.root / "one", self.root / "two"]
         models = []
         for root in roots:
