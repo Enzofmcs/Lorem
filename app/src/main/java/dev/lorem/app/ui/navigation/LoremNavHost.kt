@@ -69,6 +69,7 @@ fun LoremNavHost(
     themePreference: ThemePreference = ThemePreference.SYSTEM,
     onThemeChange: (ThemePreference) -> Unit = {},
     themeError: String? = null,
+    studyExportAction: @Composable () -> Unit = {},
     navController: NavHostController = rememberNavController(),
 ) {
     val profile = initialProfile ?: configurationState.savedProfile
@@ -140,6 +141,7 @@ fun LoremNavHost(
                     themePreference = themePreference,
                     onThemeChange = onThemeChange,
                     themeError = themeError,
+                    studyExportAction = studyExportAction,
                 )
             }
             composable(LoremDestination.Home.route) {

@@ -50,17 +50,17 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
-- **Foco:** estudo Python 22-28 implementado; avaliacao real favorece a referencia KM por delta. Historias 00-21 preservadas.
-- **Ultima historia verificada:** Historia 28 em 2026-10-18: 59 testes, avaliacao de 35.367 tentativas em quatro contests, relatorio e reproducao limpa. Ultimo marco Android: Historia 21, em 2026-10-16.
-- **Primeiro item pendente:** Historia 30 - exportacao local e preparo da validacao com Ipsums.
-- **Proxima entrega demonstravel:** exportacao local de Ipsums com snapshots anteriores e ausencias historicas.
-- **Bloqueios conhecidos:** transporte para Ipsums nao validado; 31 precisa de dados reais da 30 e 32 permanece bloqueada. Teste manual opcional (D-014).
+- **Foco:** Historias 22-30 implementadas e verificadas: estudo real, corte no app e base local de Ipsums. Historias 00-21 preservadas.
+- **Ultima historia verificada:** Historia 30 em 2026-10-18: 232 testes debug/170 release, lint sem erros, APK gerado e 66 testes Python. Exportacao local/contrato Android-Python e snapshots anteriores verificados.
+- **Primeiro item pendente:** Historia 31 - BLOQUEADA por ausencia de coorte real de Ipsums; fixar limiares finais antes de avaliar o teste.
+- **Proxima entrega demonstravel:** coletar novas tentativas com CF conhecido antes do inicio, exportar localmente e preparar coorte por participante.
+- **Bloqueios conhecidos:** nenhum export real fornecido (n=0, insufficient_data). 32 depende de evidencia/decisao favoravel da 31; 29 atendida. Teste manual opcional (D-014).
 
-Regressao da Historia 21: 217 testes debug e 155 release sem falhas, lint sem erros
-(apenas aviso preexistente de icone) e `assembleDebug` concluido.
+Marco Android 29-30: 232 testes debug e 170 release sem falhas; lint sem erros
+(avisos de dependencias/icone) e `assembleDebug` concluido. Room 9->12 validado.
 Progresso e aceite: [`docs/ROADMAP.md`](docs/ROADMAP.md).
 Roteiro: [`docs/DEMO.md`](docs/DEMO.md).
-Planejamento atual: [estudo quantitativo](docs/QUANTITATIVE.md) e
+Protocolo e progresso: [estudo quantitativo](docs/QUANTITATIVE.md) e
 [Historia 22](docs/ROADMAP.md#historia-22---base-python-e-protocolo-reproduzivel-do-estudo).
 Python: [guia e comandos](study/README.md), [contrato](study/DATA_DICTIONARY.md) e
 [evidencia sintetica](study/evidence/2026-10-18-validation.json) e
@@ -151,3 +151,9 @@ economizar creditos. Ao terminar, atualize o progresso e informe o que mudou, co
 verificado, conferencias manuais opcionais e o proximo passo. Testes manuais nao
 bloqueiam o avanco entre historias.
 ```
+
+Validacao com Ipsums: [protocolo](study/IPSUM_PROTOCOL.md),
+[estado real vazio](study/evidence/2026-10-18-ipsum-data-status.json) e
+[evidencia Android](docs/evidence/2026-10-18-android-30.json). CF historico ausente
+nao e preenchido pelo perfil atual; pausas desconhecidas nao viram zero. Manter
+32 bloqueada e nao apresentar fixtures como evidencia de transporte.

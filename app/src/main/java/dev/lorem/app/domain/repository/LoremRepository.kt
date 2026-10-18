@@ -49,10 +49,11 @@ interface LoremRepository {
     }
 
     /** Metadata refresh must preserve training progress that changed during the remote request. */
-    suspend fun updateProfileMetadata(ownerHandle: String, displayName: String, officialRating: Int?) {
+    suspend fun updateProfileMetadata(ownerHandle: String, displayName: String, officialRating: Int?, observedAtEpochMillis: Long? = null) {
         val current = profile.first() ?: return
         if (current.handle.trim().equals(ownerHandle.trim(), true)) {
-            saveProfile(current.copy(handle = ownerHandle.trim(), displayName = displayName, officialRating = officialRating))
+            saveProfile(current.copy(handle = ownerHandle.trim(), displayName = displayName, officialRating = officialRating,
+                officialRatingObservedAtEpochMillis = observedAtEpochMillis))
         }
     }
 
@@ -61,6 +62,10 @@ interface LoremRepository {
 
     /** Atomically replaces the remote snapshot without touching Ipsum/history data. */
     suspend fun replaceProblemCatalog(problems: List<CodeforcesProblem>, updatedAtEpochMillis: Long)
+
+    /** Opaque persistent local key. Caller holds withProfileLink while reading the export snapshot. */
+    suspend fun studyParticipantKey(): String = throw UnsupportedOperationException("Study export not supported")
+    val studyDataKind: String get() = "not_supported"
 
     /** The persistence layer must reject insertion when any active Ipsum already exists. */
     suspend fun createActiveIpsum(ipsum: Ipsum): Ipsum

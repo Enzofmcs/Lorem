@@ -43,6 +43,9 @@ data class Ipsum(
     val solvedOutsideAtEpochMillis: Long? = null,
     val status: IpsumStatus,
     val recommendationFactors: RecommendationFactors? = null,
+    val initialCodeforcesRating: Int? = null,
+    val initialCodeforcesRatingObservedAtEpochMillis: Long? = null,
+    val studyRecordingVersion: String? = null,
 )
 
 data class IpsumResult(val ipsum: Ipsum, val errorVerdicts: List<String>)

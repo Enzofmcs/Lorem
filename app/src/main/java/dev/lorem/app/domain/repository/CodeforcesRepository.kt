@@ -7,6 +7,7 @@ data class CodeforcesUser(
     val handle: String,
     val displayName: String,
     val rating: Int?,
+    val ratingObservedAtEpochMillis: Long? = null,
 )
 
 sealed interface UserLookupResult {

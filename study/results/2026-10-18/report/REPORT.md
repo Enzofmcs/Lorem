@@ -10,6 +10,8 @@ Contests especiais e qualquer contest com problemas em duas versoes foram exclui
 
 Teste reservado: [1492, 1848, 1936, 2165]; 4 grupos inteiros, 35367 tentativas, 28914 eventos e 6453 censuras. Treino/validacao/teste: b954ae933f1909ae6f3931381cb7bf9fd7f2d73862183ab1f83b0ee6c4f534d6.
 
+Linhas fora do dominio de ratings do AFT: 1; incluidas com ressalva de extrapolacao. D-012 recebe oldRating Codeforces como referencia experimental de tempo; esta tabela nao mede o erro do aplicativo usando Rating Lorem.
+
 AFT escolhido apenas na validacao: weibull:0.1; hash 2bb92b581b909e9a6b95002d99a4e2602e2b0c2309f7df81b0a4184b55b7899f. Entradas: oldRating e delta, sem resultados futuros. Likelihood inclui censuras. Nenhum modelo foi retunado no teste. G marginal e transformacoes usam apenas treino.
 
 ## Erros de tempo nos resolvidos

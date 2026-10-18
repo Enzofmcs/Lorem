@@ -174,7 +174,8 @@ class FullTrainingJourneyTest {
             db.query("PRAGMA table_info(ipsums)").use { cursor ->
                 while (cursor.moveToNext()) {
                     val name = cursor.getString(1)
-                    if (name in setOf("recommendationFactors", "problemOriginMetadata")) continue
+                    if (name in setOf("recommendationFactors", "problemOriginMetadata", "initialCodeforcesRating",
+                        "initialCodeforcesRatingObservedAtEpochMillis", "studyRecordingVersion")) continue
                     columns += name
                     definitions += "$name ${cursor.getString(2)}" +
                         (if (cursor.getInt(5) > 0) " PRIMARY KEY AUTOINCREMENT" else "") +

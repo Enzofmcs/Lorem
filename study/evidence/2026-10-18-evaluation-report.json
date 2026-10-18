@@ -35,7 +35,7 @@
     "commands": [
       {
         "stage": "collect",
-        "seconds": 27.158,
+        "seconds": 16.31,
         "exit_code": 0,
         "stderr": "",
         "result": {
@@ -52,37 +52,37 @@
       },
       {
         "stage": "prepare",
-        "seconds": 63.374,
+        "seconds": 61.864,
         "exit_code": 0,
         "stderr": ""
       },
       {
         "stage": "split",
-        "seconds": 0.047,
+        "seconds": 0.045,
         "exit_code": 0,
         "stderr": ""
       },
       {
         "stage": "train-baseline",
-        "seconds": 13.673,
+        "seconds": 14.518,
         "exit_code": 0,
         "stderr": ""
       },
       {
         "stage": "train",
-        "seconds": 78.222,
+        "seconds": 65.835,
         "exit_code": 0,
         "stderr": ""
       },
       {
         "stage": "evaluate",
-        "seconds": 14.187,
+        "seconds": 9.579,
         "exit_code": 0,
         "stderr": ""
       },
       {
         "stage": "report",
-        "seconds": 3.863,
+        "seconds": 2.474,
         "exit_code": 0,
         "stderr": ""
       }
@@ -145,7 +145,7 @@
         "identical": true
       },
       "report/REPORT.md": {
-        "sha256": "86343fa3f15a4fdad183cbfc23528560b6710656c7335490b1e94086f3dd931a",
+        "sha256": "3ebb4bf02d11de17569ff339e896dd972099c26aca2766cec29531134cc70324",
         "identical": true
       },
       "report/REPRODUCE.md": {
@@ -177,7 +177,7 @@
         "identical": true
       },
       "report/manifest.json": {
-        "sha256": "9faa0e476b48554aeaf3d04daa9b3ee3a8f09bd9a214fdc6e793da17c2fb9f7a",
+        "sha256": "2d2f4089b55daebcb21f6563cf8ddd3c62159594af1fda1b9cc2ccfde1599853",
         "identical": true
       },
       "report/metrics.csv": {
@@ -212,7 +212,7 @@
     "files": 29
   },
   "dependencies_lock_sha256": "ece8c75130dabbcdc0b99bfb4d166c6d972f4897d916f10858689baf860e928b",
-  "wheel_sha256": "70f983ff7ebf000ab7a00c4fc33dc0b666be607c3293be3cc5f90e04e7a78bbd",
+  "wheel_sha256": "872851eabaec477873a4e65cd25b90eca955347c0f569c2a78d5cc7376fdf5d5",
   "collection_cost": {
     "network_requests_reproduction": 0,
     "original_http_responses": 308,
@@ -225,9 +225,25 @@
     "Common support for pairwise time scores and integration grids",
     "200 paired group-bootstrap replicates; only four held-out groups",
     "Resolved-only time/interval scoring is selected; no population precision claim",
-    "No Android rating or model integration change in 27/28"
+    "No Android rating or model integration change in 27/28",
+    "D-012 uses CF oldRating as an experimental reference; not measured app accuracy with Lorem rating"
   ],
   "conclusion": "KM by delta has lower integrated Brier than frozen AFT in this limited cohort; retain D-012 and distinct ratings pending Ipsum validation",
   "manual_test": "TESTE MANUAL OPCIONAL - NAO EXECUTADO",
-  "reproductions_completed": 3
+  "reproductions_completed": 5,
+  "packaged_source_files_verified": 18,
+  "final_package_verification": {
+    "wheel_sha256": "ff1c6760ca5a2c9951fb5b92776d12d89286b76ae1bd0be2b2828f0667576f22",
+    "packaged_sources_exact": 18,
+    "installed_cli_outside_source_tree": true,
+    "prepare_ipsums_no_data": "insufficient_data, zero requests",
+    "aft_demo_matches_published": true,
+    "note": "Final package description updated; scientific sources/outputs unchanged from full offline replay"
+  },
+  "local_backup": {
+    "path": "study/work/regular-simple-v1-report-2026-10-18.tar.gz",
+    "bytes": 132684077,
+    "sha256": "b1d7cd0d397c8bdf744f74a34a7263fbae139020296fcb234943020ba5394b56",
+    "contents": "Frozen raw/cache/snapshots/tables/models plus evaluation/report; regenerable audit and predictions omitted; contains public handles, keep local"
+  }
 }

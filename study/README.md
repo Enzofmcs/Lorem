@@ -1,6 +1,6 @@
 # Estudo Python do Lorem
 
-Implementacao das Historias 22-28: coleta auditavel, tentativas sequenciais,
+Implementacao das Historias 22-28, com preparo local da 30: coleta auditavel, tentativas sequenciais,
 particoes por contest, Kaplan-Meier/D-012, AFT censurado e avaliacao reservada.
 Amostra real: 19 contests elegiveis, 274.073 tentativas validas. Teste: quatro
 contests e 35.367 tentativas. KM por delta apresentou menor erro que o AFT nesta
@@ -11,7 +11,7 @@ amostra; transporte para Ipsums ainda nao foi validado.
 [metricas/ICs completos](results/2026-10-18/evaluation/metrics.json).
 
 Protocolo: [QUANTITATIVE.md](../docs/QUANTITATIVE.md). Contratos:
-[DATA_DICTIONARY.md](DATA_DICTIONARY.md). O aplicativo Android e sua pontuacao nao mudam.
+[DATA_DICTIONARY.md](DATA_DICTIONARY.md). O modelo Python permanece separado do aplicativo. As 29-30 adicionam corte, snapshots e exportacao; a pontuacao D-012 permanece vigente.
 
 ## Ambiente e comandos
 
@@ -301,3 +301,37 @@ com o original; codigo de saida nao zero indica falha/diferenca. Brutos imutavei
 podem ser hardlinks locais; ponteiros mutaveis sao copiados. Instalacao pode usar
 rede; a reproducao dos dados nao faz requisicoes. Nova coleta nao e reproducao.
 Resultados publicados sao agregados e sem handles; backup bruto permanece local.
+
+## Base local de Ipsums (30)
+
+No aplicativo: Configuracoes -> Dados do estudo -> Exportar tentativas. Escolher
+um arquivo local. Somente encerrados, pseudonimo persistente por perfil; nenhum
+handle, nome, tag ou id de submissao. O ativo e omitido. Dados antigos ausentes
+continuam null. Atualizar o perfil antes de novas tentativas permite registrar
+uma observacao CF anterior; uma atualizacao posterior nunca preenche o passado.
+O arquivo e pseudonimizado, nao garante anonimato; manter somente local.
+
+```bash
+python -m lorem_study prepare-ipsums --work work/ipsum-validation --inputs /caminho/export-1.json /caminho/export-2.json
+python -m lorem_study prepare-ipsums --work work/ipsum-validation --inputs /caminho/export-1.json /caminho/export-2.json --offline
+```
+
+Core stdlib, sem NumPy/Android. A primeira chamada verifica metadata oficial de
+cada contest via standings completos, gate >=2 s e brutos/cache locais; nao envia
+exportacoes, pseudonimos ou timestamps. Standings brutos contem handles publicos
+e nao devem ir ao Git. Sem cache, `--offline` falha e permite retomar; falha nao
+vira falso negativo/censura. Contests especiais/com qualquer versao sao excluidos
+integralmente. CF anterior/fonte/data e Lorem inicial sao snapshots; dica e pausas
+sao estratos de qualidade, nunca features futuras.
+
+`ipsum/plan.json`, `attempts.jsonl`, `manifest.json` e, somente com suporte,
+`partitions.json`. [Protocolo](IPSUM_PROTOCOL.md): piso inicial 10 participantes,
+200 tentativas validas, 100 eventos e particoes por participante 6/2/2, seed fixa.
+Duplicatas identicas sao deduplicadas; conflitos/alteracoes de coorte congelada
+sao recusados. O piso nao substitui limiares/precisao a fixar na Historia 31.
+
+Nenhum export real foi fornecido nesta sessao. Comando sem `--inputs` e `--offline`
+registra n=0/`not_collected`/`insufficient_data`, zero chamadas, sem criar particoes
+ou metricas. 31/32 permanecem bloqueadas. A fixture `tests/fixtures/ipsum-export-android-v1.json`
+foi produzida pelo encoder Android com Room/StartIpsum/AC controlados e e
+explicitamente `synthetic`; nunca substitui evidencia empirica.

@@ -159,6 +159,11 @@ class LoremViewModel(
         }
     }
 
+    suspend fun prepareIpsumStudyExport() = dev.lorem.app.domain.ExportIpsumStudy(repository, nowMillis)()
+
+    suspend fun isStudyExportCurrent(export: dev.lorem.app.domain.IpsumStudyExport): Boolean =
+        repository.profileLink.first() == export.link
+
     private val coordinator = synchronizationCoordinator ?: SynchronizationCoordinator(
         repository, codeforcesRepository, viewModelScope, nowMillis = nowMillis,
     )
@@ -311,6 +316,7 @@ class LoremViewModel(
                 ?: INITIAL_UNRATED_RATING,
             consolidatedRating = savedProfile?.consolidatedRating?.takeIf { sameOwner },
             lastSyncEpochMillis = savedProfile?.lastSyncEpochMillis?.takeIf { sameOwner } ?: 0L,
+            officialRatingObservedAtEpochMillis = user.ratingObservedAtEpochMillis,
         )
         try {
             if (!sameOwner && repository.activeIpsum.first() != null) {
@@ -318,7 +324,7 @@ class LoremViewModel(
                 return
             }
             if (sameOwner && link != null) repository.withProfileLink(link) {
-                repository.updateProfileMetadata(user.handle, user.displayName, user.rating)
+                repository.updateProfileMetadata(user.handle, user.displayName, user.rating, user.ratingObservedAtEpochMillis)
             } else if (!repository.saveProfileIfCurrent(link, profile)) {
                 showError("O perfil mudou durante a consulta. Tente novamente.")
                 return

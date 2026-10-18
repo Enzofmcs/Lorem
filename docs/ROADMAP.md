@@ -6,15 +6,15 @@
 
 ## Estado atual
 
-**Foco atual:** estudo Python 22-28 implementado e verificado; avaliacao reservada e relatorio reais. Historias 00-21 preservadas.
+**Foco atual:** Historias 22-30 implementadas e verificadas. Estudo real concluido; novas recomendacoes exigem data verificada; Ipsums novos registram CF anterior e permitem exportacao local. Historias 00-21 preservadas.
 
-**Ultima historia verificada:** Historia 28, em 2026-10-18: 59 testes, 35.367 tentativas de teste em quatro contests, relatorio/tabelas/figuras e reproducao limpa.
+**Ultima historia verificada:** Historia 30, em 2026-10-18: 232 testes debug/170 release, lint sem erros, APK gerado e 66 testes Python; contrato Android-Python verificado com fixture explicita.
 
-**Primeiro item pendente:** Historia 30 - exportacao local e preparo de validacao com Ipsums.
+**Primeiro item pendente:** Historia 31 - BLOQUEADA: nenhum export real de Ipsums fornecido. Precisa de amostra e limiares finais fixados antes do teste.
 
-**Proxima entrega demonstravel:** exportar Ipsums pseudonimizados e preparar coorte por participante, com ausencias explicitas.
+**Proxima entrega demonstravel:** coletar novas tentativas com snapshots anteriores, exportar localmente e preparar coorte por participante; sem integrar previsoes antes da 31.
 
-**Bloqueios conhecidos:** 31 exige dados reais de Ipsums da 30; 32 depende da decisao favoravel da 31 e da 29. Quatro grupos de teste limitam a evidencia. Conferencia manual opcional (D-014).
+**Bloqueios conhecidos:** Ipsums reais n=0/insufficient_data. 32 exige evidencia e decisao favoravel da 31; dependencia 29 atendida. Conferencia manual opcional (D-014).
 
 ## Como atualizar
 
@@ -919,7 +919,7 @@ configura proxy e diretorio de cache para os testes Robolectric, sem alterar o a
 /workspace/toolchains/gradle-8.11.1/bin/gradle test lint assembleDebug --max-workers=2 --console=plain --init-script /workspace/toolchains/test-runtime.init.gradle
 ```
 
-Resultado final: **159 testes debug e 127 release sem falhas**, lint sem erros (apenas
+Resultado final: **158 testes debug e 127 release sem falhas**, lint sem erros (apenas
 `MissingApplicationIcon` preexistente), APK debug gerado. Testes direcionados passaram;
 a ultima regressao inclui o caso adicional de resposta do Ipsum anterior e a
 protecao correspondente no ViewModel. As iteracoes iniciais corrigiram chamadas
@@ -1947,7 +1947,7 @@ permanece preservado. Cadeia de migracao 9->11 validada por Room.
 
 **Historia:** Como pesquisador, quero validar as previsoes em Ipsums com inicio registrado para medir a diferenca entre tempo inferido em contests e tempo de treino.
 
-**Status:** planejada; implementacao e verificacao ainda nao executadas.
+**Status:** software e protocolo implementados/verificados em 2026-10-18; coorte real ausente, sem conclusao empirica.
 
 **GitHub:** [#53 - Historia 30](https://github.com/Enzofmcs/Lorem/issues/53).
 
@@ -1961,11 +1961,11 @@ permanece preservado. Cadeia de migracao 9->11 validada por Room.
 
 #### Criterios de aceite
 
-- [ ] Definir/exportar esquema pseudonimizado local com inicio, primeiro AC valido, encerramento, dica, interrupcoes conhecidas, versoes, rating do problema, CF anterior ao inicio e Rating Lorem inicial.
-- [ ] Preservar legados e representar ausencias; nao preencher rating CF passado com o atual nem com newRating de contest posterior; se faltar campo, documentar coleta prospectiva aditiva minima.
-- [ ] Distinguir AC no Ipsum de upsolve e nao recalcular avaliacao; tratar sem AC/desistencia e pausas explicitamente, sem chamar tempo de parede de dedicacao efetiva.
-- [ ] Aplicar recorte de problema/data verificavel na base do estudo sem excluir o historico do app; separar com/sem dica e informar funil/cobertura e suporte.
-- [ ] Fixar protocolo de amostra e particoes por participante para a validacao, mantendo todos os dados locais e sem exigir backend/login/nuvem; amostra ausente ou pequena e registrada como insuficiente.
+- [x] Definir/exportar esquema pseudonimizado local com inicio, primeiro AC valido, encerramento, dica, interrupcoes conhecidas, versoes, rating do problema, CF anterior ao inicio e Rating Lorem inicial.
+- [x] Preservar legados e representar ausencias; nao preencher rating CF passado com o atual nem com newRating de contest posterior; se faltar campo, documentar coleta prospectiva aditiva minima.
+- [x] Distinguir AC no Ipsum de upsolve e nao recalcular avaliacao; tratar sem AC/desistencia e pausas explicitamente, sem chamar tempo de parede de dedicacao efetiva.
+- [x] Aplicar recorte de problema/data verificavel na base do estudo sem excluir o historico do app; separar com/sem dica e informar funil/cobertura e suporte.
+- [x] Fixar protocolo de amostra e particoes por participante para a validacao, mantendo todos os dados locais e sem exigir backend/login/nuvem; amostra ausente ou pequena e registrada como insuficiente.
 
 #### Verificacao planejada
 
@@ -1974,8 +1974,19 @@ Niveis 2/3; Nivel 4 se houver migracao: fixtures de AC/sem AC/upsolve/dica/pausa
 **Entrega demonstravel:** Auditar um Ipsum pseudonimizado desde o inicio persistido ate seu evento/censura, demonstrando rating anterior e ausencia de alteracao da avaliacao.
 
 Conferencias humanas opcionais (D-014); criterios automatizados e evidencia
-cientifica exigidos acima continuam obrigatorios. Sem resultados comprovados
-neste planejamento.
+cientifica exigidos acima continuam obrigatorios. Fixtures comprovam o software; nenhum resultado real de transporte foi produzido.
+
+
+Evidencia: 66 testes Python e 232 debug/170 release; lint sem erros e APK gerado.
+Room 11->12 adiciona snapshots CF nullable, sem preencher legados pelo perfil atual.
+CF observado antes do inicio fica imutavel. Exportacao explicita local por UUID,
+sem ativo/handle/nome/tags/ids de submissao; AC posterior nao vira evento do Ipsum.
+Encoder Android com Room/StartIpsum/AC gera fixture marcada synthetic, aceita pelo
+preparador Python. API consulta somente metadados/estrutura, com gate/cache e
+D-026 inteiro. Protocolo/particoes por participante fixados; n real=0 resulta em
+insufficient_data, sem particoes/metricas/integracao. [Protocolo](../study/IPSUM_PROTOCOL.md),
+[evidencia](evidence/2026-10-18-android-30.json) e
+[estado da coorte](../study/evidence/2026-10-18-ipsum-data-status.json).
 
 ---
 
@@ -1983,7 +1994,7 @@ neste planejamento.
 
 **Historia:** Como pesquisador, quero avaliar se ratings e previsoes se transportam para Ipsums antes de autorizar seu uso no aplicativo.
 
-**Status:** planejada; implementacao e verificacao ainda nao executadas.
+**Status:** BLOQUEADO: nenhum export real de Ipsums fornecido (n=0/insufficient_data). Protocolo de preparo da 30 implementado; limiares finais e avaliacao empirica da 31 ainda pendentes.
 
 **GitHub:** [#54 - Historia 31](https://github.com/Enzofmcs/Lorem/issues/54).
 
@@ -2019,7 +2030,7 @@ neste planejamento.
 
 **Historia:** Como usuario, quero consultar estimativas validadas com orcamento e incerteza, mantendo o funcionamento local e minhas avaliacoes anteriores.
 
-**Status:** BLOQUEADO: evidencia e decisao favoravel da Historia 31, alem da 29.
+**Status:** BLOQUEADO: evidencia e decisao favoravel da Historia 31. Historia 29 implementada; nenhum modelo/previsao integrado ao app.
 
 **GitHub:** [#55 - Historia 32](https://github.com/Enzofmcs/Lorem/issues/55).
 

@@ -146,7 +146,7 @@ class SynchronizationCoordinator(
                 { UserLookupResult.ApiFailure("Não foi possível salvar os metadados do perfil.") }) {
                 val result = codeforces.user(link.handle)
                 if (result is UserLookupResult.Success) repository.withProfileLink(link) {
-                    repository.updateProfileMetadata(result.user.handle, result.user.displayName, result.user.rating)
+                    repository.updateProfileMetadata(result.user.handle, result.user.displayName, result.user.rating, result.user.ratingObservedAtEpochMillis)
                 }
                 result
             }

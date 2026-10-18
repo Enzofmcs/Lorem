@@ -36,6 +36,9 @@ class StartIpsum(
             ipsums = repository.ipsums.first(),
             ownerHandle = profile.handle,
         ) ?: return StartIpsumResult.NoCandidate
+        val startedAt = nowMillis()
+        val priorCfObserved = profile.officialRatingObservedAtEpochMillis?.takeIf { it > 0 && it <= startedAt }
+        val priorCf = profile.officialRating?.takeIf { it > 0 && priorCfObserved != null }
         val ipsum = Ipsum(
             id = 0,
             ownerHandle = profile.handle,
@@ -46,9 +49,12 @@ class StartIpsum(
             desiredRatingMax = recommendation.desiredRatingMax,
             selectedRating = requireNotNull(recommendation.problem.rating),
             fallbackDistance = recommendation.fallbackDistance,
-            startedAtEpochMillis = nowMillis(),
+            startedAtEpochMillis = startedAt,
             status = IpsumStatus.ACTIVE,
             recommendationFactors = recommendation.factors,
+            initialCodeforcesRating = priorCf,
+            initialCodeforcesRatingObservedAtEpochMillis = priorCfObserved.takeIf { priorCf != null },
+            studyRecordingVersion = "ipsum-study-v1",
         )
         return try {
             StartIpsumResult.Success(repository.createActiveIpsumForLink(ipsum, link))

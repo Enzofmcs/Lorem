@@ -43,7 +43,7 @@ def work_lock(root):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Lorem quantitative study; synthetic data are not empirical results")
-    parser.add_argument("command", choices=("fixture", "collect", "prepare", "split", "train-baseline", "predict", "train", "evaluate", "report"))
+    parser.add_argument("command", choices=("fixture", "collect", "prepare", "split", "train-baseline", "predict", "train", "evaluate", "report", "prepare-ipsums"))
     parser.add_argument("--work", type=Path, default=Path("work/default"))
     parser.add_argument("--config", type=Path)
     parser.add_argument("--pilot", action="store_true", help="Freeze a two-contest real pilot")
@@ -53,6 +53,7 @@ def main(argv=None):
     parser.add_argument("--problem-rating", type=int)
     parser.add_argument("--budgets", type=float, nargs="+")
     parser.add_argument("--model", choices=("baseline", "aft"), default="baseline")
+    parser.add_argument("--inputs", type=Path, nargs="*", default=[], help="Explicit local Ipsum exports; no upload")
     args = parser.parse_args(argv)
     try:
         if args.command == "evaluate":
@@ -87,6 +88,9 @@ def main(argv=None):
                     result = train_aft(args.work)
                 elif args.command == "evaluate":
                     result = evaluate(args.work)
+                elif args.command == "prepare-ipsums":
+                    from .ipsum import prepare_ipsums
+                    result = prepare_ipsums(args.work, args.inputs, offline=args.offline)
                 else:
                     from .report import report
                     try:

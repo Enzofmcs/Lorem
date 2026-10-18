@@ -63,6 +63,9 @@ fun LoremApp(
                 onHomeNavigationHandled = viewModel::homeNavigationHandled,
                 onSynchronizeHistory = viewModel::synchronizeHistory,
                 problemCatalogCount = problemCatalog.count { it.isEligibleForNewRecommendation() },
+                studyExportAction = {
+                    dev.lorem.app.ui.components.IpsumStudyExportAction(viewModel::prepareIpsumStudyExport, viewModel::isStudyExportCurrent)
+                },
                 onSynchronizeCatalog = viewModel::synchronizeCatalog,
                 activeIpsum = activeIpsum,
                 ipsums = ipsums,

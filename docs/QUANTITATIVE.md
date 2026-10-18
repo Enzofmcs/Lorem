@@ -1,10 +1,14 @@
 # Estudo quantitativo de tempo e AC
 
-Planejamento de 18/10/2026; **avaliacao preditiva com dados reais ainda nao executada**.
-Software 22-26 verificado com 51 testes. Nova amostra: 20 contests coletados,
-19 elegiveis, 274.073 tentativas validas; baselines e AFT ajustados com particoes
-11/4/4. Weibull 0,1 selecionado na validacao. [Evidencia atual](../study/evidence/2026-10-18-sample-aft.json)
-e [metodo AFT](../study/MODEL.md). Precisao/teste reservado continuam na 27.
+Protocolo fixado em 18/10/2026; **avaliacao reservada real concluida nas 27-28**.
+Amostra: 20 contests adquiridos/19 elegiveis e 274.073 tentativas validas, particoes
+11/4/4. Teste: 35.367 tentativas em quatro contests. AFT Weibull 0,1 congelado antes
+do teste; KM por delta teve menor Brier integrado (0,122746 vs 0,126693). Tempo nos
+resolvidos tem selecao; D-012 usa CF como referencia experimental, sem medir erro
+real do app com Lorem. [Relatorio](../study/results/2026-10-18/report/REPORT.md),
+[metodo](../study/MODEL.md) e [evidencia](../study/evidence/2026-10-18-evaluation-report.json).
+Historias 29-30 implementadas: corte no Android, snapshots anteriores e exportacao
+local. **Amostra real de Ipsums ausente; 31-32 bloqueadas.**
 O [piloto anterior](../study/evidence/2026-10-18-pilot-real.json), com variantes
 B1/B2 e E1/E2, permanece preservado e excluido.
 [Guia Python](../study/README.md) e [contrato](../study/DATA_DICTIONARY.md). Este protocolo
@@ -70,8 +74,8 @@ protocolo, medidas de erro e discussao de validade; nao comprova ganho pedagogic
 O subprojeto Python isolado em `study/` esta implementado, executavel sem Android,
 com Python >=3.11,<3.14, ambiente virtual, core stdlib, empacotamento fixado,
 semente e configuracao versionadas. CLI de coleta/preparo, particoes, baselines e
-AFT implementada; modelo usa NumPy 2.3.5/SciPy 1.17.0 opcionais. Avaliacao reservada
-e relatorio cientifico 27-28 continuam identificados como nao implementados. Comandos no
+AFT implementada; modelo usa NumPy 2.3.5/SciPy 1.17.0 opcionais. Avaliacao e relatorio
+27-28 implementados com bootstrap pareado e Matplotlib fixado para SVG/PNG. Comandos no
 [guia Python](../study/README.md); notebook nao e necessario neste bloco.
 
 Fontes do cliente centralizado (user.rating reservado para ambiguidades, nao usado no recorte inicial): `contest.list`, `contest.standings`, `contest.status`,
@@ -274,3 +278,22 @@ antigas nem substituir a formula de pontuacao sem nova decisao explicita.
   nao dependencia de teste manual do app.
 - Historia 32: registrar alcance da integracao autorizada pela evidencia; mudanca
   de pontuacao D-012 exige decisao propria. Corte de problemas nao depende disso.
+
+## Marco atual: dados locais de Ipsums (30)
+
+[Protocolo de coleta/preparo](../study/IPSUM_PROTOCOL.md): exportacao por perfil,
+pseudonimo local persistente, sem handle/nome/tags/ids de submissao. O ativo fica
+fora do arquivo. Novos Ipsums registram CF observado antes do inicio e Lorem
+inicial; legados permanecem null onde faltam snapshots, sem imputacao pelo atual.
+Pausas desconhecidas nao viram zero; tempo continua sendo de parede.
+
+O preparo consulta standings completos somente para verificar origem/data e a
+estrutura inteira do contest, pelo cliente/gate/cache existente. D-026 continua
+valendo: especial ou qualquer par de versoes exclui todo o contest, inclusive A.
+Falhas interrompem/retomam, sem fabricar censuras. Metadados/brutos ficam locais.
+
+Piso inicial: 10 participantes/200 tentativas validas/100 eventos, particoes
+inteiras 6/2/2 ou proximas de 60/20/20 por hash/seed. E piso operacional, nao prova
+de precisao: 31 ainda deve fixar limiares/precisao antes de avaliar o teste.
+Nenhum export real foi fornecido: `not_collected`, n=0, `insufficient_data`, zero
+requisicoes e gate fechado. Fixtures Android/Python verificam contrato, nao transporte.

@@ -322,6 +322,7 @@ class CodeforcesApiRepository(
                 handle = canonicalHandle,
                 displayName = fullName,
                 rating = if (user.has("rating")) user.optInt("rating") else null,
+                ratingObservedAtEpochMillis = nowMillis().takeIf { user.has("rating") && !user.isNull("rating") },
             ),
         )
     }

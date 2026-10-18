@@ -135,3 +135,19 @@ abandono pode tornar censura informativa, ratings de problemas sao da coleta e
 participantes repetem. Nenhuma mudanca no Rating Lorem/D-012. Validacao com Ipsums
 e transporte dos ratings antecedem uso das previsoes no app. O corte de problemas
 no app sera demonstrado na Historia 29.
+
+## Demonstracao das Historias 29-30
+
+1. Atualizar catalogo: fonte/data verificadas ficam em cache. Antigo/sem data nunca
+   habilita nova recomendacao, incluindo fallback. Continuar um ativo antigo ainda
+   funciona; historicos, pendencias e avaliacoes continuam intactos.
+2. Atualizar perfil antes de novos Ipsums. A observacao CF anterior fica no snapshot;
+   atualizar o perfil depois nao altera CF/Lorem iniciais ou notas anteriores.
+3. Configuracoes -> Dados do estudo -> Exportar tentativas. Escolher arquivo local;
+   o ativo e omitido, sem handle/nome/tags/ids de submissao. Legados ficam ausentes.
+4. Preparar com `prepare-ipsums` conforme [guia](../study/README.md#base-local-de-ipsums-30).
+   Verificar metadados oficiais/D-026, funil, snapshots e particoes por participante.
+   Sem exports reais, mostrar n=0/insufficient_data e nenhuma metrica de transporte.
+
+Roteiro de dispositivo opcional, nao executado. 31/32 continuam bloqueadas por
+falta de dados/evidencia; nao habilitar previsoes nem alterar a D-012.

@@ -217,3 +217,28 @@ reais e Codeforces falso apenas no escopo de teste. Cobrem primeiro acesso,
 importacao obrigatoria, dica, WA/AC, resultado, nova recomendacao, pendencia/upsolve,
 estatisticas, recuperacao e isolamento por perfil. A suite original da Historia 11
 foi preservada. O roteiro humano de `DEMO.md` continua opcional.
+
+## Marco 29-30 em 2026-10-18
+
+232 testes debug/170 release, zero falhas; `test lint assembleDebug` concluido.
+Lint sem erros, com avisos de versoes de dependencias e icone. JDK 17.0.20.1,
+Gradle 8.11.1 e SDK 35 no cloud. Caches Java/Robolectric gravaveis e proxy foram
+configurados em init script local; TLS usa as CAs do ambiente. Nao versionar SDK,
+JDK, caches, APKs ou esse init script. Em ambiente Android normal usar o comando
+Gradle do projeto. Evidencias: [29](evidence/2026-10-18-android-29.json) e
+[30](evidence/2026-10-18-android-30.json).
+
+Regras verificadas: corte UTC inclusivo/sem inferencia por id, origem ausente ou
+conflitante, duas consultas no gate/falha parcial, cache offline/fallback, migracao
+Room 9->12 com snapshots/rating/pendencias intactos, CF anterior imutavel e legado
+nullable, exportacao por perfil/concorrencia e omissao do ativo. Encoder Android
+com armazenamento real de teste produz fixture synthetic para o preparador Python.
+
+66 testes Python; `python -S -m lorem_study prepare-ipsums --offline` sem inputs
+funciona sem dependencias opcionais e registra n=0/not_collected/insufficient_data,
+zero requisicoes e gate fechado. Particoes por participante, dedup/conflitos,
+legados/rating futuro, dica/upsolve e exclusao integral D-026 cobertos sem rede.
+
+TESTE MANUAL OPCIONAL - NAO EXECUTADO: seletor de arquivo local no dispositivo.
+A falta de coorte real de Ipsums bloqueia a conclusao cientifica da 31, nao a
+verificacao de software nem a passagem da 30 conforme D-014.

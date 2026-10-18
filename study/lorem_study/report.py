@@ -166,6 +166,9 @@ def report(root):
              f"Teste reservado: {result['test_contest_ids']}; {len(result['test_groups'])} grupos inteiros, "
              f"{result['n']} tentativas, {result['events']} eventos e {result['censored']} censuras. "
              f"Treino/validacao/teste: {plan['splits_sha256']}.", "",
+             f"Linhas fora do dominio de ratings do AFT: {result['extrapolated_aft_rows']}; incluidas com ressalva de extrapolacao. "
+             "D-012 recebe oldRating Codeforces como referencia experimental de tempo; esta tabela nao mede "
+             "o erro do aplicativo usando Rating Lorem.", "",
              f"AFT escolhido apenas na validacao: {plan['selection']}; hash {plan['aft_sha256']}. "
              "Entradas: oldRating e delta, sem resultados futuros. Likelihood inclui censuras. "
              "Nenhum modelo foi retunado no teste. G marginal e transformacoes usam apenas treino.", "",

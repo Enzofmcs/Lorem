@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "export_version": "ipsum-local-v1",
+  "data_kind": "synthetic",
+  "participant_key": "00000000-0000-0000-0000-000000000001",
+  "exported_at_epoch_ms": 1593561790000,
+  "application_version": "synthetic-android-contract-v1",
+  "active_omitted": 0,
+  "attempts": [
+    {
+      "sample_id": "52aff933662a757c970bbaaa17cae895795be3d82b5100558f2eb61aec5c6934",
+      "problem_contest_id": 101,
+      "problem_index": "A",
+      "started_at_epoch_ms": 1593561700000,
+      "ended_at_epoch_ms": 1593561760000,
+      "first_ac_at_epoch_ms": 1593561760000,
+      "upsolve_ac_at_epoch_ms": null,
+      "status": "COMPLETED",
+      "failure_reason": null,
+      "hint_revealed_at_epoch_ms": null,
+      "hint_used": false,
+      "problem_rating": 1200,
+      "cf_rating_before": 1300,
+      "cf_rating_observed_at_epoch_ms": 1593561699000,
+      "cf_rating_source": "codeforces:user.info",
+      "lorem_rating_before": 1200,
+      "recording_version": "ipsum-study-v1",
+      "rating_rule_version": "D-012",
+      "eligibility_version": "origin-20200701-v1",
+      "origin_started_at_epoch_ms": 1593561600000,
+      "origin_source": "codeforces:contest.list",
+      "origin_verified_at_epoch_ms": 1593561698000,
+      "interruptions": null,
+      "wall_clock_only": true
+    }
+  ],
+  "note": "Pseudonymous local observations; pauses unknown; no transport evaluation"
+}

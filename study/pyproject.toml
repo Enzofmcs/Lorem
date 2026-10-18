@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "lorem-study"
 version = "0.3.0"
-description = "Reproducible Codeforces time-to-AC study (Histories 22-28)"
+description = "Reproducible Codeforces study and local Ipsum validation data"
 requires-python = ">=3.11,<3.14"
 dependencies = []
 

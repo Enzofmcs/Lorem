@@ -134,6 +134,9 @@ Use o formato abaixo. Nao apagar decisoes antigas; marque quando forem substitui
 
 | D-029 | 2026-10-18 | Avaliacao reservada com AFT/particoes congelados, 200 replicacoes pareadas de grupos e suporte comum. KM por delta teve Brier integrado menor nesta amostra (0,122746 vs 0,126693; diferenca AFT-KM IC95% 0,001861 a 0,007770). Nao retunar no teste, nao integrar previsoes nem substituir D-012. Manter ratings distintos; novo experimento exige nova amostra/protocolo e validacao em Ipsums. | Evidencia real favorece referencia simples; quatro grupos, selecao/censura e ratings da coleta limitam conclusao e transporte. Metodos em study/MODEL.md e relatorio da 28. | 27-32 |
 
+| D-030 | 2026-10-18 | Realizar o corte aprovado no Android com contest.list pelo gate, origem/data/fonte/versao persistidas e migracao aditiva. Catalogo legado sem prova nao habilita novas recomendacoes; cache verificado funciona offline e fallback nao relaxa o corte. Preservar historicos, ativos, pendencias e avaliacoes. | Historia 29 verificada: 226 debug/164 release, lint sem erros e APK; origem nao e inferida pelo id. | 29 |
+| D-031 | 2026-10-18 | Base Ipsum local v1: snapshots CF observados antes do inicio e Lorem inicial, exportacao explicita por perfil/UUID sem ativo/identificadores diretos, ausencias legadas preservadas. Preparo verifica metadados inteiros/D-026 pelo gate; piso operacional 10 participantes/200 tentativas/100 eventos, 6/2/2 por participante/hash/seed. Conflitos/coorte congelada alterada recusados. Piso nao aprova transporte: 31 fixa limiares finais antes do teste e 32 continua bloqueada com dados insuficientes. | Evitar retroimputacao, confusao entre CF/Lorem, tempo de parede/dedicacao e testes de software/evidencia real. Nenhum export real fornecido; n=0/insufficient_data. | 30-32 |
+
 ### Implementacao inicial do protocolo (22-25), 18/10/2026
 
 - Python >=3.11,<3.14, runtime/testes somente stdlib; setuptools 75.8.0 para

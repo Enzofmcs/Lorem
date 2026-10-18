@@ -12,6 +12,28 @@ import org.robolectric.RobolectricTestRunner
 @RunWith(RobolectricTestRunner::class)
 class LoremDatabaseMigrationTest {
     @Test
+    fun `migration 11 to 12 preserves prior results without backfilling CF snapshots`() {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        val helper = FrameworkSQLiteOpenHelperFactory().create(
+            SupportSQLiteOpenHelper.Configuration.builder(context)
+                .name("migration-11-12-${System.nanoTime()}.db")
+                .callback(object : SupportSQLiteOpenHelper.Callback(11) {
+                    override fun onCreate(db: androidx.sqlite.db.SupportSQLiteDatabase) = Unit
+                    override fun onUpgrade(db: androidx.sqlite.db.SupportSQLiteDatabase, oldVersion: Int, newVersion: Int) = Unit
+                }).build(),
+        )
+        val sqlite=helper.writableDatabase
+        sqlite.execSQL("CREATE TABLE ipsums (id INTEGER, status TEXT, ratingDelta INTEGER)")
+        sqlite.execSQL("INSERT INTO ipsums VALUES (1,'PENDING',-20)")
+        LoremDatabase.MIGRATION_11_12.migrate(sqlite)
+        sqlite.query("SELECT status,ratingDelta,initialCodeforcesRating,initialCodeforcesRatingObservedAtEpochMillis,studyRecordingVersion FROM ipsums").use {
+            it.moveToFirst();assertEquals("PENDING",it.getString(0));assertEquals(-20,it.getInt(1))
+            assertTrue(it.isNull(2));assertTrue(it.isNull(3));assertTrue(it.isNull(4))
+        }
+        helper.close()
+    }
+
+    @Test
     fun `migration 10 to 11 preserves legacy catalog active pending and rating snapshots`() {
         val context = ApplicationProvider.getApplicationContext<android.content.Context>()
         val helper = FrameworkSQLiteOpenHelperFactory().create(

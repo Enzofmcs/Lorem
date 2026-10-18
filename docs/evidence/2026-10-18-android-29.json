@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "story": 29,
+  "verified_source_commit": "f8c23c3",
+  "tests": {
+    "debug": 226,
+    "release": 164,
+    "failures": 0
+  },
+  "command": "./gradlew --no-daemon --max-workers=2 --init-script /tmp/lorem-test-network.gradle test lint assembleDebug",
+  "environment": {
+    "java": "Temurin 17.0.20.1+1",
+    "gradle": "8.11.1",
+    "compileSdk": 35,
+    "sdk_path": "/workspace/.android-lorem"
+  },
+  "lint_errors": 0,
+  "lint_warning_categories": [
+    "AndroidGradlePluginVersion",
+    "GradleDependency",
+    "MissingApplicationIcon"
+  ],
+  "apk_sha256": "aec67959436d502ced3542819b0ab0bceb2b517b05474f0980880705c0b3dd60",
+  "verification_log_sha256": "1c370d0537c219973829f8779d36df3d5eaa4d6cc151968647f5fdeeff764f6e",
+  "invariants": [
+    "UTC inclusive cutoff, missing/conflicting origin fails closed",
+    "metadata API gated; partial failure retains verified cache",
+    "nullable additive Room 10->11; full Room 9->11 validation",
+    "active/pending/history/rating preserved; fallback cannot relax cutoff"
+  ],
+  "manual_test": "TESTE MANUAL OPCIONAL - NAO EXECUTADO"
+}
