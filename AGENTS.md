@@ -28,6 +28,9 @@ Prioridades, nesta ordem:
 - Rating, tags e categoria permanecem escondidos enquanto o Ipsum esta ativo.
 - Use somente tags oficiais do Codeforces.
 - Centralize a API e respeite no maximo uma requisicao a cada dois segundos.
+- Novas recomendacoes deverao exigir data verificavel do contest de origem >=
+  01/07/2020; implementacao pendente na Historia 29. Preservar historicos antigos
+  e sua exclusao de repeticoes. Nao inferir data pelo id.
 
 As regras completas e o escopo fechado estao em [`docs/SPEC.md`](docs/SPEC.md).
 
@@ -44,18 +47,20 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
-- **Foco:** Historia 21 concluida; bloco de automacao e apresentacao (15-21) verificado.
+- **Foco:** extensao quantitativa planejada; Historias 00-21 permanecem concluidas.
 - **Ultima historia verificada:** Historia 21 - Redesign do historico e estatisticas, automaticamente em 2026-10-16.
-- **Primeiro item pendente:** nenhuma historia planejada pendente.
-- **Proxima entrega demonstravel:** Historias 00-21 implementadas; demonstracao e manutencao conforme demanda.
-- **Bloqueios conhecidos:** nenhum; teste manual e opcional (D-014).
+- **Primeiro item pendente:** Historia 22 - Base Python e protocolo reproduzivel do estudo.
+- **Proxima entrega demonstravel:** estudo Python (22-28), estimado em 24 h; corte no app e validacao posterior (29-32).
+- **Bloqueios conhecidos:** nenhum para iniciar 22; 32 condicionada a evidencia/decisao da 31. Teste manual e opcional (D-014).
 
 Regressao da Historia 21: 217 testes debug e 155 release sem falhas, lint sem erros
 (apenas aviso preexistente de icone) e `assembleDebug` concluido.
 Progresso e aceite: [`docs/ROADMAP.md`](docs/ROADMAP.md).
 Roteiro: [`docs/DEMO.md`](docs/DEMO.md).
-Planejamento: [sincronizacao](docs/SYNC.md), [design](docs/DESIGN.md) e
-[Historia 21](docs/ROADMAP.md#historia-21---redesign-do-historico-e-estatisticas).
+Planejamento atual: [estudo quantitativo](docs/QUANTITATIVE.md) e
+[Historia 22](docs/ROADMAP.md#historia-22---base-python-e-protocolo-reproduzivel-do-estudo).
+Nesta tarefa apenas documentacao e issues; estudo/modelos ainda nao executados.
+D-012 continua em producao. Comparacao entre epocas e correcao temporal fora do escopo.
 
 ## Politica de contexto
 
@@ -120,6 +125,7 @@ Planejamento: [sincronizacao](docs/SYNC.md), [design](docs/DESIGN.md) e
 - [`docs/TESTING.md`](docs/TESTING.md): estrategia proporcional a risco e comandos.
 - [`docs/SESSIONS.md`](docs/SESSIONS.md): registro curto das sessoes recentes.
 - [`docs/DEMO.md`](docs/DEMO.md): demonstracao reproduzivel e avaliacao do TCC.
+- [`docs/QUANTITATIVE.md`](docs/QUANTITATIVE.md): protocolo, estimandos, dados, censura, avaliacao e gates da extensao Python.
 
 ## Prompt padrao para futuras sessoes
 

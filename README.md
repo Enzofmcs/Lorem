@@ -8,7 +8,7 @@ Um **Ipsum** é a tentativa oficial e cronometrada de resolver um problema recom
 
 ## Estado atual
 
-A base Android de módulo único implementa as Histórias 00–17:
+A base Android de módulo único implementa as Histórias 00–21:
 
 - Kotlin, Jetpack Compose e Material 3;
 - navegação que restaura o Ipsum ativo;
@@ -139,6 +139,21 @@ Consulte o [roadmap](docs/ROADMAP.md) e o [roteiro de demonstração](docs/DEMO.
 **TESTE MANUAL OPCIONAL - NAO EXECUTADO** nesta sessão, conforme D-014.
 
 ## Próximas histórias
+
+O planejamento de 18/10/2026 acrescenta **22–28 — Estudo quantitativo em Python**:
+coleta e preparo auditáveis, estimativa de tempo até AC, probabilidades para um
+orçamento explícito, avaliação e relatório reproduzível. São **24 horas estimadas**
+para uma primeira versão; modelos e experimentos ainda não foram executados.
+
+**29–32** cobrem o corte verificável de problemas nas novas recomendações, validação
+com Ipsums, relação Rating CF/Lorem e integração local condicionada à evidência.
+O recorte usa a data do contest de origem desde 01/07/2020, preserva históricos e
+avaliações e ainda depende da História 29 no app. Comparação entre épocas e correção
+temporal estão fora do escopo. D-012 continua vigente. Consulte o
+[protocolo](docs/QUANTITATIVE.md) e a
+[ordem de execução](docs/ROADMAP.md#extensao-quantitativa-em-python).
+
+### Bloco anterior concluído
 
 O planejamento de 13/10/2026 acrescenta **15–17 — Sincronização automática** e
 **18–21 — Redesign**. As Histórias 00–14 e suas evidências permanecem preservadas;

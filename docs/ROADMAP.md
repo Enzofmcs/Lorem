@@ -6,15 +6,15 @@
 
 ## Estado atual
 
-**Foco atual:** Historia 21 concluida; bloco de automacao e apresentacao (15-21) verificado.
+**Foco atual:** extensao quantitativa planejada em 18/10/2026; Historias 00-21 preservadas e concluidas.
 
 **Ultima historia verificada:** Historia 21 - Redesign do historico e estatisticas, automaticamente em 2026-10-16. Historias 00-20 preservadas.
 
-**Primeiro item pendente:** nenhuma historia planejada pendente.
+**Primeiro item pendente:** Historia 22 - Base Python e protocolo reproduzivel do estudo.
 
-**Proxima entrega demonstravel:** Historias 00-21 implementadas e marco de apresentacao verificado; demonstracao e manutencao conforme demanda.
+**Proxima entrega demonstravel:** estudo Python reproduzivel (22-28, aproximadamente 24 h de trabalho), seguido do corte no app e validacao com Ipsums (29-32).
 
-**Bloqueios conhecidos:** nenhum. Conferencia em dispositivo e opcional (D-014).
+**Bloqueios conhecidos:** nenhum para iniciar 22. Historia 32 depende de evidencia e decisao da 31; amostra insuficiente mantem o gate fechado. Conferencia em dispositivo e opcional (D-014).
 
 ## Como atualizar
 
@@ -101,6 +101,18 @@ As Historias 15-17 foram implementadas e verificadas em 2026-10-15 e as Historia
 - [Historia 19 - Redesign da configuração e tela inicial](#historia-19---redesign-da-configuracao-e-tela-inicial)
 - [Historia 20 - Redesign da experiência do Ipsum e resultado](#historia-20---redesign-da-experiencia-do-ipsum-e-resultado)
 - [Historia 21 - Redesign do histórico e estatísticas](#historia-21---redesign-do-historico-e-estatisticas)
+
+- [Historia 22 - Base Python e protocolo reproduzivel do estudo](#historia-22---base-python-e-protocolo-reproduzivel-do-estudo)
+- [Historia 23 - Coleta auditavel de contests e ratings historicos](#historia-23---coleta-auditavel-de-contests-e-ratings-historicos)
+- [Historia 24 - Tempos sequenciais, censura e cobertura das tentativas](#historia-24---tempos-sequenciais-censura-e-cobertura-das-tentativas)
+- [Historia 25 - Referencias simples e particoes por contest](#historia-25---referencias-simples-e-particoes-por-contest)
+- [Historia 26 - Modelo interpretavel de tempo ate AC](#historia-26---modelo-interpretavel-de-tempo-ate-ac)
+- [Historia 27 - Avaliacao de erros, probabilidades e incerteza](#historia-27---avaliacao-de-erros-probabilidades-e-incerteza)
+- [Historia 28 - Relatorio do estudo e reproducao completa para o TCC](#historia-28---relatorio-do-estudo-e-reproducao-completa-para-o-tcc)
+- [Historia 29 - Corte verificavel de problemas nas novas recomendacoes](#historia-29---corte-verificavel-de-problemas-nas-novas-recomendacoes)
+- [Historia 30 - Base local de validacao com tentativas Ipsum](#historia-30---base-local-de-validacao-com-tentativas-ipsum)
+- [Historia 31 - Validar relacao entre Rating Codeforces e Rating Lorem](#historia-31---validar-relacao-entre-rating-codeforces-e-rating-lorem)
+- [Historia 32 - Integracao local versionada das previsoes validadas](#historia-32---integracao-local-versionada-das-previsoes-validadas)
 
 ### Historia 00 - Estrutura basica
 
@@ -1494,6 +1506,457 @@ renderizacoes automatizadas nao equivalem a ensaio humano com TalkBack.
 
 ---
 
+## Extensao quantitativa em Python
+
+Planejamento de 18/10/2026 conferido contra `main` em
+`931c410954cc851dd46862c3f1ed35c2adb3e580` ([PR #44](https://github.com/Enzofmcs/Lorem/pull/44)).
+As issues 15-21 (#30-36) estao fechadas como concluidas; nenhuma issue ou PR estava
+aberto antes deste bloco. As Historias 00-21 e seus checklists/evidencias permanecem
+inalterados. A referencia local `origin/main` estava antiga; o SHA acima foi
+confirmado diretamente no GitHub e coincide com o HEAD usado neste planejamento.
+
+**Esta tarefa entrega somente planejamento, documentos e issues.** Nenhuma coleta,
+modelo, resultado de pesquisa ou mudanca Android foi implementada. Todos os aceites
+22-32 ficam pendentes. D-012 continua vigente; D-020 a D-025 registram as decisoes
+solicitadas. Metodo e limites em [QUANTITATIVE.md](QUANTITATIVE.md).
+
+Primeira versao: **22 -> 23 -> 24 -> 25 -> 26 -> 27 -> 28 = 24 h estimadas**.
+A estimativa pressupoe amostra limitada de contests completos e acesso a API/cache;
+nao promete prazo de coleta, superioridade do modelo ou conclusao cientifica positiva.
+Se faltar volume, entregar piloto e declarar insuficiencia, sem fabricar resultados.
+
+Depois: **29**, e **30 -> 31 -> 32**. A 29 pode antecipar apos 23 e independe do
+sucesso preditivo; 30 pode iniciar apos 28 independentemente de 29. A 32 exige
+29 e evidencia/decisao favoravel da 31. Dados reais de Ipsums podem exigir tempo
+de uso adicional, fora das horas de desenvolvimento. Backend/login/nuvem nao sao
+pre-requisitos. Comparacao entre epocas, analises por ano e correcao temporal fora
+do escopo.
+
+| Historia | Issue | Esforco | Dependencias | Entrega demonstravel |
+|---|---|---:|---|---|
+| 22 - Base Python e protocolo reproduzivel do estudo | [#45](https://github.com/Enzofmcs/Lorem/issues/45) | 2 h | 00-21 concluidas | Em ambiente virtual limpo, executar a jornada sintetica e inspecionar o manifesto e o dicionario sem instalar Android. |
+| 23 - Coleta auditavel de contests e ratings historicos | [#46](https://github.com/Enzofmcs/Lorem/issues/46) | 4 h | 22 | Retomar uma coleta interrompida e reconstruir as mesmas tabelas pelo cache, mostrando a fonte da data e do oldRating de uma participacao. |
+| 24 - Tempos sequenciais, censura e cobertura das tentativas | [#47](https://github.com/Enzofmcs/Lorem/issues/47) | 4 h | 23 | Inspecionar uma linha desde as submissoes brutas ate seu tempo/evento ou motivo de exclusao, incluindo um caso sem AC. |
+| 25 - Referencias simples e particoes por contest | [#48](https://github.com/Enzofmcs/Lorem/issues/48) | 3 h | 24 | Consultar as probabilidades e quantis do baseline para um par de ratings e conferir o manifesto sem contests compartilhados. |
+| 26 - Modelo interpretavel de tempo ate AC | [#49](https://github.com/Enzofmcs/Lorem/issues/49) | 4 h | 25 | Comparar previsoes e fatores de tempo para pares de ratings e orcamentos explicitos, mostrando os limites de suporte. |
+| 27 - Avaliacao de erros, probabilidades e incerteza | [#50](https://github.com/Enzofmcs/Lorem/issues/50) | 4 h | 26 | Abrir tabela comparativa e calibracao em 30/60/120 minutos com erros, ICs, tamanhos de amostra e horizontes sem suporte claramente indicados. |
+| 28 - Relatorio do estudo e reproducao completa para o TCC | [#51](https://github.com/Enzofmcs/Lorem/issues/51) | 3 h | 27 | Outra pessoa executa o roteiro local a partir do snapshot e confere hashes e tabelas do relatorio apresentado no TCC. |
+| 29 - Corte verificavel de problemas nas novas recomendacoes | [#52](https://github.com/Enzofmcs/Lorem/issues/52) | 6 h | 23 | Catalogo misto mostra que antigo/sem data nunca e recomendado; um problema antigo ja tentado continua no historico e nos impedimentos de repeticao, com avaliacao intacta. |
+| 30 - Base local de validacao com tentativas Ipsum | [#53](https://github.com/Enzofmcs/Lorem/issues/53) | 4 h | 28 | Auditar um Ipsum pseudonimizado desde o inicio persistido ate seu evento/censura, demonstrando rating anterior e ausencia de alteracao da avaliacao. |
+| 31 - Validar relacao entre Rating Codeforces e Rating Lorem | [#54](https://github.com/Enzofmcs/Lorem/issues/54) | 4 h | 30 | Apresentar relatorio de transporte e decisao rastreavel com amostra, limiares predefinidos, erros e ICs, inclusive quando a conclusao for nao integrar. |
+| 32 - Integracao local versionada das previsoes validadas | [#55](https://github.com/Enzofmcs/Lorem/issues/55) | 4 h | 29, 31 | Consultar previsao local versionada e repetir offline; indisponibilidade do modelo preserva o treino, e uma avaliacao antiga permanece identica. |
+
+### Marcos e decisoes
+
+- **G - Estudo reproduzivel (22-28):** dados, modelos, erros, probabilidades com orcamento, incerteza e relatorio com limitacoes.
+- **H - Recorte nas recomendacoes (29):** corte verificavel com historico e operacao local preservados.
+- **I - Validacao no treino (30-31):** relacao entre ratings e transporte com evidencia ou decisao fundamentada de nao integrar.
+- **J - Integracao condicional (32):** previsoes locais versionadas somente depois do gate cientifico.
+
+Amostra/parametros de reproducao sao congelados no inicio do estudo. Limiares e
+tamanho/precisao requeridos para Ipsums devem ser registrados antes de abrir o
+teste da 31. Pontuacao D-012 nao sera substituida por estas historias sem decisao
+explicita adicional. Veja DA-07 em [DECISIONS.md](DECISIONS.md).
+
+### Historia 22 - Base Python e protocolo reproduzivel do estudo
+
+**Historia:** Como pesquisador, quero executar um protocolo versionado em Python para reproduzir o estudo sem depender do app Android.
+
+**Status:** planejada; implementacao e verificacao ainda nao executadas.
+
+**GitHub:** [#45 - Historia 22](https://github.com/Enzofmcs/Lorem/issues/45).
+
+**Estimativa:** 2 h. **Fase:** MVP do estudo.
+
+**Dependencias:** Historias 00-21 concluidas; sem nova dependencia funcional.
+
+**Escopo:** Criar study/ isolado, ambiente fixado, configuracao, contratos de dados e uma jornada minima com fixtures claramente sinteticas. Implementacao futura; o planejamento atual nao cria codigo de coleta ou modelos.
+
+**Referencia:** [QUANTITATIVE.md](QUANTITATIVE.md) e [TESTING.md](TESTING.md).
+
+#### Criterios de aceite
+
+- [ ] Documentar Python 3.11+, ambiente virtual, dependencias fixadas e justificadas, semente, esquema e versoes de protocolo/modelo; instalacao independe de Gradle.
+- [ ] Disponibilizar comandos de coleta, preparo, treino, avaliacao e relatorio com configuracao explicita e modo offline por snapshot; mensagens distinguem etapas nao executadas de resultados reais.
+- [ ] Versionar dicionario e configuracao do corte inclusivo em 2020-07-01 UTC, populacao oficial individual, oldRating, delta, hipotese sequencial e censura conforme QUANTITATIVE.md.
+- [ ] Definir manifesto de selecao por contest/grupo, sementes, hashes, completude, cache e diretorios ignorados para brutos/artefatos grandes; nao versionar handles reais em fixtures.
+- [ ] Uma fixture sintetica percorre a interface minima do pipeline e produz manifesto deterministico; componentes ainda nao implementados sao identificados, sem simular resultado empirico.
+
+#### Verificacao planejada
+
+Nivel 2: smoke automatizado do comando minimo, configuracao invalida, determinismo e separacao entre fixtures e dados reais. Nao exigir treino/coleta que pertencem a 23-27.
+
+**Entrega demonstravel:** Em ambiente virtual limpo, executar a jornada sintetica e inspecionar o manifesto e o dicionario sem instalar Android.
+
+Conferencias humanas opcionais (D-014); criterios automatizados e evidencia
+cientifica exigidos acima continuam obrigatorios. Sem resultados comprovados
+neste planejamento.
+
+---
+
+### Historia 23 - Coleta auditavel de contests e ratings historicos
+
+**Historia:** Como pesquisador, quero snapshots completos da API para associar cada participante ao rating anterior ao contest e preservar a proveniencia.
+
+**Status:** planejada; implementacao e verificacao ainda nao executadas.
+
+**GitHub:** [#46 - Historia 23](https://github.com/Enzofmcs/Lorem/issues/46).
+
+**Estimativa:** 4 h. **Fase:** MVP do estudo.
+
+**Dependencias:** Historia 22
+
+**Escopo:** Coletor centralizado para metadados, problemas, participacoes, ratingChanges e submissoes. Piloto de dois contests e manifesto limitado antes do ajuste; alvo 20, minimo de avaliacao 10 completos.
+
+**Referencia:** [QUANTITATIVE.md](QUANTITATIVE.md) e [TESTING.md](TESTING.md).
+
+#### Criterios de aceite
+
+- [ ] Verificar inicio real do contest de origem >= 2020-07-01T00:00:00Z; nao inferir data por id; excluir origem/data nao verificavel e problemas sem rating com motivos.
+- [ ] Selecionar contests CF FINISHED e unir participacoes CONTESTANT individuais com contest.ratingChanges por contest/handle normalizado; usar oldRating, separar estreantes e quarentenar ausencias/conflitos sem imputacao futura.
+- [ ] Coletar todas as paginas necessarias de standings/status, com gate global >=2 s, cache, retry/backoff/Retry-After e retomada; falha parcial nunca vira contest completo ou historico vazio.
+- [ ] Preservar JSON bruto imutavel, origem, parametros, coleta UTC, hashes, vereditos finais e versao de snapshot; registrar rating do problema como disponivel na coleta, sem alegar snapshot historico.
+- [ ] Executar piloto de 2 contests; congelar selecao deterministica sem filtrar por sucesso, registrar volume/custo e grupos de problemas compartilhados; minimo insuficiente resulta em piloto declarado, sem metricas conclusivas.
+- [ ] Emitir funil de elegibilidade/completude e tabelas com ambos os ratings e delta; brutos e historicos antigos permanecem preservados.
+
+#### Verificacao planejada
+
+Nivel 3: API roteirizada para OK/FAILED, 429, pagina faltante, duplicata e retomada; limites de data, oldRating zero/ausente, equipe/virtual e origem ambigua. Confirmar piloto real e hashes sem exigir rede nos testes.
+
+**Entrega demonstravel:** Retomar uma coleta interrompida e reconstruir as mesmas tabelas pelo cache, mostrando a fonte da data e do oldRating de uma participacao.
+
+Conferencias humanas opcionais (D-014); criterios automatizados e evidencia
+cientifica exigidos acima continuam obrigatorios. Sem resultados comprovados
+neste planejamento.
+
+---
+
+### Historia 24 - Tempos sequenciais, censura e cobertura das tentativas
+
+**Historia:** Como pesquisador, quero rotulos auditaveis de tempo e tentativas sem AC para testar a hipotese sequencial sem confundir disponibilidade com dedicacao.
+
+**Status:** planejada; implementacao e verificacao ainda nao executadas.
+
+**GitHub:** [#47 - Historia 24](https://github.com/Enzofmcs/Lorem/issues/47).
+
+**Estimativa:** 4 h. **Fase:** MVP do estudo.
+
+**Dependencias:** Historia 23
+
+**Escopo:** Derivar ancora, duracao, evento e qualidade por participante/contest/problema, preservando os brutos e todas as recusas. Usar o protocolo sequencial de QUANTITATIVE.md.
+
+**Referencia:** [QUANTITATIVE.md](QUANTITATIVE.md) e [TESTING.md](TESTING.md).
+
+#### Criterios de aceite
+
+- [ ] Usar creationTimeSeconds do primeiro envio com veredito final OK em [inicio, fimContest), excluindo upsolves; A ancora no inicio e B/C no primeiro AC do predecessor imediato.
+- [ ] Reproduzir ACs aos 10/28/65 minutos como duracoes 10/18/37 e identificar prefixo valido; definir ordem por problemas do contest, recusando indices ambiguos sem ordenacao ingenua.
+- [ ] Marcar saltos, inversoes, intercalacoes, retornos a problema aceito, empates/tempos nao positivos e inconsistencias; invalidar o intervalo contaminado e sucessores, preservando prefixos anteriores validos.
+- [ ] Preservar tentativas observadas sem AC como Y=C e evento=0 quando sequenciais e completas, com C=fimContest-ancora; disponibilidade nao equivale a dedicacao; sem submissao nao e tentativa negativa.
+- [ ] Representar coleta incompleta, veredito pendente e ancora invalida separadamente de censura; nao usar zero/infinito nem classificar abandono observavel como trabalho ate o fim.
+- [ ] Exportar funil e motivos por contest/faixa de rating com eventos, censuras e cobertura, alem da sensibilidade pela ultima submissao; features ficam separadas dos rotulos e da auditoria.
+
+#### Verificacao planejada
+
+Nivel 2 para transformacoes e Nivel 3 para esquema: fixtures de 10/28/65, WA->AC, multiplos ACs, limites do contest, salto, inversao, intercalacao, censura e incompletude; somas do funil reconciliadas.
+
+**Entrega demonstravel:** Inspecionar uma linha desde as submissoes brutas ate seu tempo/evento ou motivo de exclusao, incluindo um caso sem AC.
+
+Conferencias humanas opcionais (D-014); criterios automatizados e evidencia
+cientifica exigidos acima continuam obrigatorios. Sem resultados comprovados
+neste planejamento.
+
+---
+
+### Historia 25 - Referencias simples e particoes por contest
+
+**Historia:** Como pesquisador, quero referencias simples e uma separacao sem vazamento para medir se um modelo mais elaborado acrescenta utilidade.
+
+**Status:** planejada; implementacao e verificacao ainda nao executadas.
+
+**GitHub:** [#48 - Historia 25](https://github.com/Enzofmcs/Lorem/issues/48).
+
+**Estimativa:** 3 h. **Fase:** MVP do estudo.
+
+**Dependencias:** Historia 24
+
+**Escopo:** Congelar treino/validacao/teste por contests/grupos completos e ajustar Kaplan-Meier global/por delta. D-012 entra somente como referencia de tempo.
+
+**Referencia:** [QUANTITATIVE.md](QUANTITATIVE.md) e [TESTING.md](TESTING.md).
+
+#### Criterios de aceite
+
+- [ ] Persistir manifesto 60/20/20 por contest/grupo com semente, pelo menos 6/2/2 contests completos no minimo de 10; impedir contest ou grupo compartilhado em mais de uma particao.
+- [ ] Ajustar Kaplan-Meier com eventos e censuras do treino, global e por delta de 400 pontos com minimo de 50 tentativas/20 eventos; usar fallback global quando faltar suporte.
+- [ ] Produzir P(AC ate 30/60/120 min), mediana e quantis quando identificaveis; ausencia de mediana/seguimento e indisponibilidade explicita, nunca infinito.
+- [ ] Reproduzir a formula de tempo D-012 como comparador operacional, sem modifica-la no Android nem atribuir probabilidade inventada.
+- [ ] Garantir que transformacoes, faixas, fallback e funcao de censura sejam ajustados somente no treino; gravar artefato versionado e previsoes identificadas por particao.
+
+#### Verificacao planejada
+
+Nivel 2: vazamento por contest/grupo, CDF monotona em [0,1], censura total, mediana nao atingida, fallback de faixa e equivalencia numerica da D-012.
+
+**Entrega demonstravel:** Consultar as probabilidades e quantis do baseline para um par de ratings e conferir o manifesto sem contests compartilhados.
+
+Conferencias humanas opcionais (D-014); criterios automatizados e evidencia
+cientifica exigidos acima continuam obrigatorios. Sem resultados comprovados
+neste planejamento.
+
+---
+
+### Historia 26 - Modelo interpretavel de tempo ate AC
+
+**Historia:** Como pesquisador, quero estimar uma distribuicao interpretavel de tempo a partir dos ratings, incluindo observacoes censuradas.
+
+**Status:** planejada; implementacao e verificacao ainda nao executadas.
+
+**GitHub:** [#49 - Historia 26](https://github.com/Enzofmcs/Lorem/issues/49).
+
+**Estimativa:** 4 h. **Fase:** MVP do estudo.
+
+**Dependencias:** Historia 25
+
+**Escopo:** AFT log-normal e alternativa Weibull, com grade pequena de regularizacao e selecao agrupada no treino/validacao. Nao pressupor superioridade sobre as referencias.
+
+**Referencia:** [QUANTITATIVE.md](QUANTITATIVE.md) e [TESTING.md](TESTING.md).
+
+#### Criterios de aceite
+
+- [ ] Ajustar AFT com duracao observada e indicador de evento, sem eliminar os sem AC validos; justificar biblioteca, distribuicoes e hipoteses de censura.
+- [ ] Usar oldRating/100 e delta/100, preservando ratingProblema na base; evitar colinearidade dos tres termos e atributos de desfecho como rank, erros, AC ou tempo realizado.
+- [ ] Comparar log-normal/Weibull e regularizacao {0,0.01,0.1} so no treino/validacao, com GroupKFold quando houver suporte; nao inspecionar teste para ajustar.
+- [ ] Exportar F(b), mediana e quantis 10/90 em minutos, coeficientes/fatores de tempo, dominio de treino e versoes; distinguir intervalo preditivo de confianca.
+- [ ] Verificar convergencia, monotonicidade e suporte; sinalizar extrapolacao, falha ou indisponibilidade em vez de ocultar estimativas invalidas; nao afirmar ganho de precisao antes de 27.
+
+#### Verificacao planejada
+
+Nivel 2: dados sinteticos com censura para recuperacao aproximada de sinal, invariantes da CDF/quantis, ausencia de features vazadas, reproducao de artefatos e falha de convergencia.
+
+**Entrega demonstravel:** Comparar previsoes e fatores de tempo para pares de ratings e orcamentos explicitos, mostrando os limites de suporte.
+
+Conferencias humanas opcionais (D-014); criterios automatizados e evidencia
+cientifica exigidos acima continuam obrigatorios. Sem resultados comprovados
+neste planejamento.
+
+---
+
+### Historia 27 - Avaliacao de erros, probabilidades e incerteza
+
+**Historia:** Como pesquisador, quero medir os erros fora da amostra e a calibracao das probabilidades para conhecer a utilidade e a incerteza reais do estudo.
+
+**Status:** planejada; implementacao e verificacao ainda nao executadas.
+
+**GitHub:** [#50 - Historia 27](https://github.com/Enzofmcs/Lorem/issues/50).
+
+**Estimativa:** 4 h. **Fase:** MVP do estudo.
+
+**Dependencias:** Historia 26
+
+**Escopo:** Congelar escolha na validacao e avaliar uma vez nos contests reservados, comparando todas as referencias. Produzir tabelas e figuras com amostras e cobertura.
+
+**Referencia:** [QUANTITATIVE.md](QUANTITATIVE.md) e [TESTING.md](TESTING.md).
+
+#### Criterios de aceite
+
+- [ ] Selecionar na validacao por Brier integrado suportado e calibracao, usando MAE/interpretabilidade como secundarios; registrar escolha antes de abrir o teste, sem retunar nele.
+- [ ] Medir MAE, mediana do erro absoluto, RMSE e vies de tempo nos eventos do teste com denominador e ressalva de selecao; comparar D-012 e referencias.
+- [ ] Avaliar P(AC ate 30/60/120) com Brier/log-loss nos casos conhecidos, calibracao por bins com amostras e Brier IPCW/integrado com censuras; censurado antes do horizonte nao vira negativo.
+- [ ] Estimar censura somente no treino, informar suporte/pesos extremos e horizontes indisponiveis; medir cobertura/largura do intervalo preditivo de 80% e declarar os limites da avaliacao nos resolvidos.
+- [ ] Produzir ICs de 95% por bootstrap pareado de contests/grupos, 200 replicacoes com semente, incluindo diferencas contra o baseline; nao tratar linhas como independentes.
+- [ ] Reportar erros por faixas predefinidas dos dois ratings/delta e qualidade, funil de cobertura e sensibilidade de censura; sem analise por ano, correcao temporal ou alegacao de superioridade sem evidencia.
+
+#### Verificacao planejada
+
+Nivel 2: metricas conferidas em exemplos pequenos, censura antes/depois de b, IPCW sem suporte, bootstrap por grupo, split isolado e reproduzibilidade de tabelas/figuras.
+
+**Entrega demonstravel:** Abrir tabela comparativa e calibracao em 30/60/120 minutos com erros, ICs, tamanhos de amostra e horizontes sem suporte claramente indicados.
+
+Conferencias humanas opcionais (D-014); criterios automatizados e evidencia
+cientifica exigidos acima continuam obrigatorios. Sem resultados comprovados
+neste planejamento.
+
+---
+
+### Historia 28 - Relatorio do estudo e reproducao completa para o TCC
+
+**Historia:** Como autor do TCC, quero apresentar metodos e resultados reproduziveis com limitacoes para sustentar conclusoes proporcionais a evidencia.
+
+**Status:** planejada; implementacao e verificacao ainda nao executadas.
+
+**GitHub:** [#51 - Historia 28](https://github.com/Enzofmcs/Lorem/issues/51).
+
+**Estimativa:** 3 h. **Fase:** MVP do estudo.
+
+**Dependencias:** Historia 27
+
+**Escopo:** Fechar a primeira entrega Python com coleta/preparo/modelos/avaliacao, artefatos e relatorio. Nao integrar modelo nem mudar rating no app.
+
+**Referencia:** [QUANTITATIVE.md](QUANTITATIVE.md) e [TESTING.md](TESTING.md).
+
+#### Criterios de aceite
+
+- [ ] Reproduzir do snapshot congelado ao relatorio em ambiente limpo com comandos documentados; registrar versoes, sementes, hashes, manifesto, tempo/custo e dependencias.
+- [ ] Publicar codigo, dicionario, tabelas, figuras e relatorio com populacao, cobertura, erros de tempo, qualidade das probabilidades, ICs e incerteza preditiva separados.
+- [ ] Documentar hipotese sequencial, selecao por tentativa/prefixo, rating do problema na coleta, dados ausentes, censura/abandono, repeticao de participantes e limites de transporte para Ipsums.
+- [ ] Demonstrar dois ratings + orcamento -> estimativas, suporte e incerteza; resultados reais separados de fixtures, incluindo baseline vencedor ou evidencia insuficiente quando ocorrer.
+- [ ] Registrar conclusoes ainda abertas, decisao sobre novos experimentos e protocolo de validacao posterior com Ipsums/ratings; nao alegar melhoria pedagogica nem precisao comprovada sem experimento.
+
+#### Verificacao planejada
+
+Marco Python: testes de study/ e reproducao completa offline pelo snapshot; conferir artefatos/links e ausencia de valores fabricados. Build Android nao se aplica. Conferencia humana opcional (D-014).
+
+**Entrega demonstravel:** Outra pessoa executa o roteiro local a partir do snapshot e confere hashes e tabelas do relatorio apresentado no TCC.
+
+Conferencias humanas opcionais (D-014); criterios automatizados e evidencia
+cientifica exigidos acima continuam obrigatorios. Sem resultados comprovados
+neste planejamento.
+
+---
+
+### Historia 29 - Corte verificavel de problemas nas novas recomendacoes
+
+**Historia:** Como usuario do Lorem, quero receber somente novos problemas do recorte definido, mantendo intactos meu historico e minhas avaliacoes.
+
+**Status:** planejada; implementacao e verificacao ainda nao executadas.
+
+**GitHub:** [#52 - Historia 29](https://github.com/Enzofmcs/Lorem/issues/52).
+
+**Estimativa:** 6 h. **Fase:** Posterior ao MVP; independente do ganho preditivo.
+
+**Dependencias:** Historia 23
+
+**Escopo:** Adicionar metadados de contest/data e regra de elegibilidade versionada ao Android. Ordem sugerida depois de 28; pode antecipar apos 23, sem esperar validacao do modelo.
+
+**Referencia:** [QUANTITATIVE.md](QUANTITATIVE.md) e [TESTING.md](TESTING.md).
+
+#### Criterios de aceite
+
+- [ ] Consultar metadados verificaveis do contest de origem via cliente/gate centralizado; exigir inicio >=2020-07-01T00:00:00Z, sem inferir pelo id e com origem/data ambigua inelegivel.
+- [ ] Persistir fonte/data verificada e versao da regra por migracao aditiva; catalogo legado sem data nao habilita novas recomendacoes ate verificacao, e cache verificado funciona offline.
+- [ ] Aplicar o corte em toda selecao/fallback, inclusive fora de rede, sem relaxa-lo se nao houver candidatos; oferecer ausencia de candidato recuperavel.
+- [ ] Preservar todos os historicos/submissoes antigos e sua exclusao de repeticoes, Ipsums anteriores/ativo, snapshots, pendencias, rating e avaliacoes; nao recalcular dados antigos.
+- [ ] Integrar atualizacao/retomada de metadados aos fluxos locais existentes e verificar idempotencia, falha parcial e concorrencia sem backend, login ou sincronizacao em nuvem.
+
+#### Verificacao planejada
+
+Niveis 3/4 e marco Android: testes de fronteira UTC, data ausente/origem ambigua, migracao/cache legado/offline, fallback, ativo e exclusoes historicas; regressao dos invariantes e test/lint/assembleDebug no marco.
+
+**Entrega demonstravel:** Catalogo misto mostra que antigo/sem data nunca e recomendado; um problema antigo ja tentado continua no historico e nos impedimentos de repeticao, com avaliacao intacta.
+
+Conferencias humanas opcionais (D-014); criterios automatizados e evidencia
+cientifica exigidos acima continuam obrigatorios. Sem resultados comprovados
+neste planejamento.
+
+---
+
+### Historia 30 - Base local de validacao com tentativas Ipsum
+
+**Historia:** Como pesquisador, quero validar as previsoes em Ipsums com inicio registrado para medir a diferenca entre tempo inferido em contests e tempo de treino.
+
+**Status:** planejada; implementacao e verificacao ainda nao executadas.
+
+**GitHub:** [#53 - Historia 30](https://github.com/Enzofmcs/Lorem/issues/53).
+
+**Estimativa:** 4 h. **Fase:** Validacao posterior; coleta pode exigir tempo de uso.
+
+**Dependencias:** Historia 28
+
+**Escopo:** Extracao local explicita e minimizada de tentativas; planejar coleta prospectiva apenas dos campos ausentes, sem alterar pontuacao ou inventar dados historicos.
+
+**Referencia:** [QUANTITATIVE.md](QUANTITATIVE.md) e [TESTING.md](TESTING.md).
+
+#### Criterios de aceite
+
+- [ ] Definir/exportar esquema pseudonimizado local com inicio, primeiro AC valido, encerramento, dica, interrupcoes conhecidas, versoes, rating do problema, CF anterior ao inicio e Rating Lorem inicial.
+- [ ] Preservar legados e representar ausencias; nao preencher rating CF passado com o atual nem com newRating de contest posterior; se faltar campo, documentar coleta prospectiva aditiva minima.
+- [ ] Distinguir AC no Ipsum de upsolve e nao recalcular avaliacao; tratar sem AC/desistencia e pausas explicitamente, sem chamar tempo de parede de dedicacao efetiva.
+- [ ] Aplicar recorte de problema/data verificavel na base do estudo sem excluir o historico do app; separar com/sem dica e informar funil/cobertura e suporte.
+- [ ] Fixar protocolo de amostra e particoes por participante para a validacao, mantendo todos os dados locais e sem exigir backend/login/nuvem; amostra ausente ou pequena e registrada como insuficiente.
+
+#### Verificacao planejada
+
+Niveis 2/3; Nivel 4 se houver migracao: fixtures de AC/sem AC/upsolve/dica/pausas, campo ausente, isolamento por perfil, exportacao local e snapshots preservados. Dados reais insuficientes impedem conclusao empirica, sem bloquear documentacao do protocolo.
+
+**Entrega demonstravel:** Auditar um Ipsum pseudonimizado desde o inicio persistido ate seu evento/censura, demonstrando rating anterior e ausencia de alteracao da avaliacao.
+
+Conferencias humanas opcionais (D-014); criterios automatizados e evidencia
+cientifica exigidos acima continuam obrigatorios. Sem resultados comprovados
+neste planejamento.
+
+---
+
+### Historia 31 - Validar relacao entre Rating Codeforces e Rating Lorem
+
+**Historia:** Como pesquisador, quero avaliar se ratings e previsoes se transportam para Ipsums antes de autorizar seu uso no aplicativo.
+
+**Status:** planejada; implementacao e verificacao ainda nao executadas.
+
+**GitHub:** [#54 - Historia 31](https://github.com/Enzofmcs/Lorem/issues/54).
+
+**Estimativa:** 4 h. **Fase:** Gate de evidencia posterior.
+
+**Dependencias:** Historia 30
+
+**Escopo:** Comparar ratings anteriores a cada tentativa e avaliar transporte das probabilidades/tempos. Nao presumir que Rating Lorem e Codeforces sejam intercambiaveis.
+
+**Referencia:** [QUANTITATIVE.md](QUANTITATIVE.md) e [TESTING.md](TESTING.md).
+
+#### Criterios de aceite
+
+- [ ] Fixar antes de abrir o teste Ipsum tamanho/precisao de amostra e limiares aceitaveis de MAE/calibracao/Brier conforme resultados de 28; registrar decisao e justificativa.
+- [ ] Comparar pares CF anterior ao inicio e Lorem inicial: diferenca/vies, dispersao, correlacao e suporte; nunca usar Lorem posterior ao resultado nem inferir equivalencia pela correlacao.
+- [ ] Comparar identidade e mapeamento simples ajustado so no treino, com participantes inteiros reservados e sem vazamento por tentativas do mesmo usuario; tratar campos historicos ausentes explicitamente.
+- [ ] Avaliar erro de tempo, P(AC ate b), calibracao, censura e incerteza em Ipsums, com/sem dica e pausas; relatar deslocamento de dominio e cobertura.
+- [ ] Registrar decisao: manter ratings distintos, adotar mapeamento validado ou nao integrar. Evidencia insuficiente/falha de limiar mantem 32 bloqueada; nao alterar D-012 nem avaliacoes existentes.
+
+#### Verificacao planejada
+
+Nivel 2 e reproducao do relatorio: splits por participante, ajuste sem teste, rating antes do resultado, metricas por orcamento/censura e gate reproduzivel. Nao substituir evidencia ausente por fixture.
+
+**Entrega demonstravel:** Apresentar relatorio de transporte e decisao rastreavel com amostra, limiares predefinidos, erros e ICs, inclusive quando a conclusao for nao integrar.
+
+Conferencias humanas opcionais (D-014); criterios automatizados e evidencia
+cientifica exigidos acima continuam obrigatorios. Sem resultados comprovados
+neste planejamento.
+
+---
+
+### Historia 32 - Integracao local versionada das previsoes validadas
+
+**Historia:** Como usuario, quero consultar estimativas validadas com orcamento e incerteza, mantendo o funcionamento local e minhas avaliacoes anteriores.
+
+**Status:** BLOQUEADO: evidencia e decisao favoravel da Historia 31, alem da 29.
+
+**GitHub:** [#55 - Historia 32](https://github.com/Enzofmcs/Lorem/issues/55).
+
+**Estimativa:** 4 h. **Fase:** Condicional; fora das 24 h.
+
+**Dependencias:** Historia 29, Historia 31
+
+**Escopo:** Integracao minima somente depois de decisao favoravel da 31 e contrato de apresentacao registrado. Ate esse gate, nao implementar nem habilitar previsoes no app.
+
+**Referencia:** [QUANTITATIVE.md](QUANTITATIVE.md) e [TESTING.md](TESTING.md).
+
+#### Criterios de aceite
+
+- [ ] Registrar evidencia/decisao favoravel da 31, dominio, limiares, mapeamento de rating e ponto de apresentacao antes de implementar; caso contrario manter a historia bloqueada.
+- [ ] Consumir artefato pequeno e versionado localmente, sem Python embarcado/backend/login/nuvem, validando esquema e versoes de modelo, elegibilidade e mapeamento.
+- [ ] Exibir estimativa de tempo, probabilidade ligada a orcamento explicito e incerteza/suporte sem vazar rating/tags/categoria durante Ipsum ativo; informar indisponibilidade/extrapolacao de forma clara.
+- [ ] Persistir snapshots das novas previsoes e versoes, preservar historicos/avaliacoes antigas e pontuacao D-012; qualquer mudanca de formula exige outra decisao explicita.
+- [ ] Manter operacao offline e fallback operacional D-012 quando artefato faltar/for incompativel, sem fabricar probabilidade; validar equivalencia numerica Python/Android e recuperacao.
+
+#### Verificacao planejada
+
+Niveis 3/4 e marco Android: fixtures de paridade numerica, versao/artefato invalido, offline/fallback, sigilo do ativo, migracao aditiva/snapshots e rating aplicado uma vez; regressao de test/lint/assembleDebug.
+
+**Entrega demonstravel:** Consultar previsao local versionada e repetir offline; indisponibilidade do modelo preserva o treino, e uma avaliacao antiga permanece identica.
+
+Conferencias humanas opcionais (D-014); criterios automatizados e evidencia
+cientifica exigidos acima continuam obrigatorios. Sem resultados comprovados
+neste planejamento.
+
+---
+
 ## 10. Marcos demonstraveis
 
 - **A - Espinha funcional (00-07):** handle, recomendacao, Ipsum, submissao e resultado.
@@ -1502,5 +1965,6 @@ renderizacoes automatizadas nao equivalem a ensaio humano com TalkBack.
 - **D - Entrega (14):** fluxo completo testado, explicavel e demonstravel.
 - **E - Automacao (15-17):** preparacao, manutencao e deteccao sem cliques obrigatorios.
 - **F - Apresentacao (18-21):** temas e telas consistentes, acessiveis e demonstraveis.
+- **G-J - Extensao quantitativa (22-32):** marcos planejados, ainda nao executados, detalhados acima.
 
 ---
