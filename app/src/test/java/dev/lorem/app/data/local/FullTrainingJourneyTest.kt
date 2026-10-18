@@ -164,7 +164,7 @@ class FullTrainingJourneyTest {
             env.database.close()
             val helper = FrameworkSQLiteOpenHelperFactory().create(SupportSQLiteOpenHelper.Configuration
                 .builder(ApplicationProvider.getApplicationContext()).name(env.databaseFile.absolutePath)
-                .callback(object : SupportSQLiteOpenHelper.Callback(10) {
+                .callback(object : SupportSQLiteOpenHelper.Callback(LOREM_DATABASE_VERSION) {
                     override fun onCreate(db: androidx.sqlite.db.SupportSQLiteDatabase) = Unit
                     override fun onUpgrade(db: androidx.sqlite.db.SupportSQLiteDatabase, oldVersion: Int, newVersion: Int) = Unit
                 }).build())
@@ -174,7 +174,7 @@ class FullTrainingJourneyTest {
             db.query("PRAGMA table_info(ipsums)").use { cursor ->
                 while (cursor.moveToNext()) {
                     val name = cursor.getString(1)
-                    if (name == "recommendationFactors") continue
+                    if (name in setOf("recommendationFactors", "problemOriginMetadata")) continue
                     columns += name
                     definitions += "$name ${cursor.getString(2)}" +
                         (if (cursor.getInt(5) > 0) " PRIMARY KEY AUTOINCREMENT" else "") +
@@ -187,11 +187,15 @@ class FullTrainingJourneyTest {
             db.execSQL("INSERT INTO ipsums (${columns.joinToString()}) SELECT ${columns.joinToString()} FROM ipsums_v10")
             db.execSQL("DROP TABLE ipsums_v10")
             db.execSQL("CREATE UNIQUE INDEX index_ipsums_activeSlot ON ipsums(activeSlot)")
+            db.execSQL("CREATE TABLE problem_catalog_v9 (contestId INTEGER NOT NULL, problemIndex TEXT NOT NULL, name TEXT NOT NULL, rating INTEGER NOT NULL, tags TEXT NOT NULL, PRIMARY KEY(contestId, problemIndex))")
+            db.execSQL("INSERT INTO problem_catalog_v9 SELECT contestId, problemIndex, name, rating, tags FROM problem_catalog")
+            db.execSQL("DROP TABLE problem_catalog")
+            db.execSQL("ALTER TABLE problem_catalog_v9 RENAME TO problem_catalog")
             db.execSQL("PRAGMA user_version = 9")
             helper.close()
             env.reopen()
             assertEquals(original, env.database.ipsumDao().find(1)!!.toDomain())
-            assertEquals(10, env.database.openHelper.readableDatabase.version)
+            assertEquals(LOREM_DATABASE_VERSION, env.database.openHelper.readableDatabase.version)
         }
     }
 

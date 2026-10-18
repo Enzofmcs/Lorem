@@ -1,5 +1,6 @@
 package dev.lorem.app.domain
 
+import dev.lorem.app.withVerifiedTestOrigin
 import dev.lorem.app.data.fake.FakeLoremRepository
 import dev.lorem.app.domain.model.CodeforcesProblem
 import dev.lorem.app.domain.model.ProblemId
@@ -59,7 +60,7 @@ class SynchronizeProblemCatalogTest {
 
     private fun problem(contestId: Long, index: String, rating: Int?) = CodeforcesProblem(
         ProblemId(contestId, index), "Problem $contestId$index", rating, setOf("math"),
-    )
+    ).withVerifiedTestOrigin()
 
     private class CatalogRepository(private val result: ProblemCatalogResult) : CodeforcesRepository {
         override suspend fun user(handle: String): UserLookupResult = error("Not used")

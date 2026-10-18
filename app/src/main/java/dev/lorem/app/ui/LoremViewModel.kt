@@ -447,7 +447,7 @@ class LoremViewModel(
                     is StartIpsumResult.Success -> StartIpsumUiState.Success(result.ipsum.id)
                     StartIpsumResult.AlreadyActive -> StartIpsumUiState.Error("Já existe um Ipsum ativo. Continue-o antes de iniciar outro.")
                     StartIpsumResult.NoCandidate -> StartIpsumUiState.Error(
-                        "Nenhum problema inédito foi encontrado até 300 pontos da faixa. Atualize catálogo e histórico e tente novamente.",
+                        "Nenhum problema inédito com data de origem verificada desde 01/07/2020 foi encontrado até 300 pontos da faixa. Atualize catálogo e histórico e tente novamente.",
                     )
                     StartIpsumResult.NoProfile -> StartIpsumUiState.Error("Configure um perfil antes de iniciar um Ipsum.")
                     StartIpsumResult.NeedsHistorySync -> StartIpsumUiState.Error("Aguarde a preparação automática do histórico do Codeforces antes de iniciar o primeiro Ipsum.")

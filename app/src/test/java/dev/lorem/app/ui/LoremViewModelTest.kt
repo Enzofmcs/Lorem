@@ -1,5 +1,6 @@
 package dev.lorem.app.ui
 
+import dev.lorem.app.withVerifiedTestOrigin
 import dev.lorem.app.domain.model.CodeforcesProblem
 import dev.lorem.app.StatisticsFixtures
 import dev.lorem.app.domain.model.CodeforcesSubmission
@@ -668,7 +669,7 @@ private fun problem(id: Long, rating: Int) = CodeforcesProblem(
     name = "Problem $id",
     rating = rating,
     tags = setOf("implementation"),
-)
+).withVerifiedTestOrigin()
 
 private fun sequenceRandom(vararg values: Int): RandomSource {
     var index = 0

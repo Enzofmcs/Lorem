@@ -29,7 +29,7 @@ Prioridades, nesta ordem:
 - Use somente tags oficiais do Codeforces.
 - Centralize a API e respeite no maximo uma requisicao a cada dois segundos.
 - Novas recomendacoes deverao exigir data verificavel do contest de origem >=
-  01/07/2020; implementacao pendente na Historia 29. Preservar historicos antigos
+  01/07/2020; implementado na Historia 29. Preservar historicos antigos
   e sua exclusao de repeticoes. Nao inferir data pelo id.
 - Estudo Python: contests especiais e contests com qualquer problema em duas
   versoes (ex.: B1/B2, facil/dificil) ficam integralmente fora da analise, inclusive
@@ -52,8 +52,8 @@ backend ou abstracao sem necessidade concreta.
 
 - **Foco:** estudo Python 22-28 implementado; avaliacao real favorece a referencia KM por delta. Historias 00-21 preservadas.
 - **Ultima historia verificada:** Historia 28 em 2026-10-18: 59 testes, avaliacao de 35.367 tentativas em quatro contests, relatorio e reproducao limpa. Ultimo marco Android: Historia 21, em 2026-10-16.
-- **Primeiro item pendente:** Historia 29 - corte verificavel de data nas novas recomendacoes.
-- **Proxima entrega demonstravel:** novas recomendacoes com origem/data >=2020-07-01 verificada, preservando historicos.
+- **Primeiro item pendente:** Historia 30 - exportacao local e preparo da validacao com Ipsums.
+- **Proxima entrega demonstravel:** exportacao local de Ipsums com snapshots anteriores e ausencias historicas.
 - **Bloqueios conhecidos:** transporte para Ipsums nao validado; 31 precisa de dados reais da 30 e 32 permanece bloqueada. Teste manual opcional (D-014).
 
 Regressao da Historia 21: 217 testes debug e 155 release sem falhas, lint sem erros

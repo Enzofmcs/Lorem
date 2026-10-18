@@ -36,7 +36,7 @@ fun HomeScreen(
     val blockedReason = when {
         hasActiveIpsum -> null
         profile.lastSyncEpochMillis <= 0 -> "Seu histórico está sendo preparado. A primeira importação precisa terminar para garantir um problema inédito."
-        !catalogReady && preparation?.catalog?.lastSuccessEpochMillis != null -> "Nenhum problema com rating está disponível. Confira a atualização do catálogo em Configurações."
+        !catalogReady && preparation?.catalog?.lastSuccessEpochMillis != null -> "Nenhum problema com data de origem verificada desde 01/07/2020 está disponível. Atualize o catálogo em Configurações."
         !catalogReady -> "Estamos preparando os problemas do seu treino. Aguarde o catálogo ficar disponível."
         else -> null
     }

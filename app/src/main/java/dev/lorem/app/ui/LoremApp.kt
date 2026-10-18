@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.lorem.app.domain.model.ThemePreference
+import dev.lorem.app.domain.model.isEligibleForNewRecommendation
 import dev.lorem.app.domain.repository.AppearanceRepository
 import dev.lorem.app.domain.repository.CodeforcesRepository
 import dev.lorem.app.domain.repository.LoremRepository
@@ -61,7 +62,7 @@ fun LoremApp(
                 onConfirmHandle = viewModel::confirmHandle,
                 onHomeNavigationHandled = viewModel::homeNavigationHandled,
                 onSynchronizeHistory = viewModel::synchronizeHistory,
-                problemCatalogCount = problemCatalog.size,
+                problemCatalogCount = problemCatalog.count { it.isEligibleForNewRecommendation() },
                 onSynchronizeCatalog = viewModel::synchronizeCatalog,
                 activeIpsum = activeIpsum,
                 ipsums = ipsums,

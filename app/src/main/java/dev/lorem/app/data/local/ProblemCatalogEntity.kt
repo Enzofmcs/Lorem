@@ -11,6 +11,7 @@ data class ProblemCatalogEntity(
     val name: String,
     val rating: Int,
     val tags: String,
+    val originMetadata: String? = null,
 )
 
 private const val TAG_SEPARATOR = "\u0000"
@@ -21,6 +22,7 @@ fun CodeforcesProblem.toCatalogEntity() = ProblemCatalogEntity(
     name = name,
     rating = requireNotNull(rating),
     tags = tags.sorted().joinToString(TAG_SEPARATOR),
+    originMetadata = origin?.toStoredJson(),
 )
 
 fun ProblemCatalogEntity.toDomain() = CodeforcesProblem(
@@ -28,4 +30,5 @@ fun ProblemCatalogEntity.toDomain() = CodeforcesProblem(
     name = name,
     rating = rating,
     tags = tags.takeIf(String::isNotEmpty)?.split(TAG_SEPARATOR)?.toSet().orEmpty(),
+    origin = originMetadata?.toProblemOrigin(),
 )

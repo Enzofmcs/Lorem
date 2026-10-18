@@ -54,5 +54,6 @@ interface CodeforcesRepository {
     suspend fun submissionHistorySince(handle: String, sinceEpochMillis: Long): SubmissionHistoryResult =
         submissionHistory(handle)
 
+    /** Complete catalog with contest.list evidence; missing/ambiguous origins remain unverified. */
     suspend fun problems(): ProblemCatalogResult
 }

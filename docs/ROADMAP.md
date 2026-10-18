@@ -10,9 +10,9 @@
 
 **Ultima historia verificada:** Historia 28, em 2026-10-18: 59 testes, 35.367 tentativas de teste em quatro contests, relatorio/tabelas/figuras e reproducao limpa.
 
-**Primeiro item pendente:** Historia 29 - corte verificavel de data nas novas recomendacoes.
+**Primeiro item pendente:** Historia 30 - exportacao local e preparo de validacao com Ipsums.
 
-**Proxima entrega demonstravel:** recomendar somente problemas com origem/data >=2020-07-01 verificada, preservando historicos.
+**Proxima entrega demonstravel:** exportar Ipsums pseudonimizados e preparar coorte por participante, com ausencias explicitas.
 
 **Bloqueios conhecidos:** 31 exige dados reais de Ipsums da 30; 32 depende da decisao favoravel da 31 e da 29. Quatro grupos de teste limitam a evidencia. Conferencia manual opcional (D-014).
 
@@ -1905,7 +1905,7 @@ na [evidencia](../study/evidence/2026-10-18-evaluation-report.json).
 
 **Historia:** Como usuario do Lorem, quero receber somente novos problemas do recorte definido, mantendo intactos meu historico e minhas avaliacoes.
 
-**Status:** planejada; implementacao e verificacao ainda nao executadas.
+**Status:** implementada e verificada em 2026-10-18; aguardando revisao/integracao.
 
 **GitHub:** [#52 - Historia 29](https://github.com/Enzofmcs/Lorem/issues/52).
 
@@ -1919,11 +1919,11 @@ na [evidencia](../study/evidence/2026-10-18-evaluation-report.json).
 
 #### Criterios de aceite
 
-- [ ] Consultar metadados verificaveis do contest de origem via cliente/gate centralizado; exigir inicio >=2020-07-01T00:00:00Z, sem inferir pelo id e com origem/data ambigua inelegivel.
-- [ ] Persistir fonte/data verificada e versao da regra por migracao aditiva; catalogo legado sem data nao habilita novas recomendacoes ate verificacao, e cache verificado funciona offline.
-- [ ] Aplicar o corte em toda selecao/fallback, inclusive fora de rede, sem relaxa-lo se nao houver candidatos; oferecer ausencia de candidato recuperavel.
-- [ ] Preservar todos os historicos/submissoes antigos e sua exclusao de repeticoes, Ipsums anteriores/ativo, snapshots, pendencias, rating e avaliacoes; nao recalcular dados antigos.
-- [ ] Integrar atualizacao/retomada de metadados aos fluxos locais existentes e verificar idempotencia, falha parcial e concorrencia sem backend, login ou sincronizacao em nuvem.
+- [x] Consultar metadados verificaveis do contest de origem via cliente/gate centralizado; exigir inicio >=2020-07-01T00:00:00Z, sem inferir pelo id e com origem/data ambigua inelegivel.
+- [x] Persistir fonte/data verificada e versao da regra por migracao aditiva; catalogo legado sem data nao habilita novas recomendacoes ate verificacao, e cache verificado funciona offline.
+- [x] Aplicar o corte em toda selecao/fallback, inclusive fora de rede, sem relaxa-lo se nao houver candidatos; oferecer ausencia de candidato recuperavel.
+- [x] Preservar todos os historicos/submissoes antigos e sua exclusao de repeticoes, Ipsums anteriores/ativo, snapshots, pendencias, rating e avaliacoes; nao recalcular dados antigos.
+- [x] Integrar atualizacao/retomada de metadados aos fluxos locais existentes e verificar idempotencia, falha parcial e concorrencia sem backend, login ou sincronizacao em nuvem.
 
 #### Verificacao planejada
 
@@ -1932,8 +1932,14 @@ Niveis 3/4 e marco Android: testes de fronteira UTC, data ausente/origem ambigua
 **Entrega demonstravel:** Catalogo misto mostra que antigo/sem data nunca e recomendado; um problema antigo ja tentado continua no historico e nos impedimentos de repeticao, com avaliacao intacta.
 
 Conferencias humanas opcionais (D-014); criterios automatizados e evidencia
-cientifica exigidos acima continuam obrigatorios. Sem resultados comprovados
-neste planejamento.
+cientifica exigidos acima continuam obrigatorios. Verificada por 226 testes debug/164 release, lint sem erros e assembleDebug.
+
+
+Evidencia: duas consultas pelo gate (problemset + contest.list), datas inteiras UTC,
+duplicatas conflitantes/missing inelegiveis e cache anterior preservado em falha.
+Room 10->11 adiciona somente metadados nullable de origem no catalogo/Ipsums.
+Recomendacao/fallback e tela inicial exigem prova; todo historico/ativo/rating
+permanece preservado. Cadeia de migracao 9->11 validada por Room.
 
 ---
 

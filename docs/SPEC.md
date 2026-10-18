@@ -141,7 +141,8 @@ O problema precisa:
 - nao estar pendente;
 - nao ser o problema do Ipsum ativo.
 
-O corte e requisito aprovado em 18/10/2026, **ainda nao implementado** (Historia 29).
+O corte foi implementado na Historia 29 em 18/10/2026, com prova de contest.list
+persistida e versionada no catalogo e nos novos snapshots.
 Usar a data do contest, nunca o identificador como aproximacao. Origem/data nao
 verificavel torna o problema inelegivel. Preservar qualquer historico antigo,
 avaliacao, pendencia ou Ipsum ativo; tentativas antigas continuam impedindo repeticao.
@@ -172,7 +173,7 @@ Os nomes tecnicos podem mudar, mas o sistema precisa representar:
 
 - **Perfil:** handle, Rating Lorem, faixa consolidada e ultima sincronizacao.
 - **Problema:** `contestId`, `index`, nome, rating, tags e URL.
-- **Elegibilidade futura (29):** inicio/fonte do contest de origem e versao da regra;
+- **Elegibilidade (29):** inicio/fonte do contest de origem e versao da regra;
   cache legado sem data nao habilita novos candidatos ate verificacao.
 - **Ipsum:** problema, rating inicial, categoria, horarios, estado, dica, submissoes, erros, tempo, motivo do fracasso, variacao de rating e eventual AC posterior.
 - **Desempenho por tag:** tentativas, AC no Ipsum, pendencias, uso de dica, tempo medio e faixa de rating.

@@ -3,6 +3,7 @@ package dev.lorem.app.domain.sync
 import dev.lorem.app.domain.*
 import dev.lorem.app.domain.repository.LoremRepository
 import dev.lorem.app.domain.repository.UserLookupResult
+import dev.lorem.app.domain.model.hasVerifiedOrigin
 import kotlinx.coroutines.flow.first
 
 enum class SyncWorkResult { SUCCESS, RETRY, FAILURE, OBSOLETE }
@@ -17,7 +18,8 @@ class BackgroundSynchronization(
     suspend fun profileDue(link: ProfileLink): Boolean =
         listOf(SyncDataset.HISTORY, SyncDataset.PENDING, SyncDataset.PROFILE).any { due(it, link) }
 
-    suspend fun catalogDue(): Boolean = due(SyncDataset.CATALOG, null)
+    suspend fun catalogDue(): Boolean = due(SyncDataset.CATALOG, null) ||
+        repository.problemCatalog.first().let { catalog -> catalog.isNotEmpty() && catalog.none { it.hasVerifiedOrigin() } }
 
     private suspend fun due(dataset: SyncDataset, link: ProfileLink?): Boolean {
         val state = coordinator.store.read(syncKey(dataset, link))

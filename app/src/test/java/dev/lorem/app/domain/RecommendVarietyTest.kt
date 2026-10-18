@@ -1,5 +1,6 @@
 package dev.lorem.app.domain
 
+import dev.lorem.app.withVerifiedTestOrigin
 import dev.lorem.app.StatisticsFixtures
 import dev.lorem.app.domain.model.*
 import org.junit.Assert.*
@@ -7,7 +8,7 @@ import org.junit.Test
 
 class RecommendVarietyTest {
     private fun candidate(id: Long, tag: String? = "dp", rating: Int = 1200) =
-        CodeforcesProblem(ProblemId(id, "A"), "Candidate $id", rating, tag?.let { setOf(it) }.orEmpty())
+        CodeforcesProblem(ProblemId(id, "A"), "Candidate $id", rating, tag?.let { setOf(it) }.orEmpty()).withVerifiedTestOrigin()
     private fun attempt(id: Long, tag: String, status: IpsumStatus = IpsumStatus.COMPLETED, hint: Boolean = false) =
         StatisticsFixtures.attempt(id, status, tags = setOf(tag))
             .copy(hintRevealedAtEpochMillis = 1L.takeIf { hint })
@@ -63,7 +64,7 @@ class RecommendVarietyTest {
 
     @Test fun `another profile cannot supply weakness exposure or exclusion`() {
         val other = attempt(1, "dp", IpsumStatus.PENDING).copy(ownerHandle = "other")
-        val eligible = other.problem.copy(rating = 1200)
+        val eligible = other.problem.copy(rating = 1200).withVerifiedTestOrigin()
         val selected = recommend(listOf(eligible), listOf(other))!!
         assertEquals(eligible.id, selected.problem.id)
         assertEquals(0, selected.factors.tags.single().exposure)

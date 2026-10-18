@@ -39,6 +39,7 @@ data class IpsumEntity(
     val status: String,
     val activeSlot: Int?,
     val recommendationFactors: String? = null,
+    val problemOriginMetadata: String? = null,
 )
 
 fun Ipsum.toEntity() = IpsumEntity(
@@ -66,6 +67,7 @@ fun Ipsum.toEntity() = IpsumEntity(
     status = status.name,
     activeSlot = if (status == IpsumStatus.ACTIVE) 1 else null,
     recommendationFactors = recommendationFactors?.toStoredJson(),
+    problemOriginMetadata = problem.origin?.toStoredJson(),
 )
 
 fun IpsumEntity.toDomain() = Ipsum(
@@ -76,6 +78,7 @@ fun IpsumEntity.toDomain() = Ipsum(
         name = problemName,
         rating = selectedRating,
         tags = problemTags.takeIf(String::isNotEmpty)?.split("\u0000")?.toSet().orEmpty(),
+        origin = problemOriginMetadata?.toProblemOrigin(),
     ),
     initialLoremRating = initialLoremRating,
     category = IpsumCategory.valueOf(category),
