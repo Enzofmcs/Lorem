@@ -1617,6 +1617,11 @@ Comando: `cd study && .venv/bin/python -m unittest discover -s tests -v`:
 
 **Escopo:** Coletor centralizado para metadados, problemas, participacoes, ratingChanges e submissoes. Piloto de dois contests e manifesto limitado antes do ajuste; alvo 20, minimo de avaliacao 10 completos.
 
+**Regra confirmada pelo usuario (D-026):** contests especiais e contests com qualquer
+problema em duas versoes (facil/dificil, como B1/B2) ficam integralmente fora da
+analise, inclusive seus problemas simples. Preservar brutos e exclusoes; o proximo
+conjunto de dados deve manter esse filtro. Regressao: 41 testes Python sem falhas.
+
 **Referencia:** [QUANTITATIVE.md](QUANTITATIVE.md) e [TESTING.md](TESTING.md).
 
 #### Criterios de aceite

@@ -132,7 +132,11 @@ nao anonimato garantido. Relatorios nao devem publicar identificadores/brutos.
 
 O preparo separa completude da aquisicao de elegibilidade para `split`: formato
 CF encerrado, indices simples A/B/C, populacao rated oficial individual e ao menos
-um problema com origem/data/rating verificaveis. Problemas sem data/origem ou rating,
+um problema com origem/data/rating verificaveis. Por instrucao do usuario (D-026),
+contests especiais e contests com qualquer par de versoes (B1/B2, facil/dificil)
+ficam integralmente fora da analise, inclusive os problemas simples desses contests.
+Os brutos e motivos continuam preservados para auditoria.
+Problemas sem data/origem ou rating,
 estreantes/oldRating ausente/conflitante, virtual/practice/equipes e sequencias
 invalidas permanecem auditaveis. oldRating positivo na lista oficial e a evidencia
 inicial de historico; zero/negativo e separado por insuficiencia, sem imputacao futura.
@@ -167,8 +171,8 @@ As 47.100 tentativas foram excluidas: 44.952 por indices nao suportados (B1/B2 e
 recusa o contest inteiro, inclusive prefixos A/B/C. Esse comportamento foi mantido;
 nao houve substituicao dos sorteados, expansao de protocolo, treino ou avaliacao.
 Dois contests adquiridos e zero elegiveis ficam abaixo do minimo de dez; split
-recusa a operacao. Uma amostra futura exige outro diretorio e a mesma regra, ou
-revisao explicita/versionada do protocolo antes de novo ajuste.
+recusa a operacao. A amostra futura exige outro diretorio e mantera a exclusao
+integral de contests especiais/com versoes, conforme D-026.
 
 O diretorio local `work/pilot-real/` preserva brutos e tabelas. Os comandos de coleta
 offline e preparo acima reproduzem o snapshot e todas as tabelas byte a byte;

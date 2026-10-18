@@ -180,6 +180,15 @@ class ApiTests(unittest.TestCase):
                  {"id": 2, "durationSeconds": 7200, "phase": "FINISHED", "type": "CF"}]
         self.assertEqual(select_contests(items, self.config, 20), [1])
 
+    def test_non_cf_special_formats_are_not_selected(self):
+        common = {"startTimeSeconds": 1593561600, "durationSeconds": 7200,
+                  "phase": "FINISHED"}
+        items = [{**common, "id": 1, "type": "CF"},
+                 {**common, "id": 2, "type": "ICPC"},
+                 {**common, "id": 3, "type": "IOI"},
+                 {**common, "id": 4}]
+        self.assertEqual(select_contests(items, self.config, 20), [1])
+
     def test_malformed_response_and_long_retry_after_fail_explicitly(self):
         for response in ((200, {}, b"[]"), (429, {"Retry-After": "1000"}, b"{}")):
             with self.subTest(response=response), self.assertRaises(StudyError):

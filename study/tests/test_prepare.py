@@ -193,6 +193,27 @@ class PreparationTests(unittest.TestCase):
         self.assertEqual(report["complete_contest_ids"], [])
         self.assertTrue(all(r["reason"] == "incomplete_collection" for r in labels))
 
+    def test_easy_hard_pair_excludes_entire_contest_including_simple_prefix(self):
+        def variants(method, data):
+            if method == "contest.standings":
+                easy = {**data["problems"][-1], "index": "C1"}
+                hard = {**data["problems"][-1], "index": "C2"}
+                data["problems"][-1:] = [easy, hard]
+            elif method == "contest.status":
+                for row in data:
+                    if row["problem"]["index"] == "C":
+                        row["problem"]["index"] = "C1"
+        _, report, features, labels = self.run_fixture(variants)
+        self.assertEqual(report["complete_contest_ids"], [])
+        self.assertEqual((report["valid_events"], report["valid_censored"]), (0, 0))
+        self.assertEqual(report["excluded"], report["observed_attempts"])
+        label_by_id = {row["sample_id"]: row for row in labels}
+        prefix = [label_by_id[row["sample_id"]] for row in features
+                  if row["problem_index"] in ("A", "B") and row["old_rating"] > 0]
+        self.assertTrue(prefix)
+        self.assertTrue(all(row["reason"] == "unsupported_problem_order" for row in prefix))
+        self.assertTrue(all(row["duration_seconds"] is None and row["event"] is None for row in labels))
+
     def test_missing_problem_rating_is_not_imputed_from_results(self):
         def modify(method, data):
             if method == "problemset.problems":

@@ -31,6 +31,9 @@ Prioridades, nesta ordem:
 - Novas recomendacoes deverao exigir data verificavel do contest de origem >=
   01/07/2020; implementacao pendente na Historia 29. Preservar historicos antigos
   e sua exclusao de repeticoes. Nao inferir data pelo id.
+- Estudo Python: contests especiais e contests com qualquer problema em duas
+  versoes (ex.: B1/B2, facil/dificil) ficam integralmente fora da analise, inclusive
+  seus problemas simples. Exclusao intencional do usuario (D-026); preservar brutos.
 
 As regras completas e o escopo fechado estao em [`docs/SPEC.md`](docs/SPEC.md).
 

@@ -42,6 +42,11 @@ protocolo, medidas de erro e discussao de validade; nao comprova ganho pedagogic
   sem equipe) e presentes em `contest.ratingChanges`. Excluir virtual, practice,
   unofficial, equipes e formatos/indices ambiguos da analise primaria, preservando
   brutos e contagens. Nao ordenar `A1/A2` lexicograficamente como se fossem A/B.
+- Por orientacao explicita do usuario (D-026), contests especiais ficam fora da
+  analise. Se **qualquer problema** tiver duas versoes, como B1/B2 (facil/dificil),
+  excluir **todo o contest**, incluindo problemas simples e prefixos A/B/C.
+  Essa exclusao e intencional; preservar os brutos, contabilizar o motivo e manter
+  a regra na proxima amostra. Nao aproveitar somente a versao facil ou dificil.
 - Associar `oldRating` por `(contestId, handle normalizado)` a participacao oficial.
   Nao usar rating atual, `newRating`, rank ou resultado do proprio contest como entrada.
   Conflitos, mudancas sem correspondencia e rating ausente ficam em quarentena.
