@@ -1,7 +1,9 @@
 # Estudo quantitativo de tempo e AC
 
-Planejamento de 18/10/2026; **experimentos com dados reais ainda nao executados**.
-Software 22-25 implementado/testado com fixtures; piloto real 23 bloqueado por 403.
+Planejamento de 18/10/2026; **avaliacao preditiva com dados reais ainda nao executada**.
+Software 22-25 verificado com 39 testes; piloto real 23 concluido com 1824/2062
+completos e reproducao offline. Cobertura valida zero: B1/B2 e E1/E2 recusados pela
+regra vigente de indices simples. [Evidencia](../study/evidence/2026-10-18-pilot-real.json).
 [Guia Python](../study/README.md) e [contrato](../study/DATA_DICTIONARY.md). Este protocolo
 orienta as Historias 22-28 (primeira versao em aproximadamente 24 h de trabalho) e
 29-32 (aplicacao e validacao posteriores). Progresso e issues em [ROADMAP.md](ROADMAP.md).
@@ -68,7 +70,10 @@ Fontes do cliente centralizado (user.rating reservado para ambiguidades, nao usa
 `contest.ratingChanges`, `problemset.problems` e `user.rating` para verificar
 historico anterior quando necessario. Centralizar requisicoes (intervalo minimo
 de 2 s), cache por endpoint/parametros, paginacao completa, retry com backoff,
-`Retry-After`, retomada e erros `OK/FAILED`. Uma falha de pagina nao equivale a
+`Retry-After`, retomada e erros `OK/FAILED`. No contrato observado no piloto,
+standings de contests comuns exigem GET anonimo apenas com contestId: coletar a
+resposta oficial completa sem from/count/showUnofficial. Status segue paginado;
+o filtro oficial/individual aplica-se a todos os dados. Uma falha de pagina nao equivale a
 ausencia de submissao. Nunca treinar/avaliar um contest com coleta incompleta.
 
 Piloto: 2 contests completos para testar volume e qualidade. Alvo inicial: 20

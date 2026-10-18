@@ -12,6 +12,7 @@ identificavel, nunca zero ou infinito. `data_kind` distingue `synthetic` de `rea
 | Referencia HTTP | `method`, `params`, `url`, `collected_at_utc`, `http_status`, `sha256`, `data_kind`; hash dos bytes em raw/. |
 | `selection` | Lista de contest_ids escolhida por hash/rodizio de divisao, semente e config_sha256; list_ref comprova datas. |
 | `contests[id].complete` | Todos os endpoints/paginas necessarios coletados e sem veredito oficial pendente. Falha nunca e resposta vazia. |
+| `contests[id].standings_scope` | Resposta oficial completa com apenas contestId; status continua paginado. Snapshots anteriores podem ter standings paginado. |
 | `prepared.complete_contest_ids` | Contests completos **e elegiveis** para particao, sem compartilhar linhas entre conjuntos. |
 | `origin_links` | Grupos com identidade verificavel e fonte, sem deduplicar por nome nem inferir data por id. |
 | `snapshot_sha256` | Hash da estrutura JSON canonica, separado do hash dos bytes HTTP. |

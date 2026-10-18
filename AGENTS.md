@@ -47,11 +47,11 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
-- **Foco:** Python 22-25 implementado; 22/24/25 verificados automaticamente, 23 aguarda piloto real. Historias 00-21 preservadas.
-- **Ultima historia verificada:** Historia 25 (software), em 2026-10-18: 37 testes Python e jornada sintetica. Ultimo marco Android: Historia 21, em 2026-10-16.
-- **Primeiro item pendente:** piloto real de 2 contests da Historia 23; codeforces.com bloqueado pelo proxy (403).
-- **Proxima entrega demonstravel:** coletar piloto real e amostra; depois Historia 26 (AFT). Jornada sintetica 22-25 ja reproduzivel em study/.
-- **Bloqueios conhecidos:** politica aplicada nao permite codeforces.com; autorizacao do usuario registrada, falta aplicar a configuracao. Historia 23 nao concluida; 32 depende da 31. Teste manual opcional (D-014).
+- **Foco:** Python 22-25 verificado; piloto real da 23 concluido em 2026-10-18. Historias 00-21 preservadas.
+- **Ultima historia verificada:** Historia 23 (piloto real), em 2026-10-18: 2 contests completos, cache offline e 39 testes Python. 22/24/25 verificados como software. Ultimo marco Android: Historia 21, em 2026-10-16.
+- **Primeiro item pendente:** amostra elegivel para treino e Historia 26 (AFT).
+- **Proxima entrega demonstravel:** amostra deterministica em novo diretorio e 26; o piloto permanece congelado, com cobertura valida zero.
+- **Bloqueios conhecidos:** piloto 1824/2062 tem B1/B2 e E1/E2, recusados pela regra de indices simples: 47.100 tentativas excluidas, nenhum intervalo valido. Acesso a API resolvido; minimo de 10 contests elegiveis ainda nao atingido. 32 depende da 31. Teste manual opcional (D-014).
 
 Regressao da Historia 21: 217 testes debug e 155 release sem falhas, lint sem erros
 (apenas aviso preexistente de icone) e `assembleDebug` concluido.
@@ -60,8 +60,9 @@ Roteiro: [`docs/DEMO.md`](docs/DEMO.md).
 Planejamento atual: [estudo quantitativo](docs/QUANTITATIVE.md) e
 [Historia 22](docs/ROADMAP.md#historia-22---base-python-e-protocolo-reproduzivel-do-estudo).
 Python: [guia e comandos](study/README.md), [contrato](study/DATA_DICTIONARY.md) e
-[evidencia](study/evidence/2026-10-18-validation.json). Baselines verificados em
-fixtures sinteticas; nenhum resultado empirico ou ganho preditivo comprovado.
+[evidencia sintetica](study/evidence/2026-10-18-validation.json) e
+[piloto real](study/evidence/2026-10-18-pilot-real.json). Baselines verificados em
+fixtures sinteticas; coleta real nao comprova ganho preditivo.
 D-012 continua em producao. Comparacao entre epocas e correcao temporal fora do escopo.
 
 ## Politica de contexto

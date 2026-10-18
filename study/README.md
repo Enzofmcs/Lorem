@@ -1,9 +1,10 @@
 # Estudo Python do Lorem
 
 Implementacao das Historias 22-25: coleta com proveniencia, preparacao de tentativas,
-particoes por contest e referencias Kaplan-Meier/D-012. **O piloto real ainda depende
-do acesso a `codeforces.com`. Dados sinteticos verificam o codigo; nao sao resultados
-de pesquisa.** AFT, avaliacao de precisao/calibracao/ICs e relatorio cientifico
+particoes por contest e referencias Kaplan-Meier/D-012. **Piloto real da Historia 23
+concluido: 1824/2062 completos, com cache offline. Cobertura valida zero pela regra
+vigente de indices simples; nenhum modelo ou avaliacao real produzido.** Dados
+sinteticos verificam o codigo. AFT, avaliacao de precisao/calibracao/ICs e relatorio cientifico
 completo pertencem as Historias 26-28 e nao estao implementados.
 
 Protocolo: [QUANTITATIVE.md](../docs/QUANTITATIVE.md). Contratos:
@@ -84,12 +85,17 @@ python -m lorem_study train-baseline --work work/sample-real
 
 Padroes versionados em [default.json](lorem_study/default.json): corte inclusivo
 `2020-07-01T00:00:00Z`, semente 20261018, alvo 20, piloto 2, minimo 10, paginas de
-10000, ate 200 paginas por endpoint/contest, intervalo minimo 2 s, 3 retries,
+10000, ate 200 paginas de status por contest, intervalo minimo 2 s, 3 retries,
 uma reconsulta de paginas com veredito pendente e horizontes 30/60/120 min.
 Copie a configuracao e passe `--config caminho.json` **antes da primeira coleta**
 para registrar outro volume/custo. Corte, protocolo e versao nao podem mudar
 silenciosamente. A selecao congela antes do ajuste; a ordem usa hash/rodizio de
 divisoes, nunca desempenho ou AC. Id nao substitui data.
+
+Standings de contests comuns agora aceitam apenas GET anonimo com contestId; o
+coletor guarda a resposta oficial completa em uma referencia, sem from/count ou
+showUnofficial. O page_size limita somente as paginas de status. O preparo continua
+filtrando CONTESTANT individual; virtual/practice/equipes permanecem fora.
 
 Repetir a coleta no mesmo diretorio retoma paginas verificadas do cache; nao refaz
 contests completos nem converte falha em historico vazio. `--offline` proibe rede;
@@ -150,8 +156,28 @@ somente referencia operacional de tempo e nao recebe probabilidade inventada.
 
 ## Evidencia e proximo marco
 
-Testes e jornada sintetica sao verificacoes de software. O piloto real deve
-registrar dois contests completos, custo/requisicoes, hashes e funil antes de
-concluir a Historia 23. Politica de rede deve permitir `codeforces.com` pela rota
-normal do ambiente; nao desativar proxy/TLS nem contornar bloqueios. Sem essa
-evidencia, a issue 23 fica aberta. Nenhuma melhoria preditiva esta comprovada.
+[Evidencia do piloto real de 18/10/2026](evidence/2026-10-18-pilot-real.json):
+1824/2062 completos, 17.019 participacoes oficiais, 210.860 submissoes e 47.100
+tentativas observadas. Foram 30 respostas HTTP, incluindo 2 recusas do contrato
+antigo de standings e 2 consultas diagnosticas; 143.381.349 bytes HTTP, 29 brutos
+unicos. Coletores medidos: 56,653 s, excluindo diagnostico e edicao.
+
+As 47.100 tentativas foram excluidas: 44.952 por indices nao suportados (B1/B2 em
+1824, E1/E2 em 2062) e 2.148 por historico insuficiente. A ordem simples atual
+recusa o contest inteiro, inclusive prefixos A/B/C. Esse comportamento foi mantido;
+nao houve substituicao dos sorteados, expansao de protocolo, treino ou avaliacao.
+Dois contests adquiridos e zero elegiveis ficam abaixo do minimo de dez; split
+recusa a operacao. Uma amostra futura exige outro diretorio e a mesma regra, ou
+revisao explicita/versionada do protocolo antes de novo ajuste.
+
+O diretorio local `work/pilot-real/` preserva brutos e tabelas. Os comandos de coleta
+offline e preparo acima reproduzem o snapshot e todas as tabelas byte a byte;
+a evidencia registra hashes de arquivos e de cada resposta. Nova consulta pode
+mudar os bytes; reproducao exata exige preservar o cache. `origin_links` registra
+as origens da API, sem vinculo cruzado detectado no piloto; aliases entre divisoes
+nao sao descartados por essa ausencia. Nenhum handle ou tabela real foi ao Git.
+
+39 testes sem falhas, incluindo resposta completa de standings maior que page_size,
+retomada offline e metadados malformados. Testes e jornada sintetica verificam
+software; nenhuma melhoria preditiva esta comprovada. Politica de rede deve permitir
+`codeforces.com` pela rota normal do ambiente, preservando proxy/TLS.

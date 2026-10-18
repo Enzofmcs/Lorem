@@ -37,22 +37,26 @@ def select_contests(contests, config, count):
 
 
 def _pages(client, method, contest_id, config):
+    if method == "contest.standings":
+        # Non-gym standings now accept only anonymous GET with contestId.
+        # Omitting from/count returns the full official standings, not a page.
+        result, ref = client.request(method, {"contestId": contest_id})
+        if (not isinstance(result, dict) or not isinstance(result.get("rows"), list) or
+            not isinstance(result.get("contest"), dict) or
+            result["contest"].get("id") != contest_id or
+            not isinstance(result.get("problems"), list)):
+            raise StudyError("Malformed full standings or contest identity/problems mismatch")
+        return [ref]
     refs, seen_full = [], set()
     for page in range(config["max_pages"]):
         params = {"contestId": contest_id, "from": page * config["page_size"] + 1,
                   "count": config["page_size"]}
-        if method == "contest.standings":
-            params["showUnofficial"] = "true"
         result, ref = client.request(method, params)
         rows = result.get("rows") if isinstance(result, dict) else result
         if not isinstance(rows, list):
             raise StudyError(f"Malformed {method} page")
         if len(rows) > config["page_size"]:
             raise StudyError("API page exceeded requested count")
-        if method == "contest.standings":
-            meta = result.get("contest", {})
-            if meta.get("id") != contest_id or not isinstance(result.get("problems"), list):
-                raise StudyError("Standings contest identity/problems mismatch")
         refs.append(ref)
         if len(rows) < config["page_size"]:
             return refs
@@ -128,6 +132,7 @@ def collect(root, config, *, pilot=False, offline=False, client=None):
         try:
             _, entry["rating_changes_ref"] = client.request("contest.ratingChanges", {"contestId": contest_id})
             entry["standings_refs"] = _pages(client, "contest.standings", contest_id, config)
+            entry["standings_scope"] = "full_official_response; contestId only, no from/count/showUnofficial"
             entry["status_refs"] = _pages(client, "contest.status", contest_id, config)
             pending = _pending(root, entry["status_refs"], contests[contest_id])
             for _ in range(config["pending_rechecks"]):

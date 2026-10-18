@@ -149,13 +149,20 @@ Niveis 2/3 para regras, API/cache e pipeline; build Android nao se aplica. Nao
 confundir verificacao sintetica com coleta real ou evidencia de precisao.
 
 Usar testes isolados em `study/` com fixtures sinteticas identificadas, sem rede
-ou Gradle. Comando verificado: `cd study && .venv/bin/python -m unittest discover
--s tests -v` (37 testes). Instalar o comando e reproduzir a jornada conforme
+ou Gradle. Comando verificado na continuacao: `cd study && python -m unittest discover
+-s tests -v` (39 testes na continuacao da PR #57). Instalar o comando e reproduzir a jornada conforme
 [study/README.md](../study/README.md); wheel/default config e CLI fora da pasta verificados. Cobertura obrigatoria: corte inclusivo/data ausente, oldRating e
 joins, paginacao/429/retomada, 10/28/65 -> 10/18/37, primeiro AC/upsolve, salto,
 inversao/intercalacao, censura versus coleta incompleta, ausencia de tentativa,
 split por contest/grupo, transformacoes somente no treino, metricas de censura e
 probabilidades/quantis. IPCW sem suporte deve produzir indisponibilidade explicita.
+
+Piloto real 23 em 2026-10-18: duas aquisicoes completas e retomada/cache offline
+com hashes identicos. Standings completo apenas com contestId (sem limite artificial
+de page_size) e metadados malformados cobertos por testes. Status com pagina final
+curta, joins oficiais/oldRating, hashes, funis e recusa de split insuficiente
+conferidos nos dados reais. Cobertura valida zero por indices B1/B2 e E1/E2;
+[evidencia](../study/evidence/2026-10-18-pilot-real.json) nao comprova precisao.
 
 No marco 28, executar suite Python e reproducao integral do snapshot ao relatorio
 em ambiente limpo, com hashes, sementes e denominadores. Testes sinteticos verificam

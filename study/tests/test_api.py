@@ -117,6 +117,43 @@ class ApiTests(unittest.TestCase):
         errors = [e["error"] for e in read_json(self.root / "snapshot.json")["contests"].values()]
         self.assertTrue(all("Repeated full page" in e for e in errors))
 
+    def test_full_official_standings_have_no_pagination_parameters_or_size_cap(self):
+        self.config["page_size"] = 3
+        base = fixture_api(2)
+        standings_calls = []
+
+        def transport(url, timeout):
+            if "contest.standings" in url:
+                params = dict(urllib.parse.parse_qsl(urllib.parse.urlsplit(url).query))
+                self.assertEqual(set(params), {"contestId"})
+                standings_calls.append(params)
+            return base(url, timeout)
+        result = collect(self.root, self.config, client=self.client(transport))
+        self.assertEqual(result["complete"], 2)
+        self.assertEqual(len(standings_calls), 2)
+        for entry in read_json(self.root / "snapshot.json")["contests"].values():
+            self.assertEqual(len(entry["standings_refs"]), 1)
+            rows = raw_json(self.root, entry["standings_refs"][0])["rows"]
+            self.assertEqual(len(rows), 5)  # More than page_size, still one full response.
+        offline = collect(self.root, self.config, client=self.client(lambda *_: self.fail(), offline=True))
+        self.assertEqual(result["snapshot_sha256"], offline["snapshot_sha256"])
+
+    def test_malformed_full_standings_never_complete(self):
+        base = fixture_api(2)
+        for bad in ({"rows": []}, {"contest": {"id": -1}, "problems": [], "rows": []},
+                    {"contest": {"id": 900000}, "problems": [], "rows": None}):
+            def transport(url, timeout):
+                if "contest.standings" in url:
+                    return 200, {}, canonical({"status": "OK", "result": bad})
+                return base(url, timeout)
+            with self.subTest(bad=bad), tempfile.TemporaryDirectory() as directory:
+                client = ApiClient(directory, self.config, transport=transport,
+                                   monotonic=self.clock.now, sleep=self.clock.sleep)
+                result = collect(directory, self.config, client=client)
+                self.assertEqual(result["complete"], 0)
+                errors = [e["error"] for e in read_json(Path(directory) / "snapshot.json")["contests"].values()]
+                self.assertTrue(all("Malformed full standings" in e for e in errors))
+
     def test_pending_verdict_requeried_and_previous_raw_preserved(self):
         base = fixture_api(2)
         statuses = {}

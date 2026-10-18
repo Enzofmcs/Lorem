@@ -139,9 +139,15 @@ Use o formato abaixo. Nao apagar decisoes antigas; marque quando forem substitui
   Sao realizacoes do protocolo D-021/023, nao mudancas de produto.
 - Zero/negativo oldRating separado por historico insuficiente, sem imputacao pelo
   futuro; nenhum user.rating por linha. Expansao dessa populacao exige evidencia.
-- Usuario autorizou codeforces.com, mas politica aplicada continua bloqueando o
-  dominio com 403; nenhuma tentativa de contorno. Piloto real 23 permanece pendente.
-  37 testes/fixtures comprovam software; nao ganho de precisao nem transporte.
+- Na implementacao inicial, o dominio autorizado estava bloqueado por 403; nenhuma
+  tentativa de contorno. Bloqueio resolvido na continuacao de 18/10/2026: piloto
+  1824/2062 adquirido por completo, com reproducao offline e 39 testes.
+- A API agora exige standings anonimo completo com apenas contestId; status continua
+  paginado. Adaptacao do contrato sem mudar populacao oficial, corte ou protocolo.
+- Piloto manteve selecao congelada e exclusao integral por indices B1/B2 e E1/E2:
+  zero intervalos validos. Nao ampliar a ordem nem substituir contests para melhorar
+  cobertura; qualquer revisao futura exige protocolo versionado antes de novo ajuste.
+  Nenhum ganho de precisao ou transporte comprovado.
 
 ### Tabela de cenarios da D-012
 

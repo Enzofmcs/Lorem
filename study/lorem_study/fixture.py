@@ -51,6 +51,8 @@ def fixture_api(count=10):
             entry = entries[int(params["contestId"])]
             if method == "contest.ratingChanges":
                 result = entry["ratings"]
+            elif method == "contest.standings" and set(params) == {"contestId"}:
+                result = entry["standings"]
             else:
                 first, size = int(params["from"]) - 1, int(params["count"])
                 if method == "contest.standings":

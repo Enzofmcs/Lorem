@@ -6,15 +6,15 @@
 
 ## Estado atual
 
-**Foco atual:** implementacao Python 22-25; 22/24/25 verificados como software, 23 com piloto real bloqueado. Historias 00-21 preservadas.
+**Foco atual:** Python 22-25 verificado; piloto real da 23 concluido. Historias 00-21 preservadas.
 
-**Ultima historia verificada:** Historia 25 (software), em 2026-10-18: 37 testes Python, instalacao e jornada sintetica. Ultimo marco Android: Historia 21 em 2026-10-16.
+**Ultima historia verificada:** Historia 23 (piloto real), em 2026-10-18: 2 contests completos, cache offline e 39 testes Python. 22/24/25 verificados como software. Ultimo marco Android: Historia 21 em 2026-10-16.
 
-**Primeiro item pendente:** executar piloto real de 2 contests da Historia 23; o proxy bloqueia codeforces.com com 403.
+**Primeiro item pendente:** obter amostra elegivel para treino e implementar a Historia 26 (AFT).
 
-**Proxima entrega demonstravel:** piloto/amostra reais e Historia 26 (AFT). Coleta/preparo/particoes/baselines (22-25) ja possuem jornada sintetica reproduzivel; estudo real continua pendente.
+**Proxima entrega demonstravel:** amostra deterministica em novo diretorio e Historia 26 (AFT). Piloto congelado com cobertura valida zero; coleta/preparo/particoes/baselines (22-25) possuem jornada sintetica reproduzivel.
 
-**Bloqueios conhecidos:** codeforces.com ausente da politica de rede aplicada, apesar da autorizacao do usuario. Piloto 23 nao executado com sucesso; 32 depende da 31. Conferencia em dispositivo opcional (D-014).
+**Bloqueios conhecidos:** nenhum de rede; 1824/2062 foram adquiridos por completo, mas B1/B2 e E1/E2 recusam todos os intervalos pelo protocolo atual. Minimo de 10 contests elegiveis ainda nao atingido; 32 depende da 31. Conferencia em dispositivo opcional (D-014).
 
 ## Como atualizar
 
@@ -1517,9 +1517,11 @@ confirmado diretamente no GitHub e coincide com o HEAD usado neste planejamento.
 
 **Planejamento inicial:** entregou somente documentos e issues, com aceites pendentes.
 **Implementacao de 22-25 em 18/10/2026:** subprojeto [study/](../study/README.md),
-37 testes, instalacao limpa/wheel e jornada sintetica verificados. Historia 23
-permanece incompleta: o piloto real falhou com 403 do proxy (zero contests reais).
-22/24/25 possuem aceite de software; isso nao comprova precisao ou resultado empirico.
+Instalacao limpa/wheel e jornada sintetica verificadas. A continuacao da PR #57
+concluiu o piloto da Historia 23: 1824/2062 completos, 39 testes e reproducao offline.
+As 47.100 tentativas foram excluidas pela regra de indices simples; nenhum intervalo
+valido, treino ou avaliacao. [Evidencia real](../study/evidence/2026-10-18-pilot-real.json).
+22/24/25 possuem aceite de software; isso nao comprova precisao preditiva.
 26-32 continuam pendentes. Nenhuma mudanca Android. D-012 continua vigente; D-020 a D-025 registram as decisoes
 solicitadas. Metodo e limites em [QUANTITATIVE.md](QUANTITATIVE.md).
 
@@ -1605,7 +1607,7 @@ Comando: `cd study && .venv/bin/python -m unittest discover -s tests -v`:
 
 **Historia:** Como pesquisador, quero snapshots completos da API para associar cada participante ao rating anterior ao contest e preservar a proveniencia.
 
-**Status:** implementacao automatizada verificada; BLOQUEADO para conclusao pelo piloto real (403 do proxy).
+**Status:** implementada e verificada automaticamente com piloto real em 2026-10-18; 2 contests completos, cobertura valida zero pelo protocolo atual. Sem avaliacao preditiva.
 
 **GitHub:** [#46 - Historia 23](https://github.com/Enzofmcs/Lorem/issues/46).
 
@@ -1623,7 +1625,7 @@ Comando: `cd study && .venv/bin/python -m unittest discover -s tests -v`:
 - [x] Selecionar contests CF FINISHED e unir participacoes CONTESTANT individuais com contest.ratingChanges por contest/handle normalizado; usar oldRating, separar estreantes e quarentenar ausencias/conflitos sem imputacao futura.
 - [x] Coletar todas as paginas necessarias de standings/status, com gate global >=2 s, cache, retry/backoff/Retry-After e retomada; falha parcial nunca vira contest completo ou historico vazio.
 - [x] Preservar JSON bruto imutavel, origem, parametros, coleta UTC, hashes, vereditos finais e versao de snapshot; registrar rating do problema como disponivel na coleta, sem alegar snapshot historico.
-- [ ] Executar piloto de 2 contests; congelar selecao deterministica sem filtrar por sucesso, registrar volume/custo e grupos de problemas compartilhados; minimo insuficiente resulta em piloto declarado, sem metricas conclusivas.
+- [x] Executar piloto de 2 contests; congelar selecao deterministica sem filtrar por sucesso, registrar volume/custo e grupos de problemas compartilhados; minimo insuficiente resulta em piloto declarado, sem metricas conclusivas.
 - [x] Emitir funil de elegibilidade/completude e tabelas com ambos os ratings e delta; brutos e historicos antigos permanecem preservados.
 
 #### Verificacao e evidencias
@@ -1632,12 +1634,33 @@ Nivel 3: API roteirizada para OK/FAILED, 429, pagina faltante, duplicata e retom
 
 **Entrega demonstravel:** Retomar uma coleta interrompida e reconstruir as mesmas tabelas pelo cache, mostrando a fonte da data e do oldRating de uma participacao.
 
-Coletor implementado: gate/cache/hash, OK/FAILED/429/Retry-After, paginacao, retomada e reconsulta de pendentes verificados com transporte sintetico. Tentativa real: `python -m lorem_study collect --work work/pilot-real --pilot` retornou 2 com Tunnel connection failed: 403 Forbidden. Zero contests reais coletados; criterio de piloto permanece pendente, sem concluir a historia. O usuario autorizou o dominio, mas a politica aplicada ainda nao o permite.
+Piloto real concluido apos resolver o acesso de rede. Selecao original preservada:
+1824 (Div. 1) e 2062 (Div. 1 + Div. 2). A API rejeitou paginacao em standings
+(HTTP 400); coletor adaptado para resposta oficial completa com apenas contestId.
+Status continua paginado: 4 + 18 paginas, 210.860 submissoes; 17.019 participacoes
+oficiais com join exato de ratingChanges, nenhum veredito oficial pendente.
 
-Comando: `cd study && .venv/bin/python -m unittest discover -s tests -v`:
-**37 testes sem falhas**. [Guia](../study/README.md),
+Custo auditado: 30 respostas HTTP (28 OK, 2 recusas preservadas), incluindo duas
+consultas diagnosticas; 143.381.349 bytes HTTP e 29 objetos brutos unicos.
+Coletores medidos: 10,318 + 46,335 s; esse tempo exclui diagnostico e edicao do codigo.
+Snapshot `8e3f358a6525114b7ccd404f9b87c2c6e95767d3dcac7d8034542924ffd410a0`.
+Retomada aproveitou cache; repeticao offline fez zero requisicoes e reconstruiu
+features/labels/audit/manifest byte a byte. Hashes dos brutos e funis conferidos.
+
+Qualidade: 47.100 tentativas observadas = 0 eventos + 0 censuras + 47.100 exclusoes
+(44.952 por ordem nao suportada, 2.148 por historico insuficiente). Indices B1/B2
+em 1824 e E1/E2 em 2062 tornam ambos inelegiveis pelo protocolo vigente. Nao trocar
+os contests nem ampliar o protocolo apos observar a cobertura. Links de origem da
+API registrados, sem vinculo cruzado detectado nestes dois; aliases entre divisoes
+continuam sendo limitacao. `split` recusou os zero contests elegiveis; nenhum modelo
+ou avaliacao produzido. Brutos/tabelas preservados em `study/work/pilot-real/`,
+ignorados pelo Git; [evidencia sem handles](../study/evidence/2026-10-18-pilot-real.json)
+registra custo, hashes por resposta, fatias, exclusoes e rastreio de oldRating/data.
+
+Comando: `cd study && python -m unittest discover -s tests -v`:
+**39 testes sem falhas**, incluindo contrato de standings completo e resposta malformada. [Guia](../study/README.md),
 [contrato](../study/DATA_DICTIONARY.md) e
-[evidencia registrada](../study/evidence/2026-10-18-validation.json).
+[evidencia registrada](../study/evidence/2026-10-18-pilot-real.json).
 **TESTE MANUAL OPCIONAL - NAO EXECUTADO** (D-014).
 
 ---
