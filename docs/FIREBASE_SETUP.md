@@ -19,9 +19,16 @@ As Rules validam uid, provedor, esquema e request.time. Cache/fila offline nao
 confirmam sessao. Sem Rules publicadas, a falha de permissao aparece como erro de
 configuracao recuperavel; nao e confundida com login por provedor errado.
 
-33/34 permanecem parciais para configuracao/provedor e Rules remotos nao verificados.
-A CLI deste ambiente nao tem conta administrativa conectada. Nao houve deploy nem
-login Google real. Conferencia humana e opcional (D-014); emulador nao comprova OAuth.
+O usuario **confirmou a publicacao das Rules pelo Console** depois de receber o
+arquivo da versao Spark. O PR 66 ja foi integrado em main. A publicacao fica
+registrada como informacao do usuario, sem leitura administrativa pelo agente;
+a CLI deste ambiente continua sem conta administrativa conectada. Nao repetir
+deploy como pendencia. Nenhum indice adicional e necessario no esquema atual
+(indexes e fieldOverrides vazios).
+
+33/34 aguardam somente a confirmacao da configuracao Google unica no projeto.
+OAuth/login real nao foram executados pelo agente. Conferencia humana do app e
+opcional (D-014); emulador nao comprova OAuth. [Registro da publicacao](evidence/2026-10-19-firebase-rules-publication.json).
 
 O preview termina em Seus handles, ponto de integracao da 35. Sem cadastro de
 handles/treino na nuvem, timeout ou migracao implementados nesta entrega. As Rules

@@ -6,8 +6,9 @@ Cloud Tasks, billing ou backend externo como requisito. Firestore escolhido:
 **nam5 (US)**. O JSON Android recebido permanece local e ignorado pelo Git.
 
 33/34 em preview: login, validacao de sessao e bootstrap transacional direto pelo
-SDK Firestore. Projeto/provedor e publicacao remota das Rules ainda nao verificados;
-conferencia humana e opcional (D-014). **35-38 continuam planejadas.**
+SDK Firestore. Usuario confirmou a publicacao das Rules; a configuracao de Google
+unico ainda aguarda confirmacao. Nao houve leitura administrativa pelo agente
+nem login Google real. Conferencia humana e opcional (D-014). **35-38 continuam planejadas.**
 [Estado e comandos](FIREBASE_SETUP.md); [historias e aceite](ROADMAP.md).
 As evidencias antigas descrevem a implementacao anterior e permanecem intactas.
 

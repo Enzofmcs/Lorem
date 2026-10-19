@@ -2086,7 +2086,7 @@ neste planejamento.
 
 Solicitacao de **19/10/2026**, planejada contra `main` em
 `2092c2f299e1590d791f93e59bdf5e60189bc707`. **33/34 refeitas para Spark (D-039):
-base/login e JSON verificados localmente; provedor e Rules remotos pendentes.
+base/login e JSON verificados localmente; Rules publicadas conforme usuario e confirmacao de Google unico pendente.
 35-38 permanecem planejadas.** Contratos e casos de borda:
 [FIREBASE.md](FIREBASE.md). Decisoes D-033 a D-039 em [DECISIONS.md](DECISIONS.md).
 
@@ -2115,7 +2115,7 @@ Conferencias humanas opcionais D-014.
 
 **Historia:** Como desenvolvedor, quero configurar Authentication Google e Firestore no plano Spark para persistir contas sem exigir billing ou servicos pagos.
 
-**Status:** PARCIAL, refeita para Spark (D-039): base, Rules e bootstrap direto no Firestore implementados; configuracao/provedor e publicacao real de Rules ainda nao verificados. JSON Android local validado; Firestore escolhido nam5 (US). Sem Functions/Tasks/backend externo. [Configuracao](FIREBASE_SETUP.md).
+**Status:** PARCIAL, refeita para Spark (D-039): base, Rules e bootstrap direto no Firestore implementados; usuario confirmou Rules publicadas. Confirmacao de Google como unico provedor ainda pendente; sem leitura administrativa pelo agente. JSON Android local validado; Firestore escolhido nam5 (US). Sem Functions/Tasks/backend externo. [Configuracao](FIREBASE_SETUP.md).
 
 **GitHub:** [#60 - Historia 33](https://github.com/Enzofmcs/Lorem/issues/60).
 
@@ -2132,13 +2132,14 @@ Conferencias humanas opcionais D-014.
 - [x] Permitir somente create de users/{uid} pelo proprio Google: esquema exato schemaVersion inteiro 1 e createdAt=request.time, usando serverTimestamp; negar sobrescrita/update/delete/list raiz e campos extras, inclusive uid/rating/PII.
 - [x] Preservar leituras isoladas por uid/provedor e negar escritas de handles/ipsums/runtime ate contratos especificos das 35/36; nenhuma permissao generica por estar autenticado.
 - [x] Verificar em emuladores tokens ausentes/nao Google, acesso cruzado, campos/horarios forjados, batch indevido e transacoes concorrentes/idempotentes, incluindo SDK Android real.
-- [ ] Confirmar somente Google no Auth real, banco e Rules publicadas no projeto Spark. BLOQUEADO: CLI sem conta administrativa autenticada; JSON/build/emuladores nao comprovam estado remoto ou OAuth real.
+- [x] Registrar publicacao das Rules no projeto pelo responsavel: usuario confirmou pelo chat apos receber firebase/firestore.rules do commit d4a569f. [Registro](evidence/2026-10-19-firebase-rules-publication.json); sem leitura administrativa pelo agente e sem exigir novo deploy.
+- [ ] Confirmar Google como unico provedor ativado no Auth real. PENDENTE: confirmacao solicitada ao usuario; JSON/build/emuladores nao demonstram ausencia de outros provedores.
 
 **Entrega demonstravel:** Configuracao Spark e criacao protegida da propria conta, sem Function, custo de billing obrigatorio ou acesso a outra conta.
 
 **Verificacao planejada:** Niveis 3/4: Rules/protocolo com Auth+Firestore Emulator, bootstrap SDK Kotlin e marco Android; testar falhas de rede/cota/permissao sem sessao falsa. Conferencia humana opcional (D-014).
 
-**Evidencia:** dez testes Auth/Firestore/Rules em Node 24/Java 21; 23 testes direcionados Android, incluindo dois do bootstrap Kotlin real em emuladores, sem falhas/ignorados. Regressao: 256 debug (253 executados/3 opt-in ignorados), 188 release sem falhas; lint sem erros e APK. Os tres opt-in passaram na execucao direcionada. [Evidencia Spark](evidence/2026-10-19-firebase-spark-33-34.json). Registros anteriores preservados como historicos; projeto/provedor/Rules remotos nao verificados.
+**Evidencia:** dez testes Auth/Firestore/Rules em Node 24/Java 21; 23 testes direcionados Android, incluindo dois do bootstrap Kotlin real em emuladores, sem falhas/ignorados. Regressao: 256 debug (253 executados/3 opt-in ignorados), 188 release sem falhas; lint sem erros e APK. Os tres opt-in passaram na execucao direcionada. [Evidencia Spark](evidence/2026-10-19-firebase-spark-33-34.json). Registros anteriores preservados como historicos. Usuario confirmou publicacao das Rules posteriormente; Google unico ainda aguarda confirmacao.
 
 ---
 
@@ -2146,7 +2147,7 @@ Conferencias humanas opcionais D-014.
 
 **Historia:** Como usuario, quero entrar somente com Google, recuperar minha sessao e ter minha conta criada sem depender do plano Blaze.
 
-**Status:** PARCIAL, refeita para Spark (D-039): Credential Manager/Google ID/Firebase Auth e bootstrap SDK Firestore implementados; configuracao/provedor e Rules reais ainda pendentes. Destino Seus handles e a integracao da 35, sem cadastro/treino legado. [Configuracao](FIREBASE_SETUP.md).
+**Status:** PARCIAL, refeita para Spark (D-039): Credential Manager/Google ID/Firebase Auth e bootstrap SDK Firestore implementados; usuario confirmou Rules publicadas. Falta confirmar Google unico no Auth real. Destino Seus handles e a integracao da 35, sem cadastro/treino legado. [Configuracao](FIREBASE_SETUP.md).
 
 **GitHub:** [#61 - Historia 34](https://github.com/Enzofmcs/Lorem/issues/61).
 
@@ -2163,7 +2164,8 @@ Conferencias humanas opcionais D-014.
 - [x] Capturar uid validado no bootstrap e conferir identidade durante retry/retorno; chavear destino Seus handles por uid, como ponto de integracao da 35. Nao implementar cadastro de handles nesta historia nem exibir perfil legado.
 - [x] Tratar cancelamento, rede/offline, quota Spark, token revogado/expirado e Rules ausentes/configuracao incorreta; exibir carregamento/erro e recuperacao sem confundir permissao negada com provedor errado ou autorizar por cache/fila offline.
 - [x] Sair/trocar conta remove UI e cancela observers/callbacks/trabalhos anteriores; resposta atrasada nunca restaura uid antigo. Sair nao apaga dados nem reinicia prazo de futuros Ipsums.
-- [ ] Registrar evidencia da configuracao Google unica e Rules no projeto Spark real separada dos emuladores. BLOQUEADO: CLI sem autenticacao administrativa; login Google real nao verificado.
+- [x] Registrar separadamente a publicacao das Rules confirmada pelo usuario, sem apresenta-la como leitura administrativa ou OAuth testado. [Registro](evidence/2026-10-19-firebase-rules-publication.json).
+- [ ] Registrar confirmacao de Google como unico provedor no projeto real; pergunta de configuracao enviada ao usuario. Teste interativo do app continua opcional (D-014).
 
 **Entrega demonstravel:** Login Google, restauracao, saida e troca com conta Firestore criada idempotentemente; nenhuma Function e nenhum dado legado exposto. Selecao/cadastro de handles pertence a 35.
 
