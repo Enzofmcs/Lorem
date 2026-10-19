@@ -1,0 +1,41 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function googleAccount(uid) {
+      return request.auth != null
+        && request.auth.uid == uid
+        && request.auth.token.firebase.sign_in_provider == 'google.com';
+    }
+
+    match /users/{uid} {
+      allow get: if googleAccount(uid);
+      allow create: if googleAccount(uid)
+        && request.resource.data.keys().hasAll(['schemaVersion', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['schemaVersion', 'createdAt'])
+        && request.resource.data.schemaVersion is int
+        && request.resource.data.schemaVersion == 1
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.createdAt == request.time;
+      allow list, update, delete: if false;
+
+      match /handles/{handleKey} {
+        allow read: if googleAccount(uid);
+        allow write: if false;
+
+        match /ipsums/{ipsumId} {
+          allow read: if googleAccount(uid);
+          allow write: if false;
+        }
+      }
+
+      match /runtime/{runtimeId} {
+        allow read: if googleAccount(uid);
+        allow write: if false;
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

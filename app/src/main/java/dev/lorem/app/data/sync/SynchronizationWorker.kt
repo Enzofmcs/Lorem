@@ -15,9 +15,11 @@ class SynchronizationWorker(
     parameters: WorkerParameters,
     private val synchronization: BackgroundSynchronization,
     private val deferredByApi: suspend () -> Boolean,
+    private val isAllowed: () -> Boolean = { true },
 ) : CoroutineWorker(context, parameters) {
     override suspend fun doWork(): Result {
         return try {
+            if (!isAllowed()) return Result.success()
             if (deferredByApi()) return Result.retry()
             val outcome = when (inputData.getString(KIND)) {
                 CATALOG -> synchronization.catalog()
@@ -53,9 +55,10 @@ class SynchronizationWorker(
 class SynchronizationWorkerFactory(
     private val synchronization: BackgroundSynchronization,
     private val deferredByApi: suspend () -> Boolean,
+    private val isAllowed: () -> Boolean = { true },
 ) : WorkerFactory() {
     override fun createWorker(appContext: Context, workerClassName: String, workerParameters: WorkerParameters): ListenableWorker? =
         if (workerClassName == SynchronizationWorker::class.java.name) {
-            SynchronizationWorker(appContext, workerParameters, synchronization, deferredByApi)
+            SynchronizationWorker(appContext, workerParameters, synchronization, deferredByApi, isAllowed)
         } else null
 }

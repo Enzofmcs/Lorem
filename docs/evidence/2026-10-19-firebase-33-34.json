@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-19",
+  "stories": [
+    33,
+    34
+  ],
+  "status": "partial",
+  "baseCommit": "9973affa450e8ccedd5f48b8492c69173338e0ef",
+  "realFirebaseProjectExists": false,
+  "realGoogleOAuthVerified": false,
+  "productionDeploymentPerformed": false,
+  "administrativeCredentialsAdded": false,
+  "externalBlocker": "User reported no Firebase project; real project, OAuth/signatures and deploy remain pending.",
+  "rollout": {
+    "gradleProperty": "lorem.firebaseAuthEnabled",
+    "default": false,
+    "authenticatedDestination": "handle onboarding integration point; registration/training await stories 35-38"
+  },
+  "backend": {
+    "command": "npm --prefix firebase/functions test",
+    "node": "22.23.3",
+    "java": "21.0.12.1",
+    "project": "demo-lorem-local",
+    "emulators": [
+      "auth",
+      "firestore",
+      "functions"
+    ],
+    "tests": 6,
+    "passed": 6,
+    "failed": 0,
+    "coverage": [
+      "Google-only provider",
+      "unauthenticated and malformed bearer rejection",
+      "Admin uid path derived from token",
+      "concurrent bootstrap creates once",
+      "server timestamp and unchanged metadata on retry",
+      "cross-uid Rules reads and forged writes denied"
+    ],
+    "limitations": "Auth Emulator accepts synthetic identities; this is not a Google OAuth test."
+  },
+  "android": {
+    "command": "./gradlew test lint assembleDebug --max-workers=2 --console=plain",
+    "java": "17.0.20.1",
+    "gradle": "8.11.1",
+    "compileSdk": 35,
+    "debug": {
+      "tests": 250,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    "release": {
+      "tests": 184,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "optInEntry": {
+      "command": "./gradlew :app:testDebugUnitTest -Plorem.firebaseAuthEnabled=true --tests 'dev.lorem.app.FirebaseEntryTest' --max-workers=2 --console=plain",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "lint": {
+      "errors": 0,
+      "warningIds": {
+        "AndroidGradlePluginVersion": 3,
+        "GradleDependency": 54,
+        "MissingApplicationIcon": 1
+      }
+    },
+    "debugApkCreated": true,
+    "coverage": [
+      "SDK Google ID decoder: both types, unrelated credential, malformed bundle",
+      "session restoration waits for validation and bootstrap",
+      "logout and account switch discard late replies",
+      "network/revocation/wrong provider and credential cancellation",
+      "UI private inputs reset by uid",
+      "legacy workers inert and legacy profile hidden in opt-in entry"
+    ]
+  },
+  "configurationCheck": {
+    "command": "npm --prefix firebase/functions run check-config",
+    "expectedExitCodeWithoutGoogleServicesJson": 1,
+    "observedExitCode": 1
+  },
+  "manualCheck": "OPTIONAL_NOT_EXECUTED (D-014)",
+  "sourceSha256": {
+    "app/src/main/java/dev/lorem/app/data/auth/FirebaseAuthentication.kt": "ea94cee58286e979589d6d0b844f479336ffb3cdf0defa82823117d0511df880",
+    "app/src/main/java/dev/lorem/app/data/auth/GoogleSessionRepository.kt": "34e2bbd9ad9f90d0970f426b99adc203d336d5260ac670bc9156724bbee00fa4",
+    "app/src/main/java/dev/lorem/app/domain/auth/AuthenticationRepository.kt": "e84e9c7a10e431885dc3e1fa5aa5afe2e02d5247bcd122beaf1f523766de6dd0",
+    "app/src/main/java/dev/lorem/app/ui/auth/AuthenticationViewModel.kt": "ce0e27754f2763f4713fcf636d5bbdfdb181bfcd493345f81ba07cc52a4e1805",
+    "app/src/main/java/dev/lorem/app/ui/auth/FirebaseLoginApp.kt": "f34310839c2ed61f01579b18957810f16b8610d9ad1e66e692c7595494fbeb2e",
+    "app/src/main/java/dev/lorem/app/ui/auth/GoogleCredentialRequest.kt": "1d470709b31e829135173916d24f3b2236f914361df0f76548247be833417507",
+    "app/src/test/java/dev/lorem/app/data/auth/GoogleSessionRepositoryTest.kt": "a6121437aa9bc1ee2c4664c9b739ecea75573d56db3673275dbd8f84ea085cf8",
+    "app/src/test/java/dev/lorem/app/ui/auth/AuthenticationViewModelTest.kt": "5df24882015a77d81c2fada1bbb22a5279218e663fa3800202f04b0b102e32d6",
+    "app/src/test/java/dev/lorem/app/ui/auth/GoogleCredentialRequestTest.kt": "2a2e8e9e0482d62565380dba02ea9286bf1c6afd30010506d0f8640e2781ea2f",
+    "app/src/testDebug/java/dev/lorem/app/FirebaseEntryTest.kt": "78e59ab056749761f8870d414995811c9969722822ebf8a2672b69d96d2f6142",
+    "app/src/testDebug/java/dev/lorem/app/ui/AuthenticationScreenTest.kt": "5e5a938a3d5a19fc9697c4ecb7943d96500a9264df495e48f5c6543ba4f2612a",
+    "firebase.json": "6dec71eb8580ee310328b78b6dec41fc0369a919418c2ed41c4a2ac51aae5312",
+    "firebase/firestore.indexes.json": "6742255415c36daf631b52f233039190af819205cc41fa58d07dd7d9e180c2b9",
+    "firebase/firestore.rules": "e017be7a6f2c074e60baa57254290e86817bb96171ee4bad5706827594a58e20",
+    "firebase/functions/package-lock.json": "36396c31669a3f8cbdb1b9d7c6a8067807a42db6969332f938e3ea14ebb88bbc",
+    "firebase/functions/package.json": "20d37c133481a71f5f42e8a49d944d2faad55f71cf46d15a91d5c104cb3512e5",
+    "firebase/functions/scripts/check-android-config.cjs": "0f2b34d5614e005ce94d912f6393d30207f6c2c3725bbe0386d61b3f4c909013",
+    "firebase/functions/src/index.ts": "e34ee7a474ff5901d48dc9030a838532b52c8836ff7091cfa0038888d4cdc63d",
+    "firebase/functions/test/accounts.test.cjs": "1a21675ca30a670f9cb09d9bba1a99f075713ff0c2b4b188a8b82af6535c7a61",
+    "firebase/functions/test/rules.test.cjs": "ac290fa975b6a1a2eced7619fefd619c1b80ca2dc6a82b5956575477cc56b28d",
+    "firebase/functions/tsconfig.json": "e8f6ecaf1a9f0a2ad82b24d08796e8d4d9c57ccc3d97f0f4721af2d7ffd036bd",
+    "app/build.gradle.kts": "7dcb3822cc065dbb29ac48ab8a0a4feb8e433f63ec2c78838b99a255b10c0fda",
+    "app/src/main/java/dev/lorem/app/AppContainer.kt": "72231faccea1a522c04a24db3c05764931b6265d4c606e21a60e1c624692a4da",
+    "app/src/main/java/dev/lorem/app/MainActivity.kt": "0ab2a8ef38edc4eda6b9fb48cccff7686062562d73a258d2642098731bd66d99",
+    "app/src/main/java/dev/lorem/app/data/sync/SynchronizationWorker.kt": "a2d800dec8faf7fbda7fcc5dc646c2991f872a576a951522c4b32db9dee3d1af",
+    "app/src/test/java/dev/lorem/app/data/sync/SynchronizationWorkTest.kt": "129cbc074fd1e834536c01c39fd8a0f4629632ef79a88b048e9068e49a16d458",
+    "build.gradle.kts": "31c59d3cfdffbff9400fa4de941075e73794152bfdd26c45ccc2076bfcd98613",
+    "gradle/libs.versions.toml": "a9f496e78f5123bf813cf37d925c7b929c0b77b0cbffdabc8680eee9cfa4547a"
+  }
+}

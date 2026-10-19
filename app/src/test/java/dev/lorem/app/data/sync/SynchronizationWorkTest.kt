@@ -121,6 +121,21 @@ class SynchronizationWorkTest {
         }
     }
 
+    @Test fun `legacy worker is inert when Firebase flow has been enabled`() = runTest {
+        Fixture(backgroundScope).use { f ->
+            val link = f.link()
+            val factory = SynchronizationWorkerFactory(f.background, f.retryAfter::isDeferred, isAllowed = { false })
+            for (data in listOf(SynchronizationScheduler.profileData(link), SynchronizationScheduler.catalogData())) {
+                val worker = TestListenableWorkerBuilder<SynchronizationWorker>(context)
+                    .setWorkerFactory(factory).setInputData(data).build()
+                assertEquals(ListenableWorker.Result.success(), worker.doWork())
+            }
+            assertEquals(0, f.remote.userCalls)
+            assertEquals(0, f.remote.historyCalls)
+            assertEquals(0, f.remote.catalogCalls)
+        }
+    }
+
     @Test fun `abandoned import recovers persisted page cursor and catches the head before readiness`() = runTest {
         Fixture(backgroundScope).use { f ->
             val link = f.link()

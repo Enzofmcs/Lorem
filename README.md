@@ -32,9 +32,30 @@ A base Android de módulo único implementa as Histórias 00–21 e 29–30:
 
 As Histórias 10 e 11 foram concluídas após a confirmação do usuário de todos os testes manuais em dispositivo em 13/10/2026. As definições dos indicadores e o conjunto de referência estão no [roadmap](docs/ROADMAP.md#historia-11---estatisticas-confiaveis).
 
+## Login e perfis Firebase
+
+Solicitacao de 19/10/2026, refeita para **Spark (D-039)**: **33/34 parciais**,
+com login Google e bootstrap transacional direto no Firestore; sem Functions,
+Cloud Tasks, billing ou backend externo como requisito. Rules permitem somente
+criar metadados minimos da propria conta Google e preservam isolamento por uid.
+JSON/OAuth Web/SHA-1 debug validados localmente; Firestore escolhido nam5 (US).
+Provedor e Rules remotos ainda nao verificados. [Configuracao Spark](docs/FIREBASE_SETUP.md).
+
+Preview por -Plorem.firebaseAuthEnabled=true; padrao false ate 38. Seus handles e
+ponto de integracao da 35, sem cadastro/treino em nuvem nem perfil legado.
+**35-38 planejadas:** mesmos handles entre contas, 800 por novo vinculo e prazo
+absoluto 2h. Android verifica Codeforces/calcula rating e sincroniza por SDK/Rules;
+WorkManager na 37 pode executar com app fechado, mas atrasar. O prazo nao aumenta
+por atraso e o processamento pode aguardar conectividade/sessao. Rules nao
+comprovam AC de cliente modificado; nao prometer verificacao independente no servidor.
+
+[Historias e ordem](docs/ROADMAP.md#novo-bloco-contas-firebase-e-prazo-maximo-do-ipsum-33-38) ·
+[Contratos, configuracao, offline e migracao](docs/FIREBASE.md).
+O bloco nao depende da coorte real da 31 nem libera a integracao da 32.
+
 ## Escopo resumido
 
-O Lorem tem perfil local associado a um handle público, catálogo e histórico do Codeforces, recomendação inédita, execução de um Ipsum, resultados, pendências, rating interno, estatísticas, variedade e consolidação. Não fazem parte do escopo recursos sociais, backend próprio, Firebase, editor de código ou gamificação. Consulte [`docs/SPEC.md`](docs/SPEC.md) para as regras completas.
+O Lorem tem perfil local associado a um handle público, catálogo e histórico do Codeforces, recomendação inédita, execução de um Ipsum, resultados, pendências, rating interno, estatísticas, variedade e consolidação. O bloco planejado 33-38 acrescenta login/progresso Firebase; a implementacao atual continua local. Nao fazem parte do escopo recursos sociais, backend proprio fora desse bloco, editor de codigo ou gamificacao. Consulte [`docs/SPEC.md`](docs/SPEC.md) para as regras completas.
 
 ## Arquitetura inicial
 

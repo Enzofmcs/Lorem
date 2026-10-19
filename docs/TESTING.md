@@ -262,3 +262,110 @@ Pacote/CLI 0.4.0 instalado fora da arvore de fontes, estado vazio reproduzivel e
 avaliacao CF anterior byte a byte conferidos na [evidencia da 31](../study/evidence/2026-10-19-transport/verification.json).
 Nenhum teste real de Ipsums executado: n=0. Historia 31 incompleta; 32 bloqueada.
 TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014).
+
+
+## Planejamento 33-38: Firebase e limite de 2h
+
+Este planejamento e Nivel 1: revisar coerencia, links, dependencias, escopo do diff
+e checklists pendentes. Nao exige testes/build Android ou provisionar Firebase.
+
+Na implementacao Spark (D-039), Auth/Firestore/Rules e migracoes sao Niveis 3/4.
+Testar Rules/SDK em Emulator Suite: isolamento uid+handle, provedor Google,
+sem token, acesso cruzado, escrita forjada, 800 somente na criacao, lock por uid e
+finalizacao unica sob retry/concorrencia. Sem Functions/Tasks/Admin SDK; SDK Android
+real em emulador precisa confirmar criacao/idempotencia/uid. OAuth real exige
+configuracao verificada; emulador nao
+comprova integracao com o provedor.
+
+A 37 exige relogio controlado e casos em 1h59m59s, 2h exatas e apos o prazo; AC
+enviado antes/no/depois do limite, veredito atrasado/TESTING, consulta incompleta,
+API indisponivel, jobs perdidos/duplicados/atrasados, offline/reboot/relogio civil
+alterado e corrida com encerramento manual. Fechamento no prazo nao pode esperar
+a rede; avaliacao final aguarda verificacao suficiente e e aplicada uma vez.
+
+Na 38, verificar arquivo legado intacto, ativo migrado sem reinicio de prazo,
+exclusoes antigas, nuvem existente sem reset, troca de contas e handles, workers
+antigos, segundo dispositivo, paridade D-012 e exports sem identificadores diretos.
+No marco integrado: suite Rules/SDK, `test`, `lint`, `assembleDebug`.
+Conferencias humanas continuam opcionais D-014; nenhuma execucao real e alegada
+por estes criterios planejados. Contratos detalhados em [FIREBASE.md](FIREBASE.md).
+
+## Evidencia historica da base 33/34 antes de Spark em 19/10/2026
+
+- Backend: `npm --prefix firebase/functions test`, Node 22, Java 21, seis testes
+  sem falhas em Auth/Firestore/Functions Emulator. Chamadas reais ao endpoint
+  callable local cobrem provedor, uid forjado e criacao concorrente/idempotente;
+  Rules cobrem leitura cruzada, escrita direta e acessos anonimos/senha.
+- Android: sete testes de sessao, tres ViewModel, tres Compose, tres do decoder Google ID e guard de worker
+  legado, seguidos de `./gradlew test lint assembleDebug --max-workers=2 --console=plain`.
+  250 debug (249 executados/1 opt-in ignorado por flag false) e 184 release, sem
+  falhas; lint sem erros e APK. Conferir avisos/evidencia antes de reproduzir.
+- Smoke com flag true: `./gradlew :app:testDebugUnitTest -Plorem.firebaseAuthEnabled=true
+  --tests 'dev.lorem.app.FirebaseEntryTest' --max-workers=2 --console=plain`, 1/1,
+  sem falhas/ignorados. Perfil legado nao aparece e configuracao ausente bloqueia
+  login. O APK foi gerado pelo build padrao; a flag e usada somente na execucao isolada do smoke.
+- `npm --prefix firebase/functions run check-config` sem JSON retorna codigo 1
+  e explica a configuracao ausente, como esperado.
+
+[Registro verificavel](evidence/2026-10-19-firebase-33-34.json) e
+[guia de reproducao](FIREBASE_SETUP.md). Nenhum login Google/OAuth, projeto ou
+deploy real foi comprovado nessa execucao. Depois, o usuario criou o projeto,
+escolheu nam5 para Firestore (D-038) e forneceu o JSON Android. A evidencia
+historica foi preservada. Historias 33/34 parciais. TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014).
+
+## Evidencia historica da configuracao Android recebida em 19/10/2026
+
+Nivel 3: JSON instalado em arquivo ignorado; alias test e registro do projeto
+tambem locais/ignorados, sem alias de producao. Package dev.lorem.app, appId,
+cliente OAuth Web e SHA-1 Android do JSON conferidos contra o APK assinado.
+`check-config` passou, e o build executou `processDebugGoogleServices`.
+
+O smoke `FirebaseEntryTest` passou a cobrir a entrada com ou sem recursos Google
+Services: o perfil legado permanece oculto, e o botao fica habilitado somente
+no cenario configurado. Executado com JSON real e flag true junto dos testes de
+sessao, ViewModel, Compose e decoder Google ID: **17 testes sem falhas/ignorados**.
+`lintDebug` sem erros (58 avisos de versoes/icone), `assembleDebug` concluido com
+`FIREBASE_AUTH_ENABLED=true` e compilacao TypeScript concluida. Comando completo,
+hash do APK, suites e hashes dos fontes em
+[evidencia da configuracao](evidence/2026-10-19-firebase-android-config.json).
+
+`firebase projects:list --json --non-interactive` retornou erro de autenticacao;
+nao ha conta administrativa conectada nesta CLI. Nao executado deploy, consulta
+administrativa do banco/provedores nem login Google real. Estado remoto e
+assinaturas de release/Play continuam pendentes. TESTE MANUAL OPCIONAL - NAO
+EXECUTADO (D-014).
+
+## Historias 33/34 refeitas para Spark (D-039), 19/10/2026
+
+Niveis 3/4 e marco: sem Functions/Tasks/Admin SDK de runtime. SDK Android executa
+transacao online sob Rules create-only para metadados; novas Rules nao habilitam
+escritas de progresso. Permissao negada significa configuracao/Rules; nao confundir
+com provedor errado. Cota Spark, rede e sessao invalida nao liberam destino privado.
+
+- `npm --prefix firebase ci` com Node 24.19.0; lockfile somente de tooling, sem
+  runtime Node implantado. `npm --prefix firebase test`: dez testes sem falhas em
+  Auth/Firestore Emulator, Java 21.0.12.1, loopback/projeto demo-lorem-local.
+  Criacao concorrente idempotente, tokens Google/senha emulados, restauracao em
+  outro cliente, isolamento, esquema exato, timestamps e batch forjado cobertos.
+- SDK Kotlin de producao contra emuladores: 23 testes direcionados Android com
+  flag true, sem falhas/ignorados, incluindo dois da suite
+  FirestoreAccountBootstrapEmulatorTest. Seis transacoes concorrentes criam uma
+  conta sem sobrescrever createdAt; uid divergente nao inicia escrita. Demais
+  suites cobrem oito cenarios de sessao, tres de erro SDK, tres ViewModel, tres
+  Compose, tres decoder Google ID e um smoke MainActivity com JSON real.
+- `./gradlew test lint assembleDebug --max-workers=2 --console=plain`, JDK 17:
+  256 debug (253 executados/3 opt-in ignorados) e 188 release, zero falhas/erros;
+  lint sem erros (58 avisos de versoes/icone) e APK. Os tres ignorados (entrada
+  preview e dois SDK/emulador) passaram na execucao direcionada acima.
+- `npm --prefix firebase run check-config` passou com o JSON local ignorado.
+  APK preview gerado com flag true separadamente; runtime sem firebase-functions.
+  A migracao Firestore trouxe Guava somente em runtime e um placeholder vazio
+  ListenableFuture ao compile: dependencia explicita da mesma versao Guava ja
+  usada pelo SDK restabelece a API WorkManager sem duplicar classes de runtime.
+
+[Evidencia Spark](evidence/2026-10-19-firebase-spark-33-34.json) registra comandos,
+suites, hashes e certificado. [Guia atualizado](FIREBASE_SETUP.md).
+`firebase projects:list --json --non-interactive` continua sem autenticacao;
+sem publicacao de Rules, consulta administrativa de provedor/banco/plano ou OAuth
+Google real. Evidencias Functions/JSON anteriores intactas, sem reapresenta-las
+como teste Spark. TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014).
