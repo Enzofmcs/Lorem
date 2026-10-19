@@ -1,8 +1,9 @@
 # Login, perfis Firebase e limite do Ipsum
 
 Planejamento solicitado em **19/10/2026**. **33/34 parciais:** base Firebase e
-login Android implementados/verificados em testes, sem projeto Firebase real
-(conforme resposta do usuario). Google OAuth e deploy reais pendentes; destino
+login Android implementados/verificados em testes. Depois da verificacao, o
+usuario informou projeto criado e escolheu Firestore nam5 (US); Functions
+continuam em us-central1. ID/JSON Android, Google OAuth e deploy reais pendentes; destino
 autenticado preparado para a 35, sem cadastro de handles ou treino em nuvem.
 **35-38 ainda planejadas.** [Configuracao e estado real](FIREBASE_SETUP.md).
 Historias **33-38** em [ROADMAP.md](ROADMAP.md). Base do planejamento:

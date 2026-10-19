@@ -206,3 +206,9 @@ O usuario respondeu que ainda nao tem projeto Firebase. Nenhum projeto real,
 OAuth Google, billing, assinatura release ou deploy foi criado. Esses criterios
 permanecem pendentes; emuladores e teste de SDK/estado nao comprovam OAuth real.
 Guia: [FIREBASE_SETUP.md](FIREBASE_SETUP.md). Evidencia: [33/34](evidence/2026-10-19-firebase-33-34.json).
+
+### Localizacao Firebase escolhida pelo usuario, 19/10/2026
+
+| ID | Data | Decisao | Motivo | Historias afetadas |
+|---|---|---|---|---|
+| D-038 | 2026-10-19 | Usuario informou projeto Firebase criado e escolheu Firestore em nam5 (US), multirregiao. Manter Functions e futura fila Tasks em us-central1. Substitui a recomendacao inicial de mesma regiao para o banco; nao altera a constante Android/backend de Functions. | Escolha explicita do usuario; Firestore e acessado pelo projeto/database e a regiao da Function continua compativel. ID/JSON Android, criacao/configuracao do banco, OAuth e deploy ainda nao verificados; nao atualizar evidencia historica como se houvesse validacao real. | 33-38 |

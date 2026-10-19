@@ -2,8 +2,10 @@
 
 ## Estado real da entrega
 
-O usuario informou em 19/10/2026 que **ainda nao existe projeto Firebase**.
-Nenhum projeto, app OAuth, assinatura de release, billing ou deploy real foi criado.
+Na verificacao inicial de 19/10/2026 ainda nao havia projeto Firebase.
+Depois, o usuario **informou ter criado o projeto** e escolheu **nam5 (US)** para
+o Firestore. O ID, o arquivo Android e o estado remoto do banco/provedor/deploy
+ainda nao foram fornecidos/verificados. Functions continuam em **us-central1**.
 Nao ha credencial administrativa no repositorio ou no ambiente desta entrega.
 As Historias 33/34 permanecem **parciais** ate configurar o projeto real e verificar
 Google/Firebase. A evidencia com emuladores nao comprova OAuth Google real.
@@ -55,8 +57,8 @@ sem configuracao. Nao e um teste de login Google real.
 
 ## Criar e registrar o projeto real
 
-1. Criar no Console Firebase um projeto de **teste**. Separar producao em outro
-   projeto; nao usar dados reais nos emuladores. Registrar IDs escolhidos e
+1. Usar o projeto Firebase ja criado para a validacao inicial. Separar producao
+   em outro projeto; nao usar dados reais nos emuladores. Registrar IDs escolhidos e
    ambientes em `firebase-projects.local.json` (ignorado pelo Git), com nome,
    package, regiao, fingerprints e estado das etapas abaixo.
 2. Adicionar app Android com package **`dev.lorem.app`**. Obter fingerprints com
@@ -66,11 +68,12 @@ sem configuracao. Nao e um teste de login Google real.
 3. Em Authentication, habilitar **somente Google**, configurar e-mail de suporte
    e consentimento OAuth. Manter senha, anonimo e demais provedores desabilitados.
    Se o consentimento estiver em teste, cadastrar as contas de teste necessarias.
-4. Criar Firestore em modo producao/Rules fechadas. A configuracao inicial desta
-   implementacao usa **`us-central1`** para Functions e recomenda a mesma regiao
-   para Firestore e a futura fila Tasks. A localizacao do banco deve ser escolhida
-   conscientemente antes da criacao; mudar regiao de Functions tambem exige
-   mudar a constante Android em FirebaseAuthentication e o backend.
+4. Criar Firestore em modo producao/Rules fechadas na localizacao escolhida pelo
+   usuario: **`nam5` (US), multirregiao**. Manter **`us-central1`** para Functions
+   (e a futura fila Tasks). Essa combinacao e compativel: o SDK/Admin acessa o
+   banco pelo projeto/database, e o cliente Android chama a regiao da Function.
+   Escolher nam5 para o banco nao exige alterar a constante de Functions nem
+   recriar o projeto. A criacao/configuracao remota ainda sera verificada.
 5. Ativar billing **Blaze** quando necessario para Functions/Cloud Build/Artifact
    Registry. Conferir precos, quotas e orcamentos/alertas no projeto escolhido.
    O limite de cinco instancias de bootstrap nao e um teto de custo. Cloud Tasks

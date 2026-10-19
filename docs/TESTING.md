@@ -308,5 +308,6 @@ por estes criterios planejados. Contratos detalhados em [FIREBASE.md](FIREBASE.m
 
 [Registro verificavel](evidence/2026-10-19-firebase-33-34.json) e
 [guia de reproducao](FIREBASE_SETUP.md). Nenhum login Google/OAuth, projeto ou
-deploy real foi comprovado: usuario ainda nao tem projeto. Historias 33/34
-parciais. TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014).
+deploy real foi comprovado nessa execucao. Depois, o usuario informou projeto
+criado e escolheu nam5 para Firestore (D-038); ID/configuracao/deploy continuam
+pendentes. A evidencia historica foi preservada. Historias 33/34 parciais. TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014).
