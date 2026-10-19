@@ -39,15 +39,21 @@ Competidores de nivel iniciante-intermediario ou intermediario que ja utilizam o
 
 ## 3. Escopo fechado
 
+**Alteracao aprovada em 19/10/2026, somente planejada:** Historias 33-38
+acrescentam Google/Firebase, varios handles por conta com 800 inicial e prazo de
+2h. O app atual ainda usa perfil local e a regra inicial D-009. Contratos de
+transicao/migracao e operacao sem rede: [FIREBASE.md](FIREBASE.md).
+
 ### Dentro do escopo
 
-- Um perfil local ligado a um handle publico do Codeforces.
+- Conta Lorem identificada pelo uid Firebase, login exclusivamente Google e varios handles publicos por conta, com progresso separado por uid+handle (33-35). Handles repetidos entre contas sao permitidos, sem verificacao adicional de posse CF.
+- Firestore para perfis, rating e Ipsums oficiais; Room/DataStore continuam como cache/configuracao e arquivo legado. Novo vinculo sempre inicia em 800; retornar a vinculo existente preserva seu rating (35-38).
 - Consulta ao catalogo de problemas e ao historico de submissoes.
-- Preparacao e atualizacao automatica dos dados publicos do Codeforces, conforme planejamento D-018 e Historias 15-17; sem sincronizacao de dados pessoais entre dispositivos.
+- Preparacao e atualizacao automatica dos dados publicos do Codeforces, conforme D-018 e Historias 15-17; novo bloco 33-38 acrescenta persistencia/recuperacao de progresso Firebase para a mesma conta, com autoridade do servidor.
 - Exclusao de qualquer exercicio ja tentado ou resolvido pelo usuario.
 - Recomendacao automatica de um exercicio.
-- Apenas um Ipsum ativo por vez.
-- Cronometro persistente.
+- Apenas um Ipsum ativo por conta Lorem, inclusive entre handles/dispositivos.
+- Cronometro persistente, prazo absoluto de 2h e encerramento automatico sem AC quando nao houver AC valido na janela (36-37).
 - Tags escondidas, com opcao de revela-las como dica.
 - Verificacao das submissoes feitas durante o Ipsum.
 - Resultado e alteracao do rating interno.
@@ -71,8 +77,8 @@ Competidores de nivel iniciante-intermediario ou intermediario que ja utilizam o
 - Tags criadas manualmente pelo Lorem.
 - Editor ou compilador de codigo dentro do aplicativo.
 - XP, moedas, streaks, conquistas ou loja.
-- Login com senha, rede social ou backend proprio, salvo decisao posterior registrada.
-- Firebase, sincronizacao em nuvem ou multiplos dispositivos, salvo decisao posterior registrada.
+- Login por senha, anonimo ou provedores diferentes do Google; verificacao adicional de posse CF e exclusividade global de handle.
+- Backend proprio fora dos servicos Firebase/Google necessarios ao bloco 33-38; sincronizacao generica de conflitos e novos treinos oficiais offline.
 - Recursos especulativos apresentados como "versao futura".
 - Comparacao entre epocas, analises por ano e correcao temporal dos ratings.
 
@@ -86,7 +92,8 @@ Competidores de nivel iniciante-intermediario ou intermediario que ja utilizam o
 - **Rating Codeforces:** dificuldade atribuida pelo Codeforces a um problema ou rating competitivo oficial do usuario. Nao confundir com o Rating Lorem.
 - **Dica de topicos:** revelacao das tags oficiais do problema no Codeforces.
 - **Tentado anteriormente:** problema que possui qualquer submissao anterior ao inicio do Ipsum, com qualquer veredito.
-- **Resolvido no Ipsum:** primeiro AC ocorreu entre o inicio e o encerramento daquele Ipsum.
+- **Resolvido no Ipsum:** primeira submissao com veredito final AC foi enviada entre o inicio e a fronteira efetiva do Ipsum (encerramento antecipado ou prazo de 2h); deteccao tardia nao altera seu horario real.
+- **Encerrado aguardando verificacao (37):** prazo ja terminou e treino nao pode continuar, mas API incompleta/veredito pendente adia o resultado e saldo definitivos; nao equivale a ativo nem a ausencia comprovada de AC.
 - **Pendente:** Ipsum encerrado sem AC.
 - **Resolvido fora do Ipsum:** problema pendente que recebeu AC posteriormente.
 - **Rating estimado:** valor numerico calculado pelas tentativas recentes.
@@ -108,9 +115,16 @@ stateDiagram-v2
     RESOLVIDO_FORA --> [*]
 ```
 
+A Historia 37 acrescentara `CLOSED_AWAITING_VERIFICATION` para separar fechamento
+no prazo de confirmacao do resultado; o diagrama acima representa os estados
+atuais/finais. AC enviado depois da fronteira e somente upsolve.
+
 Regras invariantes:
 
-- So pode existir um Ipsum ativo.
+- So pode existir um Ipsum ativo por uid; tentativa encerrada aguardando verificacao bloqueia novo inicio ate confirmar o saldo.
+- Todo vinculo novo uid+handle inicia em 800, sem usar rating CF como saldo Lorem.
+- Prazo absoluto de 2h nao pausa nem reinicia; timeout sem AC usa fim no prazo e delta D-012 uma unica vez.
+- A regra temporal nova nao reavalia Ipsums antigos ja encerrados.
 - Submissoes anteriores ao inicio nunca contam para o Ipsum atual.
 - Um Ipsum encerrado nao pode alterar o rating pela segunda vez.
 - Resolver posteriormente move o item de lista, mas nao reavalia o rating original.
@@ -171,7 +185,8 @@ Nao retornar erro imediatamente. Procurar progressivamente nos ratings vizinhos 
 
 Os nomes tecnicos podem mudar, mas o sistema precisa representar:
 
-- **Perfil:** handle, Rating Lorem, faixa consolidada e ultima sincronizacao.
+- **Conta/vinculo (33-38):** uid Firebase, handle canonico/chave normalizada, Rating Lorem inicialmente 800, faixa consolidada, versao do progresso e ultima sincronizacao.
+- **Prazo (37):** inicio e expiresAt do servidor, versao temporal, encerramento efetivo, processedAt e estado de verificacao; cache sempre identificado por uid+handle.
 - **Problema:** `contestId`, `index`, nome, rating, tags e URL.
 - **Elegibilidade (29):** inicio/fonte do contest de origem e versao da regra;
   cache legado sem data nao habilita novos candidatos ate verificacao.
@@ -185,7 +200,7 @@ Os nomes tecnicos podem mudar, mas o sistema precisa representar:
 Opcao inicial para manter o TCC simples; preservar outra estrutura se o repositorio ja possuir uma funcional:
 
 - Kotlin, Compose, um modulo, ViewModel + StateFlow e Coroutines.
-- Room para dados estruturados e DataStore para pequenas configuracoes.
+- Room para cache/dados locais legados e DataStore para pequenas configuracoes; bloco 33-38 acrescenta Firebase Auth Google, Firestore e Functions com agendamento Cloud Tasks/recuperacao para tentativas oficiais.
 - Cliente HTTP centralizado, Navigation Compose e injecao manual simples.
 - Sem Hilt ou backend proprio apenas por padrao.
 
@@ -236,7 +251,9 @@ A primeira entrega e o estudo reproduzivel, sem resultado empirico comprovado ne
 planejamento. Aplicacao ao Lorem exige validar Ipsums e a relacao entre Rating CF
 anterior e Rating Lorem inicial, sem pressupor equivalencia. Qualquer integracao
 deve ser local, versionada e preservar avaliacoes antigas; D-012 permanece vigente
-ate decisao explicita posterior. Nao exige backend, login ou nuvem.
+ate decisao explicita posterior. O estudo/modelo nao exige backend, login ou
+nuvem; a conta e os dados oficiais do app passam a ser planejados em Firebase
+pelo bloco independente 33-38, sem habilitar previsoes da 32.
 
 ---
 

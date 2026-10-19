@@ -21,7 +21,9 @@ Prioridades, nesta ordem:
 
 - Identifique um problema por `contestId + index`, nunca apenas pelo nome.
 - Um problema ja tentado, resolvido, usado em outro Ipsum ou pendente nao pode ser recomendado.
-- So pode existir um Ipsum ativo.
+- So pode existir um Ipsum ativo; no bloco Firebase 33-38, a garantia passa a ser por uid entre handles/dispositivos.
+- Planejamento 33-38 aprovado: somente Google/Firebase, isolamento uid+handle, 800 por vinculo novo e prazo absoluto de 2h. Contratos em docs/FIREBASE.md; nada deste bloco foi implementado.
+- Handles iguais em uids diferentes sao permitidos; nao adicionar verificacao extra de posse CF. Login/troca de handle nao reiniciam rating; avaliacoes antigas permanecem preservadas.
 - Submissoes anteriores ao inicio nao contam para o Ipsum atual.
 - Um Ipsum encerrado nao pode alterar o rating duas vezes.
 - AC posterior muda a classificacao da pendencia, mas nao recalcula o rating original.
@@ -49,6 +51,9 @@ Preserve uma estrutura existente que ja seja funcional. Nao adicione dependencia
 backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
+
+- **Novo planejamento de 19/10/2026:** Historias 33-38, somente documentacao; proxima implementacao deste bloco e a 33. Independente da coorte 31; nao habilita a 32.
+- **Contrato do novo bloco:** [Firebase, prazo e migracao](docs/FIREBASE.md). Requisitos novos substituem a exclusao anterior de login/Firebase e o rating inicial D-009 somente prospectivamente (D-033 a D-036).
 
 - **Foco:** Historias 22-30 implementadas e verificadas; 31 com pre-registro/ferramenta, evidencia real pendente. Historias 00-21 preservadas.
 - **Ultima historia verificada:** Historia 30 em 2026-10-18: 232 testes debug/170 release, lint sem erros, APK gerado e 66 testes Python. Exportacao local/contrato Android-Python e snapshots anteriores verificados.
@@ -141,6 +146,7 @@ Comparacao entre epocas e correcao temporal fora do escopo.
 - [`docs/ROADMAP.md`](docs/ROADMAP.md): historias, aceite, progresso, dependencias e marcos.
 - [`docs/DECISIONS.md`](docs/DECISIONS.md): decisoes abertas e registro historico.
 - [`docs/TESTING.md`](docs/TESTING.md): estrategia proporcional a risco e comandos.
+- [`docs/FIREBASE.md`](docs/FIREBASE.md): planejamento 33-38, identidade/Firestore, rating inicial 800, prazo de 2h, configuracao e migracao.
 - [`docs/SESSIONS.md`](docs/SESSIONS.md): registro curto das sessoes recentes.
 - [`docs/DEMO.md`](docs/DEMO.md): demonstracao reproduzivel e avaliacao do TCC.
 - [`docs/QUANTITATIVE.md`](docs/QUANTITATIVE.md): protocolo, estimandos, dados, censura, avaliacao e gates da extensao Python.

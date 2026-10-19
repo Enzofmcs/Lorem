@@ -32,9 +32,22 @@ A base Android de módulo único implementa as Histórias 00–21 e 29–30:
 
 As Histórias 10 e 11 foram concluídas após a confirmação do usuário de todos os testes manuais em dispositivo em 13/10/2026. As definições dos indicadores e o conjunto de referência estão no [roadmap](docs/ROADMAP.md#historia-11---estatisticas-confiaveis).
 
+## Novo planejamento: login e perfis Firebase
+
+Solicitacao de 19/10/2026: **Historias 33-38**, ainda nao implementadas.
+Login somente Google via Firebase Auth; Firestore para progresso por conta+handle,
+permitindo o mesmo handle em contas diferentes; todo vinculo novo inicia em 800;
+Ipsum limitado a 2h corridas com fechamento automatico sem AC valido no prazo.
+Login/troca de handle preservam saldo existente. O servidor mantem prazo e
+avaliacao unica mesmo com o app fechado; migracao preserva avaliacoes antigas.
+
+[Historias e ordem](docs/ROADMAP.md#novo-bloco-contas-firebase-e-prazo-maximo-do-ipsum-33-38) ·
+[Contratos, configuracao, offline e migracao](docs/FIREBASE.md).
+O bloco nao depende da coorte real da 31 nem libera a integracao da 32.
+
 ## Escopo resumido
 
-O Lorem tem perfil local associado a um handle público, catálogo e histórico do Codeforces, recomendação inédita, execução de um Ipsum, resultados, pendências, rating interno, estatísticas, variedade e consolidação. Não fazem parte do escopo recursos sociais, backend próprio, Firebase, editor de código ou gamificação. Consulte [`docs/SPEC.md`](docs/SPEC.md) para as regras completas.
+O Lorem tem perfil local associado a um handle público, catálogo e histórico do Codeforces, recomendação inédita, execução de um Ipsum, resultados, pendências, rating interno, estatísticas, variedade e consolidação. O bloco planejado 33-38 acrescenta login/progresso Firebase; a implementacao atual continua local. Nao fazem parte do escopo recursos sociais, backend proprio fora desse bloco, editor de codigo ou gamificacao. Consulte [`docs/SPEC.md`](docs/SPEC.md) para as regras completas.
 
 ## Arquitetura inicial
 

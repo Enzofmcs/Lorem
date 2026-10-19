@@ -11,9 +11,15 @@ Nao preencher silenciosamente. Registrar a escolha em **Registro de decisoes** e
 
 ### DA-01 - Rating inicial
 
-- [x] Usar rating oficial atual do Codeforces.
+**Nova regra solicitada em 19/10/2026 (D-035), planejada na 35:**
+
+- [x] Todo novo vinculo uid+handle inicia em 800, independentemente do rating CF.
 - [ ] Permitir que o usuario escolha o rating inicial.
-- [ ] Usar um valor padrao e calibrar pelos primeiros Ipsums.
+- [ ] Usar calibracao especial nos primeiros Ipsums.
+
+A escolha historica de usar rating oficial (D-009) foi substituida prospectivamente.
+Codigo atual ainda usa a regra antiga; login/troca de handle nao resetam progresso,
+e snapshots antigos permanecem preservados conforme plano de migracao da 38.
 
 ### DA-02 - Formula exata do Rating Lorem
 
@@ -106,7 +112,7 @@ Use o formato abaixo. Nao apagar decisoes antigas; marque quando forem substitui
 | D-006 | 2026-09-18 | Rating estimado e faixa consolidada sao conceitos separados. | Evitar que poucos acertos isolados representem dominio amplo. | 11-13 |
 | D-007 | 2026-09-18 | A estrutura inicial persiste somente um perfil local temporario com DataStore; integracoes do Codeforces permanecem falsas. | Comprovar persistencia e separacao de camadas sem antecipar Room, rede ou regras das historias seguintes. | 00, 01 |
 | D-008 | 2026-09-22 | Arquivos JAR nao serao versionados; os scripts do Gradle baixam o bootstrap oficial para o cache e validam SHA-256. | Manter o diff da PR totalmente textual sem perder os comandos `./gradlew`. | 00 |
-| D-009 | 2026-09-22 | O Rating Lorem inicial usa o rating oficial atual do Codeforces quando ele estiver disponivel; contas sem rating oficial iniciam em 800. | Aproveitar a melhor referencia publica existente sem impedir o uso por contas ainda nao ranqueadas e manter um ponto inicial coerente com a menor dificuldade dos problemas avaliados. | 01, 04, 08 |
+| D-009 | 2026-09-22 | **Substituida prospectivamente pela D-035; registro historico.** O Rating Lorem inicial usa o rating oficial atual do Codeforces quando ele estiver disponivel; contas sem rating oficial iniciam em 800. | Aproveitar a melhor referencia publica existente sem impedir o uso por contas ainda nao ranqueadas e manter um ponto inicial coerente com a menor dificuldade dos problemas avaliados. | 01, 04, 08 |
 | D-010 | 2026-09-23 | A recomendacao normaliza o Rating Lorem para o multiplo de 100 mais proximo, com minimo 800; sem candidato na faixa da categoria, explora primeiro as camadas adjacentes mais proximas em passos de 100, ate 300 pontos, preservando variedade e sorteio entre empates, sem confirmacao. Persiste categoria e faixa originais, rating escolhido e distancia do fallback; sem candidato no limite, nao cria Ipsum e oferece erro recuperavel. | Tornar o fallback previsivel, auditavel e limitado sem interromper o fluxo simples do MVP. | 04, 12 |
 | D-011 | 2026-09-23 | **Substituida pela D-018; WorkManager implementado na Historia 16 e polling na 17.** As submissoes do Ipsum sao verificadas pelo botao e ao retornar para a tela/app, sem polling, `WorkManager`, servico ou trabalho permanente em segundo plano. | Manter atualizacao suficiente para o treino com menor complexidade, consumo e risco de consultas duplicadas. | 06 |
 | D-012 | 2026-10-02 | O Rating Lorem usa expectativa Elo pela diferenca usuario-problema. AC parte de `round(8 + 32 * (1 - expectativa))`; sem AC perde `round(8 + 24 * expectativa)`, independentemente de desistir cedo. O tempo esperado e `clamp(60 + diferenca/10, 30, 120)` minutos; AC depois do esperado perde gradualmente ate metade do ganho no dobro do tempo, sem bonus por rapidez. Revelar tags reduz o ganho em cerca de 25%, no minimo 2 pontos. Ganhos ficam entre 1 e 40 e perdas entre -1 e -32. Nao ha calibracao especial. | Produzir feedback previsivel que valoriza dificuldade, tempo e autonomia sem permitir bonus por demora nem dupla pontuacao. | 08 |
@@ -127,7 +133,7 @@ Use o formato abaixo. Nao apagar decisoes antigas; marque quando forem substitui
 | D-022 | 2026-10-18 | Hipotese operacional sequencial A/B/C: tempo de A desde inicio, seguintes desde primeiro AC do predecessor. Usar horario da primeira submissao com veredito final OK dentro do contest, sem upsolve. Preservar brutos, marcar saltos/inversoes/intercalacoes e medir cobertura. Sem AC nao vira zero/infinito/incapacidade; distinguir disponibilidade, dedicacao e observacao incompleta. | Medida aproximada solicitada; protocolo de censura e selecao em QUANTITATIVE.md e hipotese a verificar. | 24-28, 30-31 |
 | D-023 | 2026-10-18 | Primeira entrega: estudo Python reproduzivel com referencia simples, modelo interpretavel, erros de tempo, probabilidades para orcamento explicito e incerteza. Separar contests completos de treino/teste e impedir atributos de desfecho. Historias 22-28 somam 24 h estimadas; nenhum resultado esta comprovado. | Escopo e restricao de esforco do usuario; protocolo inicial KM/AFT e escolha por validacao permanecem testaveis. | 22-28 |
 | D-024 | 2026-10-18 | Validar posteriormente com Ipsums de inicio registrado e comparar Rating CF anterior ao inicio com Rating Lorem inicial antes de transportar o modelo. Tamanho/limiares definidos antes do teste; correlacao nao prova equivalencia e evidencia insuficiente impede integracao. | Evitar aplicar diretamente estimativas de contest ao treino ou ratings de significados diferentes. | 30-32 |
-| D-025 | 2026-10-18 | Integracao eventual local, com regras/modelos/snapshots versionados, avaliacoes antigas preservadas e sem requisito de backend/login/nuvem. D-012 continua vigente; corte de recomendacoes nao depende de sucesso do modelo. | Preservar funcionamento local e invariantes solicitados pelo usuario. | 29-32 |
+| D-025 | 2026-10-18 | **Complementada pela D-033:** estudo/modelo continuam locais; novo bloco do app passa a prever login e Firebase. Integracao eventual local, com regras/modelos/snapshots versionados, avaliacoes antigas preservadas e sem requisito de backend/login/nuvem. D-012 continua vigente; corte de recomendacoes nao depende de sucesso do modelo. | Preservar funcionamento local e invariantes solicitados pelo usuario. | 29-32 |
 | D-026 | 2026-10-18 | Por instrucao explicita do usuario, contests especiais ficam fora da analise. Qualquer contest com um problema em duas versoes (ex.: B1/B2, facil/dificil) e excluido integralmente, inclusive seus problemas simples e prefixos validos. Preservar brutos e registrar exclusoes; nao relaxar o filtro para obter amostra. O recorte vigente exige formato CF e ordem simples A/B/C. | Confirmar que a exclusao desses contests e intencional, e nao uma limitacao a remover para treinar o modelo. | 23-28 |
 | D-027 | 2026-10-18 | Nova amostra regular-simple-v1: percorrer a ordem de hash/rodizio existente e verificar estrutura antes de congelar 20 contests. Reconhecimento conservador: CF FINISHED com Div. 1-4 ou Codeforces Global Round no nome, sem marcadores especiais; exigir A/B/C simples em standings. Registrar todos os candidatos/recusas e fontes; erros interrompem/retomam, sem pular candidato por falha. Nenhuma submissao, score ou resultado do modelo escolhe a amostra. Piloto anterior permanece imutavel. | Aplicar D-026 antes da coleta completa e evitar selecionar por sucesso ou descartar somente apos ajustar modelos. | 23-28 |
 | D-028 | 2026-10-18 | AFT v1 usa NumPy 2.3.5/SciPy 1.17.0 opcionais, likelihoods log-normal/Weibull explicitas com censura e L2 {0,0.01,0.1}; centros/curva de censura apenas no treino. Selecao na validacao por Brier IPCW integrado de 0-120 min, grade 5 min, G>=0,05, ECE de casos conhecidos <=KM global+0,05; CV por grupos no treino e MAE como desempates. Gate falho exporta apenas diagnostico indisponivel. Regras fixadas antes do ajuste real; metodo e limites em study/MODEL.md. | Implementar a Historia 26 com numerica auditavel e poucas dependencias; manter teste reservado e nao presumir ganho de precisao. | 26-28 |
@@ -137,6 +143,19 @@ Use o formato abaixo. Nao apagar decisoes antigas; marque quando forem substitui
 | D-030 | 2026-10-18 | Realizar o corte aprovado no Android com contest.list pelo gate, origem/data/fonte/versao persistidas e migracao aditiva. Catalogo legado sem prova nao habilita novas recomendacoes; cache verificado funciona offline e fallback nao relaxa o corte. Preservar historicos, ativos, pendencias e avaliacoes. | Historia 29 verificada: 226 debug/164 release, lint sem erros e APK; origem nao e inferida pelo id. | 29 |
 | D-031 | 2026-10-18 | Base Ipsum local v1: snapshots CF observados antes do inicio e Lorem inicial, exportacao explicita por perfil/UUID sem ativo/identificadores diretos, ausencias legadas preservadas. Preparo verifica metadados inteiros/D-026 pelo gate; piso operacional 10 participantes/200 tentativas/100 eventos, 6/2/2 por participante/hash/seed. Conflitos/coorte congelada alterada recusados. Piso nao aprova transporte: 31 fixa limiares finais antes do teste e 32 continua bloqueada com dados insuficientes. | Evitar retroimputacao, confusao entre CF/Lorem, tempo de parede/dedicacao e testes de software/evidencia real. Nenhum export real fornecido; n=0/insufficient_data. | 30-32 |
 | D-032 | 2026-10-19 | Pre-registro Ipsum transport v1 antes de qualquer coorte real: piso final 100 participantes/2.000 tentativas/1.000 eventos, 60/20/20 por participante; IC95% superior MAE<=20 min/Brier integrado<=0,15/ECE por orcamento<=0,10, com larguras <=10 min/0,05/0,10, dominio>=90%, mediana em >=95% dos eventos e suporte integral 0-120. Reusar hashes exatos da 28; identidade versus linear com peso igual por participante ajustado so no treino, escolha na validacao congelada antes do teste, bootstrap pareado 1.000 vezes por participante. Exigir limites no total e sem dica; pausas desconhecidas permanecem desconhecidas. Fixture nunca aprova transporte; limite favoravel real apenas habilita decisao de dominio, nao integracao automatica. | Limites operacionais justificados no pre-registro study/TRANSPORT_PROTOCOL.md a partir da referencia 28; contagens nao garantem poder. Dados reais ausentes mantem 31 incompleta/32 bloqueada, ratings distintos e D-012 vigente. | 31-32 |
+
+### Contas e limite de treino solicitados em 19/10/2026
+
+Requisitos confirmados pela solicitacao do usuario; **implementacao ainda pendente**
+nas Historias 33-38. Detalhes de arquitetura/fronteira/migracao em FIREBASE.md sao
+propostas tecnicas deste planejamento, nao comportamentos ja verificados.
+
+| ID | Data | Decisao | Motivo | Historias afetadas |
+|---|---|---|---|---|
+| D-033 | 2026-10-19 | Login exclusivamente Google pelo Firebase Authentication e banco Firebase (Firestore). Planejar Functions para escritas oficiais e prazo independente do Android. Substitui a exclusao de Firebase/login do escopo do app; preserva o estudo e seus gates locais. | Solicitacao explicita do usuario; configuracao/deploy pertencem a implementacao futura. | 33-38; compatibilidade 32 |
+| D-034 | 2026-10-19 | Rating e progresso separados por uid+handle normalizado; varios handles por conta e mesmo handle permitido em contas diferentes. Sem reserva global nem nova prova de posse Codeforces. Consulta de existencia nao autentica o dono do handle. | Usuario aceita handles repetidos e a dependencia das submissoes no Codeforces para o treino. | 34-36, 38 |
+| D-035 | 2026-10-19 | Todo vinculo novo inicia em 800, tenha ou nao rating oficial CF. Substitui D-009 para novos vinculos. Sessao, sincronizacao ou troca/reinsercao restauram o saldo existente, sem reset; 800 nao e novo piso permanente. Preservar avaliacoes legadas em arquivo separado conforme proposta de migracao, sem importar seu saldo para vinculo novo. | Ponto inicial fixo solicitado pelo usuario, sem reescrever avaliacoes antigas. | 35-36, 38; regra inicial da 01 |
+| D-036 | 2026-10-19 | Prazo maximo absoluto de 2h por Ipsum, independente de app/rede. Sem AC valido no prazo, encerrar automaticamente como sem AC e aplicar D-012 uma vez. Planejar expiresAt autoritativo, fechamento no prazo e verificacao pendente quando API incompleta; AC enviado em prazo e recebido tarde nao vira upsolve. Avaliacoes encerradas antigas nao sao recalculadas. | Limite solicitado pelo usuario, com recuperacao e sem dupla avaliacao. Fronteira inclusiva, fila/varredura e migracao detalhadas como propostas tecnicas em FIREBASE.md. | 36-38; tempo/submissoes das 05-10 |
 
 ### Implementacao inicial do protocolo (22-25), 18/10/2026
 
@@ -160,7 +179,9 @@ Use o formato abaixo. Nao apagar decisoes antigas; marque quando forem substitui
 
 ### Tabela de cenarios da D-012
 
-Exemplos para Rating Lorem anterior 1200, sem calibracao:
+Exemplos matematicos da D-012 para Rating Lorem anterior 1200, sem calibracao.
+O cenario de AC aos 150 min e historico/da funcao pura: apos implementar D-036,
+novos Ipsums nao aceitam AC depois de 120 min; a formula nao foi recalibrada:
 
 | Cenario | Rating do problema | Tempo esperado | Tempo gasto | Dica | Variacao |
 |---|---:|---:|---:|---|---:|

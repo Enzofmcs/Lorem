@@ -262,3 +262,29 @@ Pacote/CLI 0.4.0 instalado fora da arvore de fontes, estado vazio reproduzivel e
 avaliacao CF anterior byte a byte conferidos na [evidencia da 31](../study/evidence/2026-10-19-transport/verification.json).
 Nenhum teste real de Ipsums executado: n=0. Historia 31 incompleta; 32 bloqueada.
 TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014).
+
+
+## Planejamento 33-38: Firebase e limite de 2h
+
+Este planejamento e Nivel 1: revisar coerencia, links, dependencias, escopo do diff
+e checklists pendentes. Nao exige testes/build Android ou provisionar Firebase.
+
+Na implementacao, Auth/Firestore/Functions e migracoes sao Niveis 3/4. Regras e
+Functions exigem testes em Emulator Suite: isolamento uid+handle, provedor Google,
+sem token, acesso cruzado, escrita forjada, 800 somente na criacao, lock por uid e
+finalizacao unica sob retry/concorrencia. Admin SDK tambem precisa testar validacao
+de token/caminho/comando. OAuth real exige configuracao verificada; emulador nao
+comprova integracao com o provedor.
+
+A 37 exige relogio controlado e casos em 1h59m59s, 2h exatas e apos o prazo; AC
+enviado antes/no/depois do limite, veredito atrasado/TESTING, consulta incompleta,
+API indisponivel, jobs perdidos/duplicados/atrasados, offline/reboot/relogio civil
+alterado e corrida com encerramento manual. Fechamento no prazo nao pode esperar
+a rede; avaliacao final aguarda verificacao suficiente e e aplicada uma vez.
+
+Na 38, verificar arquivo legado intacto, ativo migrado sem reinicio de prazo,
+exclusoes antigas, nuvem existente sem reset, troca de contas e handles, workers
+antigos, segundo dispositivo, paridade D-012 e exports sem identificadores diretos.
+No marco integrado: suite backend/Rules, `test`, `lint`, `assembleDebug`.
+Conferencias humanas continuam opcionais D-014; nenhuma execucao real e alegada
+por estes criterios planejados. Contratos detalhados em [FIREBASE.md](FIREBASE.md).
