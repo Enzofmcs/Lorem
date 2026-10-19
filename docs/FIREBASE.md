@@ -4,6 +4,8 @@ Planejamento solicitado em **19/10/2026**; nenhuma funcionalidade deste bloco es
 implementada. Historias **33-38** em [ROADMAP.md](ROADMAP.md). Base conferida:
 `2092c2f299e1590d791f93e59bdf5e60189bc707` (`main`).
 
+Ordem de execucao: [Historia 33](https://github.com/Enzofmcs/Lorem/issues/60) -> [Historia 34](https://github.com/Enzofmcs/Lorem/issues/61) -> [Historia 35](https://github.com/Enzofmcs/Lorem/issues/62) -> [Historia 36](https://github.com/Enzofmcs/Lorem/issues/63) -> [Historia 37](https://github.com/Enzofmcs/Lorem/issues/64) -> [Historia 38](https://github.com/Enzofmcs/Lorem/issues/65).
+
 ## Requisitos e limites do bloco
 
 - Login exclusivamente com Google pelo Firebase Authentication.

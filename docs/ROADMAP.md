@@ -2113,6 +2113,8 @@ final para nao perder AC enviado em prazo. Conferencias humanas opcionais D-014.
 
 **Status:** PLANEJADA; todos os criterios funcionais pendentes.
 
+**GitHub:** [#60 - Historia 33](https://github.com/Enzofmcs/Lorem/issues/60).
+
 **Estimativa preliminar:** 4-6 h.
 
 **Dependencias:** Nenhuma dentro do novo bloco; reutiliza arquitetura e testes das 14-17.
@@ -2140,6 +2142,8 @@ Conferencias humanas opcionais (D-014); os testes automatizados exigidos sao obr
 **Historia:** Como usuario, quero entrar no Lorem com minha conta Google e recuperar minha sessao com seguranca.
 
 **Status:** PLANEJADA; todos os criterios funcionais pendentes.
+
+**GitHub:** [#61 - Historia 34](https://github.com/Enzofmcs/Lorem/issues/61).
 
 **Estimativa preliminar:** 4-6 h.
 
@@ -2169,6 +2173,8 @@ Conferencias humanas opcionais (D-014); os testes automatizados exigidos sao obr
 
 **Status:** PLANEJADA; todos os criterios funcionais pendentes.
 
+**GitHub:** [#62 - Historia 35](https://github.com/Enzofmcs/Lorem/issues/62).
+
 **Estimativa preliminar:** 8-12 h.
 
 **Dependencias:** Historias 33 e 34.
@@ -2196,6 +2202,8 @@ Conferencias humanas opcionais (D-014); os testes automatizados exigidos sao obr
 **Historia:** Como usuario, quero que tentativas e evolucao fiquem salvas na minha conta e que cada resultado altere meu rating uma unica vez.
 
 **Status:** PLANEJADA; todos os criterios funcionais pendentes.
+
+**GitHub:** [#63 - Historia 36](https://github.com/Enzofmcs/Lorem/issues/63).
 
 **Estimativa preliminar:** 12-20 h.
 
@@ -2226,6 +2234,8 @@ Conferencias humanas opcionais (D-014); os testes automatizados exigidos sao obr
 
 **Status:** PLANEJADA; todos os criterios funcionais pendentes.
 
+**GitHub:** [#64 - Historia 37](https://github.com/Enzofmcs/Lorem/issues/64).
+
 **Estimativa preliminar:** 8-16 h.
 
 **Dependencias:** Historia 36; contratos de prazo e reconciliacao em FIREBASE.md.
@@ -2254,6 +2264,8 @@ Conferencias humanas opcionais (D-014); os testes automatizados exigidos sao obr
 **Historia:** Como usuario atual ou novo, quero adotar o login e os perfis em nuvem preservando meus registros anteriores e entendendo meu novo progresso.
 
 **Status:** PLANEJADA; todos os criterios funcionais pendentes.
+
+**GitHub:** [#65 - Historia 38](https://github.com/Enzofmcs/Lorem/issues/65).
 
 **Estimativa preliminar:** 8-12 h.
 
