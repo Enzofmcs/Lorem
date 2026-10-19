@@ -24,9 +24,12 @@ import dev.lorem.app.domain.auth.GoogleAccount
 import dev.lorem.app.domain.model.ThemePreference
 import dev.lorem.app.domain.repository.AppearanceRepository
 import dev.lorem.app.ui.theme.LoremTheme
+import dev.lorem.app.domain.handles.HandlesRepository
+import dev.lorem.app.ui.handles.AccountHandlesDestination
 
 @Composable
-fun FirebaseLoginApp(authentication: FirebaseAuthentication, appearance: AppearanceRepository) {
+fun FirebaseLoginApp(authentication: FirebaseAuthentication, appearance: AppearanceRepository,
+    handlesRepository: HandlesRepository? = null) {
     val model: AuthenticationViewModel = viewModel(factory = AuthenticationViewModel.factory(authentication.repository))
     val session by model.session.collectAsStateWithLifecycle()
     val busy by model.busy.collectAsStateWithLifecycle()
@@ -47,6 +50,10 @@ fun FirebaseLoginApp(authentication: FirebaseAuthentication, appearance: Appeara
             onSignIn = { credentials?.let { model.signIn { it.getIdToken(context) } } },
             onRetry = model::refresh,
             onSignOut = { model.signOut { credentials?.clearState() } },
+            signedInContent = { account ->
+                if (handlesRepository != null) AccountHandlesDestination(account.uid, handlesRepository)
+                else HandleOnboardingDestination()
+            },
         )
     }
 }
@@ -109,7 +116,7 @@ fun AuthenticationScreen(
 private fun HandleOnboardingDestination() {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.testTag("handle-onboarding")) {
         Text("Seus handles", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.semantics { heading() })
-        Text("A configuração dos handles ainda não está disponível nesta versão.")
+        Text("Não foi possível carregar seus handles. Tente entrar novamente.")
     }
 }
 

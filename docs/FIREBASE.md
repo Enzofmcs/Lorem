@@ -8,7 +8,10 @@ Cloud Tasks, billing ou backend externo como requisito. Firestore escolhido:
 33/34 em preview: login, validacao de sessao e bootstrap transacional direto pelo
 SDK Firestore. Usuario confirmou a publicacao das Rules; a configuracao de Google
 unico ainda aguarda confirmacao. Nao houve leitura administrativa pelo agente
-nem login Google real. Conferencia humana e opcional (D-014). **35-38 continuam planejadas.**
+nem login Google real. Conferencia humana e opcional (D-014).
+**35 implementada/verificada em preview; 36-38 continuam planejadas.** As novas
+Rules de handles/selecao precisam ser publicadas; a confirmacao anterior cobre
+somente a base 33/34.
 [Estado e comandos](FIREBASE_SETUP.md); [historias e aceite](ROADMAP.md).
 As evidencias antigas descrevem a implementacao anterior e permanecem intactas.
 
@@ -44,9 +47,10 @@ irrestritas para compensar a ausencia de Functions.
 | Caminho | Conteudo e regra |
 |---|---|
 | `users/{uid}` | Somente schemaVersion=1 e createdAt do servidor; criar uma vez. |
-| `users/{uid}/handles/{handleKey}` | Handle canonico, rating, consolidacao e versao; regras especificas na 35. |
+| `users/{uid}/handles/{handleKey}` | Schema 1, handle canonico/chave, bindingVersion=1, loremRating=800, consolidatedRating=null, progressVersion=0 e createdAt servidor na criacao; update/delete negados ate 36. |
 | `users/{uid}/handles/{handleKey}/ipsums/{ipsumId}` | Tentativa, snapshots e resultado; transicoes especificas na 36. |
-| `users/{uid}/runtime/current` | Lock transacional do unico ativo por uid; contrato da 36. |
+| `users/{uid}/runtime/selection` | Handle/binding selecionado, selectionVersion crescente e selectedAt servidor; sem lock current para alterar. Implementado na 35. |
+| `users/{uid}/runtime/current` | Lock transacional do unico ativo por uid; criacao/encerramento pertencem a 36. Na 35, presenca bloqueia troca e escrita continua negada. |
 
 Na 33/34, Auth atualiza/valida token e exige sign_in_provider=google.com.
 O bootstrap captura o uid validado e usa `runTransaction`: le o proprio documento,
@@ -54,23 +58,44 @@ cria schemaVersion/createdAt apenas se ausente, com `serverTimestamp()`, e prese
 metadados existentes. A transacao precisa de confirmacao do servidor; cache e fila
 offline nao liberam SignedIn. Rules permitem somente essa criacao minima por
 Google no proprio uid, com createdAt=request.time; negam update/delete/list da
-raiz, campos extras e todos os writes em handles/ipsums/runtime nesta entrega.
+raiz e campos extras. A 35 acrescenta as permissoes especificas abaixo; Ipsums,
+lock e alteracoes de rating continuam sem escrita nesta entrega.
 O cliente nao envia uid, e-mail ou nome no documento. Concorrencia, retry e
 restauracao nao reescrevem createdAt. Falha de Rules e diferente de provedor errado;
 rede/cota/configuracao ausentes deixam a sessao bloqueada com recuperacao.
 
-O cadastro da 35 usa user.info, normaliza a grafia canonica (trim/lowercase,
-Locale.ROOT) e codifica uma chave segura. Uma transacao cria somente se ausente;
-Rules futuras exigirao rating inicial 800 e recusarao reset/sobrescrita indevida.
-Nao introduzir reserva global, OAuth Codeforces ou desafio de posse.
+## Handles implementados na 35 (D-040)
 
-Room e cache/arquivo legado; DataStore guarda configuracao/selecao. Dados pessoais,
+O cadastro consulta user.info pela API centralizada. Preserva a grafia canonica e
+usa chave `cf_` + trim/lowercase(Locale.ROOT), validada antes de RPC (1-64 caracteres
+ASCII de handle, sem barras ou separador de consulta). Nao existe reserva global,
+OAuth Codeforces nem desafio de posse. O rating oficial CF nao entra no comando.
+A transacao cria somente se ausente, com 800/null/versao 0 e timestamp do servidor;
+re-adicionar existente restaura os campos sem sequer depender de nova consulta CF.
+Rules exigem esquema exato/800 e negam reset, update e delete do vinculo.
+
+Selecao e persistida na nuvem, com bindingVersion e selectionVersion. A transacao
+le vinculo/selecao/lock antes da escrita; selecionar o mesmo vinculo e no-op.
+Rules exigem alvo proprio existente, versao anterior+1 e ausencia de current.
+A presenca do lock e conservadoramente bloqueante. UI so confirma selecao por
+snapshot do servidor; cache ou escrita pendente nao autorizam novas operacoes.
+Novo inicio/progresso/historico de treino pertencem a 36: nesta entrega, restaurar
+um rating evoluido e verificado com fixtures locais explicitas, sem alegar treino
+Firebase real nem validacao independente de AC.
+
+Room 12->13 acrescenta apenas account_handles e account_selections, com uid/chave/
+binding separados. Nao transfere nem altera perfil, rating, ativo ou historicos
+legados; essa migracao de produto continua na 38. Cache nao regride versao de
+selecao/progresso sob resposta atrasada. ProfileLink e chaves de trabalho cloud
+incluem uid+handle+bindingVersion+selectionVersion; namespaces legados permanecem
+estaveis, e worker legado recusa contexto cloud. Catalogo publico continua comum.
+DataStore conserva configuracao/selecao legadas. Dados pessoais,
 leitores, workers e callbacks usam uid+handleKey+versao. Catalogo publico pode ser
 compartilhado. Trocar conta remove UI/listeners/trabalhos anteriores; callbacks
 atrasados nao liberam a identidade antiga. Com Ipsum ativo, nao trocar handle.
 Sair nao reinicia o prazo; sincronizar exige voltar a uma sessao do uid correto.
 
-## Ciclo do Ipsum planejado para Spark (35-38)
+## Ciclo do Ipsum planejado para Spark (36-38)
 
 O Android reutiliza dominio D-012, criterio de origem da 29, importacao D-017,
 API centralizada (minimo 2s), paginacao, deduplicacao e retry. Nao embarcar Python

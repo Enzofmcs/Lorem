@@ -3,6 +3,9 @@ package dev.lorem.app
 import android.content.Context
 import androidx.work.WorkManager
 import dev.lorem.app.data.auth.FirebaseAuthentication
+import dev.lorem.app.data.handles.AccountHandlesRepository
+import dev.lorem.app.data.local.RoomHandlesCache
+import dev.lorem.app.domain.handles.HandlesRepository
 import dev.lorem.app.data.local.LocalLoremRepository
 import dev.lorem.app.data.local.LoremDatabase
 import dev.lorem.app.data.local.PreferencesAppearanceRepository
@@ -41,6 +44,10 @@ class AppContainer(context: Context) {
         gate = TwoSecondCodeforcesRequestGate(beforeRequest = retryAfter::awaitPermission),
         onRetryAfter = retryAfter::record,
     )
+    val handlesRepository: HandlesRepository? by lazy {
+        authentication.handlesStore?.let { AccountHandlesRepository(it, codeforcesRepository,
+            RoomHandlesCache(database.accountHandlesDao())) }
+    }
     val synchronizationCoordinator = SynchronizationCoordinator(
         loremRepository, codeforcesRepository, applicationScope,
         synchronizationStore,

@@ -18,9 +18,10 @@
 
 **Novo bloco planejado em 19/10/2026:** Historias 33-38, login Google/Firebase,
 perfis por uid+handle com rating inicial 800 e limite absoluto de 2h por Ipsum.
-Base 33/34 implementada em preview; configuracao/provisionamento reais pendentes.
-Proxima funcionalidade: 35 (handles); nao depende dos dados reais da 31.
-[Contratos e migracao](FIREBASE.md). 33/34 parciais; 35-38 ainda planejadas. [Guia de configuracao](FIREBASE_SETUP.md).
+Base 33/34 e handles da 35 implementados em preview. Rules 33/34 publicadas conforme
+usuario; novas Rules 35 precisam ser publicadas. Google unico ainda sem confirmacao.
+Proxima funcionalidade: 36 (ciclo do Ipsum na nuvem); nao depende dos dados da 31.
+[Contratos e migracao](FIREBASE.md). 33/34 parciais; 36-38 planejadas. [Guia de configuracao](FIREBASE_SETUP.md).
 
 ## Como atualizar
 
@@ -2087,8 +2088,9 @@ neste planejamento.
 Solicitacao de **19/10/2026**, planejada contra `main` em
 `2092c2f299e1590d791f93e59bdf5e60189bc707`. **33/34 refeitas para Spark (D-039):
 base/login e JSON verificados localmente; Rules publicadas conforme usuario e confirmacao de Google unico pendente.
-35-38 permanecem planejadas.** Contratos e casos de borda:
-[FIREBASE.md](FIREBASE.md). Decisoes D-033 a D-039 em [DECISIONS.md](DECISIONS.md).
+35 implementada/verificada em preview (D-040); novas Rules pendentes de publicacao.
+36-38 permanecem planejadas.** Contratos e casos de borda:
+[FIREBASE.md](FIREBASE.md). Decisoes D-033 a D-040 em [DECISIONS.md](DECISIONS.md).
 
 Ordem recomendada: **33 -> 34 -> 35 -> 36 -> 37 -> 38**. O bloco e independente
 da conclusao empirica da 31; a 32 permanece bloqueada. As 00-30 e seus snapshots
@@ -2179,7 +2181,7 @@ Conferencias humanas opcionais D-014.
 
 **Historia:** Como usuario logado, quero cadastrar e alternar handles, mantendo um Rating Lorem independente para cada um.
 
-**Status:** PLANEJADA; todos os criterios funcionais pendentes.
+**Status:** IMPLEMENTADA E VERIFICADA EM PREVIEW (Spark, D-040); novas Rules ainda precisam ser publicadas. Ciclo de treino/historico da 36 e rollout da 38 permanecem separados.
 
 **GitHub:** [#62 - Historia 35](https://github.com/Enzofmcs/Lorem/issues/62).
 
@@ -2191,15 +2193,15 @@ Conferencias humanas opcionais D-014.
 
 #### Criterios de aceite
 
-- [ ] Validar existencia em user.info e persistir grafia canonica/chave normalizada em users/{uid}/handles/{handleKey}; nao exigir prova de posse nem reserva global do handle.
-- [ ] Criar cada vinculo novo por transacao do SDK Firestore, com Rules exigindo Rating Lorem exatamente 800, para CF ranqueado ou sem rating; mesmo uid/handle existente e retornado sem reset.
-- [ ] Permitir o mesmo handle em contas Google diferentes, com documentos, ratings, historicos e consolidacao independentes; diferenca de caixa no mesmo uid nao cria outro saldo.
-- [ ] Listar/adicionar/selecionar handles e restaurar o progresso de cada um; login, sincronizacao, reinstalacao e reinsercao nao sobrescrevem o saldo existente. 800 nao vira piso da formula D-012.
-- [ ] Migrar chaves de cache e ProfileLink para uid+handle+versao, isolar leituras/gravacoes/trabalhos e bloquear troca de handle durante Ipsum ativo; catalogo publico pode ser compartilhado.
+- [x] Validar existencia em user.info e persistir grafia canonica/chave normalizada em users/{uid}/handles/{handleKey}; nao exigir prova de posse nem reserva global do handle.
+- [x] Criar cada vinculo novo por transacao do SDK Firestore, com Rules exigindo Rating Lorem exatamente 800, para CF ranqueado ou sem rating; mesmo uid/handle existente e retornado sem reset.
+- [x] Permitir o mesmo handle em contas Google diferentes, com documentos, ratings, historicos e consolidacao independentes; diferenca de caixa no mesmo uid nao cria outro saldo.
+- [x] Listar/adicionar/selecionar handles e restaurar o progresso de cada um; login, sincronizacao, reinstalacao e reinsercao nao sobrescrevem o saldo existente. 800 nao vira piso da formula D-012.
+- [x] Migrar chaves de cache e ProfileLink para uid+handle+versao, isolar leituras/gravacoes/trabalhos e bloquear troca de handle durante Ipsum ativo; catalogo publico pode ser compartilhado.
 
-**Entrega demonstravel:** Conta A e conta B cadastram o mesmo handle em 800; treinar em A nao muda B, e alternar handles em A restaura cada progresso.
+**Entrega demonstravel da 35:** Contas A/B cadastram o mesmo handle em 800; alternar handles restaura saldo/consolidacao e selecao. SDK/Room novos simulam reinstalacao sem cache anterior. Progresso evoluido e lock sao fixtures locais identificadas; nao foram produzidos por treino em nuvem. A jornada integrada original (treinar em A sem mudar B) depende do ciclo da 36. Leitura de historicos ja e isolada por uid nas Rules; escrita/uso no treino continua na 36.
 
-**Verificacao planejada:** Nivel 4: criacao concorrente/idempotente, CF alto/unrated, caixa/normalizacao, mesmo handle em dois uids, cache/worker atrasado e restauracao sem reset; migracoes locais aditivas.
+**Verificacao:** Niveis 4/5: 16 Auth/Rules, 42 Android direcionados sem falhas/ignorados, incluindo cinco SDK/emuladores e tres Compose. Criacao concorrente/idempotente, CF alto/unrated, caixa/Locale.ROOT, mesmo handle em dois uids, cache/worker atrasado, logout/troca de conta, lock e restauracao sem reset cobertos; migracao aditiva Room 12->13 e cadeia 9->13 preservam legado. Regressao/build/lint e hashes na [evidencia da 35](evidence/2026-10-19-firebase-handles-35.json). Nenhum deploy/live OAuth alegado.
 
 Conferencias humanas opcionais (D-014); os testes automatizados exigidos sao obrigatorios.
 
@@ -2307,7 +2309,7 @@ Conferencias humanas opcionais (D-014); os testes automatizados exigidos sao obr
 - **E - Automacao (15-17):** preparacao, manutencao e deteccao sem cliques obrigatorios.
 - **F - Apresentacao (18-21):** temas e telas consistentes, acessiveis e demonstraveis.
 - **G-J - Extensao quantitativa (22-32):** progresso e gates registrados nas respectivas historias; 31/32 continuam pendentes de evidencia real.
-- **K - Contas e dados Firebase (33-36):** 33/34 refeitas para Spark e em preview, configuracao remota pendente; handles, 800 inicial e ciclo das 35/36 ainda planejados.
+- **K - Contas e dados Firebase (33-36):** 33/34 refeitas para Spark e 35 implementada/verificada em preview (handles, 800 inicial, selecao/cache isolados); novas Rules e confirmacao Google unico pendentes. Ciclo do Ipsum da 36 planejado.
 - **L - Prazo e adocao (37-38):** limite de 2h com recuperacao, migracao e jornada integrada verificados; planejado.
 
 ---

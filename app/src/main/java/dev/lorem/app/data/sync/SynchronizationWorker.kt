@@ -20,6 +20,8 @@ class SynchronizationWorker(
     override suspend fun doWork(): Result {
         return try {
             if (!isAllowed()) return Result.success()
+            // This worker owns only the legacy repository. Never downgrade a cloud context to a handle.
+            if (inputData.getString(UID) != null) return Result.success()
             if (deferredByApi()) return Result.retry()
             val outcome = when (inputData.getString(KIND)) {
                 CATALOG -> synchronization.catalog()
@@ -49,6 +51,8 @@ class SynchronizationWorker(
         const val CATALOG = "catalog"
         const val HANDLE = "handle"
         const val VERSION = "version"
+        const val UID = "uid"
+        const val BINDING_VERSION = "bindingVersion"
     }
 }
 

@@ -380,3 +380,32 @@ ruleset ativo pelo agente ou login Google real. JSONs de testes anteriores intac
 Sem mudanca de runtime/Rules; nao repetir Gradle, lint, APK ou emuladores. Verificar
 diff, links, cinco sessoes e estado das issues. Somente Google no Auth real ainda
 aguarda confirmacao; conferencia humana do app permanece opcional (D-014).
+
+## Historia 35: handles por uid e rating inicial 800, 19/10/2026
+
+Niveis 4/5. `npm --prefix firebase test`: 16 testes Auth/Rules sem falhas/ignorados.
+SDK Android de producao contra Auth/Firestore em demo-lorem-local: criacao
+concorrente, re-adicao sem reset, mesma identidade CF em dois uids, selecao
+restaurada em FirebaseApp/Room novos, lock ativo e troca de Google no mesmo Auth.
+O fake CF e exclusivo do teste; saldo evoluido/lock sao fixtures REST em loopback,
+nao treino Firebase. Google/OAuth real e publicacao das novas Rules nao alegados.
+
+42 testes direcionados Android passaram sem falhas/ignorados: suites de bootstrap
+e handles SDK, repositorio, cache Room, migracoes, workers, ViewModel e Compose.
+O looper principal pausado do Robolectric precisa entregar notificacoes Auth/IdToken
+na fixture antes de consultar com outra conta; nenhuma Rules foi relaxada.
+
+Marco `./gradlew test lint assembleDebug --max-workers=2 --console=plain`:
+278 debug (272 executados e seis opt-in ignorados) e 204 release, zero falhas/erros.
+Os cinco SDK/emulador passaram na execucao direcionada; a entrada preview passou
+separadamente com flag true. Lint sem erros, 58 avisos preexistentes de versoes/icone.
+APK preview e tres testes Compose tambem gerados/executados com flag true.
+
+Cache em arquivo fechado/reaberto restaura por uid, e respostas antigas nao
+regridem selecao/progresso. Migracao Room 12->13 aditiva e cadeia 9->13 preservam
+ativo/rating/historico/catalogo legados. Worker legado rejeita contexto cloud
+serializado; input/coletores sao descartados no logout/troca de conta. Sem alterar
+D-012, implementar ciclo 36/timeout 37 ou iniciar migracao de produto 38.
+
+[Evidencia, suites/comandos e hashes](evidence/2026-10-19-firebase-handles-35.json).
+TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014).
