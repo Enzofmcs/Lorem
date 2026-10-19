@@ -116,6 +116,7 @@ private fun HandleOnboardingDestination() {
 private fun AuthenticationFailure.message() = when (this) {
     AuthenticationFailure.CONFIGURATION -> "O login ainda não está disponível nesta versão do aplicativo."
     AuthenticationFailure.NETWORK -> "Não foi possível confirmar sua sessão. Verifique a conexão e tente novamente."
+    AuthenticationFailure.QUOTA -> "O limite de uso do serviço foi atingido. Tente novamente mais tarde."
     AuthenticationFailure.INVALID_SESSION -> "Sua sessão expirou. Entre novamente com Google."
     AuthenticationFailure.PROVIDER_NOT_ALLOWED -> "Use sua conta Google para entrar no Lorem."
     AuthenticationFailure.UNKNOWN -> "Não foi possível entrar. Tente novamente."

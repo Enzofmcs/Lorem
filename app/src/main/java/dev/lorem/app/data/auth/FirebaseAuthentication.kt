@@ -9,8 +9,8 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.functions.FirebaseFunctions
-import com.google.firebase.functions.FirebaseFunctionsException
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
 import dev.lorem.app.domain.auth.AuthenticationFailure
 import dev.lorem.app.domain.auth.AuthenticationRepository
 import dev.lorem.app.domain.auth.AuthenticationState
@@ -28,8 +28,6 @@ data class FirebaseAuthentication(
     val googleWebClientId: String?,
 ) {
     companion object {
-        private const val REGION = "us-central1"
-
         fun create(context: Context, scope: CoroutineScope): FirebaseAuthentication = try {
             configured(context, scope)
         } catch (_: IllegalArgumentException) {
@@ -50,13 +48,7 @@ data class FirebaseAuthentication(
                 return unavailable()
             }
             val auth = FirebaseAuth.getInstance(app)
-            val functions = FirebaseFunctions.getInstance(app, REGION)
-            val bootstrap = AccountBootstrap {
-                val result = firebaseCall { functions.getHttpsCallable("bootstrapAccount").call(emptyMap<String, Any>()).await() }
-                if ((result.data as? Map<*, *>)?.get("created") !is Boolean) {
-                    throw AuthenticationException(AuthenticationFailure.CONFIGURATION)
-                }
-            }
+            val bootstrap = FirestoreAccountBootstrap(auth, FirebaseFirestore.getInstance(app))
             return FirebaseAuthentication(GoogleSessionRepository(FirebaseGoogleIdentitySource(auth), bootstrap, scope), clientId)
         }
     }
@@ -98,21 +90,27 @@ private class UnconfiguredAuthenticationRepository : AuthenticationRepository {
     override fun retry() = Unit
 }
 
-private suspend fun <T> firebaseCall(block: suspend () -> T): T = try {
+internal suspend fun <T> firebaseCall(block: suspend () -> T): T = try {
     block()
 } catch (error: Exception) {
     if (error is CancellationException || error is AuthenticationException) throw error
-    val reason = when (error) {
-        is FirebaseNetworkException -> AuthenticationFailure.NETWORK
-        is FirebaseAuthInvalidUserException, is FirebaseAuthInvalidCredentialsException -> AuthenticationFailure.INVALID_SESSION
-        is FirebaseFunctionsException -> when (error.code) {
-            FirebaseFunctionsException.Code.UNAUTHENTICATED -> AuthenticationFailure.INVALID_SESSION
-            FirebaseFunctionsException.Code.PERMISSION_DENIED -> AuthenticationFailure.PROVIDER_NOT_ALLOWED
-            FirebaseFunctionsException.Code.UNAVAILABLE, FirebaseFunctionsException.Code.DEADLINE_EXCEEDED -> AuthenticationFailure.NETWORK
-            FirebaseFunctionsException.Code.NOT_FOUND, FirebaseFunctionsException.Code.FAILED_PRECONDITION -> AuthenticationFailure.CONFIGURATION
-            else -> AuthenticationFailure.UNKNOWN
-        }
+    throw AuthenticationException(firebaseFailureOf(error))
+}
+
+internal fun firebaseFailureOf(error: Exception): AuthenticationFailure = when (error) {
+    is FirebaseNetworkException -> AuthenticationFailure.NETWORK
+    is FirebaseAuthInvalidUserException, is FirebaseAuthInvalidCredentialsException -> AuthenticationFailure.INVALID_SESSION
+    is FirebaseFirestoreException -> when (error.code) {
+        FirebaseFirestoreException.Code.UNAUTHENTICATED -> AuthenticationFailure.INVALID_SESSION
+        // The Google claim was already validated. Rules may be missing or incompatible.
+        FirebaseFirestoreException.Code.PERMISSION_DENIED,
+        FirebaseFirestoreException.Code.NOT_FOUND,
+        FirebaseFirestoreException.Code.FAILED_PRECONDITION -> AuthenticationFailure.CONFIGURATION
+        FirebaseFirestoreException.Code.UNAVAILABLE,
+        FirebaseFirestoreException.Code.DEADLINE_EXCEEDED,
+        FirebaseFirestoreException.Code.ABORTED -> AuthenticationFailure.NETWORK
+        FirebaseFirestoreException.Code.RESOURCE_EXHAUSTED -> AuthenticationFailure.QUOTA
         else -> AuthenticationFailure.UNKNOWN
     }
-    throw AuthenticationException(reason)
+    else -> AuthenticationFailure.UNKNOWN
 }

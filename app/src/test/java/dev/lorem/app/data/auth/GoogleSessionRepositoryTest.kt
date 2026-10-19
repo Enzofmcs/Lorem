@@ -60,13 +60,16 @@ class GoogleSessionRepositoryTest {
         val source = Source(a)
         val oldReply = CompletableDeferred<Unit>()
         var requests = 0
-        val repo = GoogleSessionRepository(source, AccountBootstrap {
+        val requestedUids = mutableListOf<String>()
+        val repo = GoogleSessionRepository(source, AccountBootstrap { uid ->
+            requestedUids += uid
             if (++requests == 1) withContext(NonCancellable) { oldReply.await() }
         }, backgroundScope)
         runCurrent()
         source.accounts.value = b
         runCurrent()
         assertEquals(AuthenticationState.SignedIn(b), repo.state.value)
+        assertEquals(listOf(a.uid, b.uid), requestedUids)
         oldReply.complete(Unit)
         runCurrent()
         assertEquals(AuthenticationState.SignedIn(b), repo.state.value)
@@ -121,5 +124,23 @@ class GoogleSessionRepositoryTest {
         scope.cancel()
         runCurrent()
         assertEquals(0, source.accounts.subscriptionCount.value)
+    }
+
+    @Test fun `quota or unpublished Rules never authorize a session and retry retains the account`() = runTest {
+        for (failure in listOf(AuthenticationFailure.QUOTA, AuthenticationFailure.CONFIGURATION)) {
+            val source = Source(a)
+            var unavailable = true
+            val repo = GoogleSessionRepository(source, AccountBootstrap { uid ->
+                assertEquals(a.uid, uid)
+                if (unavailable) throw AuthenticationException(failure)
+            }, backgroundScope)
+            runCurrent()
+            assertEquals(AuthenticationState.Failed(failure, true), repo.state.value)
+            assertEquals(a, source.currentAccount)
+            unavailable = false
+            repo.retry()
+            runCurrent()
+            assertEquals(AuthenticationState.SignedIn(a), repo.state.value)
+        }
     }
 }

@@ -39,17 +39,17 @@ Competidores de nivel iniciante-intermediario ou intermediario que ja utilizam o
 
 ## 3. Escopo fechado
 
-**Alteracao aprovada em 19/10/2026, somente planejada:** Historias 33-38
+**Alteracao aprovada em 19/10/2026 (Spark, D-039):** Historias 33-38
 acrescentam Google/Firebase, varios handles por conta com 800 inicial e prazo de
 2h. O app atual ainda usa perfil local e a regra inicial D-009. Contratos de
-transicao/migracao e operacao sem rede: [FIREBASE.md](FIREBASE.md).
+transicao/migracao e operacao sem rede: [FIREBASE.md](FIREBASE.md). Login 33/34 em preview; demais historias planejadas. Firebase sem Functions/Tasks/billing, com Rules e sincronizacao Android/WorkManager. O prazo de 2h e absoluto; a gravacao remota pode ocorrer depois, conforme rede/sistema/sessao. Veredito CF nao tem validacao independente no servidor neste escopo Spark.
 
 ### Dentro do escopo
 
 - Conta Lorem identificada pelo uid Firebase, login exclusivamente Google e varios handles publicos por conta, com progresso separado por uid+handle (33-35). Handles repetidos entre contas sao permitidos, sem verificacao adicional de posse CF.
 - Firestore para perfis, rating e Ipsums oficiais; Room/DataStore continuam como cache/configuracao e arquivo legado. Novo vinculo sempre inicia em 800; retornar a vinculo existente preserva seu rating (35-38).
 - Consulta ao catalogo de problemas e ao historico de submissoes.
-- Preparacao e atualizacao automatica dos dados publicos do Codeforces, conforme D-018 e Historias 15-17; novo bloco 33-38 acrescenta persistencia/recuperacao de progresso Firebase para a mesma conta, com autoridade do servidor.
+- Preparacao e atualizacao automatica dos dados publicos do Codeforces, conforme D-018 e Historias 15-17; novo bloco 33-38 acrescenta persistencia/recuperacao de progresso Firebase para a mesma conta, com transacoes/Rules Firestore e verificacao Codeforces no Android (D-039).
 - Exclusao de qualquer exercicio ja tentado ou resolvido pelo usuario.
 - Recomendacao automatica de um exercicio.
 - Apenas um Ipsum ativo por conta Lorem, inclusive entre handles/dispositivos.
@@ -200,7 +200,7 @@ Os nomes tecnicos podem mudar, mas o sistema precisa representar:
 Opcao inicial para manter o TCC simples; preservar outra estrutura se o repositorio ja possuir uma funcional:
 
 - Kotlin, Compose, um modulo, ViewModel + StateFlow e Coroutines.
-- Room para cache/dados locais legados e DataStore para pequenas configuracoes; bloco 33-38 acrescenta Firebase Auth Google, Firestore e Functions com agendamento Cloud Tasks/recuperacao para tentativas oficiais.
+- Room para cache/dados locais legados e DataStore para pequenas configuracoes; bloco 33-38 acrescenta Firebase Auth Google e Firestore no Spark, com transacoes/Rules e WorkManager para reconciliacao (D-039). Verificacao Codeforces e calculo no Android; sem Functions/Tasks/billing.
 - Cliente HTTP centralizado, Navigation Compose e injecao manual simples.
 - Sem Hilt ou backend proprio apenas por padrao.
 

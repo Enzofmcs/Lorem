@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.StateFlow
 data class GoogleAccount(val uid: String, val displayName: String?, val email: String?)
 
 enum class AuthenticationFailure {
-    CONFIGURATION, NETWORK, INVALID_SESSION, PROVIDER_NOT_ALLOWED, UNKNOWN,
+    CONFIGURATION, NETWORK, QUOTA, INVALID_SESSION, PROVIDER_NOT_ALLOWED, UNKNOWN,
 }
 
 sealed interface AuthenticationState {

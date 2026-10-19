@@ -34,20 +34,20 @@ As Histórias 10 e 11 foram concluídas após a confirmação do usuário de tod
 
 ## Login e perfis Firebase
 
-Solicitacao de 19/10/2026: **33/34 parciais**, com base Firebase, Rules/Functions,
-emuladores e login Google/sessao Android implementados e verificados em testes.
-O JSON Android fornecido foi instalado e validado localmente, incluindo cliente
-OAuth Web e SHA-1 de debug. Firestore escolhido: `nam5 (US)`; Functions:
-`us-central1`. Provedor remoto, login Google real e deploy ainda pendentes;
-nao ha conta administrativa autenticada neste ambiente. [Guia de configuracao e verificacao](docs/FIREBASE_SETUP.md).
-Preview por `-Plorem.firebaseAuthEnabled=true`; padrao false ate a migracao 38.
-O destino autenticado esta preparado para a 35, sem cadastro de handles/treino
-em nuvem nem acesso ao perfil legado. **35-38 ainda planejadas.** Regras aprovadas:
-Login somente Google via Firebase Auth; Firestore para progresso por conta+handle,
-permitindo o mesmo handle em contas diferentes; todo vinculo novo inicia em 800;
-Ipsum limitado a 2h corridas com fechamento automatico sem AC valido no prazo.
-Login/troca de handle preservam saldo existente. O servidor mantem prazo e
-avaliacao unica mesmo com o app fechado; migracao preserva avaliacoes antigas.
+Solicitacao de 19/10/2026, refeita para **Spark (D-039)**: **33/34 parciais**,
+com login Google e bootstrap transacional direto no Firestore; sem Functions,
+Cloud Tasks, billing ou backend externo como requisito. Rules permitem somente
+criar metadados minimos da propria conta Google e preservam isolamento por uid.
+JSON/OAuth Web/SHA-1 debug validados localmente; Firestore escolhido nam5 (US).
+Provedor e Rules remotos ainda nao verificados. [Configuracao Spark](docs/FIREBASE_SETUP.md).
+
+Preview por -Plorem.firebaseAuthEnabled=true; padrao false ate 38. Seus handles e
+ponto de integracao da 35, sem cadastro/treino em nuvem nem perfil legado.
+**35-38 planejadas:** mesmos handles entre contas, 800 por novo vinculo e prazo
+absoluto 2h. Android verifica Codeforces/calcula rating e sincroniza por SDK/Rules;
+WorkManager na 37 pode executar com app fechado, mas atrasar. O prazo nao aumenta
+por atraso e o processamento pode aguardar conectividade/sessao. Rules nao
+comprovam AC de cliente modificado; nao prometer verificacao independente no servidor.
 
 [Historias e ordem](docs/ROADMAP.md#novo-bloco-contas-firebase-e-prazo-maximo-do-ipsum-33-38) ·
 [Contratos, configuracao, offline e migracao](docs/FIREBASE.md).

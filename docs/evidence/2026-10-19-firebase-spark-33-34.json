@@ -1,0 +1,196 @@
+{
+  "recordedAt": "2026-10-19T18:04:24.604374+00:00",
+  "decision": "D-039: Spark required by user; replaces Functions/Tasks architecture",
+  "stories": {
+    "33": "partial: remote project/provider/Rules not verified",
+    "34": "partial: remote configuration not verified",
+    "35-38": "planning adjusted only, not implemented"
+  },
+  "architecture": {
+    "requiredPlan": "Spark",
+    "serverRuntime": null,
+    "android": "Credential Manager / Google ID / Firebase Auth / Firestore SDK transaction",
+    "accountPath": "users/{validatedUid}",
+    "bootstrap": "create schemaVersion=1, createdAt=serverTimestamp only when absent; preserve existing metadata",
+    "sessionRequires": "fresh Google Firebase token, captured uid and online Firestore transaction success",
+    "rules": "own Google metadata create only, exact schema, request.time; deny update/delete/root list, cross uid and all progress writes",
+    "codeforcesVerification": "planned on Android; Rules cannot independently verify Codeforces results",
+    "timeout": "planned for 37: absolute 2h, WorkManager from confirmed start, delayed sync never extends deadline"
+  },
+  "configuration": {
+    "projectIdReceivedAndKeptLocal": true,
+    "package": "dev.lorem.app",
+    "firestoreLocationSelected": "nam5",
+    "remoteLocationVerified": false,
+    "oauthWebClientPresent": true,
+    "debugSignerMatchesAndroidOauth": true,
+    "ignoredFiles": [
+      "app/google-services.json",
+      ".firebaserc",
+      "firebase-projects.local.json"
+    ]
+  },
+  "verification": {
+    "nodeTooling": "24.19.0 (Node 24 required by locked Firebase JS SDK/rules tooling; no deployed Node runtime)",
+    "emulators": {
+      "command": "npm --prefix firebase test",
+      "only": [
+        "auth",
+        "firestore"
+      ],
+      "project": "demo-lorem-local",
+      "loopbackOnly": true,
+      "java": "21.0.12.1",
+      "tests": 10,
+      "failed": 0,
+      "exitCode": 0
+    },
+    "androidEmulatorIntegration": {
+      "execution": "firebase emulators:exec --project demo-lorem-local --only auth,firestore; child Gradle with LOREM_FIREBASE_EMULATORS=true and loopback endpoints, preview flag true",
+      "tests": [
+        {
+          "suite": "dev.lorem.app.FirebaseEntryTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "suite": "dev.lorem.app.data.auth.FirebaseFailureTest",
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "suite": "dev.lorem.app.data.auth.FirestoreAccountBootstrapEmulatorTest",
+          "tests": 2,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "suite": "dev.lorem.app.data.auth.GoogleSessionRepositoryTest",
+          "tests": 8,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "suite": "dev.lorem.app.ui.AuthenticationScreenTest",
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "suite": "dev.lorem.app.ui.auth.AuthenticationViewModelTest",
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "suite": "dev.lorem.app.ui.auth.GoogleCredentialRequestTest",
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        }
+      ],
+      "totals": {
+        "tests": 23,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "includesRealProductionKotlinBootstrap": true,
+      "concurrentCreates": 6,
+      "realGoogleOAuthVerified": false
+    },
+    "androidFull": {
+      "command": "./gradlew test lint assembleDebug --max-workers=2 --console=plain",
+      "java": "17.0.20.1",
+      "defaultPreviewFlag": false,
+      "debug": {
+        "totals": {
+          "tests": 256,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 3
+        },
+        "suiteSummarySha256": "22796555e76f4e0faa6d5bcbf7dcc3f4c06773e50381bdf06cc4981c73756a7b"
+      },
+      "release": {
+        "totals": {
+          "tests": 188,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "suiteSummarySha256": "9bade483a63dee34276e66914b1570dc85c36f57eafb626b483e2c4481d843fc"
+      },
+      "debugSkippedReason": "one opt-in preview entry test plus two SDK emulator tests; all passed separately in the 23-test emulator execution",
+      "lint": {
+        "Error": 0,
+        "Fatal": 0,
+        "Warning": 58
+      },
+      "exitCode": 0
+    },
+    "preview": {
+      "command": "./gradlew :app:dependencyInsight --configuration debugRuntimeClasspath --dependency firebase-functions :app:assembleDebug -Plorem.firebaseAuthEnabled=true --max-workers=2 --console=plain",
+      "firebaseFunctionsAbsentFromRuntime": true,
+      "firebaseAuthEnabled": true,
+      "exitCode": 0,
+      "apk": {
+        "bytes": 18419604,
+        "sha256": "94b7085be930f99a037f3a73311b31736143b1dd2f08e456089af1b12047d3f6",
+        "signerSha1": "2cb97bf88a17a39a76dd0407f3ce5657e7562c88",
+        "signerSha256": "c7d92bb3fdee2815cd73e49a8406c5357f27becee267c29fb5dccf1789a5ca92"
+      }
+    },
+    "androidConfigValidator": {
+      "command": "npm --prefix firebase run check-config",
+      "exitCode": 0
+    },
+    "administrativeReadiness": {
+      "command": "firebase projects:list --json --non-interactive",
+      "exitCode": 1,
+      "error": "Failed to authenticate, have you run firebase login?",
+      "remoteDeploymentAttempted": false
+    }
+  },
+  "notVerified": [
+    "Live Google sign-in",
+    "Current remote Auth providers / Spark plan / Firestore location",
+    "Remote Rules and indexes publication",
+    "Release or Play signing registration"
+  ],
+  "manualCheck": "TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014)",
+  "historicalEvidencePreserved": {
+    "docs/evidence/2026-10-19-firebase-33-34.json": "d273cb9fa43ba8cb54987426fa16fcd2b340cd79284f6fa91a0ed4fe931cc6a8",
+    "docs/evidence/2026-10-19-firebase-android-config.json": "f1d7264d05933001f38599d1ff7995f07ab774b8b7eef85b9b6a7c6fdeeb52d1"
+  },
+  "sourceSha256": {
+    "app/build.gradle.kts": "ed8e237bfde1712a3ca24636db6e498f94f472230a8512dca738b2ccac4874b9",
+    "gradle/libs.versions.toml": "3a2ceceef371dfd9ddf065d91476d284bd825bde8c0f6505f14cea68d774f15a",
+    "app/src/main/java/dev/lorem/app/data/auth/FirebaseAuthentication.kt": "119c9f807bddea5895d984c2898909f1b87a98650d8d2b69a3716d144febdc6f",
+    "app/src/main/java/dev/lorem/app/data/auth/FirestoreAccountBootstrap.kt": "c861d6e006c96c8220638760cd8ae6162ce597ac80e790b829b7cf7d36e7dde5",
+    "app/src/main/java/dev/lorem/app/data/auth/GoogleSessionRepository.kt": "dfd193702bc2c0818639d63fe4787f4104f8a2dd9bb83067fce9d87a5f62a14c",
+    "app/src/main/java/dev/lorem/app/domain/auth/AuthenticationRepository.kt": "78d17fa6122fb744e1a69e3cc16fa4992c720056aaab0ee7e93868df0521b3be",
+    "app/src/main/java/dev/lorem/app/ui/auth/FirebaseLoginApp.kt": "df6db394cfea03ffde5123dbf45df3776da56bfbff3327a90c3bbd7e7657e2d6",
+    "app/src/test/java/dev/lorem/app/data/auth/GoogleSessionRepositoryTest.kt": "0439f93e48e3465a45023e51497a9672a0ea33e5982385f400c159b76be0a6af",
+    "app/src/test/java/dev/lorem/app/data/auth/FirebaseFailureTest.kt": "f3c98c313d3074ec45f1b47bb7cef41413b4cbd678ee12e04c455448598870f9",
+    "app/src/testDebug/java/dev/lorem/app/data/auth/FirestoreAccountBootstrapEmulatorTest.kt": "b14873db3de628c32a0fe5895150f861910c23a1e4ca207305f753b0bc5d6a7d",
+    "app/src/testDebug/java/dev/lorem/app/FirebaseEntryTest.kt": "e4676485263d20c5276151e166ff246fbd1396ca9e63cde109e815f43835a92a",
+    "firebase.json": "5fe6f54ede5b245d24ba2344812a6d0df53ac43debcb197d6ca7b3fb83a928db",
+    "firebase/firestore.rules": "23f86e5cc81b0089d6fba10c81a15de1ac67508e3c1c87cece1b27129b96c910",
+    "firebase/firestore.indexes.json": "6742255415c36daf631b52f233039190af819205cc41fa58d07dd7d9e180c2b9",
+    "firebase/package.json": "ab9487b88ce9f5a9dbb281b290a24cb109409a3876ba2c943dcbf937acd5797b",
+    "firebase/package-lock.json": "ba3e5ca50cab354ef1082166f48d3819052db30c34622e99a78a2fd5c5f663fa",
+    "firebase/scripts/check-android-config.cjs": "22ceca7c70af79dbcb1b6244c32064f25f14b1cef176afe6f328b8956658a2ca",
+    "firebase/test/accounts.test.cjs": "209e8ec4aa50be88fdd26aaf6bdb65b57d89df866a6932f52e06949e597da534",
+    "firebase/test/rules.test.cjs": "091909379e68bb3c459d727260d4ef69e9720401149a6d8adee55f8acadd8d35"
+  }
+}

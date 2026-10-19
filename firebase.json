@@ -3,16 +3,9 @@
     "rules": "firebase/firestore.rules",
     "indexes": "firebase/firestore.indexes.json"
   },
-  "functions": [{
-    "source": "firebase/functions",
-    "codebase": "accounts",
-    "runtime": "nodejs22",
-    "predeploy": ["npm --prefix \"$RESOURCE_DIR\" run build"]
-  }],
   "emulators": {
     "auth": {"host": "127.0.0.1", "port": 9099},
     "firestore": {"host": "127.0.0.1", "port": 8080},
-    "functions": {"host": "127.0.0.1", "port": 5001},
     "ui": {"enabled": false},
     "singleProjectMode": true
   }

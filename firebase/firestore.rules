@@ -9,7 +9,14 @@ service cloud.firestore {
 
     match /users/{uid} {
       allow get: if googleAccount(uid);
-      allow list, write: if false;
+      allow create: if googleAccount(uid)
+        && request.resource.data.keys().hasAll(['schemaVersion', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['schemaVersion', 'createdAt'])
+        && request.resource.data.schemaVersion is int
+        && request.resource.data.schemaVersion == 1
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.createdAt == request.time;
+      allow list, update, delete: if false;
 
       match /handles/{handleKey} {
         allow read: if googleAccount(uid);

@@ -1,7 +1,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
-const file = process.argv[2] || path.resolve(__dirname, '../../../app/google-services.json');
+const file = process.argv[2] || path.resolve(__dirname, '../../app/google-services.json');
 try {
   const config = JSON.parse(fs.readFileSync(file, 'utf8'));
   const client = config.client?.find(c =>

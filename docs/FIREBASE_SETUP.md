@@ -1,169 +1,152 @@
-# Configurar e verificar Firebase (Historias 33-34)
+# Configurar Firebase Spark (Historias 33-34)
 
-## Estado real da entrega
+## Entrega e limites
 
-Na verificacao inicial de 19/10/2026 ainda nao havia projeto Firebase.
-Depois, o usuario criou o projeto, escolheu **nam5 (US)** para o Firestore e
-forneceu o JSON Android. A configuracao foi instalada localmente e validada:
-package `dev.lorem.app`, appId/projeto, cliente OAuth Web e SHA-1 de debug
-correspondente ao certificado deste ambiente. ID, JSON e alias `test` ficam em
-arquivos ignorados pelo Git. Functions continuam em **us-central1**.
-Isso nao comprova o estado remoto do banco, exclusividade do provedor ou deploy.
-Nao ha credencial administrativa no repositorio ou no ambiente desta entrega.
-As Historias 33/34 permanecem **parciais** ate verificar Google/Firebase e publicar
-o backend. A CLI nao possui conta administrativa autenticada neste ambiente:
-`firebase projects:list --json --non-interactive` retornou erro de autenticacao.
-A evidencia com emuladores nao comprova OAuth Google real.
+Por solicitacao do usuario, a D-039 substitui a arquitetura Functions/Tasks por
+**Spark: Authentication Google + Firestore**. Nao requer Blaze, cartao, billing,
+Cloud Functions, Cloud Tasks ou servico externo. Firestore escolhido: **nam5 (US)**.
 
-Implementado: Rules fechadas por uid/provedor; indices versionados; Function
-`bootstrapAccount`; testes HTTP em Auth/Firestore/Functions Emulator; Credential
-Manager + Google ID + Firebase Auth Android; restauracao/validacao da sessao,
-bootstrap idempotente, erros, cancelamento e saida/troca de conta.
+O JSON recebido foi instalado em app/google-services.json (ignorado pelo Git).
+Package dev.lorem.app, projeto/appId, OAuth Web e SHA-1 do certificado debug foram
+conferidos. ID, alias test e progresso da configuracao ficam apenas nos arquivos
+locais .firebaserc e firebase-projects.local.json. Nao foi criado alias de producao.
+Nenhuma chave privada/credencial administrativa e necessaria no app.
 
-O destino autenticado `Seus handles` e apenas o ponto de integracao da Historia 35.
-Nao cadastra handles nem abre o perfil/treino legado. Rating 800, multiplos handles,
-Ipsums na nuvem, timeout 2h e migracao continuam nas Historias 35-38.
+O login usa Credential Manager/Google ID/Firebase Auth; revalida token Google e
+executa uma transacao SDK Firestore em users/{uid}. Cria somente schemaVersion=1
+e createdAt=serverTimestamp se ausente, nunca sobrescreve metadados existentes.
+As Rules validam uid, provedor, esquema e request.time. Cache/fila offline nao
+confirmam sessao. Sem Rules publicadas, a falha de permissao aparece como erro de
+configuracao recuperavel; nao e confundida com login por provedor errado.
 
-Verificacao com o JSON recebido: 17 testes direcionados sem falhas/ignorados,
-`lintDebug` sem erros (58 avisos de versoes/icone) e `assembleDebug` com login
-habilitado. O certificado do APK corresponde ao cliente Android do JSON.
-TypeScript compilado; nenhum deploy ou OAuth real executado.
-[Evidencia desta configuracao](evidence/2026-10-19-firebase-android-config.json),
-separada da evidencia inicial sem projeto.
+33/34 permanecem parciais para configuracao/provedor e Rules remotos nao verificados.
+A CLI deste ambiente nao tem conta administrativa conectada. Nao houve deploy nem
+login Google real. Conferencia humana e opcional (D-014); emulador nao comprova OAuth.
 
-## Executar verificacoes locais sem projeto real
+O preview termina em Seus handles, ponto de integracao da 35. Sem cadastro de
+handles/treino na nuvem, timeout ou migracao implementados nesta entrega. As Rules
+atuais negam todas as escritas em handles/ipsums/runtime; 35/36 adicionarao seus
+contratos especificos. WorkManager pertence a 37 e nao foi antecipado aqui.
 
-Requisitos do backend: **Node 22**, npm e **Java 21** para a versao fixada do
-Firestore Emulator. Android continua com **JDK 17**, SDK 35 e Gradle do projeto.
-As versoes exatas das bibliotecas/CLI estao no package-lock.json.
+## Evidencia local Spark
+
+Dez testes Auth/Firestore/Rules e 23 direcionados Android (incluindo bootstrap
+Kotlin real em emuladores) passaram. Marco Android: 253 debug executados, tres
+opt-in ignorados no padrao e comprovados separadamente, 188 release, zero falhas;
+lint sem erros (58 avisos) e APK. Configuracao local validada, preview com flag
+true e runtime sem Firebase Functions.
+[Evidencia verificavel](evidence/2026-10-19-firebase-spark-33-34.json).
+
+## Configurar o projeto sem billing
+
+1. Manter o projeto no **Spark** e concluir a criacao do Firestore padrao em modo
+   producao, localizacao nam5 (US). Nao recriar o banco para mudar regiao.
+2. Em Authentication, habilitar **somente Google**, configurar e-mail de suporte
+   e consentimento OAuth; cadastrar testadores quando o consentimento exigir.
+   Senha, anonimo e demais provedores ficam desabilitados no projeto real.
+3. Registrar Android package **dev.lorem.app**. Usar ./gradlew :app:signingReport
+   para cadastrar SHA-1/SHA-256 das assinaturas realmente utilizadas. O debug deste
+   ambiente foi conferido; release/Play so quando essas assinaturas existirem.
+4. Baixar google-services.json atualizado com Google/OAuth Web e salvar em
+   app/google-services.json. O cliente OAuth **Web** gera default_web_client_id;
+   nao usar o client ID Android como serverClientId.
+5. Criar .firebaserc com alias test apontando ao projeto de validacao. Usar
+   .firebaserc.example como modelo, sem copiar o projeto test para production.
+   Registrar IDs, package, plano, localizacao, fingerprints e status em
+   firebase-projects.local.json. Todos esses arquivos locais sao ignorados.
 
 Na raiz do repositorio:
 
 ```bash
-npm --prefix firebase/functions ci
-npm --prefix firebase/functions test
+npm --prefix firebase ci
+npm --prefix firebase run check-config
 ```
 
-O comando compila TypeScript e executa os emuladores em `demo-lorem-local`.
-Auth/Firestore/Functions escutam somente em `127.0.0.1` (9099/8080/5001).
-Nao requer login administrativo. A suite usa identidades sinteticas aceitas
-somente pelo Auth Emulator, sem colocar botao ou provedor falso no aplicativo.
+O validador confere estrutura/package/appId/projeto/OAuth Web, sem imprimir chave
+ou client ID. Ausencia/malformacao retorna erro claro e codigo 1. Nao consulta
+provedores, billing ou Rules remotas e nao comprova login Google.
 
-Em ambientes com home restrito, configurar caches gravaveis usando
-`XDG_CACHE_HOME`, `XDG_CONFIG_HOME`, `FIREBASE_EMULATORS_PATH` e o parametro
-`npm --cache=<diretorio>`, preservando proxy e certificados do ambiente.
-Sem identidade GCP configurada, `METADATA_SERVER_DETECTION=none` evita procurar
-credenciais em metadata servers durante testes estritamente locais.
-Nao definir variaveis de emulador em processos que fazem deploy/producao.
+## Publicar somente Rules e indices no Spark
 
-Verificacoes Android direcionadas e marco:
-
-```bash
-./gradlew :app:testDebugUnitTest --tests 'dev.lorem.app.data.auth.GoogleSessionRepositoryTest' --tests 'dev.lorem.app.ui.auth.AuthenticationViewModelTest' --tests 'dev.lorem.app.ui.AuthenticationScreenTest' --tests 'dev.lorem.app.data.sync.SynchronizationWorkTest'
-./gradlew test lint assembleDebug
-./gradlew :app:testDebugUnitTest -Plorem.firebaseAuthEnabled=true --tests 'dev.lorem.app.FirebaseEntryTest'
-```
-
-O ultimo teste verifica que um perfil legado salvo nao aparece no fluxo Firebase.
-Com JSON, verifica a entrada real com recursos gerados pelo Google Services e
-botao Google habilitado; sem JSON, exige o bloqueio por configuracao ausente.
-Nao abre o seletor Google nem autentica uma conta real.
-
-## Criar e registrar o projeto real
-
-1. Usar o projeto Firebase ja criado para a validacao inicial. Separar producao
-   em outro projeto; nao usar dados reais nos emuladores. Registrar IDs escolhidos e
-   ambientes em `firebase-projects.local.json` (ignorado pelo Git), com nome,
-   package, regiao, fingerprints e estado das etapas abaixo.
-2. Adicionar app Android com package **`dev.lorem.app`**. Obter fingerprints com
-   `./gradlew :app:signingReport`: cadastrar SHA-1 e SHA-256 de debug e depois
-   das assinaturas de release/Play App Signing efetivamente utilizadas.
-   Nenhuma assinatura de release foi inventada nesta entrega.
-3. Em Authentication, habilitar **somente Google**, configurar e-mail de suporte
-   e consentimento OAuth. Manter senha, anonimo e demais provedores desabilitados.
-   Se o consentimento estiver em teste, cadastrar as contas de teste necessarias.
-4. Criar Firestore em modo producao/Rules fechadas na localizacao escolhida pelo
-   usuario: **`nam5` (US), multirregiao**. Manter **`us-central1`** para Functions
-   (e a futura fila Tasks). Essa combinacao e compativel: o SDK/Admin acessa o
-   banco pelo projeto/database, e o cliente Android chama a regiao da Function.
-   Escolher nam5 para o banco nao exige alterar a constante de Functions nem
-   recriar o projeto. A criacao/configuracao remota ainda sera verificada.
-5. Ativar billing **Blaze** quando necessario para Functions/Cloud Build/Artifact
-   Registry. Conferir precos, quotas e orcamentos/alertas no projeto escolhido.
-   O limite de cinco instancias de bootstrap nao e um teto de custo. Cloud Tasks
-   pertence a Historia 37; nao existe fila/tarefa provisionada neste bloco.
-6. Baixar novamente `google-services.json` apos habilitar Google e cadastrar as
-   assinaturas; salvar em **`app/google-services.json`**. O plugin gera o recurso
-   `default_web_client_id` do cliente OAuth **Web**, usado pelo Credential Manager.
-   Nao usar o client ID Android como serverClientId. O arquivo local e ignorado
-   pelo Git; nao adicionar chaves privadas ou service-account.json ao projeto.
-7. Configurar `.firebaserc` e registrar status/fingerprints em arquivo local. Nesta
-   entrega foi criado somente o alias `test` com o ID recebido. Nao criar um alias
-   de producao com o mesmo projeto por conveniencia. `.firebaserc.example` continua
-   sendo um exemplo, com placeholders a substituir em cada ambiente.
-
-Validar estrutura do arquivo Android:
-
-```bash
-npm --prefix firebase/functions run check-config
-```
-
-Essa verificacao confirma package/appId/projeto/cliente OAuth Web presentes;
-nao confirma credenciais, configuracao remota, provedor, assinaturas ou deploy.
-Sem o arquivo, retorna erro claro e codigo 1. O build Android continua possivel.
-O SHA-1 do cliente Android no JSON recebido tambem foi comparado ao certificado
-do APK; isso nao substitui a consulta da configuracao vigente no Console.
-
-## Deploy e habilitacao para desenvolvimento
-
-Usar a CLI instalada pelo lockfile, autenticar a conta administrativa autorizada
-no proprio ambiente do responsavel e conferir o projeto **de teste** antes de
-executar. Em `firebase/functions`:
+Requisito local do tooling: **Node 24** (SDK de testes exige >=24.12). Nao existe
+runtime Node em producao. Na pasta firebase/:
 
 ```bash
 npx firebase login
-npx firebase deploy --project test --only firestore:rules,firestore:indexes,functions:accounts --config ../../firebase.json
+npx firebase deploy --project test --only firestore:rules,firestore:indexes --config ../firebase.json
 ```
 
-`test` deve resolver para o projeto de validacao registrado no `.firebaserc` local;
-em outro checkout, configurar esse alias ou usar o ID explicito. Em Cloud Shell
-ou outra maquina remota, usar `npx firebase login --no-localhost` quando necessario.
-O deploy nao configura o provedor Google no Auth; a etapa do Console continua necessaria.
-As Functions usam a identidade de runtime fornecida pelo Google, sem chave privada
-embarcada. O cliente chama bootstrapAccount sem campos; o uid vem do token Google
-validado. A transacao cria apenas schemaVersion/createdAt, preservando metadados
-existentes e sem copiar e-mail/nome para Firestore.
+Em Cloud Shell/maquina remota usar login --no-localhost se necessario. O alias test
+deve existir no .firebaserc local, ou substituir pelo ID explicito do projeto.
+Esse deploy nao habilita Google nem billing e nao publica Functions. Nao enviar
+tokens, senhas ou chave de conta de servico. A conta humana autorizada publica as
+Rules; cada usuario Android continua escrevendo com seu proprio token, sem Admin SDK.
 
-Para abrir o novo login no Android:
+## Executar testes locais
+
+Tooling: Node 24/npm e **Java 21** para Firestore Emulator. Android: SDK 35,
+Gradle 8.11.1/JDK 17. Lockfile em firebase/package-lock.json; dependencias sao
+somente ferramentas de desenvolvimento. Nao ha fonte TypeScript/Function.
+
+```bash
+npm --prefix firebase ci
+npm --prefix firebase test
+```
+
+Executa Auth/Firestore Emulator em demo-lorem-local, loopback 127.0.0.1:9099/8080,
+sem conta administrativa ou dados reais. Tokens Google sinteticos sao aceitos
+somente pelo Auth Emulator. A suite usa esses tokens com o SDK Firestore e as
+Rules reais: concorrencia, restauracao, timestamps, uid/provedor e payload forjado.
+
+Para exercitar o bootstrap Kotlin de producao contra os emuladores, inicia-los em
+um terminal (Java 21):
+
+```bash
+cd firebase
+npx firebase emulators:start --project demo-lorem-local --only auth,firestore --config ../firebase.json
+```
+
+Em outro terminal, na raiz com JDK 17/SDK Android:
+
+```bash
+LOREM_FIREBASE_EMULATORS=true FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 ./gradlew :app:testDebugUnitTest --tests 'dev.lorem.app.data.auth.FirestoreAccountBootstrapEmulatorTest'
+```
+
+A suite Kotlin usa um FirebaseApp nomeado exclusivo e projeto demo, nunca o JSON
+real. Sem opt-in, esses dois testes sao ignorados no build comum. Em ambiente com
+home restrito, usar caches gravaveis via XDG_CACHE_HOME/XDG_CONFIG_HOME/
+FIREBASE_EMULATORS_PATH e npm --cache, preservando proxy/CA. Sem identidade GCP,
+METADATA_SERVER_DETECTION=none evita buscar credenciais em metadata servers locais.
+
+Testes direcionados Android de sessao/falhas/UI/entrada:
+
+```bash
+./gradlew :app:testDebugUnitTest --tests 'dev.lorem.app.data.auth.GoogleSessionRepositoryTest' --tests 'dev.lorem.app.data.auth.FirebaseFailureTest' --tests 'dev.lorem.app.ui.auth.AuthenticationViewModelTest' --tests 'dev.lorem.app.ui.AuthenticationScreenTest' --tests 'dev.lorem.app.ui.auth.GoogleCredentialRequestTest' --tests 'dev.lorem.app.FirebaseEntryTest' -Plorem.firebaseAuthEnabled=true
+```
+
+O smoke verifica MainActivity com/sem Google Services: botao habilitado quando
+configurado, bloqueio explicito quando ausente, sem exibir perfil legado. Nao
+abre seletor nem autentica uma conta Google real. No marco: test/lint/assembleDebug.
+
+## Preview e recuperacao
 
 ```bash
 ./gradlew assembleDebug -Plorem.firebaseAuthEnabled=true
 ```
 
-Por padrao, a flag e **false**, seguindo o rollout integrado posterior a 38.
-Com true e sem configuracao, aparece indisponibilidade e o botao fica desabilitado;
-nao existe fallback para uma conta falsa. Com configuracao, o login usa Google real.
-Entrar so libera o destino autenticado depois de atualizar/validar o token Google
-e confirmar bootstrapAccount. Falha de rede nao e tratada como sessao confirmada.
+Flag false por padrao ate rollout 38. Sem configuracao nao existe conta falsa;
+com true, somente token validado e transacao confirmada liberam Seus handles.
+Rede, cota Spark ou Rules incorretas deixam a sessao bloqueada com retry. Sair/
+trocar limpa a UI e callbacks antigos; workers legados ficam cancelados/inertes.
+Nenhum perfil local e importado pelo preview, e sair nao exclui dados da conta.
 
-O fluxo Firebase nao importa/exibe o perfil legado. Workers legados sao cancelados
-e ficam inertes pelo guard da fabrica; o novo fluxo ainda nao agenda workers por
-uid. Controles, destino e respostas pendentes perdem o contexto ao sair/trocar
-conta. O SDK Firebase persiste a identidade; o app revalida ao restaurar/retomar.
-Sair do Auth nao apaga a conta/dados; nao existe ainda Ipsum em nuvem neste bloco.
+Cota gratuita esgotada nao habilita cobranças automaticamente. Tratar erro e
+aguardar disponibilidade; nao recomendar Blaze como pre-requisito desta entrega.
+[Planos oficiais](https://firebase.google.com/docs/projects/billing/firebase-pricing-plans).
 
-## Aceite real e recuperacao
-
-Apos provisionar, registrar evidencia da configuracao (IDs, regiao e fingerprints,
-sem tokens), provedor unico, Rules/deploy, entrada Google, sessao restaurada,
-saida/troca de conta e ausencia de dados legados. Se o login falhar, verificar
-package, assinatura instalada, OAuth Web, provedor, rede, regiao e deploy da Function.
-`NOT_FOUND`/contrato de bootstrap inesperado deixam o fluxo indisponivel; nao
-ignorar a verificacao para liberar uma sessao.
-
-Para recuperar um deploy de teste, selecionar o commit verificado anterior e
-republicar Rules/Functions no **mesmo projeto de teste**, sem apagar documentos
-ou recalcular progresso. Para retirar o preview Android, gerar o build padrao
-sem a flag: os dados legados nao foram migrados/apagados. Producao e migracao
-permanecem fora desta entrega. Conferencia humana e opcional (D-014); ausencia
-de projeto/configuracao real e uma dependencia externa, nao teste manual pendente.
+Para recuperar Rules de teste, republicar o commit Spark verificado anterior no
+mesmo projeto, sem apagar documentos. Nao usar as Rules anteriores que negavam
+create de conta nem voltar ao APK que dependia de Functions. Para retirar preview,
+gerar APK sem a flag; historico legado nao foi migrado/apagado. Produção/migracao
+continuam na 38. Evidencias anteriores (Functions/configuracao inicial) sao
+historicas, nao validacao da versao Spark.

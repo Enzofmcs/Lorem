@@ -26,7 +26,7 @@ interface GoogleIdentitySource {
 }
 
 fun interface AccountBootstrap {
-    suspend fun ensureAccount()
+    suspend fun ensureAccount(expectedUid: String)
 }
 
 class AuthenticationException(val reason: AuthenticationFailure) : Exception()
@@ -61,7 +61,7 @@ class GoogleSessionRepository(
             try {
                 val validated = source.validate(account.uid)
                 if (validated.uid != account.uid || source.currentAccount?.uid != account.uid) return@launch
-                bootstrap.ensureAccount()
+                bootstrap.ensureAccount(account.uid)
                 if (generation.get() == expectedGeneration && source.currentAccount?.uid == account.uid) {
                     mutableState.value = AuthenticationState.SignedIn(validated)
                 }
@@ -85,7 +85,7 @@ class GoogleSessionRepository(
         signedOutFailure = null
         return try {
             source.signIn(idToken)
-            null // Only validation + server bootstrap can publish SignedIn.
+            null // Only token validation + a confirmed Firestore transaction can publish SignedIn.
         } catch (error: Exception) {
             if (error is CancellationException) throw error
             failureOf(error)
