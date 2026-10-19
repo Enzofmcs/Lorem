@@ -6,21 +6,23 @@
 
 ## Estado atual
 
-**Foco atual:** Historias 22-30 implementadas e verificadas. Estudo real concluido; novas recomendacoes exigem data verificada; Ipsums novos registram CF anterior e permitem exportacao local. Historias 00-21 preservadas.
+**Foco atual:** Historias 35-37 implementadas em preview Spark: handles por conta, ciclo/rating Firestore e prazo de 2h. Proxima historia funcional 38. Historias 00-30 e gates cientificos 31/32 preservados.
 
-**Ultima historia verificada:** Historia 30, em 2026-10-18: 232 testes debug/170 release, lint sem erros, APK gerado e 66 testes Python; contrato Android-Python verificado com fixture explicita.
+**Ultima historia verificada:** Historia 37 no preview Spark, em 2026-10-19; [evidencia 35-37](evidence/2026-10-19-firebase-35-37.json). Marco 30 preservado: 232 debug/170 release e 66 Python, contrato Android-Python com fixture explicita.
 
-**Primeiro item pendente:** Historia 31 - BLOQUEADA: nenhum export real de Ipsums fornecido. Precisa de amostra e limiares finais fixados antes do teste.
+**Primeiro item funcional pendente:** Historia 38 (migracao/rollout). Historia 31 continua BLOQUEADA: nenhum export real de Ipsums fornecido; o pre-registro nao substitui a coorte real.
 
-**Proxima entrega demonstravel:** coletar novas tentativas com snapshots anteriores, exportar localmente e preparar coorte por participante; sem integrar previsoes antes da 31.
+**Proxima entrega demonstravel:** migracao e jornada integrada da 38, com projeto real preparado. No estudo, coletar novas tentativas com snapshots anteriores e preparar coorte por participante; sem integrar previsoes antes da 31.
 
 **Bloqueios conhecidos:** Ipsums reais n=0/insufficient_data. 32 exige evidencia e decisao favoravel da 31; dependencia 29 atendida. Conferencia manual opcional (D-014).
 
 **Novo bloco planejado em 19/10/2026:** Historias 33-38, login Google/Firebase,
 perfis por uid+handle com rating inicial 800 e limite absoluto de 2h por Ipsum.
-Base 33/34 implementada em preview; configuracao/provisionamento reais pendentes.
-Proxima funcionalidade: 35 (handles); nao depende dos dados reais da 31.
-[Contratos e migracao](FIREBASE.md). 33/34 parciais; 35-38 ainda planejadas. [Guia de configuracao](FIREBASE_SETUP.md).
+35-37 implementadas em preview: handles, ciclo/rating Firestore e prazo absoluto 2h.
+Proxima funcionalidade: 38 (migracao/rollout); nao depende dos dados reais da 31.
+33/34 mantem confirmacao de Google unico pendente. Publicacao informada antes
+cobre somente Rules 33/34; novas Rules 35-37 precisam ser publicadas.
+[Contratos e migracao](FIREBASE.md) · [Configuracao](FIREBASE_SETUP.md).
 
 ## Como atualizar
 
@@ -2087,7 +2089,7 @@ neste planejamento.
 Solicitacao de **19/10/2026**, planejada contra `main` em
 `2092c2f299e1590d791f93e59bdf5e60189bc707`. **33/34 refeitas para Spark (D-039):
 base/login e JSON verificados localmente; Rules publicadas conforme usuario e confirmacao de Google unico pendente.
-35-38 permanecem planejadas.** Contratos e casos de borda:
+35-37 implementadas em preview; 38 planejada. Novas Rules 35-37 aguardam publicacao.** Contratos e casos de borda:
 [FIREBASE.md](FIREBASE.md). Decisoes D-033 a D-039 em [DECISIONS.md](DECISIONS.md).
 
 Ordem recomendada: **33 -> 34 -> 35 -> 36 -> 37 -> 38**. O bloco e independente
@@ -2179,7 +2181,7 @@ Conferencias humanas opcionais D-014.
 
 **Historia:** Como usuario logado, quero cadastrar e alternar handles, mantendo um Rating Lorem independente para cada um.
 
-**Status:** PLANEJADA; todos os criterios funcionais pendentes.
+**Status:** IMPLEMENTADA E VERIFICADA EM PREVIEW Spark. Flag padrao false ate 38; novas Rules aguardam publicacao no projeto real. Confirmacao de Google unico da base 33/34 segue pendente. Sem OAuth/deploy reais alegados.
 
 **GitHub:** [#62 - Historia 35](https://github.com/Enzofmcs/Lorem/issues/62).
 
@@ -2191,17 +2193,19 @@ Conferencias humanas opcionais D-014.
 
 #### Criterios de aceite
 
-- [ ] Validar existencia em user.info e persistir grafia canonica/chave normalizada em users/{uid}/handles/{handleKey}; nao exigir prova de posse nem reserva global do handle.
-- [ ] Criar cada vinculo novo por transacao do SDK Firestore, com Rules exigindo Rating Lorem exatamente 800, para CF ranqueado ou sem rating; mesmo uid/handle existente e retornado sem reset.
-- [ ] Permitir o mesmo handle em contas Google diferentes, com documentos, ratings, historicos e consolidacao independentes; diferenca de caixa no mesmo uid nao cria outro saldo.
-- [ ] Listar/adicionar/selecionar handles e restaurar o progresso de cada um; login, sincronizacao, reinstalacao e reinsercao nao sobrescrevem o saldo existente. 800 nao vira piso da formula D-012.
-- [ ] Migrar chaves de cache e ProfileLink para uid+handle+versao, isolar leituras/gravacoes/trabalhos e bloquear troca de handle durante Ipsum ativo; catalogo publico pode ser compartilhado.
+- [x] Validar existencia em user.info e persistir grafia canonica/chave normalizada em users/{uid}/handles/{handleKey}; nao exigir prova de posse nem reserva global do handle.
+- [x] Criar cada vinculo novo por transacao do SDK Firestore, com Rules exigindo Rating Lorem exatamente 800, para CF ranqueado ou sem rating; mesmo uid/handle existente e retornado sem reset.
+- [x] Permitir o mesmo handle em contas Google diferentes, com documentos, ratings, historicos e consolidacao independentes; diferenca de caixa no mesmo uid nao cria outro saldo.
+- [x] Listar/adicionar/selecionar handles e restaurar o progresso de cada um; login, sincronizacao, reinstalacao e reinsercao nao sobrescrevem o saldo existente. 800 nao vira piso da formula D-012.
+- [x] Migrar chaves de cache e ProfileLink para uid+handle+versao, isolar leituras/gravacoes/trabalhos e bloquear troca de handle durante Ipsum ativo; catalogo publico pode ser compartilhado.
 
 **Entrega demonstravel:** Conta A e conta B cadastram o mesmo handle em 800; treinar em A nao muda B, e alternar handles em A restaura cada progresso.
 
 **Verificacao planejada:** Nivel 4: criacao concorrente/idempotente, CF alto/unrated, caixa/normalizacao, mesmo handle em dois uids, cache/worker atrasado e restauracao sem reset; migracoes locais aditivas.
 
-Conferencias humanas opcionais (D-014); os testes automatizados exigidos sao obrigatorios.
+**Evidencia automatizada:** SDK Kotlin de producao em Auth/Firestore Emulator, Rules com dois uids/dispositivos, dominio, UI e WorkManager; marco Android em [2026-10-19-firebase-35-37.json](evidence/2026-10-19-firebase-35-37.json). CF alto e unrated, criacao concorrente/canonica, restauracao sem reset, 800 sem piso, namespace uid+handle+versao e isolamento verificados. Cache novo e independente do Room legado; nao exige migracao destrutiva nem altera o arquivo a migrar na 38.
+
+TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014).
 
 ---
 
@@ -2209,7 +2213,7 @@ Conferencias humanas opcionais (D-014); os testes automatizados exigidos sao obr
 
 **Historia:** Como usuario, quero que tentativas e evolucao fiquem salvas na minha conta e que cada resultado altere meu rating uma unica vez.
 
-**Status:** PLANEJADA; todos os criterios funcionais pendentes.
+**Status:** IMPLEMENTADA E VERIFICADA EM PREVIEW Spark. Flag padrao false ate 38; novas Rules aguardam publicacao no projeto real. Confirmacao de Google unico da base 33/34 segue pendente. Sem OAuth/deploy reais alegados.
 
 **GitHub:** [#63 - Historia 36](https://github.com/Enzofmcs/Lorem/issues/63).
 
@@ -2221,18 +2225,20 @@ Conferencias humanas opcionais (D-014); os testes automatizados exigidos sao obr
 
 #### Criterios de aceite
 
-- [ ] Iniciar por transacao SDK Firestore autenticada com idempotency key, serverTimestamp, snapshot do rating atual e lock: no maximo um Ipsum ativo por uid entre handles/dispositivos, com invariantes nas Rules.
-- [ ] Validar candidato, ineditismo, metadados/corte da 29 e cobertura inicial do historico no Android; Rules validam estrutura/transicoes e imutabilidade dos snapshots. Documentar que Rules nao comprovam o veredito Codeforces de um cliente modificado (D-039).
-- [ ] Consultar/verificar submissoes no Android com API centralizada, gate de pelo menos 2s, paginacao, deduplicacao e retries; coordenar UI/WorkManager para evitar polling duplicado. Nao prometer verificacao independente no servidor no Spark.
-- [ ] Persistir snapshots, dica, resultado, consolidacao e versoes; transacionar resultado+rating+lock pelo SDK e aplicar D-012 uma vez. Rules verificam campos/transicoes, versao e consistencia getAfter entre documentos; sem permitir reset ou dupla avaliacao.
-- [ ] Recuperar o mesmo ativo/progresso apos reinstalacao ou segundo dispositivo, preservando sigilo de tags/rating/categoria no ativo; AC posterior somente classifica upsolve.
-- [ ] Permitir consulta ao cache offline, mas exigir servidor para novo inicio e confirmacao de saldo; tratar timeout de resposta apos commit sem criar outro Ipsum ou delta.
+- [x] Iniciar por transacao SDK Firestore autenticada com idempotency key, serverTimestamp, snapshot do rating atual e lock: no maximo um Ipsum ativo por uid entre handles/dispositivos, com invariantes nas Rules.
+- [x] Validar candidato, ineditismo, metadados/corte da 29 e cobertura inicial do historico no Android; Rules validam estrutura/transicoes e imutabilidade dos snapshots. Documentar que Rules nao comprovam o veredito Codeforces de um cliente modificado (D-039).
+- [x] Consultar/verificar submissoes no Android com API centralizada, gate de pelo menos 2s, paginacao, deduplicacao e retries; coordenar UI/WorkManager para evitar polling duplicado. Nao prometer verificacao independente no servidor no Spark.
+- [x] Persistir snapshots, dica, resultado, consolidacao e versoes; transacionar resultado+rating+lock pelo SDK e aplicar D-012 uma vez. Rules verificam campos/transicoes, versao e consistencia getAfter entre documentos; sem permitir reset ou dupla avaliacao.
+- [x] Recuperar o mesmo ativo/progresso apos reinstalacao ou segundo dispositivo, preservando sigilo de tags/rating/categoria no ativo; AC posterior somente classifica upsolve.
+- [x] Permitir consulta ao cache offline, mas exigir servidor para novo inicio e confirmacao de saldo; tratar timeout de resposta apos commit sem criar outro Ipsum ou delta.
 
 **Entrega demonstravel:** Iniciar em um dispositivo, recuperar no outro e receber um unico resultado/rating mesmo repetindo os comandos.
 
 **Verificacao planejada:** Nivel 4 e marco: transacoes concorrentes entre dispositivos/handles, resposta perdida/retry, escrita direta negada, D-012, gate, exclusoes e metadados, snapshots e sigilo; suite de Rules/SDK em emuladores e test/lint/assembleDebug.
 
-Conferencias humanas opcionais (D-014); os testes automatizados exigidos sao obrigatorios.
+**Evidencia automatizada:** SDK Kotlin de producao em Auth/Firestore Emulator, Rules com dois uids/dispositivos, dominio, UI e WorkManager; marco Android em [2026-10-19-firebase-35-37.json](evidence/2026-10-19-firebase-35-37.json). Inicio+marker+lock e resultado+rating+versao+liberacao atomicos; snapshots/dica, idempotencia, recuperacao, D-012/D-015 existentes, cache e sigilo verificados. Rules nao verificam o veredito CF independentemente do Android.
+
+TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014).
 
 ---
 
@@ -2240,7 +2246,7 @@ Conferencias humanas opcionais (D-014); os testes automatizados exigidos sao obr
 
 **Historia:** Como usuario, quero que um Ipsum feche automaticamente ao atingir duas horas e conte como tentativa sem AC quando nao houver AC valido no prazo.
 
-**Status:** PLANEJADA; todos os criterios funcionais pendentes.
+**Status:** IMPLEMENTADA E VERIFICADA EM PREVIEW Spark. Flag padrao false ate 38; novas Rules aguardam publicacao no projeto real. Confirmacao de Google unico da base 33/34 segue pendente. Sem OAuth/deploy reais alegados.
 
 **GitHub:** [#64 - Historia 37](https://github.com/Enzofmcs/Lorem/issues/64).
 
@@ -2252,18 +2258,20 @@ Conferencias humanas opcionais (D-014); os testes automatizados exigidos sao obr
 
 #### Criterios de aceite
 
-- [ ] Persistir startedAt=serverTimestamp, duracao maxima 7.200.000ms e versao da regra; derivar expiresAt apos confirmacao do inicio. Nao pausar/reiniciar por lifecycle/logout/rede/aparelho/relogio civil; nao inventar transformacao serverTimestamp()+2h.
-- [ ] Fechar a experiencia no prazo com app aberto/offline e tratar vencimento em toda leitura/comando. Agendar WorkManager unico por uid/handle/ipsum no inicio confirmado, com rede/retry e reparo no resume/reboot; Spark sem Functions/Tasks/TTL. Execucao tardia nao estende prazo; dispositivo impedido ou sem sessao pode exigir nova abertura/login para sincronizar.
-- [ ] Adotar fronteira UTC inclusiva para AC enviado entre inicio e expiresAt, com precisao real do CF; AC no limite vence timeout, e depois do limite e somente upsolve.
-- [ ] Verificar completamente a janela e vereditos pendentes antes do resultado definitivo; se API/rede falhar, fechar em CLOSED_AWAITING_VERIFICATION, fazer retry e impedir novo Ipsum ate fixar saldo. AC em prazo descoberto tarde conta como sucesso, sem segunda avaliacao.
-- [ ] Sem AC elegivel, gravar fim efetivo em expiresAt, TIME_LIMIT_EXCEEDED, estado pendente, duracao de 2h e delta sem AC D-012 exatamente uma vez; processedAt tardio fica separado.
-- [ ] Atualizar UI, cronometro/tempo restante, resultado, historico, estatisticas e upsolve; resolver corrida AC/desistencia/timeout atomicamente. Encerramento antecipado usa sua propria fronteira e nunca aceita AC posterior.
+- [x] Persistir startedAt=serverTimestamp, duracao maxima 7.200.000ms e versao da regra; derivar expiresAt apos confirmacao do inicio. Nao pausar/reiniciar por lifecycle/logout/rede/aparelho/relogio civil; nao inventar transformacao serverTimestamp()+2h.
+- [x] Fechar a experiencia no prazo com app aberto/offline e tratar vencimento em toda leitura/comando. Agendar WorkManager unico por uid/handle/ipsum no inicio confirmado, com rede/retry e reparo no resume/reboot; Spark sem Functions/Tasks/TTL. Execucao tardia nao estende prazo; dispositivo impedido ou sem sessao pode exigir nova abertura/login para sincronizar.
+- [x] Adotar fronteira UTC inclusiva para AC enviado entre inicio e expiresAt, com precisao real do CF; AC no limite vence timeout, e depois do limite e somente upsolve.
+- [x] Verificar completamente a janela e vereditos pendentes antes do resultado definitivo; se API/rede falhar, fechar em CLOSED_AWAITING_VERIFICATION, fazer retry e impedir novo Ipsum ate fixar saldo. AC em prazo descoberto tarde conta como sucesso, sem segunda avaliacao.
+- [x] Sem AC elegivel, gravar fim efetivo em expiresAt, TIME_LIMIT_EXCEEDED, estado pendente, duracao de 2h e delta sem AC D-012 exatamente uma vez; processedAt tardio fica separado.
+- [x] Atualizar UI, cronometro/tempo restante, resultado, historico, estatisticas e upsolve; resolver corrida AC/desistencia/timeout atomicamente. Encerramento antecipado usa sua propria fronteira e nunca aceita AC posterior.
 
 **Entrega demonstravel:** Relogio controlado cruza 2h com app fechado; ao retornar, tentativa esta encerrada no prazo e rating sem AC foi aplicado uma vez. Demonstrar tambem AC em prazo recebido tarde.
 
 **Verificacao planejada:** Nivel 4: antes/exatamente/depois de 2h, anterior ao inicio, AC tardio/TESTING/paginacao incompleta, offline/reboot/relogio alterado, job atrasado/perdido e concorrencia; invariantes e marco Rules/SDK/Android.
 
-Conferencias humanas opcionais (D-014); os testes automatizados exigidos sao obrigatorios.
+**Evidencia automatizada:** SDK Kotlin de producao em Auth/Firestore Emulator, Rules com dois uids/dispositivos, dominio, UI e WorkManager; marco Android em [2026-10-19-firebase-35-37.json](evidence/2026-10-19-firebase-35-37.json). Fronteiras inclusivas, fracao submilissegundo, API indisponivel, entrada/pagina incompleta, TESTING, AC elegivel recebido tarde, timeout sem AC, upsolve sem recalculo, referencia monotonic/boot e reparo de job unico verificados. WorkManager continua sujeito ao sistema/rede/sessao.
+
+TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014).
 
 ---
 

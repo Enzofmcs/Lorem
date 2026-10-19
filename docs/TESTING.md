@@ -290,6 +290,41 @@ No marco integrado: suite Rules/SDK, `test`, `lint`, `assembleDebug`.
 Conferencias humanas continuam opcionais D-014; nenhuma execucao real e alegada
 por estes criterios planejados. Contratos detalhados em [FIREBASE.md](FIREBASE.md).
 
+## Implementacao 35-37 em 19/10/2026
+
+Nivel 4 durante o desenvolvimento; Nivel 5 no marco. Suite Rules usa somente
+Auth/Firestore Emulator `demo-lorem-local`, Node 24/Java 21. Os testes Kotlin
+opt-in exercitam `FirestoreTrainingRepository` real, com JDK 17 e SDK 35. Flags/
+hosts dos emuladores sao inputs das tarefas de teste, para nao reutilizar resultado
+ignorado depois de ativar o opt-in. Nenhum OAuth ou deploy real e alegado.
+
+```bash
+npm --prefix firebase test
+./gradlew :app:testDebugUnitTest --tests 'dev.lorem.app.domain.cloud.*' --tests 'dev.lorem.app.ui.cloud.*' --tests 'dev.lorem.app.ui.CloudTrainingScreenTest' --tests 'dev.lorem.app.data.cloud.*' --tests 'dev.lorem.app.data.remote.CodeforcesApiRepositoryTest'
+```
+
+Com Auth/Firestore Emulator iniciados separadamente conforme FIREBASE_SETUP.md:
+
+```bash
+LOREM_FIREBASE_EMULATORS=true FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 ./gradlew test lint assembleDebug --max-workers=2 --console=plain
+./gradlew :app:testDebugUnitTest --tests 'dev.lorem.app.FirebaseEntryTest' assembleDebug -Plorem.firebaseAuthEnabled=true --max-workers=2 --console=plain
+```
+
+Cobertura: criacao concorrente e canonica em 800 para CF alto/unrated; dois uids
+com mesmo handle e dois dispositivos/handles concorrentes; snapshots, dica,
+marker de problema usado, resposta perdida/retry, rating/consolidacao atomicos e
+versao unica; SDK/cache offline sem novo inicio; fronteiras de 2h e precisao
+submilissegundo; falha da API, dados malformados/consulta incompleta e TESTING;
+AC elegivel descoberto tarde, timeout sem AC e upsolve sem recalculo. Relogio
+monotonic/boot, job unico/reparo/uid/versao e sigilo/fechamento UI tambem cobertos.
+O teste de cache usa LRU em memoria e INSTRUMENTATION_TEST para manter o looper
+principal ativo nas continuacoes do SDK. O app usa o cache persistente padrao do
+Firestore. Fixtures de timeout usam somente REST local com bypass de Rules do emulador;
+nao sao credenciais administrativas nem evidencia de treinos reais da 31.
+
+Resultados e hashes: [evidencia 35-37](evidence/2026-10-19-firebase-35-37.json).
+TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014). Ativacao padrao/migracao ficam na 38.
+
 ## Evidencia historica da base 33/34 antes de Spark em 19/10/2026
 
 - Backend: `npm --prefix firebase/functions test`, Node 22, Java 21, seis testes

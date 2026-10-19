@@ -1,0 +1,791 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-10-19T21:25:33.390332+00:00",
+  "stories": [
+    35,
+    36,
+    37
+  ],
+  "baseCommit": "6589a200ff495c89d718048f01e9689a7cb02ebf",
+  "status": "implemented_and_verified_in_preview",
+  "runtime": {
+    "architecture": "Firebase Spark / Google Auth / Firestore SDK / Rules / WorkManager",
+    "defaultFirebaseFlag": false,
+    "migrationStory": 38,
+    "newRulesPublished": false,
+    "googleOnlyProviderConfirmation": "pending",
+    "realOAuthExecuted": false,
+    "realProjectMutated": false,
+    "androidConfigPresentInThisCheckout": false
+  },
+  "environment": {
+    "androidJdk": 17,
+    "gradle": "8.11.1",
+    "androidSdk": 35,
+    "emulatorJava": 21,
+    "node": "24.19.0",
+    "emulatorProject": "demo-lorem-local",
+    "emulatorHosts": {
+      "auth": "127.0.0.1:9099",
+      "firestore": "127.0.0.1:8080"
+    }
+  },
+  "rules": {
+    "command": "FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 node --test test/*.test.cjs",
+    "workingDirectory": "firebase",
+    "tests": 20,
+    "passed": 20,
+    "failed": 0,
+    "note": "Auth/Firestore emulators started separately; cleared only local demo emulator state between protocol runs."
+  },
+  "android": {
+    "fullCommand": "LOREM_FIREBASE_EMULATORS=true FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 ./gradlew test lint assembleDebug --max-workers=2 --console=plain",
+    "regression": {
+      "debug": {
+        "summary": {
+          "tests": 278,
+          "skipped": 1,
+          "failures": 0,
+          "errors": 0
+        },
+        "suites": [
+          {
+            "name": "dev.lorem.app.AppearanceNavigationTest",
+            "tests": 3,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.CompleteAppJourneyTest",
+            "tests": 5,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.FirebaseEntryTest",
+            "tests": 1,
+            "skipped": 1,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.MainActivityTest",
+            "tests": 8,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.data.auth.FirebaseFailureTest",
+            "tests": 3,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.data.auth.FirestoreAccountBootstrapEmulatorTest",
+            "tests": 9,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.data.auth.GoogleSessionRepositoryTest",
+            "tests": 8,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.data.cloud.CloudIpsumSchedulerTest",
+            "tests": 1,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.data.fake.FakeCodeforcesRepositoryTest",
+            "tests": 3,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.data.local.FullTrainingJourneyTest",
+            "tests": 6,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.data.local.IpsumPersistenceTest",
+            "tests": 6,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.data.local.IpsumStudyPersistenceTest",
+            "tests": 3,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.data.local.LocalLoremRepositoryTest",
+            "tests": 2,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.data.local.LoremDatabaseMigrationTest",
+            "tests": 7,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.data.local.PreferencesAppearanceRepositoryTest",
+            "tests": 1,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.data.local.ProblemHistoryPersistenceTest",
+            "tests": 5,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.data.local.ProblemOriginPersistenceTest",
+            "tests": 1,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.data.local.SynchronizationPersistenceTest",
+            "tests": 8,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.data.remote.CodeforcesApiRepositoryTest",
+            "tests": 21,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.data.remote.CodeforcesRequestGateTest",
+            "tests": 2,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.data.remote.CodeforcesRetryAfterTest",
+            "tests": 2,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.data.remote.ContestOriginTest",
+            "tests": 3,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.data.sync.SynchronizationWorkTest",
+            "tests": 11,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.domain.BuildIpsumHistoryTest",
+            "tests": 3,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.domain.BuildIpsumStatisticsTest",
+            "tests": 9,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.domain.BuildProblemHistoryTest",
+            "tests": 5,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.domain.CalculateConsolidatedRatingTest",
+            "tests": 5,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.domain.CalculateLoremRatingTest",
+            "tests": 3,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.domain.IpsumStudyTest",
+            "tests": 2,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.domain.IpsumTimingTest",
+            "tests": 4,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.domain.ProblemEligibilityTest",
+            "tests": 4,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.domain.RecommendIpsumTest",
+            "tests": 6,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.domain.RecommendVarietyTest",
+            "tests": 6,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.domain.SynchronizeProblemCatalogTest",
+            "tests": 3,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.domain.UpdatePendingIpsumsTest",
+            "tests": 3,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.domain.VerifyIpsumSubmissionsTest",
+            "tests": 4,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.domain.cloud.CloudTrainingTest",
+            "tests": 8,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.domain.sync.IpsumSubmissionMonitorTest",
+            "tests": 6,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.ui.AuthenticationScreenTest",
+            "tests": 3,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.ui.CloudTrainingScreenTest",
+            "tests": 3,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.ui.FoundationLayoutTest",
+            "tests": 3,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.ui.HistoryScreenTest",
+            "tests": 7,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.ui.HistoryStatisticsLayoutTest",
+            "tests": 3,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.ui.HomeConfigurationLayoutTest",
+            "tests": 3,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.ui.HomeScreenTest",
+            "tests": 5,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.ui.IpsumLayoutTest",
+            "tests": 3,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.ui.IpsumResultScreenTest",
+            "tests": 5,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.ui.IpsumScreenTest",
+            "tests": 9,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.ui.LoremViewModelTest",
+            "tests": 26,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.ui.StatisticsScreenTest",
+            "tests": 6,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.ui.SynchronizationStatusTest",
+            "tests": 2,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.ui.ThemeContrastTest",
+            "tests": 2,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.ui.auth.AuthenticationViewModelTest",
+            "tests": 3,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.ui.auth.GoogleCredentialRequestTest",
+            "tests": 3,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.ui.cloud.CloudTrainingViewModelTest",
+            "tests": 2,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          }
+        ]
+      },
+      "release": {
+        "summary": {
+          "tests": 200,
+          "skipped": 0,
+          "failures": 0,
+          "errors": 0
+        },
+        "suites": [
+          {
+            "name": "dev.lorem.app.data.auth.FirebaseFailureTest",
+            "tests": 3,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.data.auth.GoogleSessionRepositoryTest",
+            "tests": 8,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.data.cloud.CloudIpsumSchedulerTest",
+            "tests": 1,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.data.fake.FakeCodeforcesRepositoryTest",
+            "tests": 3,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.data.local.FullTrainingJourneyTest",
+            "tests": 6,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.data.local.IpsumPersistenceTest",
+            "tests": 6,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.data.local.IpsumStudyPersistenceTest",
+            "tests": 3,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.data.local.LocalLoremRepositoryTest",
+            "tests": 2,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.data.local.LoremDatabaseMigrationTest",
+            "tests": 7,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.data.local.PreferencesAppearanceRepositoryTest",
+            "tests": 1,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.data.local.ProblemHistoryPersistenceTest",
+            "tests": 5,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.data.local.ProblemOriginPersistenceTest",
+            "tests": 1,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.data.local.SynchronizationPersistenceTest",
+            "tests": 8,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.data.remote.CodeforcesApiRepositoryTest",
+            "tests": 21,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.data.remote.CodeforcesRequestGateTest",
+            "tests": 2,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.data.remote.CodeforcesRetryAfterTest",
+            "tests": 2,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.data.remote.ContestOriginTest",
+            "tests": 3,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.data.sync.SynchronizationWorkTest",
+            "tests": 11,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.domain.BuildIpsumHistoryTest",
+            "tests": 3,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.domain.BuildIpsumStatisticsTest",
+            "tests": 9,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.domain.BuildProblemHistoryTest",
+            "tests": 5,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.domain.CalculateConsolidatedRatingTest",
+            "tests": 5,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.domain.CalculateLoremRatingTest",
+            "tests": 3,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.domain.IpsumStudyTest",
+            "tests": 2,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.domain.IpsumTimingTest",
+            "tests": 4,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.domain.ProblemEligibilityTest",
+            "tests": 4,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.domain.RecommendIpsumTest",
+            "tests": 6,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.domain.RecommendVarietyTest",
+            "tests": 6,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.domain.SynchronizeProblemCatalogTest",
+            "tests": 3,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.domain.UpdatePendingIpsumsTest",
+            "tests": 3,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.domain.VerifyIpsumSubmissionsTest",
+            "tests": 4,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.domain.cloud.CloudTrainingTest",
+            "tests": 8,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.domain.sync.IpsumSubmissionMonitorTest",
+            "tests": 6,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.ui.LoremViewModelTest",
+            "tests": 26,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.ui.ThemeContrastTest",
+            "tests": 2,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.ui.auth.AuthenticationViewModelTest",
+            "tests": 3,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.ui.auth.GoogleCredentialRequestTest",
+            "tests": 3,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          },
+          {
+            "name": "dev.lorem.app.ui.cloud.CloudTrainingViewModelTest",
+            "tests": 2,
+            "skipped": 0,
+            "failures": 0,
+            "errors": 0
+          }
+        ]
+      }
+    },
+    "productionSdkSuite": {
+      "name": "dev.lorem.app.data.auth.FirestoreAccountBootstrapEmulatorTest",
+      "tests": 9,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    "previewCommand": "./gradlew :app:testDebugUnitTest --tests 'dev.lorem.app.FirebaseEntryTest' assembleDebug -Plorem.firebaseAuthEnabled=true --max-workers=2 --console=plain",
+    "preview": {
+      "summary": {
+        "tests": 1,
+        "skipped": 0,
+        "failures": 0,
+        "errors": 0
+      },
+      "suites": [
+        {
+          "name": "dev.lorem.app.FirebaseEntryTest",
+          "tests": 1,
+          "skipped": 0,
+          "failures": 0,
+          "errors": 0
+        }
+      ]
+    },
+    "lint": {
+      "Warning": 58
+    },
+    "apk": "app/build/outputs/apk/debug/app-debug.apk",
+    "apkSha256": "213a8c64d640ad0b288d9b5811e72ae69ff0646323cff7284b2c30bdcd9998ff",
+    "previewScope": "Without ignored Google Services JSON, entry is explicitly blocked; no fabricated configured account. Entry excludes legacy data."
+  },
+  "coverage": [
+    "canonical/idempotent concurrent handles, high/unrated CF initial 800, no reset and no 800 floor",
+    "same handle in two uids, independent rating/history/consolidation, cross-uid reads denied",
+    "uid lock across handles/devices, immutable contestId+index marker, forged/partial atomic writes denied",
+    "production Kotlin SDK start/retry/recovery/hint/manual close/result/version and D-012 once",
+    "D-015 reuse, immutable snapshots, CF origin cutoff, centralized request gate and complete pagination",
+    "deadline monotonic and boot anchor, inclusive CF seconds with full Firestore nanos retained",
+    "API failure, malformed/incomplete input and TESTING preserve pending verification and balance",
+    "late discovered eligible AC, timeout noAC, exact original duration, separate processedAt and unchanged upsolve rating",
+    "WorkManager unique request/network/backoff/cancel/repair and stale uid/version/id guards",
+    "real SDK offline cache with LRU test cache and running main looper; new commands require server",
+    "UI confidentiality, confirmed hint, expired/offline controls and historical timeout result"
+  ],
+  "manualTest": "TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014)",
+  "limits": [
+    "WorkManager may be delayed; cannot extend deadline.",
+    "Rules cannot independently verify Codeforces verdicts from a modified client.",
+    "Only synthetic demo fixtures; no scientific evidence for stories 31/32.",
+    "Publish new Rules and restore ignored Android config for the real project; migration/default rollout remain story 38."
+  ],
+  "sourceSha256": {
+    "app/build.gradle.kts": "19391ea06448d65717c19803552372ea658c95cb0a79d7eff12c2fe472f2a1e0",
+    "app/src/main/java/dev/lorem/app/AppContainer.kt": "1a9a2b60c4bb3726ecdb1acefbfd5402e082aef85ae1799f9715eeb623f3a066",
+    "app/src/main/java/dev/lorem/app/MainActivity.kt": "66adac0964c11156e6cf3f12ac8980d759c298a228cff9d233988829b68aef33",
+    "app/src/main/java/dev/lorem/app/data/auth/FirebaseAuthentication.kt": "6deb650d5d09be04b890eec4263fe60b0e9e59b7f964efeb9c60cae63c37f510",
+    "app/src/main/java/dev/lorem/app/data/cloud/CloudDocuments.kt": "5517fdb4b7d12e89b973cc0584b3237b8022b86f76bea627743affc50f20c78a",
+    "app/src/main/java/dev/lorem/app/data/cloud/CloudIpsumWork.kt": "9fcda0aef270dbafa17d8e8bd0e0077ddbadd35de8bdcc8bc14481a4b0d6e0d6",
+    "app/src/main/java/dev/lorem/app/data/cloud/FirestoreTrainingRepository.kt": "d106288a44a0cc96557e95ae786335bc4e2526a5ee19397371fa550ee860c420",
+    "app/src/main/java/dev/lorem/app/data/remote/CodeforcesApiRepository.kt": "5facfec100a4689b532287d49e28e411a415b3cb74c7d8d9d4184fc5f305831d",
+    "app/src/main/java/dev/lorem/app/domain/cloud/CloudTraining.kt": "aa65e724786ffc7d1b7cca5323940ed6c71678f5caa426277e6b9bf97208ee96",
+    "app/src/main/java/dev/lorem/app/domain/repository/CodeforcesRepository.kt": "453a484da4b418807830f1777adf28429cd50832012f27912a0f8687f3986659",
+    "app/src/main/java/dev/lorem/app/domain/sync/SynchronizationState.kt": "a6f0b46d40f2b30e3aa15949ed86fb0203678fcd9de12a94565c38d2f92b9482",
+    "app/src/main/java/dev/lorem/app/ui/auth/FirebaseLoginApp.kt": "71f3cfa738a7feeff790405dc2aad761e9c96eebad9a72c2f76101b733ac8a44",
+    "app/src/main/java/dev/lorem/app/ui/cloud/CloudTrainingScreen.kt": "4ec74dc1d8edcf67fdb103fb3ee2ff3e1884934cd1ddd83c6e6bba9a4ff018c3",
+    "app/src/main/java/dev/lorem/app/ui/cloud/CloudTrainingViewModel.kt": "42898128b601218a0ac8d222386611269bfd2e34131b4ab457559783533fe8c1",
+    "app/src/test/java/dev/lorem/app/data/cloud/CloudIpsumSchedulerTest.kt": "14c715481b5c90251085c33153f75668c19f5e7fb201b78bdd7c160dbda5d2b1",
+    "app/src/test/java/dev/lorem/app/data/remote/CodeforcesApiRepositoryTest.kt": "379311bae4aa370476de953f45338b56b19c98c3c9f4371cb913d6c0f6c3282e",
+    "app/src/test/java/dev/lorem/app/domain/cloud/CloudTrainingTest.kt": "69c78d6051c82bc3dcbac736a3a4dfd2aa92b619494911e13d32687953bad07a",
+    "app/src/test/java/dev/lorem/app/ui/cloud/CloudTrainingViewModelTest.kt": "52ae9df668b9089360da12ed3ba001929ebf3ce16e413d9246668cf82ce0eef1",
+    "app/src/testDebug/java/dev/lorem/app/data/auth/FirestoreAccountBootstrapEmulatorTest.kt": "572612e6a4d0909d5acc9b9aa81619215d61264ea5f01680ebe76c719a29472e",
+    "app/src/testDebug/java/dev/lorem/app/ui/CloudTrainingScreenTest.kt": "fece99674022bde1011393af11dd0ed144b66d8e7ed3baba9797dee50dcf5589",
+    "firebase/firestore.rules": "9e72beabebe32c227ab4db1bb39722e5d39301035199f6e20035528a9d81d62e"
+  }
+}

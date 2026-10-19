@@ -24,9 +24,11 @@ import dev.lorem.app.domain.auth.GoogleAccount
 import dev.lorem.app.domain.model.ThemePreference
 import dev.lorem.app.domain.repository.AppearanceRepository
 import dev.lorem.app.ui.theme.LoremTheme
+import dev.lorem.app.domain.cloud.CloudTrainingRepository
+import dev.lorem.app.ui.cloud.CloudTrainingDestination
 
 @Composable
-fun FirebaseLoginApp(authentication: FirebaseAuthentication, appearance: AppearanceRepository) {
+fun FirebaseLoginApp(authentication: FirebaseAuthentication, appearance: AppearanceRepository, training: CloudTrainingRepository? = null) {
     val model: AuthenticationViewModel = viewModel(factory = AuthenticationViewModel.factory(authentication.repository))
     val session by model.session.collectAsStateWithLifecycle()
     val busy by model.busy.collectAsStateWithLifecycle()
@@ -47,6 +49,9 @@ fun FirebaseLoginApp(authentication: FirebaseAuthentication, appearance: Appeara
             onSignIn = { credentials?.let { model.signIn { it.getIdToken(context) } } },
             onRetry = model::refresh,
             onSignOut = { model.signOut { credentials?.clearState() } },
+            signedInContent = { account ->
+                if (training != null) CloudTrainingDestination(account.uid, training) else HandleOnboardingDestination()
+            },
         )
     }
 }

@@ -8,7 +8,8 @@ Cloud Tasks, billing ou backend externo como requisito. Firestore escolhido:
 33/34 em preview: login, validacao de sessao e bootstrap transacional direto pelo
 SDK Firestore. Usuario confirmou a publicacao das Rules; a configuracao de Google
 unico ainda aguarda confirmacao. Nao houve leitura administrativa pelo agente
-nem login Google real. Conferencia humana e opcional (D-014). **35-38 continuam planejadas.**
+nem login Google real. Conferencia humana e opcional (D-014). **35-37 implementadas
+em preview; 38 planejada. Novas Rules 35-37 aguardam publicacao.**
 [Estado e comandos](FIREBASE_SETUP.md); [historias e aceite](ROADMAP.md).
 As evidencias antigas descrevem a implementacao anterior e permanecem intactas.
 
@@ -44,24 +45,25 @@ irrestritas para compensar a ausencia de Functions.
 | Caminho | Conteudo e regra |
 |---|---|
 | `users/{uid}` | Somente schemaVersion=1 e createdAt do servidor; criar uma vez. |
-| `users/{uid}/handles/{handleKey}` | Handle canonico, rating, consolidacao e versao; regras especificas na 35. |
-| `users/{uid}/handles/{handleKey}/ipsums/{ipsumId}` | Tentativa, snapshots e resultado; transicoes especificas na 36. |
-| `users/{uid}/runtime/current` | Lock transacional do unico ativo por uid; contrato da 36. |
+| `users/{uid}/handles/{handleKey}` | Handle canonico, rating, consolidacao e versao. Criacao em 800; atualizacao somente com resultado atomico. |
+| `users/{uid}/handles/{handleKey}/ipsums/{ipsumId}` | Tentativa, snapshots imutaveis, prazo, dica e resultado unico. |
+| `users/{uid}/handles/{handleKey}/usedProblems/{contestId_index}` | Marker imutavel criado junto do inicio; impede repetir problema entre dispositivos. |
+| `users/{uid}/runtime/current` | Lock do unico ativo por uid e checkedAt do servidor para ancorar o prazo. |
 
 Na 33/34, Auth atualiza/valida token e exige sign_in_provider=google.com.
 O bootstrap captura o uid validado e usa `runTransaction`: le o proprio documento,
 cria schemaVersion/createdAt apenas se ausente, com `serverTimestamp()`, e preserva
 metadados existentes. A transacao precisa de confirmacao do servidor; cache e fila
-offline nao liberam SignedIn. Rules permitem somente essa criacao minima por
-Google no proprio uid, com createdAt=request.time; negam update/delete/list da
-raiz, campos extras e todos os writes em handles/ipsums/runtime nesta entrega.
+offline nao liberam SignedIn. Rules permitem somente essa criacao minima na raiz
+pelo proprio Google, com createdAt=request.time; negam update/delete/list da raiz
+e campos extras. Os writes nas subcolecoes seguem contratos especificos 35-37.
 O cliente nao envia uid, e-mail ou nome no documento. Concorrencia, retry e
 restauracao nao reescrevem createdAt. Falha de Rules e diferente de provedor errado;
 rede/cota/configuracao ausentes deixam a sessao bloqueada com recuperacao.
 
 O cadastro da 35 usa user.info, normaliza a grafia canonica (trim/lowercase,
-Locale.ROOT) e codifica uma chave segura. Uma transacao cria somente se ausente;
-Rules futuras exigirao rating inicial 800 e recusarao reset/sobrescrita indevida.
+Locale.ROOT) e valida o alfabeto publico CF para uma chave segura. Uma transacao
+cria somente se ausente; Rules exigem rating inicial 800 e recusam reset/sobrescrita indevida.
 Nao introduzir reserva global, OAuth Codeforces ou desafio de posse.
 
 Room e cache/arquivo legado; DataStore guarda configuracao/selecao. Dados pessoais,
@@ -70,30 +72,33 @@ compartilhado. Trocar conta remove UI/listeners/trabalhos anteriores; callbacks
 atrasados nao liberam a identidade antiga. Com Ipsum ativo, nao trocar handle.
 Sair nao reinicia o prazo; sincronizar exige voltar a uma sessao do uid correto.
 
-## Ciclo do Ipsum planejado para Spark (35-38)
+## Ciclo do Ipsum implementado no preview (35-37)
 
 O Android reutiliza dominio D-012, criterio de origem da 29, importacao D-017,
 API centralizada (minimo 2s), paginacao, deduplicacao e retry. Nao embarcar Python
-nem habilitar a 32. Estes fluxos ainda nao estao implementados no preview.
+nem habilitar a 32. Selecao DataStore usa namespace por uid; ProfileLink e cache
+de historico usam uid+handle+versao. O SDK Firestore mantem cache nos caminhos
+privados completos. Nenhum cache Room sem uid e reaproveitado; arquivo/migracao
+legado pertencem a 38, sem alteracao destrutiva do esquema local.
 
 Iniciar/encerrar usa SDK Firestore, chaves idempotentes e transacoes verificadas
 pelas Rules: inicio+lock no mesmo commit; resultado+rating+versao+liberacao do lock
 em outro commit atomico. Repeticao por worker, duplo toque ou segundo dispositivo
-nao pode avaliar duas vezes. Planejar Rules por estado e getAfter() para conferir
+nao pode avaliar duas vezes. Rules por estado e getAfter() conferem
 consistencia entre documentos; nenhuma liberacao generica de writes por uid.
 
 A hora inicial vem de serverTimestamp() imutavel. Para o prazo, persistir inicio,
 duracao maxima e versao; **derivar expiresAt=startedAt+7.200.000ms** apos confirmar
 o inicio no servidor. Nao tentar enviar serverTimestamp()+2h como transformacao
 inexistente no SDK, nem usar relogio civil do aparelho como autoridade de inicio.
-As Rules futuras poderao comparar request.time com o prazo derivado e negar
+As Rules comparam request.time com o prazo derivado e negam
 acoes de treino apos a fronteira, mesmo sem status de encerramento materializado.
 
 Leitura offline e fechamento visual continuam; novo inicio e confirmacao de saldo
 exigem Firestore acessivel. Resposta perdida depois de commit recupera o mesmo
 id/progresso; nao criar fila de novos treinos offline nem sincronizacao generica.
 
-## Prazo de 2h e WorkManager (Historia 37)
+## Prazo de 2h e WorkManager (Historia 37 implementada)
 
 Agendar **no inicio confirmado**, nao ao receber evento de fechamento, um trabalho
 unico por uid/handle/ipsum para reconciliar no prazo, com rede e retry. Worker
@@ -158,3 +163,55 @@ real contra emuladores, falhas de rede/cota/Rules, sessao restaurada e troca de
 conta. Emuladores nao comprovam OAuth real nem estado remoto do provedor. Na 37,
 testar fronteiras 2h, TESTING, worker atrasado/perdido, offline/reboot e delta unico.
 Rollout integrado somente apos 38; conferencia humana permanece opcional (D-014).
+
+## Implementacao 35-37 e detalhes de recuperacao
+
+`FirestoreTrainingRepository` valida a identidade em cada operacao e callback de
+transacao. Cria handles com grafia canonica, chave lowercase e rating 800 somente
+quando o documento nao existe. A selecao DataStore e por uid; um lock remoto ativo
+sempre determina o handle efetivo, inclusive quando outro dispositivo iniciou o
+treino. A lista de tentativas usa cache uid+handle+versao para evitar reler todo
+o historico a cada polling. Catalogo e historico CF precisam de consulta completa
+antes de um novo inicio; nao existe fila de novos treinos offline.
+
+O inicio grava tentativa, marker `contestId_index` e lock no mesmo commit. O id
+do comando e reutilizado em retries; recuperar um id existente tambem repara o
+agendamento. O resultado usa D-012/D-015 existentes e atualiza tentativa, perfil,
+versao e lock no mesmo commit. Rules exigem conservacao de saldo, versao seguinte,
+snapshot imutavel e transicao unica. A verificacao CF e o calculo numerico sao do
+Android, com o limite de confianca Spark declarado acima.
+
+`checkedAt=serverTimestamp` ancora o horario ao `elapsedRealtime` e boot atual.
+A referencia e conservadora pelo instante de envio da consulta, nunca recua com
+nova confirmacao e nao usa o relogio civil. Pode fechar visualmente um pouco antes
+por latencia; Rules e timestamps completos decidem o encerramento definitivo.
+Sem referencia confiavel depois de reiniciar o processo/boot, a interface bloqueia
+continuacao ate consultar o servidor. Cache offline e visivel dentro de uma
+sessao ja validada; restauracao do login continua exigindo a validacao online 34.
+
+O timestamp original do Firestore pode ter fracao menor que 1ms. O cutoff soma
+7.200 segundos preservando seus nanos; um resultado sem AC copia o cutoff exato.
+O Codeforces informa segundos inteiros: o primeiro segundo elegivel e o primeiro
+instante CF maior ou igual ao inicio completo, e o ultimo e menor ou igual ao
+cutoff. `processedAt` nao participa da duracao nem da elegibilidade.
+
+WorkManager tem um trabalho unico de prazo por uid+handle+ipsum, registrado antes
+de devolver o inicio a UI. Ao fechar antecipadamente, um trabalho de verificacao
+separado pode executar imediatamente, sem esperar as duas horas. Ambos usam
+rede, backoff e guard de uid/versao/id; UI e worker compartilham mutex/gate CF.
+Retomar/login repara jobs ausentes. Conta diferente torna o job obsoleto; sem
+sessao ele aguarda retry ou a entrada do uid original. Logout cancela jobs da
+conta que saiu. As garantias de atraso Android acima continuam aplicaveis.
+
+API indisponivel, entrada malformada, pagina incompleta ou TESTING nunca provam
+falha: o treino fechado mantem lock e rating, com retry. A avaliacao aguarda janela
+completa sem vereditos pendentes, inclusive com AC conhecido, para preservar o
+horario do primeiro AC e o rating. Com AC elegivel decide sucesso; sem AC decide falha.
+Desistencia fixa sua fronteira por horario do servidor e nao e substituida por
+timeout posterior. AC depois da fronteira apenas marca upsolve; a UI oferece
+verificacao do AC posterior sem alterar resultado/rating originais.
+
+Verificacao automatizada usa somente `demo-lorem-local`: Rules com duas contas/
+dispositivos e o SDK Kotlin de producao. Fixtures de timeout alteram apenas o
+inicio no emulador de teste, incluindo fracao submilissegundo; nao sao treinos
+reais nem evidencia cientifica da 31. [Evidencias 35-37](evidence/2026-10-19-firebase-35-37.json).

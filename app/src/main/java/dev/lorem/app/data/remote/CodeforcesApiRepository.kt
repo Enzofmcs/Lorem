@@ -85,7 +85,8 @@ class CodeforcesApiRepository(
                 response.statusCode == 429 -> SubmissionHistoryResult.RateLimited
                 response.statusCode !in 200..299 -> SubmissionHistoryResult.HttpFailure(response.statusCode)
                 else -> when (val page = parseSubmissionPage(response.body)) {
-                    is SubmissionPageResult.Success -> SubmissionHistoryResult.Success(page.submissions, page.receivedCount)
+                    is SubmissionPageResult.Success -> SubmissionHistoryResult.Success(page.submissions, page.receivedCount,
+                        page.submissions.size == page.receivedCount)
                     is SubmissionPageResult.Failed -> submissionFailure(page.message)
                     SubmissionPageResult.InvalidResponse -> SubmissionHistoryResult.InvalidResponse
                 }
@@ -105,6 +106,7 @@ class CodeforcesApiRepository(
         val submissions = mutableListOf<CodeforcesSubmission>()
         val encodedHandle = URLEncoder.encode(handle.trim(), Charsets.UTF_8.name())
         var from = FIRST_SUBMISSION_INDEX
+        var verificationComplete = true
 
         return try {
             while (true) {
@@ -127,6 +129,7 @@ class CodeforcesApiRepository(
                         return SubmissionHistoryResult.InvalidResponse
                     }
                     is SubmissionPageResult.Success -> {
+                        verificationComplete = verificationComplete && page.submissions.size == page.receivedCount
                         submissions += page.submissions.filter {
                             sinceEpochMillis == null || it.createdAt.toEpochMilli() > sinceEpochMillis
                         }
@@ -134,7 +137,7 @@ class CodeforcesApiRepository(
                             it.createdAt.toEpochMilli() <= sinceEpochMillis
                         }
                         if (reachedBoundary || page.receivedCount < submissionPageSize) {
-                            return SubmissionHistoryResult.Success(submissions)
+                            return SubmissionHistoryResult.Success(submissions, verificationComplete = verificationComplete)
                         }
                     }
                 }

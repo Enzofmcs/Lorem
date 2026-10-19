@@ -218,3 +218,10 @@ Guia: [FIREBASE_SETUP.md](FIREBASE_SETUP.md). Evidencia: [33/34](evidence/2026-1
 | ID | Data | Decisao | Motivo | Historias afetadas |
 |---|---|---|---|---|
 | D-039 | 2026-10-19 | Usuario solicita refazer 33/34 respeitando Spark. Auth Google + Firestore nam5; sem billing/Functions/Tasks/Admin SDK/backend externo como requisito. Bootstrap Android por transacao online, uid capturado e schema minimo protegido por Rules; tokens/cache offline nao liberam sessao. Planejamento 35-38 passa a SDK/transacoes/Rules, verificacao CF/calculo Android e WorkManager agendado no inicio; atraso de sincronizacao nao estende prazo absoluto 2h. | Substitui a arquitetura de D-033/D-037 e compute de D-038. Rules nao verificam Codeforces contra um app modificado; nenhuma promessa de anti-fraude independente. Sem rede/dispositivo/sessao elegivel, sincronizacao pode aguardar nova execucao; nao prometer job de servidor nem execucao exata. Preservar uid+handle, inicial800, locks/delta unico, arquivo legado e gates31/32. | 33-38 |
+
+
+### Implementacao 35-37 em preview, 19/10/2026
+
+| ID | Data | Decisao | Motivo | Historias afetadas |
+|---|---|---|---|---|
+| D-040 | 2026-10-19 | Implementar 35-37 em namespace Firestore por uid+handle, selecao DataStore por uid e ProfileLink/cache com uid+handle+versao; preservar Room legado para 38. Inicio atomico com marker por contestId+index e lock por uid; resultado/rating/consolidacao/versao/liberacao atomicos, usando D-012/D-015. Prazo ancorado em checkedAt do servidor + elapsedRealtime/boot; manter nanos em cutoff e resultado sem AC, respeitando segundos CF. Jobs unicos de prazo e verificacao com rede/retry e identidade capturada. | Concretizar as tres proximas historias autorizadas sem atribuir cache legado a uma conta, reiniciar saldo, duplicar avaliacao ou estender prazo. Novo inicio exige cobertura CF completa e servidor; rede/pagina malformada/TESTING preservam lock e adiam saldo. Mantem Spark D-039 e flag false ate migracao/rollout 38. Novas Rules precisam de publicacao; confirmacao anterior e apenas da versao 33/34. | 35-38 |

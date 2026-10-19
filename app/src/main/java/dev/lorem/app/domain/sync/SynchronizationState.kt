@@ -5,9 +5,9 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 
-data class ProfileLink(val handle: String, val version: Long) {
+data class ProfileLink(val handle: String, val version: Long, val uid: String? = null) {
     companion object {
-        fun of(handle: String, version: Long) = ProfileLink(handle.trim().lowercase(Locale.ROOT), version)
+        fun of(handle: String, version: Long, uid: String? = null) = ProfileLink(handle.trim().lowercase(Locale.ROOT), version, uid)
     }
 }
 
@@ -33,7 +33,8 @@ data class SynchronizationState(
 
 fun syncKey(dataset: SyncDataset, link: ProfileLink?, ipsumId: Long? = null): String =
     if (dataset == SyncDataset.CATALOG) "catalog"
-    else "${requireNotNull(link).handle}:${link.version}:${dataset.name}" + (ipsumId?.let { ":$it" } ?: "")
+    else requireNotNull(link).let { (it.uid?.let { uid -> "uid${uid.length}:$uid:" } ?: "") +
+        "${it.handle}:${it.version}:${dataset.name}" } + (ipsumId?.let { ":$it" } ?: "")
 
 interface SynchronizationStore {
     fun observe(key: String): Flow<SynchronizationState>

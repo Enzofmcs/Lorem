@@ -2,9 +2,33 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     function googleAccount(uid) {
-      return request.auth != null
-        && request.auth.uid == uid
+      return request.auth != null && request.auth.uid == uid
         && request.auth.token.firebase.sign_in_provider == 'google.com';
+    }
+    function hp(uid, key) { return /databases/$(database)/documents/users/$(uid)/handles/$(key); }
+    function ap(uid, key, id) { return /databases/$(database)/documents/users/$(uid)/handles/$(key)/ipsums/$(id); }
+    function lp(uid) { return /databases/$(database)/documents/users/$(uid)/runtime/current; }
+    function expiry(d) { return d.startedAt + duration.value(7200000, 'ms'); }
+    function boundary(d) { return d.cutoffAt == null ? expiry(d) : d.cutoffAt; }
+    function locked(uid, key, id) {
+      let l = getAfter(lp(uid)).data;
+      return l.handleKey == key && l.ipsumId == id;
+    }
+    function unlocked(uid) {
+      let l = getAfter(lp(uid)).data;
+      return l.handleKey == null && l.ipsumId == null;
+    }
+    function finalResult(d) {
+      let r = d.result;
+      return r is map && r.keys().hasAll(['endedAt', 'accepted', 'errors', 'failure', 'delta', 'finalRating', 'expectedTime'])
+        && r.keys().hasOnly(['endedAt', 'accepted', 'errors', 'failure', 'delta', 'finalRating', 'expectedTime'])
+        && r.endedAt is timestamp && r.endedAt >= d.startedAt && r.endedAt <= boundary(d)
+        && r.endedAt <= request.time && r.accepted is bool && r.errors is int && r.errors >= 0
+        && r.delta is int && r.delta >= -32 && r.delta <= 40 && r.delta != 0
+        && r.finalRating is int && r.finalRating == (d.snapshot.initialRating + r.delta >= 0 ? d.snapshot.initialRating + r.delta : 0)
+        && r.expectedTime is int && r.expectedTime >= 1800000 && r.expectedTime <= 7200000
+        && ((r.accepted && r.delta > 0 && r.failure == null)
+          || (!r.accepted && r.delta < 0 && d.cutoffAt != null && r.endedAt == d.cutoffAt && r.failure == d.failure));
     }
 
     match /users/{uid} {
@@ -20,17 +44,133 @@ service cloud.firestore {
 
       match /handles/{handleKey} {
         allow read: if googleAccount(uid);
-        allow write: if false;
+        allow create: if googleAccount(uid) && exists(/databases/$(database)/documents/users/$(uid))
+          && request.resource.data.keys().hasAll(['handle', 'handleKey', 'rating', 'consolidatedRating', 'version', 'createdAt'])
+          && request.resource.data.keys().hasOnly(['handle', 'handleKey', 'rating', 'consolidatedRating', 'version', 'createdAt'])
+          && request.resource.data.handle is string && request.resource.data.handle.matches('[A-Za-z0-9_.-]{3,24}')
+          && handleKey == request.resource.data.handle.lower() && request.resource.data.handleKey == handleKey
+          && request.resource.data.rating is int && request.resource.data.rating == 800
+          && request.resource.data.consolidatedRating == null
+          && request.resource.data.version is int && request.resource.data.version == 0
+          && request.resource.data.createdAt == request.time;
+        allow update: if googleAccount(uid) && validHandleResult();
+        allow delete: if false;
+        function validHandleResult() {
+          let n = request.resource.data;
+          let old = resource.data;
+          let a = getAfter(ap(uid, handleKey, n.lastIpsumId)).data;
+          let before = get(ap(uid, handleKey, n.lastIpsumId)).data;
+          return n.diff(old).affectedKeys().hasOnly(['rating', 'version', 'consolidatedRating', 'lastIpsumId'])
+            && n.version == old.version + 1 && n.version is int && n.rating is int && n.rating >= 0
+            && (n.consolidatedRating == null || (n.consolidatedRating is int && n.consolidatedRating >= 800
+              && (old.consolidatedRating == null || n.consolidatedRating >= old.consolidatedRating)))
+            && (old.consolidatedRating == null || n.consolidatedRating != null)
+            && before.state != 'FINAL' && a.state == 'FINAL' && a.version == old.version
+            && a.snapshot.initialRating == old.rating && a.result.finalRating == n.rating && unlocked(uid);
+        }
+
+        match /usedProblems/{problemKey} {
+          allow read: if googleAccount(uid);
+          allow create: if googleAccount(uid) && validUsed();
+          allow update, delete: if false;
+          function validUsed() {
+            let n = request.resource.data;
+            let a = getAfter(ap(uid, handleKey, n.ipsumId)).data;
+            return n.keys().hasOnly(['ipsumId']) && a.state == 'ACTIVE' && a.startedAt == request.time
+              && problemKey == string(a.snapshot.contestId) + '_' + a.snapshot.index
+              && locked(uid, handleKey, n.ipsumId);
+          }
+        }
 
         match /ipsums/{ipsumId} {
           allow read: if googleAccount(uid);
-          allow write: if false;
+          allow create: if googleAccount(uid) && validStart();
+          allow update: if googleAccount(uid) && validTransition();
+          allow delete: if false;
+          function validStart() {
+            let n = request.resource.data;
+            let s = n.snapshot;
+            let h = get(hp(uid, handleKey)).data;
+            let marker = /databases/$(database)/documents/users/$(uid)/handles/$(handleKey)/usedProblems/$(string(s.contestId) + '_' + s.index);
+            return n.keys().hasAll(['handleKey', 'version', 'snapshot', 'state', 'startedAt', 'limitMillis', 'ruleVersion',
+                'hintAt', 'cutoffAt', 'closeReason', 'failure', 'result', 'processedAt', 'solvedOutsideAt'])
+              && n.keys().hasOnly(['handleKey', 'version', 'snapshot', 'state', 'startedAt', 'limitMillis', 'ruleVersion',
+                'hintAt', 'cutoffAt', 'closeReason', 'failure', 'result', 'processedAt', 'solvedOutsideAt'])
+              && n.handleKey == handleKey && n.version == h.version && s.initialRating == h.rating
+              && n.state == 'ACTIVE' && n.startedAt == request.time && n.limitMillis == 7200000
+              && n.ruleVersion == 'spark-2h-v1' && n.hintAt == null && n.cutoffAt == null
+              && n.closeReason == null && n.failure == null && n.result == null && n.processedAt == null && n.solvedOutsideAt == null
+              && s.keys().hasAll(['handle', 'initialRating', 'contestId', 'index', 'name', 'rating', 'tags', 'originAt',
+                'originVerifiedAt', 'originSource', 'originVersion', 'category', 'desiredMin', 'desiredMax', 'fallback',
+                'cfRating', 'cfObservedAt', 'factors', 'recentOverlap'])
+              && s.keys().hasOnly(['handle', 'initialRating', 'contestId', 'index', 'name', 'rating', 'tags', 'originAt',
+                'originVerifiedAt', 'originSource', 'originVersion', 'category', 'desiredMin', 'desiredMax', 'fallback',
+                'cfRating', 'cfObservedAt', 'factors', 'recentOverlap'])
+              && s.handle == h.handle && s.contestId is int && s.contestId > 0 && s.index is string
+              && s.index.matches('[A-Za-z0-9]+') && s.name is string && s.rating is int && s.rating >= 800
+              && s.tags is list && s.factors is list && s.originAt is int && s.originAt >= 1593561600000
+              && s.originVerifiedAt is int && s.originVerifiedAt > 0 && s.originSource == 'codeforces:contest.list'
+              && s.originVersion == 'origin-20200701-v1' && s.category in ['FLUENCY', 'CURRENT_LEVEL', 'CHALLENGE']
+              && s.desiredMin is int && s.desiredMax is int && s.fallback is int && s.fallback >= 0 && s.fallback <= 300
+              && !exists(marker) && getAfter(marker).data.ipsumId == ipsumId && locked(uid, handleKey, ipsumId)
+              && (!exists(lp(uid)) || get(lp(uid)).data.ipsumId == null);
+          }
+          function validTransition() {
+            let n = request.resource.data;
+            let old = resource.data;
+            let changed = n.diff(old).affectedKeys();
+            return (old.state == 'ACTIVE' && n.state == 'ACTIVE'
+                && changed.hasOnly(['hintAt']) && old.hintAt == null && n.hintAt == request.time
+                && request.time < expiry(old) && locked(uid, handleKey, ipsumId))
+              || (old.state == 'ACTIVE' && n.state == 'CLOSED_AWAITING_VERIFICATION'
+                && changed.hasOnly(['state', 'cutoffAt', 'closeReason', 'failure']) && locked(uid, handleKey, ipsumId)
+                && ((n.closeReason == 'TIME_LIMIT_EXCEEDED' && request.time >= expiry(old)
+                    && n.cutoffAt == expiry(old) && n.failure == 'TIME_EXPIRED')
+                  || (n.closeReason == 'GIVE_UP' && request.time < expiry(old) && n.cutoffAt == request.time
+                    && n.failure in ['STATEMENT_NOT_UNDERSTOOD', 'LOGIC_NOT_FOUND', 'CONTENT_UNKNOWN',
+                      'IMPLEMENTATION_NOT_COMPLETED', 'IMPLEMENTATION_ERROR', 'TIME_EXPIRED'])))
+              || (old.state in ['ACTIVE', 'CLOSED_AWAITING_VERIFICATION'] && n.state == 'FINAL'
+                && changed.hasOnly(['state', 'result', 'processedAt']) && n.processedAt == request.time
+                && (old.state != 'ACTIVE' || n.result.accepted == true) && finalResult(n)
+                && getAfter(hp(uid, handleKey)).data.version == old.version + 1
+                && getAfter(hp(uid, handleKey)).data.rating == n.result.finalRating
+                && getAfter(hp(uid, handleKey)).data.lastIpsumId == ipsumId && unlocked(uid))
+              || (old.state == 'FINAL' && old.result.accepted == false && old.solvedOutsideAt == null
+                && changed.hasOnly(['solvedOutsideAt']) && n.solvedOutsideAt is timestamp
+                && n.solvedOutsideAt > boundary(old) && n.solvedOutsideAt <= request.time);
+          }
         }
       }
 
       match /runtime/{runtimeId} {
         allow read: if googleAccount(uid);
-        allow write: if false;
+        allow create, update: if googleAccount(uid) && runtimeId == 'current' && validLock();
+        allow delete: if false;
+        function validLock() {
+          let n = request.resource.data;
+          return n.keys().hasAll(['handleKey', 'ipsumId', 'checkedAt'])
+            && n.keys().hasOnly(['handleKey', 'ipsumId', 'checkedAt']) && n.checkedAt == request.time
+            && ((!exists(lp(uid)) && n.ipsumId == null && n.handleKey == null)
+              || (exists(lp(uid)) && pulse()) || startLock() || releaseLock());
+        }
+        function pulse() {
+          let n = request.resource.data;
+          return n.ipsumId == resource.data.ipsumId && n.handleKey == resource.data.handleKey;
+        }
+        function startLock() {
+          let n = request.resource.data;
+          let a = getAfter(ap(uid, n.handleKey, n.ipsumId)).data;
+          return n.handleKey is string && n.ipsumId is string
+            && (!exists(lp(uid)) || resource.data.ipsumId == null)
+            && !exists(ap(uid, n.handleKey, n.ipsumId)) && a.state == 'ACTIVE' && a.startedAt == request.time;
+        }
+        function releaseLock() {
+          let n = request.resource.data;
+          let old = resource.data;
+          return old.ipsumId is string && n.ipsumId == null && n.handleKey == null
+            && get(ap(uid, old.handleKey, old.ipsumId)).data.state != 'FINAL'
+            && getAfter(ap(uid, old.handleKey, old.ipsumId)).data.state == 'FINAL';
+        }
       }
     }
 

@@ -39,6 +39,15 @@ class CodeforcesApiRepositoryTest {
         assertEquals(2, page.receivedCount)
         assertEquals(listOf(2L), page.submissions.map { it.id })
         assertEquals("TESTING", page.submissions.single().verdict)
+        assertEquals(false, page.verificationComplete)
+    }
+    @Test fun `window cannot prove absence of AC if any entry was unparseable`() = runTest {
+        val malformed = repository("""{"status":"OK","result":[{"id":1},${submission(2, 10, "A", "WRONG_ANSWER", 100)}]}""")
+            .submissionHistorySince("tourist", 0) as SubmissionHistoryResult.Success
+        assertEquals(false, malformed.verificationComplete)
+        val complete = repository("""{"status":"OK","result":[${submission(2, 10, "A", "WRONG_ANSWER", 100)}]}""")
+            .submissionHistorySince("tourist", 0) as SubmissionHistoryResult.Success
+        assertEquals(true, complete.verificationComplete)
     }
     private val immediateGate = object : CodeforcesRequestGate {
         override suspend fun <T> execute(request: suspend () -> T): T = request()

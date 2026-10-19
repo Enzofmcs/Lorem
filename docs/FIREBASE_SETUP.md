@@ -1,4 +1,4 @@
-# Configurar Firebase Spark (Historias 33-34)
+# Configurar Firebase Spark (Historias 33-37)
 
 ## Entrega e limites
 
@@ -30,10 +30,19 @@ deploy como pendencia. Nenhum indice adicional e necessario no esquema atual
 OAuth/login real nao foram executados pelo agente. Conferencia humana do app e
 opcional (D-014); emulador nao comprova OAuth. [Registro da publicacao](evidence/2026-10-19-firebase-rules-publication.json).
 
-O preview termina em Seus handles, ponto de integracao da 35. Sem cadastro de
-handles/treino na nuvem, timeout ou migracao implementados nesta entrega. As Rules
-atuais negam todas as escritas em handles/ipsums/runtime; 35/36 adicionarao seus
-contratos especificos. WorkManager pertence a 37 e nao foi antecipado aqui.
+O preview agora implementa 35-37: handles, treino/rating Firestore e prazo 2h.
+**A publicacao confirmada anteriormente cobre somente as Rules 33/34.** O arquivo
+firebase/firestore.rules mudou para validar handles, markers de problemas usados,
+tentativas e lock. Publicar essa nova versao pelo procedimento abaixo antes de
+usar os novos fluxos no projeto real. Nenhum novo indice e necessario. Nao houve
+deploy remoto nesta implementacao. A confirmacao de Google unico permanece pendente.
+Migracao do arquivo local e ativacao padrao continuam na 38.
+
+No checkout de verificacao 35-37, o google-services.json ignorado nao estava
+presente. O APK preview foi verificado com o bloqueio explicito de configuracao
+ausente; SDK/Rules usaram exclusivamente o projeto demo dos emuladores. Restaurar
+o JSON Android local antes de usar o Firebase real. Isso nao invalida a conferencia
+historica do JSON na 33/34 nem comprova OAuth neste checkout.
 
 ## Evidencia local Spark
 
@@ -142,7 +151,7 @@ abre seletor nem autentica uma conta Google real. No marco: test/lint/assembleDe
 ```
 
 Flag false por padrao ate rollout 38. Sem configuracao nao existe conta falsa;
-com true, somente token validado e transacao confirmada liberam Seus handles.
+com true, somente token validado e transacao confirmada liberam os handles e treino.
 Rede, cota Spark ou Rules incorretas deixam a sessao bloqueada com retry. Sair/
 trocar limpa a UI e callbacks antigos; workers legados ficam cancelados/inertes.
 Nenhum perfil local e importado pelo preview, e sair nao exclui dados da conta.

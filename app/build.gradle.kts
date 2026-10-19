@@ -42,6 +42,10 @@ android {
     testOptions {
         unitTests.isIncludeAndroidResources = true
         unitTests.all {
+            // Switching the opt-in must rerun SDK tests rather than reuse a previously skipped result.
+            it.inputs.property("loremFirebaseEmulators", providers.environmentVariable("LOREM_FIREBASE_EMULATORS").orElse("false"))
+            it.inputs.property("loremAuthEmulatorHost", providers.environmentVariable("FIREBASE_AUTH_EMULATOR_HOST").orElse(""))
+            it.inputs.property("loremFirestoreEmulatorHost", providers.environmentVariable("FIRESTORE_EMULATOR_HOST").orElse(""))
             it.systemProperty(
                 "robolectric.dependency.repo.url",
                 "https://repo.maven.apache.org/maven2",

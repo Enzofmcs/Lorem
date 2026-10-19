@@ -26,6 +26,8 @@ import kotlinx.coroutines.tasks.await
 data class FirebaseAuthentication(
     val repository: AuthenticationRepository,
     val googleWebClientId: String?,
+    val firestore: FirebaseFirestore? = null,
+    val auth: FirebaseAuth? = null,
 ) {
     companion object {
         fun create(context: Context, scope: CoroutineScope): FirebaseAuthentication = try {
@@ -49,7 +51,8 @@ data class FirebaseAuthentication(
             }
             val auth = FirebaseAuth.getInstance(app)
             val bootstrap = FirestoreAccountBootstrap(auth, FirebaseFirestore.getInstance(app))
-            return FirebaseAuthentication(GoogleSessionRepository(FirebaseGoogleIdentitySource(auth), bootstrap, scope), clientId)
+            return FirebaseAuthentication(GoogleSessionRepository(FirebaseGoogleIdentitySource(auth), bootstrap, scope), clientId,
+                FirebaseFirestore.getInstance(app), auth)
         }
     }
 }
