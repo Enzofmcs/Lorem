@@ -162,7 +162,8 @@ encerrados em Configurações. Legados/ativos/avaliações preservados; D-012 vi
 
 **31–32 bloqueadas:** nenhum export real foi fornecido. Precisamos de uma coorte
 real para avaliar os ratings e as previsões antes da integração. O piso de preparo
-não comprova precisão. O estudo não inclui comparação entre épocas/correção temporal.
+não comprova precisão. A [ferramenta e o pré-registro da 31](study/TRANSPORT_PROTOCOL.md)
+já definem a comparação e os limites antes do teste real. O estudo não inclui comparação entre épocas/correção temporal.
 [Progresso e critérios](docs/ROADMAP.md) · [Evidência Android](docs/evidence/2026-10-18-android-30.json).
 
 O planejamento de 13/10/2026 acrescenta **15–17 — Sincronização automática** e

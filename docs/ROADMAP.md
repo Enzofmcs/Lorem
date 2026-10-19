@@ -1994,7 +1994,7 @@ insufficient_data, sem particoes/metricas/integracao. [Protocolo](../study/IPSUM
 
 **Historia:** Como pesquisador, quero avaliar se ratings e previsoes se transportam para Ipsums antes de autorizar seu uso no aplicativo.
 
-**Status:** BLOQUEADO: nenhum export real de Ipsums fornecido (n=0/insufficient_data). Protocolo de preparo da 30 implementado; limiares finais e avaliacao empirica da 31 ainda pendentes.
+**Status:** PARCIAL / BLOQUEADO para conclusao empirica: nenhum export real de Ipsums fornecido (n=0/insufficient_data). Pre-registro e ferramenta de avaliacao implementados em 2026-10-19; comparacao/decisao reais ainda pendentes.
 
 **GitHub:** [#54 - Historia 31](https://github.com/Enzofmcs/Lorem/issues/54).
 
@@ -2008,7 +2008,7 @@ insufficient_data, sem particoes/metricas/integracao. [Protocolo](../study/IPSUM
 
 #### Criterios de aceite
 
-- [ ] Fixar antes de abrir o teste Ipsum tamanho/precisao de amostra e limiares aceitaveis de MAE/calibracao/Brier conforme resultados de 28; registrar decisao e justificativa.
+- [x] Fixar antes de abrir o teste Ipsum tamanho/precisao de amostra e limiares aceitaveis de MAE/calibracao/Brier conforme resultados de 28; registrar decisao e justificativa.
 - [ ] Comparar pares CF anterior ao inicio e Lorem inicial: diferenca/vies, dispersao, correlacao e suporte; nunca usar Lorem posterior ao resultado nem inferir equivalencia pela correlacao.
 - [ ] Comparar identidade e mapeamento simples ajustado so no treino, com participantes inteiros reservados e sem vazamento por tentativas do mesmo usuario; tratar campos historicos ausentes explicitamente.
 - [ ] Avaliar erro de tempo, P(AC ate b), calibracao, censura e incerteza em Ipsums, com/sem dica e pausas; relatar deslocamento de dominio e cobertura.
@@ -2023,6 +2023,13 @@ Nivel 2 e reproducao do relatorio: splits por participante, ajuste sem teste, ra
 Conferencias humanas opcionais (D-014); criterios automatizados e evidencia
 cientifica exigidos acima continuam obrigatorios. Sem resultados comprovados
 neste planejamento.
+
+Pre-registro em [TRANSPORT_PROTOCOL.md](../study/TRANSPORT_PROTOCOL.md), D-032:
+100 participantes/2.000 tentativas/1.000 eventos, IC95% e cobertura/suporte.
+`evaluate-ipsums` vincula hashes, ajusta mapeamento apenas no treino, congela escolha
+na validacao e avalia por participante. Testes sinteticos verificam software, nao
+os quatro criterios empiricos acima; estes permanecem desmarcados. Estado real
+vazio e plano em [evidencia da 31](../study/evidence/2026-10-19-transport/manifest.json).
 
 ---
 

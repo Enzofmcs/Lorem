@@ -1,6 +1,6 @@
 # Estudo Python do Lorem
 
-Implementacao das Historias 22-28, com preparo local da 30: coleta auditavel, tentativas sequenciais,
+Implementacao das Historias 22-28, com preparo local da 30 e ferramenta pre-registrada da 31: coleta auditavel, tentativas sequenciais,
 particoes por contest, Kaplan-Meier/D-012, AFT censurado e avaliacao reservada.
 Amostra real: 19 contests elegiveis, 274.073 tentativas validas. Teste: quatro
 contests e 35.367 tentativas. KM por delta apresentou menor erro que o AFT nesta
@@ -328,10 +328,42 @@ sao estratos de qualidade, nunca features futuras.
 `partitions.json`. [Protocolo](IPSUM_PROTOCOL.md): piso inicial 10 participantes,
 200 tentativas validas, 100 eventos e particoes por participante 6/2/2, seed fixa.
 Duplicatas identicas sao deduplicadas; conflitos/alteracoes de coorte congelada
-sao recusados. O piso nao substitui limiares/precisao a fixar na Historia 31.
+sao recusados. O piso nao substitui os [limiares/precisao finais da 31](TRANSPORT_PROTOCOL.md).
 
 Nenhum export real foi fornecido nesta sessao. Comando sem `--inputs` e `--offline`
 registra n=0/`not_collected`/`insufficient_data`, zero chamadas, sem criar particoes
 ou metricas. 31/32 permanecem bloqueadas. A fixture `tests/fixtures/ipsum-export-android-v1.json`
 foi produzida pelo encoder Android com Room/StartIpsum/AC controlados e e
 explicitamente `synthetic`; nunca substitui evidencia empirica.
+
+## Avaliacao local de transporte (31, evidencia real pendente)
+
+Pacote 0.4.0. O [pre-registro](TRANSPORT_PROTOCOL.md) fixa o piso final em 100
+participantes/2.000 tentativas/1.000 eventos e exige precisao dos ICs, suporte,
+cobertura de dominio/mediana e limites de MAE/Brier/calibracao. Reusar os modelos
+congelados da 28; nenhum retreino no teste. Preparar a coorte final em diretorio
+novo; a particao por participante e verificada pelo hash/seed da 30.
+
+```bash
+python -m lorem_study prepare-ipsums --work work/ipsum-transport-v1 --offline
+python -m lorem_study evaluate-ipsums --work work/ipsum-transport-v1 --source-work work/sample-real-regular-v1
+```
+
+O primeiro comando sem `--inputs` demonstra a ausencia real atual. Quando houver
+exports reais, usar `--inputs` com os caminhos explicitos no preparo, sem
+`--offline` na primeira consulta dos metadados. O segundo comando e sempre local,
+sem chamadas de rede. Se os artefatos da 28 faltarem, reproduzi-los pelo roteiro
+anterior antes de executar. Ele congela `ipsum/transport/plan.json` antes de ler
+tentativas; verifica checksums/particoes e, se insuficiente, escreve somente
+estado/relatorio, sem ajuste nem metricas. Esse caminho continua stdlib.
+
+Com amostra suficiente, instalar `requirements-model.lock`. Ajuste linear usa so
+treino, escolha entre identidade/linear e KM/AFT usa validacao; `selection.json`
+e persistido antes da avaliacao do teste. `metrics.json` inclui pares de ratings,
+erros/censura, ICs por participante, estratos e comparacoes pareadas com suporte
+comum. `REPORT.md` e `manifest.json` apontam decisao e hashes. Reexecucao identica
+reproduz os arquivos; alterar dados, modelos ou plano congelados e recusado.
+
+Fixtures nunca aprovam transporte; limites numericos favoraveis em dados reais
+ainda exigem decisao explicita de dominio na 31. O gate do app permanece fechado
+e D-012 vigente. Historia 31 nao esta concluida; 32 continua bloqueada.

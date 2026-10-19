@@ -242,3 +242,23 @@ legados/rating futuro, dica/upsolve e exclusao integral D-026 cobertos sem rede.
 TESTE MANUAL OPCIONAL - NAO EXECUTADO: seletor de arquivo local no dispositivo.
 A falta de coorte real de Ipsums bloqueia a conclusao cientifica da 31, nao a
 verificacao de software nem a passagem da 30 conforme D-014.
+
+## Ferramenta pre-registrada da 31 em 2026-10-19
+
+Nivel 2: 84 testes Python com dependencias opcionais, sem falhas; 16 testes
+numericos e dois de core novos. Sem site-packages (`python -S`), 55 executados e
+29 opcionais ignorados. Corte/exclusao D-026, preparo e Android permanecem com
+suas evidencias anteriores; nenhuma fonte Android alterada nesta continuacao.
+
+Cobertura nova: participantes inteiros/hash e checksum, mapeamento com peso igual
+por participante somente em snapshots anteriores, correlacao versus deslocamento,
+ECE IPCW reamostrado por participante, suporte 0-120, CI/precisao/dominio/mediana,
+bins de delta para ratings continuos, selecao persistida antes do teste e
+imutabilidade sob mudanca dos desfechos do teste. Fixture sintetica, mesmo com
+gate numerico favoravel, nunca autoriza transporte/integracao. Sem suporte na
+validacao o teste permanece fechado; sem coorte final nenhuma metrica e produzida.
+
+Pacote/CLI 0.4.0 instalado fora da arvore de fontes, estado vazio reproduzivel e
+avaliacao CF anterior byte a byte conferidos na [evidencia da 31](../study/evidence/2026-10-19-transport/verification.json).
+Nenhum teste real de Ipsums executado: n=0. Historia 31 incompleta; 32 bloqueada.
+TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014).

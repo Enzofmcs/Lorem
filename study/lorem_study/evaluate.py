@@ -66,7 +66,8 @@ def predictions(features, baseline, aft):
         quantiles = np.full((n, 3), np.nan)
         cache = {}
         for i, f in enumerate(features):
-            bucket = str((f["delta"] // baseline["delta_bin_width"]) * baseline["delta_bin_width"])
+            # Transport mappings may produce continuous ratings; bins retain integer keys.
+            bucket = str(int((f["delta"] // baseline["delta_bin_width"]) * baseline["delta_bin_width"]))
             key = bucket if name == "km_delta" and bucket in baseline["delta_bins"] else "global"
             if key not in cache:
                 curve = baseline["global"] if key == "global" else baseline["delta_bins"][key]

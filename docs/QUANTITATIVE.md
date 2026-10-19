@@ -9,6 +9,8 @@ real do app com Lorem. [Relatorio](../study/results/2026-10-18/report/REPORT.md)
 [metodo](../study/MODEL.md) e [evidencia](../study/evidence/2026-10-18-evaluation-report.json).
 Historias 29-30 implementadas: corte no Android, snapshots anteriores e exportacao
 local. **Amostra real de Ipsums ausente; 31-32 bloqueadas.**
+Em 19/10/2026, [pre-registro/ferramenta da 31](../study/TRANSPORT_PROTOCOL.md)
+fixaram limiares antes do teste; a conclusao empirica segue pendente.
 O [piloto anterior](../study/evidence/2026-10-18-pilot-real.json), com variantes
 B1/B2 e E1/E2, permanece preservado e excluido.
 [Guia Python](../study/README.md) e [contrato](../study/DATA_DICTIONARY.md). Este protocolo
@@ -273,7 +275,7 @@ antigas nem substituir a formula de pontuacao sem nova decisao explicita.
   reproducao, documentando o custo. Nao depende de nova escolha de produto.
 - Historia 28: concluir se ha evidencia de utilidade e quais erros/dominios exigem
   novo experimento; nenhum ganho de precisao esta comprovado agora.
-- Historia 31: pactuar tamanho/limiares de validacao com Ipsums antes do teste e
+- Historia 31: aplicar tamanho/limiares do pre-registro D-032 a uma coorte real e
   decidir manter ratings distintos, mapear ou nao integrar. Gate cientifico,
   nao dependencia de teste manual do app.
 - Historia 32: registrar alcance da integracao autorizada pela evidencia; mudanca
@@ -294,6 +296,11 @@ Falhas interrompem/retomam, sem fabricar censuras. Metadados/brutos ficam locais
 
 Piso inicial: 10 participantes/200 tentativas validas/100 eventos, particoes
 inteiras 6/2/2 ou proximas de 60/20/20 por hash/seed. E piso operacional, nao prova
-de precisao: 31 ainda deve fixar limiares/precisao antes de avaliar o teste.
+de precisao: o [pre-registro da 31](../study/TRANSPORT_PROTOCOL.md) exige piso final
+100/2.000/1.000, precisao de ICs e limites de MAE/Brier/ECE, com suporte e dominio.
 Nenhum export real foi fornecido: `not_collected`, n=0, `insufficient_data`, zero
 requisicoes e gate fechado. Fixtures Android/Python verificam contrato, nao transporte.
+
+`evaluate-ipsums` implementa a comparacao identidade/linear apenas no treino,
+escolha congelada na validacao e teste por participante, sem integrar ao app.
+[Plano e estado real vazio](../study/evidence/2026-10-19-transport/REPORT.md).

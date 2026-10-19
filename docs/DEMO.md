@@ -151,3 +151,8 @@ no app sera demonstrado na Historia 29.
 
 Roteiro de dispositivo opcional, nao executado. 31/32 continuam bloqueadas por
 falta de dados/evidencia; nao habilitar previsoes nem alterar a D-012.
+
+Para demonstrar a ferramenta da 31 sem dados ficticios, executar `evaluate-ipsums`
+conforme [guia Python](../study/README.md#avaliacao-local-de-transporte-31-evidencia-real-pendente).
+O [pre-registro](../study/TRANSPORT_PROTOCOL.md) e os hashes ficam visiveis;
+sem exports, o relatorio registra n=0/insufficient_data e nao calcula metricas.

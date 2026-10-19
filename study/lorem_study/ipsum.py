@@ -93,6 +93,14 @@ def quality(row, meta):
     return reasons
 
 
+def participant_partitions(participants, dataset_sha):
+    ordered = sorted(set(participants), key=lambda p: digest([PROTOCOL["seed"], p]))
+    n = len(ordered)
+    a, b = max(6, round(.6*n)), max(2, round(.2*n))
+    return {"schema_version": 1, "dataset_sha256": dataset_sha, "protocol_sha256": digest(PROTOCOL),
+            "participants": {"train": ordered[:a], "validation": ordered[a:a+b], "test": ordered[a+b:]}}
+
+
 def prepare_ipsums(root, paths=(), *, offline=False, metadata_fetch=None):
     root = Path(root) / "ipsum"
     plan = root / "plan.json"
@@ -146,18 +154,17 @@ def prepare_ipsums(root, paths=(), *, offline=False, metadata_fetch=None):
         row["duration_seconds"] = ((row["ended_at_epoch_ms"]-row["started_at_epoch_ms"])/1000
                                    if not row["quality_reasons"] else None)
     valid = [r for r in records if r["quality"] == "valid"]
-    participants = sorted({r["participant_key"] for r in valid}, key=lambda p: digest([PROTOCOL["seed"], p]))
+    participants = {r["participant_key"] for r in valid}
     enough = (len(participants) >= PROTOCOL["minimum_participants"] and len(valid) >= PROTOCOL["minimum_attempts"] and
               sum(r["event"] for r in valid) >= PROTOCOL["minimum_events"])
     partitions = None
     if enough:
-        n = len(participants); a, b = max(6, round(.6*n)), max(2, round(.2*n))
-        partitions = {"schema_version": 1, "dataset_sha256": dataset_sha, "protocol_sha256": digest(PROTOCOL),
-                      "participants": {"train": participants[:a], "validation": participants[a:a+b], "test": participants[a+b:]}}
+        partitions = participant_partitions(participants, dataset_sha)
         if partition_path.exists() and read_json(partition_path) != partitions:
             raise StudyError("Ipsum participant partition is frozen")
         write_json(partition_path, partitions)
     summary = {"schema_version": 1, "data_kind": kind, "protocol": PROTOCOL, "dataset_sha256": dataset_sha,
+               "attempts_sha256": digest(records),
                "status": "prepared_for_history31; not_transport_evidence" if enough else "insufficient_data",
                "observed_attempts": len(records), "valid_attempts": len(valid), "valid_participants": len(participants),
                "events": sum(r["event"] for r in valid), "censored": sum(1-r["event"] for r in valid),

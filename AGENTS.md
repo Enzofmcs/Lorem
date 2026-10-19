@@ -50,11 +50,17 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
-- **Foco:** Historias 22-30 implementadas e verificadas: estudo real, corte no app e base local de Ipsums. Historias 00-21 preservadas.
+- **Foco:** Historias 22-30 implementadas e verificadas; 31 com pre-registro/ferramenta, evidencia real pendente. Historias 00-21 preservadas.
 - **Ultima historia verificada:** Historia 30 em 2026-10-18: 232 testes debug/170 release, lint sem erros, APK gerado e 66 testes Python. Exportacao local/contrato Android-Python e snapshots anteriores verificados.
-- **Primeiro item pendente:** Historia 31 - BLOQUEADA por ausencia de coorte real de Ipsums; fixar limiares finais antes de avaliar o teste.
-- **Proxima entrega demonstravel:** coletar novas tentativas com CF conhecido antes do inicio, exportar localmente e preparar coorte por participante.
+- **Primeiro item pendente:** Historia 31 - BLOQUEADA para conclusao empirica por ausencia de coorte real. Limiares fixados em TRANSPORT_PROTOCOL.md/D-032 antes do teste.
+- **Proxima entrega demonstravel:** coletar/exportar coorte real e aplicar evaluate-ipsums com modelos congelados da 28; piso final/precisao do pre-registro, sem retunar teste.
 - **Bloqueios conhecidos:** nenhum export real fornecido (n=0, insufficient_data). 32 depende de evidencia/decisao favoravel da 31; 29 atendida. Teste manual opcional (D-014).
+
+Ferramenta/pre-registro 31: [TRANSPORT_PROTOCOL.md](study/TRANSPORT_PROTOCOL.md),
+84 testes Python e [evidencia](study/evidence/2026-10-19-transport/verification.json).
+Piso final 100 participantes/2.000 tentativas/1.000 eventos mais precisao dos ICs;
+nao substituir por piso de preparo nem fixtures. `evaluate-ipsums` nunca habilita
+integracao automaticamente, mesmo com limites favoraveis: exigir decisao real da 31.
 
 Marco Android 29-30: 232 testes debug e 170 release sem falhas; lint sem erros
 (avisos de dependencias/icone) e `assembleDebug` concluido. Room 9->12 validado.

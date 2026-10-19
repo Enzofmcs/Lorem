@@ -82,8 +82,8 @@ iniciais testaveis, nao resultados. As decisoes fornecidas pelo usuario estao na
 D-020 a D-025. Nao ha escolha pendente que impeca iniciar a Historia 22.
 
 - [ ] Historia 28: avaliar resultados reais, suporte, erros e necessidade de novos experimentos.
-- [ ] Historia 31: fixar tamanho/precisao e limiares aceitaveis antes do teste Ipsum;
-  decidir identidade/mapeamento entre Rating CF e Lorem ou nao integrar.
+- [ ] Historia 31: aplicar o pre-registro D-032 a uma coorte real; decidir
+  identidade/mapeamento entre Rating CF e Lorem ou nao integrar. Limiares ja fixados.
 - [ ] Historia 32: registrar dominio e apresentacao da integracao somente se a 31
   fornecer evidencia favoravel; manter bloqueada se a evidencia for insuficiente.
 
@@ -136,6 +136,7 @@ Use o formato abaixo. Nao apagar decisoes antigas; marque quando forem substitui
 
 | D-030 | 2026-10-18 | Realizar o corte aprovado no Android com contest.list pelo gate, origem/data/fonte/versao persistidas e migracao aditiva. Catalogo legado sem prova nao habilita novas recomendacoes; cache verificado funciona offline e fallback nao relaxa o corte. Preservar historicos, ativos, pendencias e avaliacoes. | Historia 29 verificada: 226 debug/164 release, lint sem erros e APK; origem nao e inferida pelo id. | 29 |
 | D-031 | 2026-10-18 | Base Ipsum local v1: snapshots CF observados antes do inicio e Lorem inicial, exportacao explicita por perfil/UUID sem ativo/identificadores diretos, ausencias legadas preservadas. Preparo verifica metadados inteiros/D-026 pelo gate; piso operacional 10 participantes/200 tentativas/100 eventos, 6/2/2 por participante/hash/seed. Conflitos/coorte congelada alterada recusados. Piso nao aprova transporte: 31 fixa limiares finais antes do teste e 32 continua bloqueada com dados insuficientes. | Evitar retroimputacao, confusao entre CF/Lorem, tempo de parede/dedicacao e testes de software/evidencia real. Nenhum export real fornecido; n=0/insufficient_data. | 30-32 |
+| D-032 | 2026-10-19 | Pre-registro Ipsum transport v1 antes de qualquer coorte real: piso final 100 participantes/2.000 tentativas/1.000 eventos, 60/20/20 por participante; IC95% superior MAE<=20 min/Brier integrado<=0,15/ECE por orcamento<=0,10, com larguras <=10 min/0,05/0,10, dominio>=90%, mediana em >=95% dos eventos e suporte integral 0-120. Reusar hashes exatos da 28; identidade versus linear com peso igual por participante ajustado so no treino, escolha na validacao congelada antes do teste, bootstrap pareado 1.000 vezes por participante. Exigir limites no total e sem dica; pausas desconhecidas permanecem desconhecidas. Fixture nunca aprova transporte; limite favoravel real apenas habilita decisao de dominio, nao integracao automatica. | Limites operacionais justificados no pre-registro study/TRANSPORT_PROTOCOL.md a partir da referencia 28; contagens nao garantem poder. Dados reais ausentes mantem 31 incompleta/32 bloqueada, ratings distintos e D-012 vigente. | 31-32 |
 
 ### Implementacao inicial do protocolo (22-25), 18/10/2026
 

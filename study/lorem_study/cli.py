@@ -43,7 +43,7 @@ def work_lock(root):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Lorem quantitative study; synthetic data are not empirical results")
-    parser.add_argument("command", choices=("fixture", "collect", "prepare", "split", "train-baseline", "predict", "train", "evaluate", "report", "prepare-ipsums"))
+    parser.add_argument("command", choices=("fixture", "collect", "prepare", "split", "train-baseline", "predict", "train", "evaluate", "report", "prepare-ipsums", "evaluate-ipsums"))
     parser.add_argument("--work", type=Path, default=Path("work/default"))
     parser.add_argument("--config", type=Path)
     parser.add_argument("--pilot", action="store_true", help="Freeze a two-contest real pilot")
@@ -54,6 +54,7 @@ def main(argv=None):
     parser.add_argument("--budgets", type=float, nargs="+")
     parser.add_argument("--model", choices=("baseline", "aft"), default="baseline")
     parser.add_argument("--inputs", type=Path, nargs="*", default=[], help="Explicit local Ipsum exports; no upload")
+    parser.add_argument("--source-work", type=Path, help="Frozen contest models/evaluation used by evaluate-ipsums")
     args = parser.parse_args(argv)
     try:
         if args.command == "evaluate":
@@ -91,6 +92,11 @@ def main(argv=None):
                 elif args.command == "prepare-ipsums":
                     from .ipsum import prepare_ipsums
                     result = prepare_ipsums(args.work, args.inputs, offline=args.offline)
+                elif args.command == "evaluate-ipsums":
+                    from .transport import evaluate_ipsums
+                    if args.source_work is None:
+                        raise StudyError("evaluate-ipsums requires --source-work with frozen contest models")
+                    result = evaluate_ipsums(args.work, args.source_work)
                 else:
                     from .report import report
                     try:

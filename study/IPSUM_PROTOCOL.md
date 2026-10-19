@@ -55,11 +55,12 @@ Todos os arquivos e vinculos continuam locais, sem backend/login/nuvem.
 
 ## Gate posterior (31), ainda fechado
 
-Antes de abrir os desfechos reservados, a Historia 31 devera fixar tamanho/precisao
-final e limiares de MAE, Brier/calibracao com justificativa no relatorio 28. O piso
-acima nao substitui essa decisao. Comparar CF anterior e Lorem inicial em pares;
-correlacao nao prova equivalencia. Identidade e mapeamento linear simples usam
-somente treino, escolha na validacao e participantes inteiros no teste.
+O [pre-registro de transporte v1](TRANSPORT_PROTOCOL.md) fixa tamanho/precisao e
+limiares antes de qualquer teste real: piso final 100 participantes/2.000 tentativas/
+1.000 eventos, IC95% de MAE/Brier/ECE, suporte e cobertura. O piso operacional acima
+nao substitui esses criterios. A ferramenta compara CF anterior e Lorem inicial,
+identidade e ajuste linear somente no treino, com escolha congelada na validacao
+e teste por participantes inteiros. Correlacao nao prova equivalencia.
 
 Reusar avaliacao censurada/ICs por participante; relatar dominio, dados ausentes,
 dica e pausas. Evidencia insuficiente ou qualquer falha do gate mantem ratings
