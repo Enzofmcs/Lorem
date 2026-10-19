@@ -159,6 +159,11 @@ class LoremViewModel(
         }
     }
 
+    suspend fun prepareIpsumStudyExport() = dev.lorem.app.domain.ExportIpsumStudy(repository, nowMillis)()
+
+    suspend fun isStudyExportCurrent(export: dev.lorem.app.domain.IpsumStudyExport): Boolean =
+        repository.profileLink.first() == export.link
+
     private val coordinator = synchronizationCoordinator ?: SynchronizationCoordinator(
         repository, codeforcesRepository, viewModelScope, nowMillis = nowMillis,
     )
@@ -311,6 +316,7 @@ class LoremViewModel(
                 ?: INITIAL_UNRATED_RATING,
             consolidatedRating = savedProfile?.consolidatedRating?.takeIf { sameOwner },
             lastSyncEpochMillis = savedProfile?.lastSyncEpochMillis?.takeIf { sameOwner } ?: 0L,
+            officialRatingObservedAtEpochMillis = user.ratingObservedAtEpochMillis,
         )
         try {
             if (!sameOwner && repository.activeIpsum.first() != null) {
@@ -318,7 +324,7 @@ class LoremViewModel(
                 return
             }
             if (sameOwner && link != null) repository.withProfileLink(link) {
-                repository.updateProfileMetadata(user.handle, user.displayName, user.rating)
+                repository.updateProfileMetadata(user.handle, user.displayName, user.rating, user.ratingObservedAtEpochMillis)
             } else if (!repository.saveProfileIfCurrent(link, profile)) {
                 showError("O perfil mudou durante a consulta. Tente novamente.")
                 return
@@ -447,7 +453,7 @@ class LoremViewModel(
                     is StartIpsumResult.Success -> StartIpsumUiState.Success(result.ipsum.id)
                     StartIpsumResult.AlreadyActive -> StartIpsumUiState.Error("Já existe um Ipsum ativo. Continue-o antes de iniciar outro.")
                     StartIpsumResult.NoCandidate -> StartIpsumUiState.Error(
-                        "Nenhum problema inédito foi encontrado até 300 pontos da faixa. Atualize catálogo e histórico e tente novamente.",
+                        "Nenhum problema inédito com data de origem verificada desde 01/07/2020 foi encontrado até 300 pontos da faixa. Atualize catálogo e histórico e tente novamente.",
                     )
                     StartIpsumResult.NoProfile -> StartIpsumUiState.Error("Configure um perfil antes de iniciar um Ipsum.")
                     StartIpsumResult.NeedsHistorySync -> StartIpsumUiState.Error("Aguarde a preparação automática do histórico do Codeforces antes de iniciar o primeiro Ipsum.")

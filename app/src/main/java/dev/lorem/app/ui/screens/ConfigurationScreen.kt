@@ -36,6 +36,7 @@ fun ConfigurationScreen(
     themePreference: ThemePreference = ThemePreference.SYSTEM,
     onThemeChange: (ThemePreference) -> Unit = {},
     themeError: String? = null,
+    studyExportAction: @Composable () -> Unit = {},
 ) {
     var showChangeConfirmation by rememberSaveable { mutableStateOf(false) }
     val focus = LocalFocusManager.current
@@ -103,6 +104,7 @@ fun ConfigurationScreen(
                     PreparationStep("Perfil", preparation.metadata, onRefreshProfile, "Atualizar perfil agora")
                 }
             }
+            studyExportAction()
         }
         Card(Modifier.fillMaxWidth()) {
             Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {

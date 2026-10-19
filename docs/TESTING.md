@@ -175,10 +175,15 @@ Amostra real: 20 adquiridos/19 elegiveis, particoes 11/4/4 e treino 193.527 tent
 com eventos e censuras. Teste reservado para 27; [evidencia](../study/evidence/2026-10-18-sample-aft.json).
 Nenhum codigo Android alterado; build/lint Android nao se aplicam a esta continuacao.
 
-No marco 28, executar suite Python e reproducao integral do snapshot ao relatorio
-em ambiente limpo, com hashes, sementes e denominadores. Testes sinteticos verificam
-implementacao; resultados empiricos exigem dados reais, avaliacao reservada e ICs.
-Nao marcar superioridade ou transporte comprovado por fixture.
+Marco 27-28: 59 testes Python aprovados, incluindo exemplos calculados de MAE/RMSE/
+vies, censura no limite, casos desconhecidos, G/pesos sem suporte, bootstrap de
+clusters/mediana com multiplicidade, zeros/uns no log-loss, hashes/gate/modelo
+congelado e reproducao de CSV/SVG/PNG. Rodar `cd study && .venv/bin/python -m
+unittest discover -s tests -q`. `scripts/reproduce.py` usa pacote instalado em venv
+novo e diretorio vazio, do cache/snapshot ao relatorio, com zero requisicoes.
+[Relatorio](../study/results/2026-10-18/report/REPORT.md) e
+[evidencia de reproducao](../study/evidence/2026-10-18-evaluation-report.json).
+Nenhuma melhoria pedagogica ou transporte para Ipsums foi demonstrado.
 
 Historia 29 e Niveis 3/4: datas/cache/migracao e recomendacao com historico antigo,
 offline/fallback, ativo e rating preservados. Historias 30/31 exigem splits por
@@ -212,3 +217,48 @@ reais e Codeforces falso apenas no escopo de teste. Cobrem primeiro acesso,
 importacao obrigatoria, dica, WA/AC, resultado, nova recomendacao, pendencia/upsolve,
 estatisticas, recuperacao e isolamento por perfil. A suite original da Historia 11
 foi preservada. O roteiro humano de `DEMO.md` continua opcional.
+
+## Marco 29-30 em 2026-10-18
+
+232 testes debug/170 release, zero falhas; `test lint assembleDebug` concluido.
+Lint sem erros, com avisos de versoes de dependencias e icone. JDK 17.0.20.1,
+Gradle 8.11.1 e SDK 35 no cloud. Caches Java/Robolectric gravaveis e proxy foram
+configurados em init script local; TLS usa as CAs do ambiente. Nao versionar SDK,
+JDK, caches, APKs ou esse init script. Em ambiente Android normal usar o comando
+Gradle do projeto. Evidencias: [29](evidence/2026-10-18-android-29.json) e
+[30](evidence/2026-10-18-android-30.json).
+
+Regras verificadas: corte UTC inclusivo/sem inferencia por id, origem ausente ou
+conflitante, duas consultas no gate/falha parcial, cache offline/fallback, migracao
+Room 9->12 com snapshots/rating/pendencias intactos, CF anterior imutavel e legado
+nullable, exportacao por perfil/concorrencia e omissao do ativo. Encoder Android
+com armazenamento real de teste produz fixture synthetic para o preparador Python.
+
+66 testes Python; `python -S -m lorem_study prepare-ipsums --offline` sem inputs
+funciona sem dependencias opcionais e registra n=0/not_collected/insufficient_data,
+zero requisicoes e gate fechado. Particoes por participante, dedup/conflitos,
+legados/rating futuro, dica/upsolve e exclusao integral D-026 cobertos sem rede.
+
+TESTE MANUAL OPCIONAL - NAO EXECUTADO: seletor de arquivo local no dispositivo.
+A falta de coorte real de Ipsums bloqueia a conclusao cientifica da 31, nao a
+verificacao de software nem a passagem da 30 conforme D-014.
+
+## Ferramenta pre-registrada da 31 em 2026-10-19
+
+Nivel 2: 84 testes Python com dependencias opcionais, sem falhas; 16 testes
+numericos e dois de core novos. Sem site-packages (`python -S`), 55 executados e
+29 opcionais ignorados. Corte/exclusao D-026, preparo e Android permanecem com
+suas evidencias anteriores; nenhuma fonte Android alterada nesta continuacao.
+
+Cobertura nova: participantes inteiros/hash e checksum, mapeamento com peso igual
+por participante somente em snapshots anteriores, correlacao versus deslocamento,
+ECE IPCW reamostrado por participante, suporte 0-120, CI/precisao/dominio/mediana,
+bins de delta para ratings continuos, selecao persistida antes do teste e
+imutabilidade sob mudanca dos desfechos do teste. Fixture sintetica, mesmo com
+gate numerico favoravel, nunca autoriza transporte/integracao. Sem suporte na
+validacao o teste permanece fechado; sem coorte final nenhuma metrica e produzida.
+
+Pacote/CLI 0.4.0 instalado fora da arvore de fontes, estado vazio reproduzivel e
+avaliacao CF anterior byte a byte conferidos na [evidencia da 31](../study/evidence/2026-10-19-transport/verification.json).
+Nenhum teste real de Ipsums executado: n=0. Historia 31 incompleta; 32 bloqueada.
+TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014).

@@ -8,6 +8,7 @@ import dev.lorem.app.domain.model.LocalProfile
 import dev.lorem.app.domain.model.IpsumStatus
 import dev.lorem.app.domain.model.RecommendationFactors
 import dev.lorem.app.domain.model.TagNeed
+import dev.lorem.app.domain.model.isEligibleForNewRecommendation
 import kotlin.math.abs
 import kotlin.math.max
 
@@ -43,7 +44,7 @@ class RecommendIpsum(private val random: RandomSource) {
         }
         val excluded = history.filter { it.attempted || it.hasAcceptedSubmission }.mapTo(mutableSetOf()) { it.problemId }
         excluded += owned.map { it.problem.id }
-        val eligible = catalog.distinctBy { it.id }.filter { it.rating != null && it.id !in excluded }
+        val eligible = catalog.distinctBy { it.id }.filter { it.isEligibleForNewRecommendation() && it.id !in excluded }
         val practiceCount = mutableMapOf<String, Int>()
         val practicedIds = history.filter { it.attempted || it.hasAcceptedSubmission }.mapTo(mutableSetOf()) { it.problemId }.apply {
             addAll(owned.map { it.problem.id })

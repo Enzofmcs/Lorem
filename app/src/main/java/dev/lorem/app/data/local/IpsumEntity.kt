@@ -39,6 +39,10 @@ data class IpsumEntity(
     val status: String,
     val activeSlot: Int?,
     val recommendationFactors: String? = null,
+    val problemOriginMetadata: String? = null,
+    val initialCodeforcesRating: Int? = null,
+    val initialCodeforcesRatingObservedAtEpochMillis: Long? = null,
+    val studyRecordingVersion: String? = null,
 )
 
 fun Ipsum.toEntity() = IpsumEntity(
@@ -66,6 +70,10 @@ fun Ipsum.toEntity() = IpsumEntity(
     status = status.name,
     activeSlot = if (status == IpsumStatus.ACTIVE) 1 else null,
     recommendationFactors = recommendationFactors?.toStoredJson(),
+    problemOriginMetadata = problem.origin?.toStoredJson(),
+    initialCodeforcesRating = initialCodeforcesRating,
+    initialCodeforcesRatingObservedAtEpochMillis = initialCodeforcesRatingObservedAtEpochMillis,
+    studyRecordingVersion = studyRecordingVersion,
 )
 
 fun IpsumEntity.toDomain() = Ipsum(
@@ -76,6 +84,7 @@ fun IpsumEntity.toDomain() = Ipsum(
         name = problemName,
         rating = selectedRating,
         tags = problemTags.takeIf(String::isNotEmpty)?.split("\u0000")?.toSet().orEmpty(),
+        origin = problemOriginMetadata?.toProblemOrigin(),
     ),
     initialLoremRating = initialLoremRating,
     category = IpsumCategory.valueOf(category),
@@ -94,4 +103,7 @@ fun IpsumEntity.toDomain() = Ipsum(
     solvedOutsideAtEpochMillis = solvedOutsideAtEpochMillis,
     status = IpsumStatus.valueOf(status),
     recommendationFactors = recommendationFactors?.toRecommendationFactors(),
+    initialCodeforcesRating = initialCodeforcesRating,
+    initialCodeforcesRatingObservedAtEpochMillis = initialCodeforcesRatingObservedAtEpochMillis,
+    studyRecordingVersion = studyRecordingVersion,
 )

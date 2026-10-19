@@ -43,7 +43,7 @@ def work_lock(root):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Lorem quantitative study; synthetic data are not empirical results")
-    parser.add_argument("command", choices=("fixture", "collect", "prepare", "split", "train-baseline", "predict", "train", "evaluate", "report"))
+    parser.add_argument("command", choices=("fixture", "collect", "prepare", "split", "train-baseline", "predict", "train", "evaluate", "report", "prepare-ipsums", "evaluate-ipsums"))
     parser.add_argument("--work", type=Path, default=Path("work/default"))
     parser.add_argument("--config", type=Path)
     parser.add_argument("--pilot", action="store_true", help="Freeze a two-contest real pilot")
@@ -53,10 +53,15 @@ def main(argv=None):
     parser.add_argument("--problem-rating", type=int)
     parser.add_argument("--budgets", type=float, nargs="+")
     parser.add_argument("--model", choices=("baseline", "aft"), default="baseline")
+    parser.add_argument("--inputs", type=Path, nargs="*", default=[], help="Explicit local Ipsum exports; no upload")
+    parser.add_argument("--source-work", type=Path, help="Frozen contest models/evaluation used by evaluate-ipsums")
     args = parser.parse_args(argv)
     try:
         if args.command == "evaluate":
-            raise StudyError("NOT IMPLEMENTED: held-out evaluation belongs to History 27; no research metrics produced")
+            try:
+                from .evaluate import evaluate
+            except ImportError as error:
+                raise StudyError("Evaluation requires optional dependencies: pip install -r requirements-model.lock") from error
         if args.command == "train" or (args.command == "predict" and args.model == "aft"):
             try:
                 from .aft import predict_aft, train_aft
@@ -82,16 +87,22 @@ def main(argv=None):
                     result = train_baseline(args.work)
                 elif args.command == "train":
                     result = train_aft(args.work)
+                elif args.command == "evaluate":
+                    result = evaluate(args.work)
+                elif args.command == "prepare-ipsums":
+                    from .ipsum import prepare_ipsums
+                    result = prepare_ipsums(args.work, args.inputs, offline=args.offline)
+                elif args.command == "evaluate-ipsums":
+                    from .transport import evaluate_ipsums
+                    if args.source_work is None:
+                        raise StudyError("evaluate-ipsums requires --source-work with frozen contest models")
+                    result = evaluate_ipsums(args.work, args.source_work)
                 else:
-                    prepared = args.work / "prepared" / "manifest.json"
-                    result = {"schema_version": 1, "status": "pipeline_status_only; full report belongs to History 28",
-                              "data_kind": read_json(prepared)["data_kind"] if prepared.exists() else "not_collected",
-                              "stages": {stage: path.exists() for stage, path in {
-                                  "snapshot": args.work / "snapshot.json", "prepared": prepared,
-                                  "split": args.work / "splits.json", "baseline": args.work / "baseline" / "model.json",
-                                  "aft": args.work / "aft" / "model.json"}.items()},
-                              "research_metrics": "NOT EXECUTED (History 27)"}
-                    write_json(args.work / "status.json", result)
+                    from .report import report
+                    try:
+                        result = report(args.work)
+                    except ImportError as error:
+                        raise StudyError("Report requires optional dependencies: pip install -r requirements-report.lock") from error
         print(json.dumps(result, ensure_ascii=False, allow_nan=False, sort_keys=True))
         return 0
     except (StudyError, OSError, KeyError, TypeError, json.JSONDecodeError) as error:

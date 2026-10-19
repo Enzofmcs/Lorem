@@ -1,5 +1,6 @@
 package dev.lorem.app.domain
 
+import dev.lorem.app.withVerifiedTestOrigin
 import dev.lorem.app.domain.model.CodeforcesProblem
 import dev.lorem.app.domain.model.Ipsum
 import dev.lorem.app.domain.model.IpsumCategory
@@ -93,7 +94,7 @@ class RecommendIpsumTest {
     }
 
     private fun problem(id: Long, rating: Int, tags: Set<String> = setOf("implementation")) =
-        CodeforcesProblem(ProblemId(id, "A"), "Problem $id", rating, tags)
+        CodeforcesProblem(ProblemId(id, "A"), "Problem $id", rating, tags).withVerifiedTestOrigin()
 
     private fun ipsum(problem: CodeforcesProblem, status: IpsumStatus) = Ipsum(
         id = problem.id.contestId,

@@ -1,6 +1,7 @@
 package dev.lorem.app.data.remote
 
 import dev.lorem.app.domain.model.CodeforcesProblem
+import dev.lorem.app.domain.model.VerifiedProblemOrigin
 import dev.lorem.app.domain.model.CodeforcesSubmission
 import dev.lorem.app.domain.model.ProblemId
 import dev.lorem.app.domain.repository.CodeforcesRepository
@@ -49,6 +50,7 @@ class CodeforcesApiRepository(
     private val httpClient: CodeforcesHttpClient = UrlConnectionCodeforcesHttpClient(),
     private val submissionPageSize: Int = DEFAULT_SUBMISSION_PAGE_SIZE,
     private val onRetryAfter: suspend (String?) -> Unit = {},
+    private val nowMillis: () -> Long = System::currentTimeMillis,
 ) : CodeforcesRepository {
     init {
         require(submissionPageSize > 0) { "submissionPageSize must be positive" }
@@ -145,7 +147,22 @@ class CodeforcesApiRepository(
         }
     }
 
-    override suspend fun problems(): ProblemCatalogResult = try {
+    override suspend fun problems(): ProblemCatalogResult {
+        val catalog = fetchProblems()
+        if (catalog !is ProblemCatalogResult.Success) return catalog
+        return try {
+            gate.execute {
+                val response = request("https://codeforces.com/api/contest.list?gym=false")
+                when {
+                    response.statusCode == 429 -> ProblemCatalogResult.RateLimited
+                    response.statusCode !in 200..299 -> ProblemCatalogResult.HttpFailure(response.statusCode)
+                    else -> attachContestOrigins(response.body, catalog.problems)
+                }
+            }
+        } catch (_: IOException) { ProblemCatalogResult.NetworkFailure }
+    }
+
+    private suspend fun fetchProblems(): ProblemCatalogResult = try {
         gate.execute {
             val response = request("https://codeforces.com/api/problemset.problems")
             when {
@@ -156,6 +173,34 @@ class CodeforcesApiRepository(
         }
     } catch (_: IOException) {
         ProblemCatalogResult.NetworkFailure
+    }
+
+    private fun attachContestOrigins(body: String, problems: List<CodeforcesProblem>): ProblemCatalogResult {
+        val json = runCatching { JSONObject(body) }.getOrNull() ?: return ProblemCatalogResult.InvalidResponse
+        if (json.optString("status") == "FAILED") {
+            val message = json.optString("comment", "Falha informada pelo Codeforces.")
+            return if (message.contains("limit", true)) ProblemCatalogResult.RateLimited else ProblemCatalogResult.Failed(message)
+        }
+        if (json.optString("status") != "OK") return ProblemCatalogResult.InvalidResponse
+        val contests = json.optJSONArray("result") ?: return ProblemCatalogResult.InvalidResponse
+        val starts = mutableMapOf<Long, MutableSet<Long?>>()
+        for (position in 0 until contests.length()) {
+            val contest = contests.optJSONObject(position) ?: return ProblemCatalogResult.InvalidResponse
+            val identity = contest.opt("id")
+            if (identity !is Int && identity !is Long) return ProblemCatalogResult.InvalidResponse
+            val id = (identity as Number).toLong()
+            if (id <= 0) return ProblemCatalogResult.InvalidResponse
+            val rawStart = contest.opt("startTimeSeconds")
+            val seconds = if (rawStart is Int || rawStart is Long) (rawStart as Number).toLong() else null
+            val millis = seconds?.takeIf { it > 0 && it <= Long.MAX_VALUE / 1000 }?.times(1000)
+                ?.takeIf { contest.optString("phase") == "FINISHED" }
+            starts.getOrPut(id) { mutableSetOf() }.add(millis)
+        }
+        val verifiedAt = nowMillis()
+        return ProblemCatalogResult.Success(problems.map { problem ->
+            val start = starts[problem.id.contestId]?.singleOrNull()
+            problem.copy(origin = start?.let { VerifiedProblemOrigin(problem.id.contestId, it, verifiedAt) })
+        })
     }
 
     private fun submissionFailure(message: String): SubmissionHistoryResult =
@@ -277,6 +322,7 @@ class CodeforcesApiRepository(
                 handle = canonicalHandle,
                 displayName = fullName,
                 rating = if (user.has("rating")) user.optInt("rating") else null,
+                ratingObservedAtEpochMillis = nowMillis().takeIf { user.has("rating") && !user.isNull("rating") },
             ),
         )
     }

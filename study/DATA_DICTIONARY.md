@@ -92,3 +92,51 @@ suporte de cada horizonte/quantil e extrapolacao de rating. Seguimento insuficie
 ou gate falho retorna `null`; nenhum valor infinito. Intervalo e preditivo,
 parametrico, sem alegacao de IC ou precisao comprovada. `manifest.json` liga hashes
 de modelo, tabelas, particoes e previsoes. A avaliacao cientifica reservada e a 27.
+
+## Avaliacao e relatorio (27-28)
+
+- `evaluation/plan.json`: hashes dos dois modelos, preparo/particoes, seed, grade,
+  bins, suporte minimo, 200 replicacoes e regra de sensibilidade, antes dos rotulos.
+- `evaluation/metrics.json`: agregados reais/sinteticos identificados, n e eventos/
+  censuras, quatro referencias, cada metrica com `estimate`, `n`, `ci95` e
+  `bootstrap_valid`; ausencias ficam null. Diferencas usam `n_common`. Sem ids de
+  participante, previsoes por linha ou handles nos agregados publicados.
+- `quality_funnel_test` conta validos/exclusoes por motivo; excluidos nao recebem
+  erros imputados. `rating_slices`: faixas fixas de 400 pontos, incluindo delta
+  negativo por piso; contagens, metricas e ICs por metodo.
+- `support`: conhecidos/desconhecidos, G esquerdo, maior peso e intervalo continuo
+  de integracao. `sensitivity_last_submission`: previsoes fixas, G do treino
+  alternativo e ausencias explicitas. Nao e novo rotulo de dedicacao real.
+- `report/`: REPORT/REPRODUCE, CSVs, SVG/PNG, demo e manifesto SHA-256. IC das
+  metricas nao e intervalo preditivo 10/90. Log-loss limita somente log em 1e-15.
+- `scripts/reproduce.py`: reconstrucao offline em destino novo; `reproduction.json`
+  registra versoes/tempos, zero requisicoes e igualdade de cada arquivo.
+
+## Exportacao local de Ipsums (30)
+
+Envelope `ipsum-local-v1`: schema_version, data_kind (ipsum_local/synthetic), UUID
+participant_key, exported_at_epoch_ms, application_version, active_omitted e attempts.
+O codigo nunca serializa o objeto Ipsum inteiro: whitelist exclui handle/nome/tags/
+ids de submissao e todos os dados do ativo. sample_id e SHA256 do pseudonimo+id local.
+
+Por tentativa: problem_contest_id/index; started/ended/first_ac/upsolve_ac/hint em
+**epoch ms**; status/motivo do fim; hint_used (legado sem prova fica null),
+problem_rating, cf_rating_before/observed_at/source, lorem_rating_before e versoes
+recording/rating_rule/eligibility. Origem tem data/fonte/verificacao; interruptions
+fica null quando nao registrado, wall_clock_only=true. Ausencia nao vira zero.
+
+CF usa somente user.info observado antes do inicio e e persistido no novo Ipsum;
+nao usar perfil atual/newRating futuro. Primeiro AC do COMPLETED e o encerramento
+persistido pelo app; upsolve permanece separado e nao recalcula a avaliacao.
+Room 11->12 adiciona tres campos nullable; DataStore guarda timestamp CF e UUID por
+perfil. Limpar/trocar perfil nao liga exportacoes de perfis distintos.
+
+Preparo `ipsum-participant-v1`: confere metadata oficial inteira do contest,
+D-026, origem/data, janelas, snapshots CF e dica; quality_reasons admite mais de um
+motivo por linha, sem dupla contagem de excluidos. duration_seconds e evento 0/1
+existem somente para validos. PENDING/SOLVED_OUTSIDE censuram no encerramento
+original; o AC posterior nao e evento do Ipsum. Split e por participante inteiro,
+com hash/seed fixos. Export conflitante/coorte congelada alterada e recusado.
+Cobertura e valid_attempts/observed_attempts, indefinida sem observacoes.
+Manifesto sem dados reais registra not_collected/insufficient_data; nao ha metricas
+nem decisao de integracao sem evidencia da 31.

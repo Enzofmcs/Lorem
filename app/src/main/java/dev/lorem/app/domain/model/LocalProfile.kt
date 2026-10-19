@@ -7,4 +7,5 @@ data class LocalProfile(
     val loremRating: Int,
     val consolidatedRating: Int?,
     val lastSyncEpochMillis: Long,
+    val officialRatingObservedAtEpochMillis: Long? = null,
 )

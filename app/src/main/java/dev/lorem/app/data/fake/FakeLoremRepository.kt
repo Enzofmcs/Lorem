@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class FakeLoremRepository(initialProfile: LocalProfile? = null) : LoremRepository {
+    override val studyDataKind: String = "synthetic"
     private val storedProfile = MutableStateFlow(initialProfile)
     private var linkVersion = 0L
     override val profileLink = MutableStateFlow(initialProfile?.let { dev.lorem.app.domain.sync.ProfileLink.of(it.handle, linkVersion) })
@@ -29,6 +30,10 @@ class FakeLoremRepository(initialProfile: LocalProfile? = null) : LoremRepositor
     override val catalogLastUpdatedEpochMillis: Flow<Long?> = storedCatalogUpdatedAt
     override val ipsums: Flow<List<Ipsum>> = storedIpsums
     override val activeIpsum = MutableStateFlow<Ipsum?>(null)
+
+    override suspend fun studyParticipantKey(): String = java.util.UUID.nameUUIDFromBytes(
+        ("synthetic:" + storedProfile.value?.handle?.trim()?.lowercase(java.util.Locale.ROOT)).toByteArray(Charsets.UTF_8),
+    ).toString()
 
     override suspend fun saveProfile(profile: LocalProfile) {
         val normalized = dev.lorem.app.domain.sync.ProfileLink.of(profile.handle, linkVersion)

@@ -29,7 +29,7 @@ Prioridades, nesta ordem:
 - Use somente tags oficiais do Codeforces.
 - Centralize a API e respeite no maximo uma requisicao a cada dois segundos.
 - Novas recomendacoes deverao exigir data verificavel do contest de origem >=
-  01/07/2020; implementacao pendente na Historia 29. Preservar historicos antigos
+  01/07/2020; implementado na Historia 29. Preservar historicos antigos
   e sua exclusao de repeticoes. Nao inferir data pelo id.
 - Estudo Python: contests especiais e contests com qualquer problema em duas
   versoes (ex.: B1/B2, facil/dificil) ficam integralmente fora da analise, inclusive
@@ -50,25 +50,35 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
-- **Foco:** estudo Python 22-26 implementado e verificado; amostra real e primeiro AFT ajustados. Historias 00-21 preservadas.
-- **Ultima historia verificada:** Historia 26 em 2026-10-18: 51 testes, amostra de 20 contests adquiridos/19 elegiveis e AFT Weibull selecionado na validacao. Ultimo marco Android: Historia 21, em 2026-10-16.
-- **Primeiro item pendente:** Historia 27 - avaliacao reservada de erros, probabilidades e incerteza.
-- **Proxima entrega demonstravel:** comparar modelos/referencias nos quatro contests de teste, sem retunar a escolha; relatorio completo na 28.
-- **Bloqueios conhecidos:** nenhum para iniciar 27. Amostra limitada a 19 contests elegiveis; 1589 excluido por ratings de problemas ausentes. 32 depende da 31. Teste manual opcional (D-014).
+- **Foco:** Historias 22-30 implementadas e verificadas; 31 com pre-registro/ferramenta, evidencia real pendente. Historias 00-21 preservadas.
+- **Ultima historia verificada:** Historia 30 em 2026-10-18: 232 testes debug/170 release, lint sem erros, APK gerado e 66 testes Python. Exportacao local/contrato Android-Python e snapshots anteriores verificados.
+- **Primeiro item pendente:** Historia 31 - BLOQUEADA para conclusao empirica por ausencia de coorte real. Limiares fixados em TRANSPORT_PROTOCOL.md/D-032 antes do teste.
+- **Proxima entrega demonstravel:** coletar/exportar coorte real e aplicar evaluate-ipsums com modelos congelados da 28; piso final/precisao do pre-registro, sem retunar teste.
+- **Bloqueios conhecidos:** nenhum export real fornecido (n=0, insufficient_data). 32 depende de evidencia/decisao favoravel da 31; 29 atendida. Teste manual opcional (D-014).
 
-Regressao da Historia 21: 217 testes debug e 155 release sem falhas, lint sem erros
-(apenas aviso preexistente de icone) e `assembleDebug` concluido.
+Ferramenta/pre-registro 31: [TRANSPORT_PROTOCOL.md](study/TRANSPORT_PROTOCOL.md),
+84 testes Python e [evidencia](study/evidence/2026-10-19-transport/verification.json).
+Piso final 100 participantes/2.000 tentativas/1.000 eventos mais precisao dos ICs;
+nao substituir por piso de preparo nem fixtures. `evaluate-ipsums` nunca habilita
+integracao automaticamente, mesmo com limites favoraveis: exigir decisao real da 31.
+
+Marco Android 29-30: 232 testes debug e 170 release sem falhas; lint sem erros
+(avisos de dependencias/icone) e `assembleDebug` concluido. Room 9->12 validado.
 Progresso e aceite: [`docs/ROADMAP.md`](docs/ROADMAP.md).
 Roteiro: [`docs/DEMO.md`](docs/DEMO.md).
-Planejamento atual: [estudo quantitativo](docs/QUANTITATIVE.md) e
+Protocolo e progresso: [estudo quantitativo](docs/QUANTITATIVE.md) e
 [Historia 22](docs/ROADMAP.md#historia-22---base-python-e-protocolo-reproduzivel-do-estudo).
 Python: [guia e comandos](study/README.md), [contrato](study/DATA_DICTIONARY.md) e
 [evidencia sintetica](study/evidence/2026-10-18-validation.json) e
 [piloto real](study/evidence/2026-10-18-pilot-real.json). Amostra e modelo:
 [evidencia da 26](study/evidence/2026-10-18-sample-aft.json) e
-[metodo AFT](study/MODEL.md). Avaliacao reservada ainda nao executada; ganho
-preditivo nao comprovado. Usar configs/regular-simple-v1.json nas novas coletas.
-D-012 continua em producao. Comparacao entre epocas e correcao temporal fora do escopo.
+[metodo AFT](study/MODEL.md). Avaliacao reservada documentada na 28; ganho do AFT sobre a melhor referencia nao comprovado. Usar configs/regular-simple-v1.json nas novas coletas.
+[Relatorio real](study/results/2026-10-18/report/REPORT.md) e
+[metricas/ICs](study/results/2026-10-18/evaluation/metrics.json): KM por delta teve
+MAE 15,135 min e Brier integrado 0,122746; AFT 15,892/0,126693. Somente quatro grupos
+reservados; erros de tempo nos resolvidos tem vies e suporte diferente. D-012
+continua em producao; nenhum retuning no teste ou transporte para Ipsums autorizado.
+Comparacao entre epocas e correcao temporal fora do escopo.
 
 ## Politica de contexto
 
@@ -147,3 +157,9 @@ economizar creditos. Ao terminar, atualize o progresso e informe o que mudou, co
 verificado, conferencias manuais opcionais e o proximo passo. Testes manuais nao
 bloqueiam o avanco entre historias.
 ```
+
+Validacao com Ipsums: [protocolo](study/IPSUM_PROTOCOL.md),
+[estado real vazio](study/evidence/2026-10-18-ipsum-data-status.json) e
+[evidencia Android](docs/evidence/2026-10-18-android-30.json). CF historico ausente
+nao e preenchido pelo perfil atual; pausas desconhecidas nao viram zero. Manter
+32 bloqueada e nao apresentar fixtures como evidencia de transporte.

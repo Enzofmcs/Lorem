@@ -6,15 +6,15 @@
 
 ## Estado atual
 
-**Foco atual:** estudo Python 22-26 implementado e verificado; amostra real e AFT ajustados. Historias 00-21 preservadas.
+**Foco atual:** Historias 22-30 implementadas e verificadas. Estudo real concluido; novas recomendacoes exigem data verificada; Ipsums novos registram CF anterior e permitem exportacao local. Historias 00-21 preservadas.
 
-**Ultima historia verificada:** Historia 26, em 2026-10-18: 51 testes, 20 contests adquiridos/19 elegiveis e Weibull selecionado na validacao. Ultimo marco Android: Historia 21 em 2026-10-16.
+**Ultima historia verificada:** Historia 30, em 2026-10-18: 232 testes debug/170 release, lint sem erros, APK gerado e 66 testes Python; contrato Android-Python verificado com fixture explicita.
 
-**Primeiro item pendente:** Historia 27 - avaliacao reservada de erros, probabilidades e incerteza.
+**Primeiro item pendente:** Historia 31 - BLOQUEADA: nenhum export real de Ipsums fornecido. Precisa de amostra e limiares finais fixados antes do teste.
 
-**Proxima entrega demonstravel:** comparar modelos e referencias nos quatro contests de teste, sem retunar; relatorio completo na 28.
+**Proxima entrega demonstravel:** coletar novas tentativas com snapshots anteriores, exportar localmente e preparar coorte por participante; sem integrar previsoes antes da 31.
 
-**Bloqueios conhecidos:** nenhum para iniciar 27. Amostra limitada a 19 contests elegiveis; 1589 excluido por ratings de problemas ausentes. 32 depende da 31. Conferencia em dispositivo opcional (D-014).
+**Bloqueios conhecidos:** Ipsums reais n=0/insufficient_data. 32 exige evidencia e decisao favoravel da 31; dependencia 29 atendida. Conferencia manual opcional (D-014).
 
 ## Como atualizar
 
@@ -1816,7 +1816,7 @@ de superioridade. Esses resultados pertencem a 27. Nenhuma mudanca Android.
 
 **Historia:** Como pesquisador, quero medir os erros fora da amostra e a calibracao das probabilidades para conhecer a utilidade e a incerteza reais do estudo.
 
-**Status:** planejada; implementacao e verificacao ainda nao executadas.
+**Status:** implementada e verificada em 2026-10-18; aguardando revisao/integracao da PR.
 
 **GitHub:** [#50 - Historia 27](https://github.com/Enzofmcs/Lorem/issues/50).
 
@@ -1830,12 +1830,12 @@ de superioridade. Esses resultados pertencem a 27. Nenhuma mudanca Android.
 
 #### Criterios de aceite
 
-- [ ] Selecionar na validacao por Brier integrado suportado e calibracao, usando MAE/interpretabilidade como secundarios; registrar escolha antes de abrir o teste, sem retunar nele.
-- [ ] Medir MAE, mediana do erro absoluto, RMSE e vies de tempo nos eventos do teste com denominador e ressalva de selecao; comparar D-012 e referencias.
-- [ ] Avaliar P(AC ate 30/60/120) com Brier/log-loss nos casos conhecidos, calibracao por bins com amostras e Brier IPCW/integrado com censuras; censurado antes do horizonte nao vira negativo.
-- [ ] Estimar censura somente no treino, informar suporte/pesos extremos e horizontes indisponiveis; medir cobertura/largura do intervalo preditivo de 80% e declarar os limites da avaliacao nos resolvidos.
-- [ ] Produzir ICs de 95% por bootstrap pareado de contests/grupos, 200 replicacoes com semente, incluindo diferencas contra o baseline; nao tratar linhas como independentes.
-- [ ] Reportar erros por faixas predefinidas dos dois ratings/delta e qualidade, funil de cobertura e sensibilidade de censura; sem analise por ano, correcao temporal ou alegacao de superioridade sem evidencia.
+- [x] Selecionar na validacao por Brier integrado suportado e calibracao, usando MAE/interpretabilidade como secundarios; registrar escolha antes de abrir o teste, sem retunar nele.
+- [x] Medir MAE, mediana do erro absoluto, RMSE e vies de tempo nos eventos do teste com denominador e ressalva de selecao; comparar D-012 e referencias.
+- [x] Avaliar P(AC ate 30/60/120) com Brier/log-loss nos casos conhecidos, calibracao por bins com amostras e Brier IPCW/integrado com censuras; censurado antes do horizonte nao vira negativo.
+- [x] Estimar censura somente no treino, informar suporte/pesos extremos e horizontes indisponiveis; medir cobertura/largura do intervalo preditivo de 80% e declarar os limites da avaliacao nos resolvidos.
+- [x] Produzir ICs de 95% por bootstrap pareado de contests/grupos, 200 replicacoes com semente, incluindo diferencas contra o baseline; nao tratar linhas como independentes.
+- [x] Reportar erros por faixas predefinidas dos dois ratings/delta e qualidade, funil de cobertura e sensibilidade de censura; sem analise por ano, correcao temporal ou alegacao de superioridade sem evidencia.
 
 #### Verificacao planejada
 
@@ -1844,8 +1844,16 @@ Nivel 2: metricas conferidas em exemplos pequenos, censura antes/depois de b, IP
 **Entrega demonstravel:** Abrir tabela comparativa e calibracao em 30/60/120 minutos com erros, ICs, tamanhos de amostra e horizontes sem suporte claramente indicados.
 
 Conferencias humanas opcionais (D-014); criterios automatizados e evidencia
-cientifica exigidos acima continuam obrigatorios. Sem resultados comprovados
-neste planejamento.
+cientifica exigidos acima continuam obrigatorios. Resultados e limitacoes no [relatorio real](../study/results/2026-10-18/report/REPORT.md).
+
+
+Evidencia: 59 testes Python; plano vinculado ao AFT Weibull 0,1 antes dos rotulos,
+200 replicacoes pareadas por grupo, quatro contests de teste/35.367 tentativas.
+KM por delta apresentou MAE 15,135 min e Brier integrado 0,122746; AFT 15,892 e
+0,126693. Comparacao de tempo pareada usa suporte comum. Relatorio contem n/ICs,
+calibracao conhecida/IPCW, qualidade, fatias e sensibilidade. Nenhum retuning,
+transporte para Ipsums ou mudanca Android. Reproducao limpa e hashes registrados
+na [evidencia](../study/evidence/2026-10-18-evaluation-report.json).
 
 ---
 
@@ -1853,7 +1861,7 @@ neste planejamento.
 
 **Historia:** Como autor do TCC, quero apresentar metodos e resultados reproduziveis com limitacoes para sustentar conclusoes proporcionais a evidencia.
 
-**Status:** planejada; implementacao e verificacao ainda nao executadas.
+**Status:** implementada e verificada em 2026-10-18; aguardando revisao/integracao da PR.
 
 **GitHub:** [#51 - Historia 28](https://github.com/Enzofmcs/Lorem/issues/51).
 
@@ -1867,11 +1875,11 @@ neste planejamento.
 
 #### Criterios de aceite
 
-- [ ] Reproduzir do snapshot congelado ao relatorio em ambiente limpo com comandos documentados; registrar versoes, sementes, hashes, manifesto, tempo/custo e dependencias.
-- [ ] Publicar codigo, dicionario, tabelas, figuras e relatorio com populacao, cobertura, erros de tempo, qualidade das probabilidades, ICs e incerteza preditiva separados.
-- [ ] Documentar hipotese sequencial, selecao por tentativa/prefixo, rating do problema na coleta, dados ausentes, censura/abandono, repeticao de participantes e limites de transporte para Ipsums.
-- [ ] Demonstrar dois ratings + orcamento -> estimativas, suporte e incerteza; resultados reais separados de fixtures, incluindo baseline vencedor ou evidencia insuficiente quando ocorrer.
-- [ ] Registrar conclusoes ainda abertas, decisao sobre novos experimentos e protocolo de validacao posterior com Ipsums/ratings; nao alegar melhoria pedagogica nem precisao comprovada sem experimento.
+- [x] Reproduzir do snapshot congelado ao relatorio em ambiente limpo com comandos documentados; registrar versoes, sementes, hashes, manifesto, tempo/custo e dependencias.
+- [x] Publicar codigo, dicionario, tabelas, figuras e relatorio com populacao, cobertura, erros de tempo, qualidade das probabilidades, ICs e incerteza preditiva separados.
+- [x] Documentar hipotese sequencial, selecao por tentativa/prefixo, rating do problema na coleta, dados ausentes, censura/abandono, repeticao de participantes e limites de transporte para Ipsums.
+- [x] Demonstrar dois ratings + orcamento -> estimativas, suporte e incerteza; resultados reais separados de fixtures, incluindo baseline vencedor ou evidencia insuficiente quando ocorrer.
+- [x] Registrar conclusoes ainda abertas, decisao sobre novos experimentos e protocolo de validacao posterior com Ipsums/ratings; nao alegar melhoria pedagogica nem precisao comprovada sem experimento.
 
 #### Verificacao planejada
 
@@ -1880,8 +1888,16 @@ Marco Python: testes de study/ e reproducao completa offline pelo snapshot; conf
 **Entrega demonstravel:** Outra pessoa executa o roteiro local a partir do snapshot e confere hashes e tabelas do relatorio apresentado no TCC.
 
 Conferencias humanas opcionais (D-014); criterios automatizados e evidencia
-cientifica exigidos acima continuam obrigatorios. Sem resultados comprovados
-neste planejamento.
+cientifica exigidos acima continuam obrigatorios. Resultados e limitacoes no [relatorio real](../study/results/2026-10-18/report/REPORT.md).
+
+
+Evidencia: 59 testes Python; plano vinculado ao AFT Weibull 0,1 antes dos rotulos,
+200 replicacoes pareadas por grupo, quatro contests de teste/35.367 tentativas.
+KM por delta apresentou MAE 15,135 min e Brier integrado 0,122746; AFT 15,892 e
+0,126693. Comparacao de tempo pareada usa suporte comum. Relatorio contem n/ICs,
+calibracao conhecida/IPCW, qualidade, fatias e sensibilidade. Nenhum retuning,
+transporte para Ipsums ou mudanca Android. Reproducao limpa e hashes registrados
+na [evidencia](../study/evidence/2026-10-18-evaluation-report.json).
 
 ---
 
@@ -1889,7 +1905,7 @@ neste planejamento.
 
 **Historia:** Como usuario do Lorem, quero receber somente novos problemas do recorte definido, mantendo intactos meu historico e minhas avaliacoes.
 
-**Status:** planejada; implementacao e verificacao ainda nao executadas.
+**Status:** implementada e verificada em 2026-10-18; aguardando revisao/integracao.
 
 **GitHub:** [#52 - Historia 29](https://github.com/Enzofmcs/Lorem/issues/52).
 
@@ -1903,11 +1919,11 @@ neste planejamento.
 
 #### Criterios de aceite
 
-- [ ] Consultar metadados verificaveis do contest de origem via cliente/gate centralizado; exigir inicio >=2020-07-01T00:00:00Z, sem inferir pelo id e com origem/data ambigua inelegivel.
-- [ ] Persistir fonte/data verificada e versao da regra por migracao aditiva; catalogo legado sem data nao habilita novas recomendacoes ate verificacao, e cache verificado funciona offline.
-- [ ] Aplicar o corte em toda selecao/fallback, inclusive fora de rede, sem relaxa-lo se nao houver candidatos; oferecer ausencia de candidato recuperavel.
-- [ ] Preservar todos os historicos/submissoes antigos e sua exclusao de repeticoes, Ipsums anteriores/ativo, snapshots, pendencias, rating e avaliacoes; nao recalcular dados antigos.
-- [ ] Integrar atualizacao/retomada de metadados aos fluxos locais existentes e verificar idempotencia, falha parcial e concorrencia sem backend, login ou sincronizacao em nuvem.
+- [x] Consultar metadados verificaveis do contest de origem via cliente/gate centralizado; exigir inicio >=2020-07-01T00:00:00Z, sem inferir pelo id e com origem/data ambigua inelegivel.
+- [x] Persistir fonte/data verificada e versao da regra por migracao aditiva; catalogo legado sem data nao habilita novas recomendacoes ate verificacao, e cache verificado funciona offline.
+- [x] Aplicar o corte em toda selecao/fallback, inclusive fora de rede, sem relaxa-lo se nao houver candidatos; oferecer ausencia de candidato recuperavel.
+- [x] Preservar todos os historicos/submissoes antigos e sua exclusao de repeticoes, Ipsums anteriores/ativo, snapshots, pendencias, rating e avaliacoes; nao recalcular dados antigos.
+- [x] Integrar atualizacao/retomada de metadados aos fluxos locais existentes e verificar idempotencia, falha parcial e concorrencia sem backend, login ou sincronizacao em nuvem.
 
 #### Verificacao planejada
 
@@ -1916,8 +1932,14 @@ Niveis 3/4 e marco Android: testes de fronteira UTC, data ausente/origem ambigua
 **Entrega demonstravel:** Catalogo misto mostra que antigo/sem data nunca e recomendado; um problema antigo ja tentado continua no historico e nos impedimentos de repeticao, com avaliacao intacta.
 
 Conferencias humanas opcionais (D-014); criterios automatizados e evidencia
-cientifica exigidos acima continuam obrigatorios. Sem resultados comprovados
-neste planejamento.
+cientifica exigidos acima continuam obrigatorios. Verificada por 226 testes debug/164 release, lint sem erros e assembleDebug.
+
+
+Evidencia: duas consultas pelo gate (problemset + contest.list), datas inteiras UTC,
+duplicatas conflitantes/missing inelegiveis e cache anterior preservado em falha.
+Room 10->11 adiciona somente metadados nullable de origem no catalogo/Ipsums.
+Recomendacao/fallback e tela inicial exigem prova; todo historico/ativo/rating
+permanece preservado. Cadeia de migracao 9->11 validada por Room.
 
 ---
 
@@ -1925,7 +1947,7 @@ neste planejamento.
 
 **Historia:** Como pesquisador, quero validar as previsoes em Ipsums com inicio registrado para medir a diferenca entre tempo inferido em contests e tempo de treino.
 
-**Status:** planejada; implementacao e verificacao ainda nao executadas.
+**Status:** software e protocolo implementados/verificados em 2026-10-18; coorte real ausente, sem conclusao empirica.
 
 **GitHub:** [#53 - Historia 30](https://github.com/Enzofmcs/Lorem/issues/53).
 
@@ -1939,11 +1961,11 @@ neste planejamento.
 
 #### Criterios de aceite
 
-- [ ] Definir/exportar esquema pseudonimizado local com inicio, primeiro AC valido, encerramento, dica, interrupcoes conhecidas, versoes, rating do problema, CF anterior ao inicio e Rating Lorem inicial.
-- [ ] Preservar legados e representar ausencias; nao preencher rating CF passado com o atual nem com newRating de contest posterior; se faltar campo, documentar coleta prospectiva aditiva minima.
-- [ ] Distinguir AC no Ipsum de upsolve e nao recalcular avaliacao; tratar sem AC/desistencia e pausas explicitamente, sem chamar tempo de parede de dedicacao efetiva.
-- [ ] Aplicar recorte de problema/data verificavel na base do estudo sem excluir o historico do app; separar com/sem dica e informar funil/cobertura e suporte.
-- [ ] Fixar protocolo de amostra e particoes por participante para a validacao, mantendo todos os dados locais e sem exigir backend/login/nuvem; amostra ausente ou pequena e registrada como insuficiente.
+- [x] Definir/exportar esquema pseudonimizado local com inicio, primeiro AC valido, encerramento, dica, interrupcoes conhecidas, versoes, rating do problema, CF anterior ao inicio e Rating Lorem inicial.
+- [x] Preservar legados e representar ausencias; nao preencher rating CF passado com o atual nem com newRating de contest posterior; se faltar campo, documentar coleta prospectiva aditiva minima.
+- [x] Distinguir AC no Ipsum de upsolve e nao recalcular avaliacao; tratar sem AC/desistencia e pausas explicitamente, sem chamar tempo de parede de dedicacao efetiva.
+- [x] Aplicar recorte de problema/data verificavel na base do estudo sem excluir o historico do app; separar com/sem dica e informar funil/cobertura e suporte.
+- [x] Fixar protocolo de amostra e particoes por participante para a validacao, mantendo todos os dados locais e sem exigir backend/login/nuvem; amostra ausente ou pequena e registrada como insuficiente.
 
 #### Verificacao planejada
 
@@ -1952,8 +1974,19 @@ Niveis 2/3; Nivel 4 se houver migracao: fixtures de AC/sem AC/upsolve/dica/pausa
 **Entrega demonstravel:** Auditar um Ipsum pseudonimizado desde o inicio persistido ate seu evento/censura, demonstrando rating anterior e ausencia de alteracao da avaliacao.
 
 Conferencias humanas opcionais (D-014); criterios automatizados e evidencia
-cientifica exigidos acima continuam obrigatorios. Sem resultados comprovados
-neste planejamento.
+cientifica exigidos acima continuam obrigatorios. Fixtures comprovam o software; nenhum resultado real de transporte foi produzido.
+
+
+Evidencia: 66 testes Python e 232 debug/170 release; lint sem erros e APK gerado.
+Room 11->12 adiciona snapshots CF nullable, sem preencher legados pelo perfil atual.
+CF observado antes do inicio fica imutavel. Exportacao explicita local por UUID,
+sem ativo/handle/nome/tags/ids de submissao; AC posterior nao vira evento do Ipsum.
+Encoder Android com Room/StartIpsum/AC gera fixture marcada synthetic, aceita pelo
+preparador Python. API consulta somente metadados/estrutura, com gate/cache e
+D-026 inteiro. Protocolo/particoes por participante fixados; n real=0 resulta em
+insufficient_data, sem particoes/metricas/integracao. [Protocolo](../study/IPSUM_PROTOCOL.md),
+[evidencia](evidence/2026-10-18-android-30.json) e
+[estado da coorte](../study/evidence/2026-10-18-ipsum-data-status.json).
 
 ---
 
@@ -1961,7 +1994,7 @@ neste planejamento.
 
 **Historia:** Como pesquisador, quero avaliar se ratings e previsoes se transportam para Ipsums antes de autorizar seu uso no aplicativo.
 
-**Status:** planejada; implementacao e verificacao ainda nao executadas.
+**Status:** PARCIAL / BLOQUEADO para conclusao empirica: nenhum export real de Ipsums fornecido (n=0/insufficient_data). Pre-registro e ferramenta de avaliacao implementados em 2026-10-19; comparacao/decisao reais ainda pendentes.
 
 **GitHub:** [#54 - Historia 31](https://github.com/Enzofmcs/Lorem/issues/54).
 
@@ -1975,7 +2008,7 @@ neste planejamento.
 
 #### Criterios de aceite
 
-- [ ] Fixar antes de abrir o teste Ipsum tamanho/precisao de amostra e limiares aceitaveis de MAE/calibracao/Brier conforme resultados de 28; registrar decisao e justificativa.
+- [x] Fixar antes de abrir o teste Ipsum tamanho/precisao de amostra e limiares aceitaveis de MAE/calibracao/Brier conforme resultados de 28; registrar decisao e justificativa.
 - [ ] Comparar pares CF anterior ao inicio e Lorem inicial: diferenca/vies, dispersao, correlacao e suporte; nunca usar Lorem posterior ao resultado nem inferir equivalencia pela correlacao.
 - [ ] Comparar identidade e mapeamento simples ajustado so no treino, com participantes inteiros reservados e sem vazamento por tentativas do mesmo usuario; tratar campos historicos ausentes explicitamente.
 - [ ] Avaliar erro de tempo, P(AC ate b), calibracao, censura e incerteza em Ipsums, com/sem dica e pausas; relatar deslocamento de dominio e cobertura.
@@ -1991,13 +2024,20 @@ Conferencias humanas opcionais (D-014); criterios automatizados e evidencia
 cientifica exigidos acima continuam obrigatorios. Sem resultados comprovados
 neste planejamento.
 
+Pre-registro em [TRANSPORT_PROTOCOL.md](../study/TRANSPORT_PROTOCOL.md), D-032:
+100 participantes/2.000 tentativas/1.000 eventos, IC95% e cobertura/suporte.
+`evaluate-ipsums` vincula hashes, ajusta mapeamento apenas no treino, congela escolha
+na validacao e avalia por participante. Testes sinteticos verificam software, nao
+os quatro criterios empiricos acima; estes permanecem desmarcados. Estado real
+vazio e plano em [evidencia da 31](../study/evidence/2026-10-19-transport/manifest.json).
+
 ---
 
 ### Historia 32 - Integracao local versionada das previsoes validadas
 
 **Historia:** Como usuario, quero consultar estimativas validadas com orcamento e incerteza, mantendo o funcionamento local e minhas avaliacoes anteriores.
 
-**Status:** BLOQUEADO: evidencia e decisao favoravel da Historia 31, alem da 29.
+**Status:** BLOQUEADO: evidencia e decisao favoravel da Historia 31. Historia 29 implementada; nenhum modelo/previsao integrado ao app.
 
 **GitHub:** [#55 - Historia 32](https://github.com/Enzofmcs/Lorem/issues/55).
 

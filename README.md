@@ -8,7 +8,7 @@ Um **Ipsum** é a tentativa oficial e cronometrada de resolver um problema recom
 
 ## Estado atual
 
-A base Android de módulo único implementa as Histórias 00–21:
+A base Android de módulo único implementa as Histórias 00–21 e 29–30:
 
 - Kotlin, Jetpack Compose e Material 3;
 - navegação que restaura o Ipsum ativo;
@@ -26,6 +26,8 @@ A base Android de módulo único implementa as Histórias 00–21:
 - acompanhamento de submissões em RESUMED e no worker, com estado por conjunto de dados;
 - importação incremental e proteção por versão do vínculo do perfil;
 - atualização antes da recomendação e uso de cache após a primeira importação;
+- data oficial de origem verificada nas novas recomendações, com cache local e históricos preservados;
+- snapshots anteriores e exportação local de tentativas encerradas para o estudo, sem preencher dados históricos ausentes;
 - injeção manual e estado de UI exposto por `ViewModel`/`StateFlow`.
 
 As Histórias 10 e 11 foram concluídas após a confirmação do usuário de todos os testes manuais em dispositivo em 13/10/2026. As definições dos indicadores e o conjunto de referência estão no [roadmap](docs/ROADMAP.md#historia-11---estatisticas-confiaveis).
@@ -143,24 +145,26 @@ Consulte o [roadmap](docs/ROADMAP.md) e o [roteiro de demonstração](docs/DEMO.
 O planejamento de 18/10/2026 acrescenta **22–28 — Estudo quantitativo em Python**:
 coleta e preparo auditáveis, estimativa de tempo até AC, probabilidades para um
 orçamento explícito, avaliação e relatório reproduzível. São **24 horas estimadas**
-para uma primeira versão. O software das Histórias 22–26 está implementado e
-verificado com 51 testes. A nova amostra coletou 20 contests regulares, com 19
-elegíveis e 274.073 tentativas válidas. O primeiro AFT foi ajustado e escolhido
-na validação; quatro contests permanecem reservados para a avaliação da 27.
-[Evidência da amostra/modelo](study/evidence/2026-10-18-sample-aft.json).
-Precisão e ganho preditivo ainda não foram comprovados. O piloto anterior, com
-contests em versões, permanece preservado e excluído da análise.
+para uma primeira versão. As Histórias 22–28 estão implementadas; a suite atual tem 66 testes Python, incluindo o preparo da 30.
+A amostra tem 19 contests elegíveis e 274.073 tentativas válidas. A avaliação de
+35.367 tentativas em quatro contests reservados favoreceu a referência simples
+por delta em relação ao AFT: MAE 15,1 vs 15,9 min nos resolvidos, com denominadores
+e ICs documentados. O AFT foi preservado sem retuning. D-012 continua no app.
+[Relatório, tabelas e gráficos reais](study/results/2026-10-18/report/REPORT.md).
+O estudo ainda não valida transporte para Ipsums nem melhoria pedagógica. Contests
+especiais e com versões permanecem integralmente excluídos.
 Consulte os [comandos Python](study/README.md) e o [contrato de dados](study/DATA_DICTIONARY.md).
 
-**29–32** cobrem o corte verificável de problemas nas novas recomendações, validação
-com Ipsums, relação Rating CF/Lorem e integração local condicionada à evidência.
-O recorte usa a data do contest de origem desde 01/07/2020, preserva históricos e
-avaliações e ainda depende da História 29 no app. Comparação entre épocas e correção
-temporal estão fora do escopo. D-012 continua vigente. Consulte o
-[protocolo](docs/QUANTITATIVE.md) e a
-[ordem de execução](docs/ROADMAP.md#extensao-quantitativa-em-python).
+**29–30 concluídas:** corte verificável desde 01/07/2020 em toda recomendação/fallback,
+metadados persistidos, CF conhecido antes do início e exportação local de Ipsums
+encerrados em Configurações. Legados/ativos/avaliações preservados; D-012 vigente.
+[Protocolo e comandos de Ipsums](study/IPSUM_PROTOCOL.md).
 
-### Bloco anterior concluído
+**31–32 bloqueadas:** nenhum export real foi fornecido. Precisamos de uma coorte
+real para avaliar os ratings e as previsões antes da integração. O piso de preparo
+não comprova precisão. A [ferramenta e o pré-registro da 31](study/TRANSPORT_PROTOCOL.md)
+já definem a comparação e os limites antes do teste real. O estudo não inclui comparação entre épocas/correção temporal.
+[Progresso e critérios](docs/ROADMAP.md) · [Evidência Android](docs/evidence/2026-10-18-android-30.json).
 
 O planejamento de 13/10/2026 acrescenta **15–17 — Sincronização automática** e
 **18–21 — Redesign**. As Histórias 00–14 e suas evidências permanecem preservadas;

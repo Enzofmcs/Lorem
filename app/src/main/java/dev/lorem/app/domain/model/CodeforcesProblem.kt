@@ -17,4 +17,5 @@ data class CodeforcesProblem(
     val name: String,
     val rating: Int?,
     val tags: Set<String>,
+    val origin: VerifiedProblemOrigin? = null,
 )

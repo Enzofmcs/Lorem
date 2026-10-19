@@ -3,6 +3,7 @@ package dev.lorem.app.domain
 import dev.lorem.app.domain.repository.CodeforcesRepository
 import dev.lorem.app.domain.repository.LoremRepository
 import dev.lorem.app.domain.repository.ProblemCatalogResult
+import dev.lorem.app.domain.model.isEligibleForNewRecommendation
 import kotlinx.coroutines.flow.first
 
 sealed interface ProblemCatalogSyncResult {
@@ -28,7 +29,7 @@ class SynchronizeProblemCatalog(
                 val updatedAt = nowMillis()
                 try {
                     loremRepository.replaceProblemCatalog(eligible, updatedAt)
-                    ProblemCatalogSyncResult.Success(eligible.size, updatedAt)
+                    ProblemCatalogSyncResult.Success(eligible.count { it.isEligibleForNewRecommendation() }, updatedAt)
                 } catch (error: Exception) {
                     if (error is kotlinx.coroutines.CancellationException) throw error
                     ProblemCatalogSyncResult.PersistenceFailure(savedCount)

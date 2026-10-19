@@ -111,19 +111,48 @@ separadamente. O rating interno e a consolidacao sao indicadores do aplicativo;
 sozinhos nao demonstram melhora de aprendizagem nem validam pedagogicamente os
 limiares da D-015. Consulte o metodo de avaliacao em `SPEC.md`.
 
-## Demonstracao planejada do estudo quantitativo (22-28)
+## Demonstracao do estudo quantitativo (22-28)
 
-Software 22-26 implementado e verificado com 51 testes. Jornada sintetica e
-comandos reais no [guia Python](../study/README.md). Nova amostra: 20 aquisicoes,
-19 contests elegiveis, 274.073 tentativas validas e particoes 11/4/4. AFT Weibull
-selecionado na validacao; CLI mostra probabilidades/quantis com suporte explicito.
-[Evidencia](../study/evidence/2026-10-18-sample-aft.json) e [metodo](../study/MODEL.md).
-Avaliacao preditiva reservada e relatorio completo 27-28 continuam pendentes;
-nenhum ganho de precisao comprovado. O roteiro empirico futuro devera reconstruir a base
-por snapshot, mostrar uma tentativa desde os brutos ate seu tempo/censura e exibir
-previsoes para dois ratings com orcamento de 30/60/120 min. Apresentar referencias,
-erros, calibracao, cobertura e intervalos com tamanhos de amostra; nao usar fixtures
-como resultados reais. A [metodologia](QUANTITATIVE.md) e o
-[roadmap](ROADMAP.md#extensao-quantitativa-em-python) definem o aceite e as 24 h.
-Validacao posterior com Ipsums e transporte dos ratings antecedem qualquer uso do
-modelo no app. O corte de problemas no app sera demonstrado na Historia 29.
+59 testes aprovados; [relatorio real](../study/results/2026-10-18/report/REPORT.md)
+e [reproducao](../study/README.md#avaliacao-relatorio-e-reproducao-limpa-27-28).
+A amostra tem 19 contests elegiveis, 274.073 tentativas validas e particoes 11/4/4.
+O AFT Weibull foi escolhido na validacao e permaneceu fixo ao abrir o teste.
+
+1. Abrir o relatorio real e seus CSVs/figuras. Mostrar n, eventos/censuras/exclusoes,
+   cobertura, erros em minutos, Brier/calibracao conhecida e IPCW, ICs de 200 sorteios
+   por grupo e intervalos preditivos separados dos ICs.
+2. Conferir que KM por delta teve menor Brier integrado que o AFT nesta amostra;
+   comparar MAE somente em suporte comum e reconhecer os quatro grupos reservados.
+3. Executar `predict` para os dois ratings 1200/1600 e orcamentos 30/60/120,
+   primeiro baseline e depois `--model aft`; mostrar quantis indisponiveis e dominio.
+   A consulta e ilustrativa, nao um resultado individual observado.
+4. Reproduzir com pacote instalado em venv limpo e diretorio novo via
+   `scripts/reproduce.py`. Conferir zero chamadas de coleta e hashes identicos,
+   inclusive modelos, metricas, tabelas e SVG/PNG. Backup bruto permanece local.
+
+Nao usar fixtures como resultados reais. A hipotese sequencial mede parede,
+abandono pode tornar censura informativa, ratings de problemas sao da coleta e
+participantes repetem. Nenhuma mudanca no Rating Lorem/D-012. Validacao com Ipsums
+e transporte dos ratings antecedem uso das previsoes no app. O corte de problemas
+no app sera demonstrado na Historia 29.
+
+## Demonstracao das Historias 29-30
+
+1. Atualizar catalogo: fonte/data verificadas ficam em cache. Antigo/sem data nunca
+   habilita nova recomendacao, incluindo fallback. Continuar um ativo antigo ainda
+   funciona; historicos, pendencias e avaliacoes continuam intactos.
+2. Atualizar perfil antes de novos Ipsums. A observacao CF anterior fica no snapshot;
+   atualizar o perfil depois nao altera CF/Lorem iniciais ou notas anteriores.
+3. Configuracoes -> Dados do estudo -> Exportar tentativas. Escolher arquivo local;
+   o ativo e omitido, sem handle/nome/tags/ids de submissao. Legados ficam ausentes.
+4. Preparar com `prepare-ipsums` conforme [guia](../study/README.md#base-local-de-ipsums-30).
+   Verificar metadados oficiais/D-026, funil, snapshots e particoes por participante.
+   Sem exports reais, mostrar n=0/insufficient_data e nenhuma metrica de transporte.
+
+Roteiro de dispositivo opcional, nao executado. 31/32 continuam bloqueadas por
+falta de dados/evidencia; nao habilitar previsoes nem alterar a D-012.
+
+Para demonstrar a ferramenta da 31 sem dados ficticios, executar `evaluate-ipsums`
+conforme [guia Python](../study/README.md#avaliacao-local-de-transporte-31-evidencia-real-pendente).
+O [pre-registro](../study/TRANSPORT_PROTOCOL.md) e os hashes ficam visiveis;
+sem exports, o relatorio registra n=0/insufficient_data e nao calcula metricas.

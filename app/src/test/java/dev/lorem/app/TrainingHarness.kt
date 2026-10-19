@@ -26,7 +26,7 @@ class TrainingHarness(scope: CoroutineScope) : AutoCloseable {
     val remote = ScriptedTrainingCodeforces()
 
     private fun openDatabase() = Room.databaseBuilder(context, LoremDatabase::class.java, databaseFile.absolutePath)
-        .addMigrations(LoremDatabase.MIGRATION_9_10).build()
+        .addMigrations(LoremDatabase.MIGRATION_9_10, LoremDatabase.MIGRATION_10_11, LoremDatabase.MIGRATION_11_12).build()
     private fun openRepository() = LocalLoremRepository(store, database.problemHistoryDao(), database.problemCatalogDao(), database.ipsumDao())
     fun reopen() {
         database.close()
@@ -42,7 +42,7 @@ class ScriptedTrainingCodeforces : CodeforcesRepository {
     @Volatile var waitingStatusStarted: CompletableDeferred<Unit>? = null
     @Volatile var userResult: UserLookupResult = UserLookupResult.Success(CodeforcesUser("tourist", "Tourist", 1200))
     val catalog = (1000L..1003L).map { id ->
-        CodeforcesProblem(ProblemId(id, "A"), "Training $id", 1200, setOf(listOf("dp", "math", "greedy", "graphs")[(id - 1000).toInt()]))
+        CodeforcesProblem(ProblemId(id, "A"), "Training $id", 1200, setOf(listOf("dp", "math", "greedy", "graphs")[(id - 1000).toInt()])).withVerifiedTestOrigin()
     }
     override suspend fun user(handle: String) = userResult
     override suspend fun submissionHistory(handle: String): SubmissionHistoryResult {

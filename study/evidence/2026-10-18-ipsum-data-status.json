@@ -1,0 +1,40 @@
+{
+  "censored": 0,
+  "data_kind": "not_collected",
+  "dataset_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "events": 0,
+  "excluded": 0,
+  "hint_strata_valid": {},
+  "integration_gate": "CLOSED; retain D-012 and distinct ratings",
+  "interruptions_unknown_valid": 0,
+  "metadata_refs": {},
+  "network_requests": 0,
+  "observed_attempts": 0,
+  "partitions_created": false,
+  "protocol": {
+    "cutoff_epoch_ms": 1593561600000,
+    "eligibility": "verified origin/date; regular simple whole contest, no easy/hard versions; prior CF snapshot; positive wall time",
+    "export_version": "ipsum-local-v1",
+    "gate": "preparation floor only; Story 31 must preregister final precision/acceptance before test; 32 remains blocked",
+    "hint_strata": [
+      "without_hint",
+      "with_hint",
+      "unknown"
+    ],
+    "interruption_policy": "unknown remains unknown; wall clock is not dedication",
+    "minimum_attempts": 200,
+    "minimum_events": 100,
+    "minimum_participants": 10,
+    "partition_method": "whole participants; seeded SHA256 order; 60/20/20, minimum 6/2/2",
+    "protocol_version": "ipsum-participant-v1",
+    "recording_version": "ipsum-study-v1",
+    "schema_version": 1,
+    "seed": 20261018
+  },
+  "reasons_multiple_per_row": {},
+  "schema_version": 1,
+  "status": "insufficient_data",
+  "transport_evaluation": "NOT EXECUTED; History 31",
+  "valid_attempts": 0,
+  "valid_participants": 0
+}

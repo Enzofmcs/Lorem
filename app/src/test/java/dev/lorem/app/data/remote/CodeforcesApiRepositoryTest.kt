@@ -279,7 +279,8 @@ class CodeforcesApiRepositoryTest {
 
     private fun repository(body: String) = CodeforcesApiRepository(
         immediateGate,
-        CodeforcesHttpClient { HttpResponse(200, body) },
+        CodeforcesHttpClient { url -> HttpResponse(200, if (url.contains("contest.list"))
+            """{"status":"OK","result":[{"id":4,"phase":"FINISHED","startTimeSeconds":1593561600},{"id":5,"phase":"FINISHED","startTimeSeconds":1593561600},{"id":10,"phase":"FINISHED","startTimeSeconds":1593561600}]}""" else body) },
     )
 
     private fun historyRepository(client: CodeforcesHttpClient, pageSize: Int = 2) =

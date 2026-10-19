@@ -41,6 +41,7 @@ class LocalLoremRepository(
     private val problemCatalogDao: ProblemCatalogDao,
     private val ipsumDao: IpsumDao,
 ) : LoremRepository {
+    override val studyDataKind: String = "ipsum_local"
     private val profileMutation = Mutex()
     override val profileLink: Flow<ProfileLink?> = dataStore.data.map { preferences ->
         preferences[HANDLE]?.let { ProfileLink.of(it, preferences[LINK_VERSION] ?: 0L) }
@@ -107,6 +108,8 @@ class LocalLoremRepository(
             preferences[DISPLAY_NAME] = profile.displayName.trim()
             profile.officialRating?.let { preferences[OFFICIAL_RATING] = it }
                 ?: preferences.remove(OFFICIAL_RATING)
+            profile.officialRatingObservedAtEpochMillis?.let { preferences[OFFICIAL_RATING_OBSERVED_AT] = it }
+                ?: preferences.remove(OFFICIAL_RATING_OBSERVED_AT)
             preferences[LOREM_RATING] = profile.loremRating
             val consolidated = if (sameOwner) listOfNotNull(preferences[CONSOLIDATED_RATING], profile.consolidatedRating).maxOrNull()
                 else profile.consolidatedRating
@@ -125,12 +128,14 @@ class LocalLoremRepository(
         }
     }
 
-    override suspend fun updateProfileMetadata(ownerHandle: String, displayName: String, officialRating: Int?) {
+    override suspend fun updateProfileMetadata(ownerHandle: String, displayName: String, officialRating: Int?, observedAtEpochMillis: Long?) {
         dataStore.edit { preferences ->
             if (preferences[HANDLE]?.let(::normalizeHandle) == normalizeHandle(ownerHandle)) {
                 preferences[HANDLE] = ownerHandle.trim()
                 preferences[DISPLAY_NAME] = displayName
                 officialRating?.let { preferences[OFFICIAL_RATING] = it } ?: preferences.remove(OFFICIAL_RATING)
+                observedAtEpochMillis?.let { preferences[OFFICIAL_RATING_OBSERVED_AT] = it }
+                    ?: preferences.remove(OFFICIAL_RATING_OBSERVED_AT)
             }
         }
     }
@@ -142,12 +147,25 @@ class LocalLoremRepository(
             preferences.remove(HANDLE)
             preferences.remove(DISPLAY_NAME)
             preferences.remove(OFFICIAL_RATING)
+            preferences.remove(OFFICIAL_RATING_OBSERVED_AT)
             preferences.remove(LOREM_RATING)
             preferences.remove(CONSOLIDATED_RATING)
             preferences.remove(LAST_SYNC)
             preferences.remove(LAST_RATED_IPSUM)
         }
         Unit
+    }
+
+    override suspend fun studyParticipantKey(): String {
+        var result: String? = null
+        dataStore.edit { preferences ->
+            val handle = preferences[HANDLE]?.let(::normalizeHandle) ?: error("No profile")
+            val hash = java.security.MessageDigest.getInstance("SHA-256").digest(handle.toByteArray(Charsets.UTF_8))
+                .joinToString("") { "%02x".format(it) }
+            val key = stringPreferencesKey("study_participant_$hash")
+            result = preferences[key] ?: java.util.UUID.randomUUID().toString().also { preferences[key] = it }
+        }
+        return requireNotNull(result)
     }
 
     override suspend fun saveProblemHistory(ownerHandle: String, history: List<ProblemHistory>) {
@@ -266,6 +284,7 @@ class LocalLoremRepository(
             loremRating = loremRating,
             consolidatedRating = preferences[CONSOLIDATED_RATING],
             lastSyncEpochMillis = lastSync,
+            officialRatingObservedAtEpochMillis = preferences[OFFICIAL_RATING_OBSERVED_AT],
         )
     }
 
@@ -275,6 +294,7 @@ class LocalLoremRepository(
         val HANDLE = stringPreferencesKey("profile_handle")
         val DISPLAY_NAME = stringPreferencesKey("profile_display_name")
         val OFFICIAL_RATING = intPreferencesKey("profile_official_rating")
+        val OFFICIAL_RATING_OBSERVED_AT = longPreferencesKey("profile_official_rating_observed_at")
         val LOREM_RATING = intPreferencesKey("profile_lorem_rating")
         val CONSOLIDATED_RATING = intPreferencesKey("profile_consolidated_rating")
         val LAST_RATED_IPSUM = longPreferencesKey("profile_last_rated_ipsum")

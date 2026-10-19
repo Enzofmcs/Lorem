@@ -4,13 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lorem-study"
-version = "0.2.0"
-description = "Reproducible Codeforces time-to-AC study (Histories 22-26)"
+version = "0.4.0"
+description = "Reproducible Codeforces study and preregistered local Ipsum validation"
 requires-python = ">=3.11,<3.14"
 dependencies = []
 
 [project.optional-dependencies]
 model = ["numpy==2.3.5", "scipy==1.17.0"]
+report = ["numpy==2.3.5", "scipy==1.17.0", "matplotlib==3.10.8"]
 
 [project.scripts]
 lorem-study = "lorem_study.cli:main"

@@ -1,7 +1,7 @@
 # AFT v1: metodo de ajuste e selecao
 
 Estas regras foram fixadas na implementacao da Historia 26, antes do ajuste da
-amostra real. O teste permanece reservado para a Historia 27. O modelo nao muda
+amostra real. Naquele marco o teste permaneceu reservado para a Historia 27. O modelo nao muda
 o aplicativo Android nem a D-012.
 
 ## Dependencias e verossimilhanca
@@ -101,3 +101,40 @@ Censura condicionalmente independente, forma parametrica, parede versus dedicaca
 selecao de prefixos e repeticao de participantes sao hipoteses/limitacoes. Precisao,
 ICs, comparacao reservada com todas as referencias e transporte para Ipsums ficam
 nas Historias 27-31.
+
+## Avaliacao reservada v1 (Historias 27-28)
+
+`evaluate` grava `evaluation/plan.json` antes de ler rotulos do teste. Vincula hashes
+exatos dos modelos, dados e particoes; uma repeticao com entradas diferentes e
+recusada. O candidato ja escolhido na 26 permanece fixo. Referencias: KM global,
+KM por delta/fallback e D-012 somente para tempo. Nenhum ajuste usa teste.
+
+Tempos usam mediana publicada, somente em eventos com previsao suportada. MAE,
+mediana absoluta, RMSE e vies `previsto-observado` exibem denominadores. Quantis
+10/90 indisponiveis nao viram infinito; cobertura/largura de 80% usam eventos com
+ambas as pontas disponiveis. Comparacoes pareadas restringem ambos os modelos ao
+mesmo subconjunto de previsoes disponiveis, inclusive tempo.
+
+Brier/log-loss conhecidos, calibracao em cinco bins `[0,.2),...,[.8,1]` e
+estimativas IPCW usam 30/60/120 minutos. Log-loss usa epsilon `1e-15` somente no
+logaritmo; probabilidades publicadas nao mudam. Calibracao conhecida e selecionada;
+a fracao de eventos IPCW por bin inclui desconhecidos no denominador, pode exceder
+um e nao e truncada. G usa treino, limite esquerdo e minimo 0,05 definidos na 26.
+Integracao usa o prefixo continuo suportado da grade 0-120/5 minutos; nenhuma
+integracao atravessa horizontes sem suporte. Cada horizonte informa G, peso maximo,
+conhecidos/desconhecidos e disponibilidade.
+
+Bootstrap: 200 sorteios com reposicao de grupos inteiros reservados, PCG64/seed do
+split. Mesmos sorteios para todos os modelos, curvas de censura fixas do treino,
+sem refit. Cada sorteio preserva todas as linhas dos grupos escolhidos com sua
+multiplicidade; metricas sao ponderadas por tentativa, nao media simples de
+contests. IC percentil 2,5/97,5%, inclusive diferencas e calibracao por bin. Exigir
+>=90% de replicacoes validas para publicar IC e informar quantidade. Poucos grupos
+produzem ICs instaveis; nao incluem incerteza de ajuste nem eliminam dependencia
+por participantes repetidos entre contests. Intervalo preditivo e IC sao distintos.
+
+Fatias fixas de 400 pontos para ambos os ratings e delta, qualidade/exclusoes com
+funil. Sensibilidade alternativa encurta somente censuras ate ultima submissao
+positiva conhecida: mantem previsoes/modelos, reestima G no treino alternativo e
+reavalia observacoes do teste, sem selecionar modelo/regra pelo resultado. Ausencia
+de janela alternativa fica excluida e contada. Nao e novo tempo de dedicacao.

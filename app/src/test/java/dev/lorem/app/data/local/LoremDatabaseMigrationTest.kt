@@ -4,12 +4,65 @@ import androidx.sqlite.db.SupportSQLiteOpenHelper
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class LoremDatabaseMigrationTest {
+    @Test
+    fun `migration 11 to 12 preserves prior results without backfilling CF snapshots`() {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        val helper = FrameworkSQLiteOpenHelperFactory().create(
+            SupportSQLiteOpenHelper.Configuration.builder(context)
+                .name("migration-11-12-${System.nanoTime()}.db")
+                .callback(object : SupportSQLiteOpenHelper.Callback(11) {
+                    override fun onCreate(db: androidx.sqlite.db.SupportSQLiteDatabase) = Unit
+                    override fun onUpgrade(db: androidx.sqlite.db.SupportSQLiteDatabase, oldVersion: Int, newVersion: Int) = Unit
+                }).build(),
+        )
+        val sqlite=helper.writableDatabase
+        sqlite.execSQL("CREATE TABLE ipsums (id INTEGER, status TEXT, ratingDelta INTEGER)")
+        sqlite.execSQL("INSERT INTO ipsums VALUES (1,'PENDING',-20)")
+        LoremDatabase.MIGRATION_11_12.migrate(sqlite)
+        sqlite.query("SELECT status,ratingDelta,initialCodeforcesRating,initialCodeforcesRatingObservedAtEpochMillis,studyRecordingVersion FROM ipsums").use {
+            it.moveToFirst();assertEquals("PENDING",it.getString(0));assertEquals(-20,it.getInt(1))
+            assertTrue(it.isNull(2));assertTrue(it.isNull(3));assertTrue(it.isNull(4))
+        }
+        helper.close()
+    }
+
+    @Test
+    fun `migration 10 to 11 preserves legacy catalog active pending and rating snapshots`() {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        val helper = FrameworkSQLiteOpenHelperFactory().create(
+            SupportSQLiteOpenHelper.Configuration.builder(context)
+                .name("migration-10-11-${System.nanoTime()}.db")
+                .callback(object : SupportSQLiteOpenHelper.Callback(10) {
+                    override fun onCreate(db: androidx.sqlite.db.SupportSQLiteDatabase) = Unit
+                    override fun onUpgrade(db: androidx.sqlite.db.SupportSQLiteDatabase, oldVersion: Int, newVersion: Int) = Unit
+                }).build(),
+        )
+        val sqlite = helper.writableDatabase
+        sqlite.execSQL("CREATE TABLE problem_catalog (contestId INTEGER, problemIndex TEXT, name TEXT)")
+        sqlite.execSQL("INSERT INTO problem_catalog VALUES (4, 'A', 'Old')")
+        sqlite.execSQL("CREATE TABLE ipsums (id INTEGER, status TEXT, ratingDelta INTEGER, startedAtEpochMillis INTEGER)")
+        sqlite.execSQL("INSERT INTO ipsums VALUES (1,'ACTIVE',NULL,1234),(2,'PENDING',-20,1000)")
+        sqlite.execSQL("CREATE TABLE problem_history (contestId INTEGER)")
+        sqlite.execSQL("INSERT INTO problem_history VALUES (4)")
+        LoremDatabase.MIGRATION_10_11.migrate(sqlite)
+        sqlite.query("SELECT name, originMetadata FROM problem_catalog").use {
+            it.moveToFirst(); assertEquals("Old", it.getString(0)); assertTrue(it.isNull(1))
+        }
+        sqlite.query("SELECT status, ratingDelta, startedAtEpochMillis, problemOriginMetadata FROM ipsums ORDER BY id").use {
+            it.moveToFirst(); assertEquals("ACTIVE",it.getString(0)); assertEquals(1234L,it.getLong(2)); assertTrue(it.isNull(3))
+            it.moveToNext(); assertEquals("PENDING",it.getString(0)); assertEquals(-20,it.getInt(1)); assertTrue(it.isNull(3))
+        }
+        sqlite.query("SELECT COUNT(*) FROM problem_history").use { it.moveToFirst(); assertEquals(1,it.getInt(0)) }
+        helper.close()
+    }
+
     @Test
     fun `migration 4 to 5 preserves rows and adds nullable hint time`() {
         val context = ApplicationProvider.getApplicationContext<android.content.Context>()

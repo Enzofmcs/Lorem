@@ -1,14 +1,17 @@
 # Estudo Python do Lorem
 
-Implementacao das Historias 22-26: coleta com proveniencia, preparacao de tentativas,
-particoes por contest, referencias Kaplan-Meier/D-012 e AFT log-normal/Weibull.
-Nova amostra real: 20 contests coletados, 19 elegiveis; 274.073 tentativas validas,
-incluindo 39.128 censuras. Particoes 11/4/4; ajuste e selecao usam apenas treino e
-validacao. Avaliacao reservada de precisao/ICs e relatorio cientifico completo
-continuam nas Historias 27-28. Nenhum ganho preditivo esta comprovado.
+Implementacao das Historias 22-28, com preparo local da 30 e ferramenta pre-registrada da 31: coleta auditavel, tentativas sequenciais,
+particoes por contest, Kaplan-Meier/D-012, AFT censurado e avaliacao reservada.
+Amostra real: 19 contests elegiveis, 274.073 tentativas validas. Teste: quatro
+contests e 35.367 tentativas. KM por delta apresentou menor erro que o AFT nesta
+amostra; transporte para Ipsums ainda nao foi validado.
+
+[Relatorio real](results/2026-10-18/report/REPORT.md),
+[tabelas/figuras](results/2026-10-18/report/manifest.json) e
+[metricas/ICs completos](results/2026-10-18/evaluation/metrics.json).
 
 Protocolo: [QUANTITATIVE.md](../docs/QUANTITATIVE.md). Contratos:
-[DATA_DICTIONARY.md](DATA_DICTIONARY.md). O aplicativo Android e sua pontuacao nao mudam.
+[DATA_DICTIONARY.md](DATA_DICTIONARY.md). O modelo Python permanece separado do aplicativo. As 29-30 adicionam corte, snapshots e exportacao; a pontuacao D-012 permanece vigente.
 
 ## Ambiente e comandos
 
@@ -62,9 +65,9 @@ esperado **somente na fixture**: 90 tentativas observadas, 40 eventos, 10 censur
 Para os ratings do exemplo, mediana 18 min, probabilidades 0,6/0,8/indisponivel em
 30/60/120 min; q90 nao identificado. Esses numeros nao medem a precisao do Lorem.
 
-`train` ajusta AFT com dependencias opcionais. `evaluate` retorna erro explicito de
-etapa nao implementada (27). `report`
-mostra apenas o estado do pipeline, sem fabricar metricas ou relatorio cientifico.
+`train` ajusta AFT com dependencias opcionais. `evaluate` abre o teste com modelos
+congelados e plano/hash imutavel. `report` produz relatorio, CSVs, figuras SVG/PNG e
+manifesto; sem avaliacao previa retorna apenas status explicito, sem metricas.
 
 ## Coleta real e retomada
 
@@ -206,7 +209,7 @@ oficiais e 2.386.518 submissoes. A triagem recusou 24 dos 44 candidatos antes da
 selecao. Os 20 adquiridos produziram 19 elegiveis, sem substituicao por desfecho.
 
 Seis candidatos e seus folds convergiram com gradiente conferido; a validacao
-escolheu Weibull/L2 0,1. Isso nao comprova superioridade: teste/ICs sao a 27.
+escolheu Weibull/L2 0,1. A avaliacao reservada posterior esta no relatorio da 28; o candidato nao foi retunado.
 Coleta offline (zero requisicoes), preparo, particoes, baselines e AFT foram
 repetidos no mesmo ambiente, produzindo os mesmos bytes/hashes em todas as tabelas,
 modelos e previsoes. O core tambem foi executado sem site-packages; wheel/CLI 0.2.0
@@ -231,7 +234,7 @@ python -m lorem_study train --work work/sample-real-regular-v1
 Usar o Python do ambiente com os locks instalados. A evidencia registra hashes de
 arquivos e versoes; igualdade byte a byte foi verificada neste Linux/Python/NumPy/
 SciPy. Nova coleta da API pode mudar bytes, datas e julgamentos. Preservar o cache
-e necessario para a reproducao exata. `evaluate` continua indisponivel ate a 27.
+e necessario para a reproducao exata. Avaliacao e relatorio tambem sao deterministas.
 
 ## Historico do piloto inicial
 
@@ -260,3 +263,107 @@ nao sao descartados por essa ausencia. Nenhum handle ou tabela real foi ao Git.
 retomada offline e metadados malformados. Testes e jornada sintetica verificam
 software; nenhuma melhoria preditiva esta comprovada. Politica de rede deve permitir
 `codeforces.com` pela rota normal do ambiente, preservando proxy/TLS.
+
+## Avaliacao, relatorio e reproducao limpa (27-28)
+
+Instalar `requirements-report.lock` (inclui NumPy/SciPy do modelo e Matplotlib
+3.10.8 com dependencias transitivas fixadas, compativeis com Python >=3.11).
+Matplotlib gera figuras cientificas independentes SVG/PNG; nenhuma dependencia
+nova e exigida na coleta/preparo/KM. Metodos em [MODEL.md](MODEL.md).
+
+```bash
+.venv/bin/python -m pip install -r requirements-report.lock
+.venv/bin/python -m lorem_study evaluate --work work/sample-real-regular-v1
+.venv/bin/python -m lorem_study report --work work/sample-real-regular-v1
+```
+
+`evaluation/plan.json` vincula modelos/particoes antes dos rotulos do teste. Entradas
+alteradas sao recusadas, sem retuning; repetir as mesmas entradas e reproducao.
+200 replicacoes pareadas de grupos inteiros, seed 20261018, ICs de 95%. Quatro
+grupos limitam a incerteza estimada; participantes repetidos nao sao independentes.
+MAE nos resolvidos tem vies; comparacoes usam o mesmo suporte. Intervalo preditivo
+10/90 e IC da metrica sao objetos diferentes. IPCW nao transforma censura precoce
+em negativo nem trunca pesos sem suporte. CSVs incluem n, IC, bins e ausencias.
+
+Para reconstruir **todos os estagios** em ambiente limpo, a partir do snapshot:
+
+```bash
+python -m venv work/reproduction-venv
+work/reproduction-venv/bin/python -m pip install -r requirements.lock -r requirements-report.lock
+work/reproduction-venv/bin/python -m pip install --no-build-isolation --no-deps .
+work/reproduction-venv/bin/python scripts/reproduce.py work/sample-real-regular-v1 work/reproduced
+```
+
+O destino deve ser novo. O script usa o pacote instalado, fora da arvore de fontes;
+reconstroi collect offline -> prepare -> split -> baselines -> AFT -> evaluate ->
+report. `reproduction.json` registra tempos/versoes/hashes e compara os artefatos
+com o original; codigo de saida nao zero indica falha/diferenca. Brutos imutaveis
+podem ser hardlinks locais; ponteiros mutaveis sao copiados. Instalacao pode usar
+rede; a reproducao dos dados nao faz requisicoes. Nova coleta nao e reproducao.
+Resultados publicados sao agregados e sem handles; backup bruto permanece local.
+
+## Base local de Ipsums (30)
+
+No aplicativo: Configuracoes -> Dados do estudo -> Exportar tentativas. Escolher
+um arquivo local. Somente encerrados, pseudonimo persistente por perfil; nenhum
+handle, nome, tag ou id de submissao. O ativo e omitido. Dados antigos ausentes
+continuam null. Atualizar o perfil antes de novas tentativas permite registrar
+uma observacao CF anterior; uma atualizacao posterior nunca preenche o passado.
+O arquivo e pseudonimizado, nao garante anonimato; manter somente local.
+
+```bash
+python -m lorem_study prepare-ipsums --work work/ipsum-validation --inputs /caminho/export-1.json /caminho/export-2.json
+python -m lorem_study prepare-ipsums --work work/ipsum-validation --inputs /caminho/export-1.json /caminho/export-2.json --offline
+```
+
+Core stdlib, sem NumPy/Android. A primeira chamada verifica metadata oficial de
+cada contest via standings completos, gate >=2 s e brutos/cache locais; nao envia
+exportacoes, pseudonimos ou timestamps. Standings brutos contem handles publicos
+e nao devem ir ao Git. Sem cache, `--offline` falha e permite retomar; falha nao
+vira falso negativo/censura. Contests especiais/com qualquer versao sao excluidos
+integralmente. CF anterior/fonte/data e Lorem inicial sao snapshots; dica e pausas
+sao estratos de qualidade, nunca features futuras.
+
+`ipsum/plan.json`, `attempts.jsonl`, `manifest.json` e, somente com suporte,
+`partitions.json`. [Protocolo](IPSUM_PROTOCOL.md): piso inicial 10 participantes,
+200 tentativas validas, 100 eventos e particoes por participante 6/2/2, seed fixa.
+Duplicatas identicas sao deduplicadas; conflitos/alteracoes de coorte congelada
+sao recusados. O piso nao substitui os [limiares/precisao finais da 31](TRANSPORT_PROTOCOL.md).
+
+Nenhum export real foi fornecido nesta sessao. Comando sem `--inputs` e `--offline`
+registra n=0/`not_collected`/`insufficient_data`, zero chamadas, sem criar particoes
+ou metricas. 31/32 permanecem bloqueadas. A fixture `tests/fixtures/ipsum-export-android-v1.json`
+foi produzida pelo encoder Android com Room/StartIpsum/AC controlados e e
+explicitamente `synthetic`; nunca substitui evidencia empirica.
+
+## Avaliacao local de transporte (31, evidencia real pendente)
+
+Pacote 0.4.0. O [pre-registro](TRANSPORT_PROTOCOL.md) fixa o piso final em 100
+participantes/2.000 tentativas/1.000 eventos e exige precisao dos ICs, suporte,
+cobertura de dominio/mediana e limites de MAE/Brier/calibracao. Reusar os modelos
+congelados da 28; nenhum retreino no teste. Preparar a coorte final em diretorio
+novo; a particao por participante e verificada pelo hash/seed da 30.
+
+```bash
+python -m lorem_study prepare-ipsums --work work/ipsum-transport-v1 --offline
+python -m lorem_study evaluate-ipsums --work work/ipsum-transport-v1 --source-work work/sample-real-regular-v1
+```
+
+O primeiro comando sem `--inputs` demonstra a ausencia real atual. Quando houver
+exports reais, usar `--inputs` com os caminhos explicitos no preparo, sem
+`--offline` na primeira consulta dos metadados. O segundo comando e sempre local,
+sem chamadas de rede. Se os artefatos da 28 faltarem, reproduzi-los pelo roteiro
+anterior antes de executar. Ele congela `ipsum/transport/plan.json` antes de ler
+tentativas; verifica checksums/particoes e, se insuficiente, escreve somente
+estado/relatorio, sem ajuste nem metricas. Esse caminho continua stdlib.
+
+Com amostra suficiente, instalar `requirements-model.lock`. Ajuste linear usa so
+treino, escolha entre identidade/linear e KM/AFT usa validacao; `selection.json`
+e persistido antes da avaliacao do teste. `metrics.json` inclui pares de ratings,
+erros/censura, ICs por participante, estratos e comparacoes pareadas com suporte
+comum. `REPORT.md` e `manifest.json` apontam decisao e hashes. Reexecucao identica
+reproduz os arquivos; alterar dados, modelos ou plano congelados e recusado.
+
+Fixtures nunca aprovam transporte; limites numericos favoraveis em dados reais
+ainda exigem decisao explicita de dominio na 31. O gate do app permanece fechado
+e D-012 vigente. Historia 31 nao esta concluida; 32 continua bloqueada.
