@@ -2,6 +2,7 @@ package dev.lorem.app
 
 import android.content.Context
 import androidx.work.WorkManager
+import dev.lorem.app.data.auth.FirebaseAuthentication
 import dev.lorem.app.data.local.LocalLoremRepository
 import dev.lorem.app.data.local.LoremDatabase
 import dev.lorem.app.data.local.PreferencesAppearanceRepository
@@ -22,7 +23,10 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
 class AppContainer(context: Context) {
+    private val appContext = context.applicationContext
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val authenticationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    val authentication by lazy { FirebaseAuthentication.create(appContext, authenticationScope) }
     private val database = LoremDatabase.create(context)
     val loremRepository: LoremRepository = LocalLoremRepository(
         dataStore = context.profileDataStore,
@@ -42,7 +46,8 @@ class AppContainer(context: Context) {
         synchronizationStore,
     )
     val backgroundSynchronization = BackgroundSynchronization(loremRepository, synchronizationCoordinator, apiDeferred = retryAfter::isDeferred)
-    val workerFactory = SynchronizationWorkerFactory(backgroundSynchronization, retryAfter::isDeferred)
+    val workerFactory = SynchronizationWorkerFactory(backgroundSynchronization, retryAfter::isDeferred,
+        isAllowed = { !BuildConfig.FIREBASE_AUTH_ENABLED })
     val synchronizationScheduler by lazy {
         SynchronizationScheduler(
             WorkManager.getInstance(context), loremRepository, backgroundSynchronization, applicationScope,
@@ -50,6 +55,15 @@ class AppContainer(context: Context) {
     }
 
     fun startSynchronization() {
+        if (BuildConfig.FIREBASE_AUTH_ENABLED) {
+            // Legacy data has no Firebase uid. Do not run its workers under a Google session.
+            WorkManager.getInstance(appContext).apply {
+                cancelAllWorkByTag(SynchronizationScheduler.PROFILE_TAG)
+                cancelUniqueWork(SynchronizationScheduler.CATALOG_PERIODIC)
+                cancelUniqueWork(SynchronizationScheduler.CATALOG_PREPARE)
+            }
+            return
+        }
         applicationScope.launch {
             try {
                 synchronizationCoordinator.recoverInterrupted()
@@ -62,5 +76,7 @@ class AppContainer(context: Context) {
         }
     }
 
-    fun recoverSynchronization() { synchronizationScheduler.requestRecovery() }
+    fun recoverSynchronization() {
+        if (!BuildConfig.FIREBASE_AUTH_ENABLED) synchronizationScheduler.requestRecovery()
+    }
 }

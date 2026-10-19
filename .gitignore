@@ -14,3 +14,10 @@ study/work/
 study/*.egg-info/
 __pycache__/
 *.py[cod]
+node_modules/
+.firebase/
+*-debug.log
+firebase/functions/lib/
+.firebaserc
+app/google-services.json
+firebase-projects.local.json

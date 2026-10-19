@@ -195,3 +195,14 @@ novos Ipsums nao aceitam AC depois de 120 min; a formula nao foi recalibrada:
 | Sem AC em problema mais facil | 800 | 30 min | 30 min | indiferente | -30 |
 
 ---
+
+### Implementacao da base Firebase (33-34), 19/10/2026
+
+| ID | Data | Decisao | Motivo | Historias afetadas |
+|---|---|---|---|---|
+| D-037 | 2026-10-19 | Base em Functions Node 22/TypeScript, Firestore Rules fechadas e us-central1. Android usa Credential Manager, Google ID e Firebase Auth; verifica token Google e bootstrapAccount antes de liberar sessao. Preview com flag false por padrao ate 38; destino de handles e ponto de integracao da 35, sem reutilizar perfil/worker legado. | Entrega pequena das 33/34 sem expor dados locais sem uid nem antecipar handles/rating/timeout das 35-38. Scope de Auth na main dispatcher, geracao/cancelamento impedem callback antigo de restaurar sessao. | 33-34, integracao futura 35-38 |
+
+O usuario respondeu que ainda nao tem projeto Firebase. Nenhum projeto real,
+OAuth Google, billing, assinatura release ou deploy foi criado. Esses criterios
+permanecem pendentes; emuladores e teste de SDK/estado nao comprovam OAuth real.
+Guia: [FIREBASE_SETUP.md](FIREBASE_SETUP.md). Evidencia: [33/34](evidence/2026-10-19-firebase-33-34.json).

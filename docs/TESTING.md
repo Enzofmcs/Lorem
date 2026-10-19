@@ -288,3 +288,25 @@ antigos, segundo dispositivo, paridade D-012 e exports sem identificadores diret
 No marco integrado: suite backend/Rules, `test`, `lint`, `assembleDebug`.
 Conferencias humanas continuam opcionais D-014; nenhuma execucao real e alegada
 por estes criterios planejados. Contratos detalhados em [FIREBASE.md](FIREBASE.md).
+
+## Evidencia da base 33/34 em 19/10/2026
+
+- Backend: `npm --prefix firebase/functions test`, Node 22, Java 21, seis testes
+  sem falhas em Auth/Firestore/Functions Emulator. Chamadas reais ao endpoint
+  callable local cobrem provedor, uid forjado e criacao concorrente/idempotente;
+  Rules cobrem leitura cruzada, escrita direta e acessos anonimos/senha.
+- Android: sete testes de sessao, tres ViewModel, tres Compose, tres do decoder Google ID e guard de worker
+  legado, seguidos de `./gradlew test lint assembleDebug --max-workers=2 --console=plain`.
+  250 debug (249 executados/1 opt-in ignorado por flag false) e 184 release, sem
+  falhas; lint sem erros e APK. Conferir avisos/evidencia antes de reproduzir.
+- Smoke com flag true: `./gradlew :app:testDebugUnitTest -Plorem.firebaseAuthEnabled=true
+  --tests 'dev.lorem.app.FirebaseEntryTest' --max-workers=2 --console=plain`, 1/1,
+  sem falhas/ignorados. Perfil legado nao aparece e configuracao ausente bloqueia
+  login. O APK foi gerado pelo build padrao; a flag e usada somente na execucao isolada do smoke.
+- `npm --prefix firebase/functions run check-config` sem JSON retorna codigo 1
+  e explica a configuracao ausente, como esperado.
+
+[Registro verificavel](evidence/2026-10-19-firebase-33-34.json) e
+[guia de reproducao](FIREBASE_SETUP.md). Nenhum login Google/OAuth, projeto ou
+deploy real foi comprovado: usuario ainda nao tem projeto. Historias 33/34
+parciais. TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014).

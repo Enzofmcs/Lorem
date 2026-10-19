@@ -1,7 +1,11 @@
 # Login, perfis Firebase e limite do Ipsum
 
-Planejamento solicitado em **19/10/2026**; nenhuma funcionalidade deste bloco esta
-implementada. Historias **33-38** em [ROADMAP.md](ROADMAP.md). Base conferida:
+Planejamento solicitado em **19/10/2026**. **33/34 parciais:** base Firebase e
+login Android implementados/verificados em testes, sem projeto Firebase real
+(conforme resposta do usuario). Google OAuth e deploy reais pendentes; destino
+autenticado preparado para a 35, sem cadastro de handles ou treino em nuvem.
+**35-38 ainda planejadas.** [Configuracao e estado real](FIREBASE_SETUP.md).
+Historias **33-38** em [ROADMAP.md](ROADMAP.md). Base do planejamento:
 `2092c2f299e1590d791f93e59bdf5e60189bc707` (`main`).
 
 Ordem de execucao: [Historia 33](https://github.com/Enzofmcs/Lorem/issues/60) -> [Historia 34](https://github.com/Enzofmcs/Lorem/issues/61) -> [Historia 35](https://github.com/Enzofmcs/Lorem/issues/62) -> [Historia 36](https://github.com/Enzofmcs/Lorem/issues/63) -> [Historia 37](https://github.com/Enzofmcs/Lorem/issues/64) -> [Historia 38](https://github.com/Enzofmcs/Lorem/issues/65).
@@ -161,7 +165,11 @@ cliente OAuth, regiao Firestore/Functions/Tasks e projetos separados de teste/pr
 Documentar requisitos de billing/quotas para Functions/Tasks, Emulator Suite,
 Rules/indices versionados, deploy e recuperacao. Validar configuracao ausente com
 erro claro; nao versionar credenciais administrativas/chaves privadas.
-Custos/provisionamento sao pre-requisitos da implementacao, nao acoes desta PR.
+Projeto/billing/provisionamento reais seguem pendentes. A base local usa
+Functions Node 22/TypeScript e regiao us-central1, Rules/indices versionados e
+emuladores loopback; nao existe fila Tasks implementada (37). O Android usa
+Credential Manager/Google ID/Firebase Auth com flag de preview desligada por
+padrao. O [guia executavel](FIREBASE_SETUP.md) registra configuracao e recuperacao.
 
 Entregar em pequenas etapas, com rollout integrado somente depois da 38. O bloco
 nao depende da conclusao empirica da 31 nem habilita a 32. Mantem sigilo de tags,

@@ -18,8 +18,9 @@
 
 **Novo bloco planejado em 19/10/2026:** Historias 33-38, login Google/Firebase,
 perfis por uid+handle com rating inicial 800 e limite absoluto de 2h por Ipsum.
-Proxima implementacao deste bloco: Historia 33; nao depende dos dados reais da 31.
-[Contratos e migracao](FIREBASE.md). Nenhuma funcionalidade 33-38 implementada.
+Base 33/34 implementada em preview; configuracao/provisionamento reais pendentes.
+Proxima funcionalidade: 35 (handles); nao depende dos dados reais da 31.
+[Contratos e migracao](FIREBASE.md). 33/34 parciais; 35-38 ainda planejadas. [Guia de configuracao](FIREBASE_SETUP.md).
 
 ## Como atualizar
 
@@ -2084,8 +2085,8 @@ neste planejamento.
 ## Novo bloco: contas Firebase e prazo maximo do Ipsum (33-38)
 
 Solicitacao de **19/10/2026**, planejada contra `main` em
-`2092c2f299e1590d791f93e59bdf5e60189bc707`. **Somente planejamento; nenhum criterio
-funcional deste bloco foi implementado ou comprovado.** Contratos e casos de
+`2092c2f299e1590d791f93e59bdf5e60189bc707`. **Execucao iniciada: 33/34 parciais, com base/login verificados em testes e
+projeto real ainda inexistente; 35-38 permanecem planejadas.** Contratos e casos de
 borda: [FIREBASE.md](FIREBASE.md). Decisoes D-033 a D-036 em [DECISIONS.md](DECISIONS.md).
 
 Ordem recomendada: **33 -> 34 -> 35 -> 36 -> 37 -> 38**. O bloco e independente
@@ -2111,7 +2112,7 @@ final para nao perder AC enviado em prazo. Conferencias humanas opcionais D-014.
 
 **Historia:** Como desenvolvedor, quero configurar Authentication, Firestore e Functions para suportar o login e os dados oficiais do Lorem.
 
-**Status:** PLANEJADA; todos os criterios funcionais pendentes.
+**Status:** PARCIAL: base implementada e verificada em emuladores/Android; projeto real, Google OAuth e deploy ainda nao existem. Usuario confirmou ausencia de projeto em 19/10/2026. [Configuracao e limites](FIREBASE_SETUP.md).
 
 **GitHub:** [#60 - Historia 33](https://github.com/Enzofmcs/Lorem/issues/60).
 
@@ -2124,14 +2125,17 @@ final para nao perder AC enviado em prazo. Conferencias humanas opcionais D-014.
 #### Criterios de aceite
 
 - [ ] Registrar projeto/app Android, assinaturas debug/release, OAuth Google, regioes e requisitos de billing/quotas, com roteiro reproduzivel de configuracao e recuperacao.
-- [ ] Versionar configuracao necessaria, Rules, indices e Emulator Suite sem credenciais administrativas; somente Google habilitado no Auth, sem senha/anonimo/outros provedores.
-- [ ] Definir esquema por uid/handle, timestamps do servidor e contratos minimos de Functions/Cloud Tasks conforme FIREBASE.md; nao usar handle como identidade global da conta.
-- [ ] Negar por padrao acesso sem autenticacao e entre uids; proteger rating, resultados, horarios e lock contra escrita direta do cliente; validar Auth/uid tambem nas Functions.
-- [ ] Adicionar verificacao isolada de Rules/Functions em emuladores e erro recuperavel de configuracao ausente, preservando separacao domain/data/ui.
+- [x] Versionar Rules, indices, configuracao de Functions/Emulator Suite e exemplo de aliases sem credenciais administrativas; Google e exigido nos tokens pelas Rules e Functions.
+- [ ] Habilitar somente Google no projeto Auth real, sem senha/anonimo/outros provedores, e verificar configuracao/deploy. BLOQUEADO: nenhum projeto Firebase fornecido/criado.
+- [x] Definir esquema por uid/handle, timestamps do servidor e contratos minimos de Functions/Cloud Tasks conforme FIREBASE.md; nao usar handle como identidade global da conta.
+- [x] Negar por padrao acesso sem autenticacao e entre uids; proteger rating, resultados, horarios e lock contra escrita direta do cliente; validar Auth/uid tambem nas Functions.
+- [x] Adicionar verificacao isolada de Rules/Functions em emuladores e erro recuperavel de configuracao ausente, preservando separacao domain/data/ui.
 
 **Entrega demonstravel:** Projeto de teste configuravel e suite de regras demonstrando acesso permitido ao proprio contexto e negado a outra conta.
 
 **Verificacao planejada:** Niveis 3/4: Rules com dois uids/sem token/escritas forjadas, Functions sem token/provedor indevido e compilacao da integracao Android. Emuladores nao comprovam OAuth Google real.
+
+**Evidencia:** seis testes HTTP/Rules em Auth/Firestore/Functions Emulator com Node 22, paridade de isolamento e bootstrap transacional; Android 250 testes debug (249 executados/1 smoke opt-in ignorado no build padrao) e 184 release, sem falhas. O smoke com flag true foi executado separadamente (1/1). Lint sem erros e APK gerado. [Registro verificavel](evidence/2026-10-19-firebase-33-34.json).
 
 Conferencias humanas opcionais (D-014); os testes automatizados exigidos sao obrigatorios.
 
@@ -2141,7 +2145,7 @@ Conferencias humanas opcionais (D-014); os testes automatizados exigidos sao obr
 
 **Historia:** Como usuario, quero entrar no Lorem com minha conta Google e recuperar minha sessao com seguranca.
 
-**Status:** PLANEJADA; todos os criterios funcionais pendentes.
+**Status:** PARCIAL: integracao Credential Manager/Google ID/Firebase Auth, sessao e bootstrap implementados/verificados em testes; OAuth real sem projeto/configuracao. O destino autenticado e um ponto de integracao da 35, sem liberar perfil legado. [Configuracao e limites](FIREBASE_SETUP.md).
 
 **GitHub:** [#61 - Historia 34](https://github.com/Enzofmcs/Lorem/issues/61).
 
@@ -2153,15 +2157,17 @@ Conferencias humanas opcionais (D-014); os testes automatizados exigidos sao obr
 
 #### Criterios de aceite
 
-- [ ] Oferecer somente Entrar com Google usando integracao Android atual e Firebase Authentication; nao criar senha, cadastro paralelo ou login anonimo.
-- [ ] Restaurar sessao e encaminhar para escolha/cadastro de handle; primeira entrada cria metadados da conta idempotentemente usando uid do token.
-- [ ] Tratar cancelamento, falha de rede, token expirado/revogado e configuracao incorreta sem entrar em estado de login falso.
-- [ ] Implementar sair/trocar conta, removendo dados da UI e cancelando listeners, workers e callbacks do uid anterior; sair nao exclui dados nem suspende prazo do Ipsum no servidor.
+- [x] Oferecer somente Entrar com Google usando integracao Android atual e Firebase Authentication; nao criar senha, cadastro paralelo ou login anonimo.
+- [ ] Restaurar sessao e encaminhar para escolha/cadastro de handle; primeira entrada cria metadados da conta idempotentemente usando uid do token. Restauracao/validacao e bootstrap comprovados em testes; destino Seus handles preparado, listagem/cadastro dependem da 35 e nao foram simulados.
+- [x] Tratar cancelamento, falha de rede, token expirado/revogado e configuracao incorreta sem entrar em estado de login falso.
+- [x] Implementar sair/trocar conta, removendo dados da UI e cancelando listeners, workers e callbacks do uid anterior; sair nao exclui dados nem suspende prazo do Ipsum no servidor.
 - [ ] Manter estado de carregamento e erro acessivel e confirmar somente o provedor Google no backend; documentar evidencia de configuracao real separada dos testes com Auth emulado.
 
 **Entrega demonstravel:** Entrar com Google, reabrir com a mesma sessao, sair e entrar com outra conta sem mostrar dados da anterior.
 
 **Verificacao planejada:** Niveis 3/4: sucesso/cancelamento/falhas, restauracao/revogacao e troca durante callback/worker; UI com fakes isolados e verificacao da configuracao OAuth. Conferencia humana opcional D-014.
+
+**Evidencia:** sete testes de sessao, tres de ViewModel, tres Compose, tres do decoder Google ID, guard de worker legado e smoke opt-in de entrada, alem do marco Android da 33 e seis testes backend. Token/veredito Firebase real e OAuth Google nao foram comprovados; a flag `lorem.firebaseAuthEnabled` fica false por padrao ate o rollout integrado da 38. [Registro verificavel](evidence/2026-10-19-firebase-33-34.json).
 
 Conferencias humanas opcionais (D-014); os testes automatizados exigidos sao obrigatorios.
 
@@ -2299,7 +2305,7 @@ Conferencias humanas opcionais (D-014); os testes automatizados exigidos sao obr
 - **E - Automacao (15-17):** preparacao, manutencao e deteccao sem cliques obrigatorios.
 - **F - Apresentacao (18-21):** temas e telas consistentes, acessiveis e demonstraveis.
 - **G-J - Extensao quantitativa (22-32):** progresso e gates registrados nas respectivas historias; 31/32 continuam pendentes de evidencia real.
-- **K - Contas e dados Firebase (33-36):** login Google, handles independentes, 800 inicial e ciclo oficial persistido; planejado.
+- **K - Contas e dados Firebase (33-36):** 33/34 em preview verificado, projeto real pendente; handles, 800 inicial e ciclo oficial das 35/36 ainda planejados.
 - **L - Prazo e adocao (37-38):** limite de 2h com recuperacao, migracao e jornada integrada verificados; planejado.
 
 ---

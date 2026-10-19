@@ -32,9 +32,15 @@ A base Android de módulo único implementa as Histórias 00–21 e 29–30:
 
 As Histórias 10 e 11 foram concluídas após a confirmação do usuário de todos os testes manuais em dispositivo em 13/10/2026. As definições dos indicadores e o conjunto de referência estão no [roadmap](docs/ROADMAP.md#historia-11---estatisticas-confiaveis).
 
-## Novo planejamento: login e perfis Firebase
+## Login e perfis Firebase
 
-Solicitacao de 19/10/2026: **Historias 33-38**, ainda nao implementadas.
+Solicitacao de 19/10/2026: **33/34 parciais**, com base Firebase, Rules/Functions,
+emuladores e login Google/sessao Android implementados e verificados em testes.
+O usuario ainda nao tem projeto Firebase: OAuth/provisionamento/deploy reais
+pendentes. [Guia de configuracao e verificacao](docs/FIREBASE_SETUP.md).
+Preview por `-Plorem.firebaseAuthEnabled=true`; padrao false ate a migracao 38.
+O destino autenticado esta preparado para a 35, sem cadastro de handles/treino
+em nuvem nem acesso ao perfil legado. **35-38 ainda planejadas.** Regras aprovadas:
 Login somente Google via Firebase Auth; Firestore para progresso por conta+handle,
 permitindo o mesmo handle em contas diferentes; todo vinculo novo inicia em 800;
 Ipsum limitado a 2h corridas com fechamento automatico sem AC valido no prazo.

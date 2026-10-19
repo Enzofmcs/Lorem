@@ -1,0 +1,6 @@
+{
+  "projects": {
+    "test": "REPLACE_WITH_FIREBASE_TEST_PROJECT_ID",
+    "production": "REPLACE_WITH_FIREBASE_PRODUCTION_PROJECT_ID"
+  }
+}

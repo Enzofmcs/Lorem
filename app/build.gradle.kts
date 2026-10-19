@@ -5,6 +5,10 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+// Builds without a Firebase project remain reproducible. The opt-in login reports
+// missing configuration explicitly instead of using a fabricated production app.
+if (file("google-services.json").isFile) apply(plugin = "com.google.gms.google-services")
+
 android {
     namespace = "dev.lorem.app"
     compileSdk = 35
@@ -15,13 +19,15 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "0.1.0"
+        buildConfigField("boolean", "FIREBASE_AUTH_ENABLED",
+            providers.gradleProperty("lorem.firebaseAuthEnabled").orNull?.toBooleanStrict()?.toString() ?: "false")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildFeatures {
         compose = true
-        buildConfig = false
+        buildConfig = true
     }
 
     compileOptions {
@@ -45,6 +51,13 @@ android {
 }
 
 dependencies {
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.functions)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.google.id)
+    implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.material3)

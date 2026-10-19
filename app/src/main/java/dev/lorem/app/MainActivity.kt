@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import dev.lorem.app.ui.LoremApp
+import dev.lorem.app.ui.auth.FirebaseLoginApp
 
 class MainActivity : ComponentActivity() {
     override fun onStart() {
@@ -17,7 +18,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         val container = (application as LoremApplication).container
         setContent {
-            LoremApp(
+            if (BuildConfig.FIREBASE_AUTH_ENABLED) {
+                FirebaseLoginApp(container.authentication, container.appearanceRepository)
+            } else LoremApp(
                 repository = container.loremRepository,
                 codeforcesRepository = container.codeforcesRepository,
                 synchronizationCoordinator = container.synchronizationCoordinator,
