@@ -52,8 +52,9 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
-- **Bloco Firebase em 19/10/2026:** 33/34 parciais: Rules, bootstrapAccount, emuladores e login/sessao Android verificados. Usuario informou projeto criado e escolheu Firestore nam5 (US); Functions mantidas em us-central1 (D-038). ID/JSON Android, configuracao do provedor e deploy reais pendentes de verificacao. Preview por `-Plorem.firebaseAuthEnabled=true`, padrao false ate 38; sem treino/cadastro de handles em nuvem. Proxima funcionalidade 35; nao habilita a 32.
+- **Bloco Firebase em 19/10/2026:** 33/34 parciais: Rules, bootstrapAccount, emuladores e login/sessao Android verificados. JSON Android fornecido e instalado localmente (ignorado), package/OAuth Web/SHA-1 debug conferidos. Firestore escolhido nam5 (US); Functions us-central1 (D-038). Provedor remoto, OAuth real e deploy pendentes; CLI sem conta administrativa autenticada. Preview por `-Plorem.firebaseAuthEnabled=true`, padrao false ate 38; sem treino/cadastro de handles em nuvem. Proxima funcionalidade 35; nao habilita a 32.
 - **Marco da base 33/34:** seis testes backend em Node 22; 250 debug (249 executados/1 ignorado no build padrao) e 184 release sem falhas; smoke opt-in 1/1 separado, lint sem erros e APK. Evidencia em docs/evidence/2026-10-19-firebase-33-34.json. Nao concluir 33/34 sem criterios externos pendentes.
+- **Configuracao Android recebida:** 17 testes direcionados com JSON real e flag true, lintDebug sem erros e APK configurado; TypeScript compilado. Certificado debug corresponde ao cliente Android do JSON. Evidencia separada em docs/evidence/2026-10-19-firebase-android-config.json; nao comprova OAuth real/deploy.
 - **Contrato do novo bloco:** [Firebase, prazo e migracao](docs/FIREBASE.md). Requisitos novos substituem a exclusao anterior de login/Firebase e o rating inicial D-009 somente prospectivamente (D-033 a D-036).
 
 - **Foco:** Historias 22-30 implementadas e verificadas; 31 com pre-registro/ferramenta, evidencia real pendente. Historias 00-21 preservadas.

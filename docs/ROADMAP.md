@@ -2112,7 +2112,7 @@ final para nao perder AC enviado em prazo. Conferencias humanas opcionais D-014.
 
 **Historia:** Como desenvolvedor, quero configurar Authentication, Firestore e Functions para suportar o login e os dados oficiais do Lorem.
 
-**Status:** PARCIAL: base implementada e verificada em emuladores/Android. Usuario informou projeto criado e escolheu Firestore nam5 (US), mantendo Functions em us-central1 (D-038); ID/JSON Android, Google OAuth e deploy ainda nao verificados. [Configuracao e limites](FIREBASE_SETUP.md).
+**Status:** PARCIAL: base implementada e verificada em emuladores/Android; JSON recebido e instalado localmente, package/OAuth Web/SHA-1 de debug conferidos. Firestore escolhido nam5 (US), Functions us-central1 (D-038). Provedor remoto, login Google real e deploy ainda nao verificados; CLI sem autenticacao administrativa. [Configuracao e limites](FIREBASE_SETUP.md).
 
 **GitHub:** [#60 - Historia 33](https://github.com/Enzofmcs/Lorem/issues/60).
 
@@ -2126,7 +2126,7 @@ final para nao perder AC enviado em prazo. Conferencias humanas opcionais D-014.
 
 - [ ] Registrar projeto/app Android, assinaturas debug/release, OAuth Google, regioes e requisitos de billing/quotas, com roteiro reproduzivel de configuracao e recuperacao.
 - [x] Versionar Rules, indices, configuracao de Functions/Emulator Suite e exemplo de aliases sem credenciais administrativas; Google e exigido nos tokens pelas Rules e Functions.
-- [ ] Habilitar somente Google no projeto Auth real, sem senha/anonimo/outros provedores, e verificar configuracao/deploy. BLOQUEADO: projeto informado como criado, mas ID/JSON Android, provedor e deploy ainda nao verificados.
+- [ ] Habilitar somente Google no projeto Auth real, sem senha/anonimo/outros provedores, e verificar configuracao/deploy. BLOQUEADO: JSON Android validado localmente, mas estado remoto de provedores/deploy nao verificado e CLI sem autenticacao administrativa.
 - [x] Definir esquema por uid/handle, timestamps do servidor e contratos minimos de Functions/Cloud Tasks conforme FIREBASE.md; nao usar handle como identidade global da conta.
 - [x] Negar por padrao acesso sem autenticacao e entre uids; proteger rating, resultados, horarios e lock contra escrita direta do cliente; validar Auth/uid tambem nas Functions.
 - [x] Adicionar verificacao isolada de Rules/Functions em emuladores e erro recuperavel de configuracao ausente, preservando separacao domain/data/ui.
@@ -2135,7 +2135,7 @@ final para nao perder AC enviado em prazo. Conferencias humanas opcionais D-014.
 
 **Verificacao planejada:** Niveis 3/4: Rules com dois uids/sem token/escritas forjadas, Functions sem token/provedor indevido e compilacao da integracao Android. Emuladores nao comprovam OAuth Google real.
 
-**Evidencia:** seis testes HTTP/Rules em Auth/Firestore/Functions Emulator com Node 22, paridade de isolamento e bootstrap transacional; Android 250 testes debug (249 executados/1 smoke opt-in ignorado no build padrao) e 184 release, sem falhas. O smoke com flag true foi executado separadamente (1/1). Lint sem erros e APK gerado. [Registro verificavel](evidence/2026-10-19-firebase-33-34.json).
+**Evidencia:** seis testes HTTP/Rules em Auth/Firestore/Functions Emulator com Node 22, paridade de isolamento e bootstrap transacional; Android 250 testes debug (249 executados/1 smoke opt-in ignorado no build padrao) e 184 release, sem falhas. O smoke com flag true foi executado separadamente (1/1). Lint sem erros e APK gerado. [Registro inicial](evidence/2026-10-19-firebase-33-34.json). Depois do JSON recebido: 17 testes direcionados, lintDebug sem erros e APK com login habilitado; package, OAuth Web e SHA-1 conferidos. [Evidencia da configuracao](evidence/2026-10-19-firebase-android-config.json). Nao houve deploy ou OAuth real.
 
 Conferencias humanas opcionais (D-014); os testes automatizados exigidos sao obrigatorios.
 
@@ -2145,7 +2145,7 @@ Conferencias humanas opcionais (D-014); os testes automatizados exigidos sao obr
 
 **Historia:** Como usuario, quero entrar no Lorem com minha conta Google e recuperar minha sessao com seguranca.
 
-**Status:** PARCIAL: integracao Credential Manager/Google ID/Firebase Auth, sessao e bootstrap implementados/verificados em testes; OAuth real pendente: projeto informado como criado, ID/JSON Android e configuracao ainda nao verificados. O destino autenticado e um ponto de integracao da 35, sem liberar perfil legado. [Configuracao e limites](FIREBASE_SETUP.md).
+**Status:** PARCIAL: integracao Credential Manager/Google ID/Firebase Auth, sessao e bootstrap implementados/verificados em testes; JSON Android instalado e validado localmente, incluindo OAuth Web e SHA-1 de debug. Login Google real, provedor remoto e deploy pendentes. O destino autenticado e um ponto de integracao da 35, sem liberar perfil legado. [Configuracao e limites](FIREBASE_SETUP.md).
 
 **GitHub:** [#61 - Historia 34](https://github.com/Enzofmcs/Lorem/issues/61).
 
@@ -2167,7 +2167,7 @@ Conferencias humanas opcionais (D-014); os testes automatizados exigidos sao obr
 
 **Verificacao planejada:** Niveis 3/4: sucesso/cancelamento/falhas, restauracao/revogacao e troca durante callback/worker; UI com fakes isolados e verificacao da configuracao OAuth. Conferencia humana opcional D-014.
 
-**Evidencia:** sete testes de sessao, tres de ViewModel, tres Compose, tres do decoder Google ID, guard de worker legado e smoke opt-in de entrada, alem do marco Android da 33 e seis testes backend. Token/veredito Firebase real e OAuth Google nao foram comprovados; a flag `lorem.firebaseAuthEnabled` fica false por padrao ate o rollout integrado da 38. [Registro verificavel](evidence/2026-10-19-firebase-33-34.json).
+**Evidencia:** sete testes de sessao, tres de ViewModel, tres Compose, tres do decoder Google ID, guard de worker legado e smoke opt-in de entrada, alem do marco Android da 33 e seis testes backend. Token/veredito Firebase real e OAuth Google nao foram comprovados; a flag `lorem.firebaseAuthEnabled` fica false por padrao ate o rollout integrado da 38. [Registro inicial](evidence/2026-10-19-firebase-33-34.json). Com o JSON recebido, os 17 testes de entrada/sessao/UI/decoder passaram, o botao Google ficou habilitado sem expor perfil legado e foi gerado APK opt-in. [Evidencia da configuracao](evidence/2026-10-19-firebase-android-config.json).
 
 Conferencias humanas opcionais (D-014); os testes automatizados exigidos sao obrigatorios.
 

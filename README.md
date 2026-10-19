@@ -36,8 +36,10 @@ As Histórias 10 e 11 foram concluídas após a confirmação do usuário de tod
 
 Solicitacao de 19/10/2026: **33/34 parciais**, com base Firebase, Rules/Functions,
 emuladores e login Google/sessao Android implementados e verificados em testes.
-O usuario informou projeto criado e escolheu Firestore `nam5 (US)`; Functions
-continuam em `us-central1`. ID/JSON Android, OAuth e deploy reais pendentes. [Guia de configuracao e verificacao](docs/FIREBASE_SETUP.md).
+O JSON Android fornecido foi instalado e validado localmente, incluindo cliente
+OAuth Web e SHA-1 de debug. Firestore escolhido: `nam5 (US)`; Functions:
+`us-central1`. Provedor remoto, login Google real e deploy ainda pendentes;
+nao ha conta administrativa autenticada neste ambiente. [Guia de configuracao e verificacao](docs/FIREBASE_SETUP.md).
 Preview por `-Plorem.firebaseAuthEnabled=true`; padrao false ate a migracao 38.
 O destino autenticado esta preparado para a 35, sem cadastro de handles/treino
 em nuvem nem acesso ao perfil legado. **35-38 ainda planejadas.** Regras aprovadas:

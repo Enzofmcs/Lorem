@@ -3,12 +3,17 @@
 ## Estado real da entrega
 
 Na verificacao inicial de 19/10/2026 ainda nao havia projeto Firebase.
-Depois, o usuario **informou ter criado o projeto** e escolheu **nam5 (US)** para
-o Firestore. O ID, o arquivo Android e o estado remoto do banco/provedor/deploy
-ainda nao foram fornecidos/verificados. Functions continuam em **us-central1**.
+Depois, o usuario criou o projeto, escolheu **nam5 (US)** para o Firestore e
+forneceu o JSON Android. A configuracao foi instalada localmente e validada:
+package `dev.lorem.app`, appId/projeto, cliente OAuth Web e SHA-1 de debug
+correspondente ao certificado deste ambiente. ID, JSON e alias `test` ficam em
+arquivos ignorados pelo Git. Functions continuam em **us-central1**.
+Isso nao comprova o estado remoto do banco, exclusividade do provedor ou deploy.
 Nao ha credencial administrativa no repositorio ou no ambiente desta entrega.
-As Historias 33/34 permanecem **parciais** ate configurar o projeto real e verificar
-Google/Firebase. A evidencia com emuladores nao comprova OAuth Google real.
+As Historias 33/34 permanecem **parciais** ate verificar Google/Firebase e publicar
+o backend. A CLI nao possui conta administrativa autenticada neste ambiente:
+`firebase projects:list --json --non-interactive` retornou erro de autenticacao.
+A evidencia com emuladores nao comprova OAuth Google real.
 
 Implementado: Rules fechadas por uid/provedor; indices versionados; Function
 `bootstrapAccount`; testes HTTP em Auth/Firestore/Functions Emulator; Credential
@@ -18,6 +23,13 @@ bootstrap idempotente, erros, cancelamento e saida/troca de conta.
 O destino autenticado `Seus handles` e apenas o ponto de integracao da Historia 35.
 Nao cadastra handles nem abre o perfil/treino legado. Rating 800, multiplos handles,
 Ipsums na nuvem, timeout 2h e migracao continuam nas Historias 35-38.
+
+Verificacao com o JSON recebido: 17 testes direcionados sem falhas/ignorados,
+`lintDebug` sem erros (58 avisos de versoes/icone) e `assembleDebug` com login
+habilitado. O certificado do APK corresponde ao cliente Android do JSON.
+TypeScript compilado; nenhum deploy ou OAuth real executado.
+[Evidencia desta configuracao](evidence/2026-10-19-firebase-android-config.json),
+separada da evidencia inicial sem projeto.
 
 ## Executar verificacoes locais sem projeto real
 
@@ -52,8 +64,10 @@ Verificacoes Android direcionadas e marco:
 ./gradlew :app:testDebugUnitTest -Plorem.firebaseAuthEnabled=true --tests 'dev.lorem.app.FirebaseEntryTest'
 ```
 
-O ultimo teste verifica que um perfil legado salvo nao aparece no fluxo Firebase
-sem configuracao. Nao e um teste de login Google real.
+O ultimo teste verifica que um perfil legado salvo nao aparece no fluxo Firebase.
+Com JSON, verifica a entrada real com recursos gerados pelo Google Services e
+botao Google habilitado; sem JSON, exige o bloqueio por configuracao ausente.
+Nao abre o seletor Google nem autentica uma conta real.
 
 ## Criar e registrar o projeto real
 
@@ -83,9 +97,10 @@ sem configuracao. Nao e um teste de login Google real.
    `default_web_client_id` do cliente OAuth **Web**, usado pelo Credential Manager.
    Nao usar o client ID Android como serverClientId. O arquivo local e ignorado
    pelo Git; nao adicionar chaves privadas ou service-account.json ao projeto.
-7. Copiar `.firebaserc.example` para `.firebaserc`, substituir os IDs de teste e
-   producao e registrar status/fingerprints em arquivo local. O exemplo nao e um
-   projeto real nem um alias pronto para deploy.
+7. Configurar `.firebaserc` e registrar status/fingerprints em arquivo local. Nesta
+   entrega foi criado somente o alias `test` com o ID recebido. Nao criar um alias
+   de producao com o mesmo projeto por conveniencia. `.firebaserc.example` continua
+   sendo um exemplo, com placeholders a substituir em cada ambiente.
 
 Validar estrutura do arquivo Android:
 
@@ -96,6 +111,8 @@ npm --prefix firebase/functions run check-config
 Essa verificacao confirma package/appId/projeto/cliente OAuth Web presentes;
 nao confirma credenciais, configuracao remota, provedor, assinaturas ou deploy.
 Sem o arquivo, retorna erro claro e codigo 1. O build Android continua possivel.
+O SHA-1 do cliente Android no JSON recebido tambem foi comparado ao certificado
+do APK; isso nao substitui a consulta da configuracao vigente no Console.
 
 ## Deploy e habilitacao para desenvolvimento
 
@@ -105,11 +122,13 @@ executar. Em `firebase/functions`:
 
 ```bash
 npx firebase login
-npx firebase deploy --project SEU_PROJETO_DE_TESTE --only firestore:rules,firestore:indexes,functions:accounts --config ../../firebase.json
+npx firebase deploy --project test --only firestore:rules,firestore:indexes,functions:accounts --config ../../firebase.json
 ```
 
-`SEU_PROJETO_DE_TESTE` e um placeholder a substituir pelo ID registrado. O deploy
-nao configura o provedor Google no Auth; a etapa do Console continua necessaria.
+`test` deve resolver para o projeto de validacao registrado no `.firebaserc` local;
+em outro checkout, configurar esse alias ou usar o ID explicito. Em Cloud Shell
+ou outra maquina remota, usar `npx firebase login --no-localhost` quando necessario.
+O deploy nao configura o provedor Google no Auth; a etapa do Console continua necessaria.
 As Functions usam a identidade de runtime fornecida pelo Google, sem chave privada
 embarcada. O cliente chama bootstrapAccount sem campos; o uid vem do token Google
 validado. A transacao cria apenas schemaVersion/createdAt, preservando metadados

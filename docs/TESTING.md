@@ -308,6 +308,28 @@ por estes criterios planejados. Contratos detalhados em [FIREBASE.md](FIREBASE.m
 
 [Registro verificavel](evidence/2026-10-19-firebase-33-34.json) e
 [guia de reproducao](FIREBASE_SETUP.md). Nenhum login Google/OAuth, projeto ou
-deploy real foi comprovado nessa execucao. Depois, o usuario informou projeto
-criado e escolheu nam5 para Firestore (D-038); ID/configuracao/deploy continuam
-pendentes. A evidencia historica foi preservada. Historias 33/34 parciais. TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014).
+deploy real foi comprovado nessa execucao. Depois, o usuario criou o projeto,
+escolheu nam5 para Firestore (D-038) e forneceu o JSON Android. A evidencia
+historica foi preservada. Historias 33/34 parciais. TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014).
+
+## Configuracao Android recebida em 19/10/2026
+
+Nivel 3: JSON instalado em arquivo ignorado; alias test e registro do projeto
+tambem locais/ignorados, sem alias de producao. Package dev.lorem.app, appId,
+cliente OAuth Web e SHA-1 Android do JSON conferidos contra o APK assinado.
+`check-config` passou, e o build executou `processDebugGoogleServices`.
+
+O smoke `FirebaseEntryTest` passou a cobrir a entrada com ou sem recursos Google
+Services: o perfil legado permanece oculto, e o botao fica habilitado somente
+no cenario configurado. Executado com JSON real e flag true junto dos testes de
+sessao, ViewModel, Compose e decoder Google ID: **17 testes sem falhas/ignorados**.
+`lintDebug` sem erros (58 avisos de versoes/icone), `assembleDebug` concluido com
+`FIREBASE_AUTH_ENABLED=true` e compilacao TypeScript concluida. Comando completo,
+hash do APK, suites e hashes dos fontes em
+[evidencia da configuracao](evidence/2026-10-19-firebase-android-config.json).
+
+`firebase projects:list --json --non-interactive` retornou erro de autenticacao;
+nao ha conta administrativa conectada nesta CLI. Nao executado deploy, consulta
+administrativa do banco/provedores nem login Google real. Estado remoto e
+assinaturas de release/Play continuam pendentes. TESTE MANUAL OPCIONAL - NAO
+EXECUTADO (D-014).

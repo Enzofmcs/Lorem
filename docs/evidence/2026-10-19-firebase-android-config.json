@@ -1,0 +1,117 @@
+{
+  "recordedAt": "2026-10-19T17:29:51.813169+00:00",
+  "scope": "Android configuration supplied by user; configured preview build, not live OAuth or deployment",
+  "previousEvidence": "2026-10-19-firebase-33-34.json (preserved unchanged)",
+  "firebase": {
+    "projectIdReceived": true,
+    "projectIdKeptLocal": true,
+    "package": "dev.lorem.app",
+    "androidAppIdPresent": true,
+    "webOAuthClientPresent": true,
+    "androidOAuthCertificateMatchesApk": true,
+    "firestoreLocationChosenByUser": "nam5",
+    "firestoreLocationRemotelyVerified": false,
+    "functionsRegion": "us-central1",
+    "localConfigIgnoredByGit": [
+      "app/google-services.json",
+      ".firebaserc",
+      "firebase-projects.local.json"
+    ]
+  },
+  "validation": {
+    "androidConfigCommand": "npm --prefix firebase/functions run check-config",
+    "androidConfigExitCode": 0,
+    "gradleCommand": "./gradlew :app:testDebugUnitTest --tests 'dev.lorem.app.FirebaseEntryTest' --tests 'dev.lorem.app.data.auth.GoogleSessionRepositoryTest' --tests 'dev.lorem.app.ui.auth.AuthenticationViewModelTest' --tests 'dev.lorem.app.ui.AuthenticationScreenTest' --tests 'dev.lorem.app.ui.auth.GoogleCredentialRequestTest' :app:lintDebug :app:assembleDebug -Plorem.firebaseAuthEnabled=true --max-workers=2 --console=plain",
+    "gradleExitCode": 0,
+    "firebaseAuthEnabled": true,
+    "tests": [
+      {
+        "suite": "dev.lorem.app.FirebaseEntryTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "suite": "dev.lorem.app.data.auth.GoogleSessionRepositoryTest",
+        "tests": 7,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "suite": "dev.lorem.app.ui.AuthenticationScreenTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "suite": "dev.lorem.app.ui.auth.AuthenticationViewModelTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "suite": "dev.lorem.app.ui.auth.GoogleCredentialRequestTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    ],
+    "totals": {
+      "tests": 17,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "lint": {
+      "Error": 0,
+      "Fatal": 0,
+      "Warning": 58
+    },
+    "backendCompileCommand": "npm --prefix firebase/functions run build",
+    "backendCompileExitCode": 0
+  },
+  "artifacts": {
+    "debugApk": {
+      "bytes": 16767098,
+      "sha256": "4d5c4ac630edfec17508ce2893f8c4c33f7c9bde6ad9174b8409fa13bdec9a53",
+      "signerSha1": "2cb97bf88a17a39a76dd0407f3ce5657e7562c88",
+      "signerSha256": "c7d92bb3fdee2815cd73e49a8406c5357f27becee267c29fb5dccf1789a5ca92"
+    }
+  },
+  "administrativeReadiness": {
+    "command": "firebase projects:list --json --non-interactive",
+    "exitCode": 1,
+    "error": "Failed to authenticate, have you run firebase login?",
+    "deploymentAttempted": false
+  },
+  "notVerified": [
+    "Current remote Auth provider configuration",
+    "Live Google sign-in",
+    "Remote Firestore database location and Rules",
+    "Cloud Functions deployment",
+    "Release or Play signing configuration"
+  ],
+  "manualCheck": "TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014)",
+  "stories": {
+    "33": "partial",
+    "34": "partial",
+    "35-38": "not implemented"
+  },
+  "sourceSha256": {
+    "firebase.json": "6dec71eb8580ee310328b78b6dec41fc0369a919418c2ed41c4a2ac51aae5312",
+    "firebase/firestore.rules": "e017be7a6f2c074e60baa57254290e86817bb96171ee4bad5706827594a58e20",
+    "firebase/firestore.indexes.json": "6742255415c36daf631b52f233039190af819205cc41fa58d07dd7d9e180c2b9",
+    "firebase/functions/package.json": "20d37c133481a71f5f42e8a49d944d2faad55f71cf46d15a91d5c104cb3512e5",
+    "firebase/functions/package-lock.json": "36396c31669a3f8cbdb1b9d7c6a8067807a42db6969332f938e3ea14ebb88bbc",
+    "firebase/functions/tsconfig.json": "e8f6ecaf1a9f0a2ad82b24d08796e8d4d9c57ccc3d97f0f4721af2d7ffd036bd",
+    "firebase/functions/src/index.ts": "e34ee7a474ff5901d48dc9030a838532b52c8836ff7091cfa0038888d4cdc63d",
+    "app/src/testDebug/java/dev/lorem/app/FirebaseEntryTest.kt": "e4676485263d20c5276151e166ff246fbd1396ca9e63cde109e815f43835a92a",
+    "app/build.gradle.kts": "7dcb3822cc065dbb29ac48ab8a0a4feb8e433f63ec2c78838b99a255b10c0fda",
+    "app/src/main/java/dev/lorem/app/data/auth/FirebaseAuthentication.kt": "ea94cee58286e979589d6d0b844f479336ffb3cdf0defa82823117d0511df880"
+  }
+}
