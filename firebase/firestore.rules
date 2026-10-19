@@ -15,8 +15,13 @@ service cloud.firestore {
       return l.handleKey == key && l.ipsumId == id;
     }
     function unlocked(uid) {
-      let l = getAfter(lp(uid)).data;
-      return l.handleKey == null && l.ipsumId == null;
+      return !existsAfter(lp(uid));
+    }
+    function selectedHandle(uid, key, binding) {
+      let path = /databases/$(database)/documents/users/$(uid)/runtime/selection;
+      let selection = get(path).data;
+      return selection.handleKey == key && selection.bindingVersion == binding
+        && getAfter(path).data == selection;
     }
     function finalResult(d) {
       let r = d.result;
@@ -44,15 +49,19 @@ service cloud.firestore {
 
       match /handles/{handleKey} {
         allow read: if googleAccount(uid);
-        allow create: if googleAccount(uid) && exists(/databases/$(database)/documents/users/$(uid))
-          && request.resource.data.keys().hasAll(['handle', 'handleKey', 'rating', 'consolidatedRating', 'version', 'createdAt'])
-          && request.resource.data.keys().hasOnly(['handle', 'handleKey', 'rating', 'consolidatedRating', 'version', 'createdAt'])
-          && request.resource.data.handle is string && request.resource.data.handle.matches('[A-Za-z0-9_.-]{3,24}')
-          && handleKey == request.resource.data.handle.lower() && request.resource.data.handleKey == handleKey
-          && request.resource.data.rating is int && request.resource.data.rating == 800
+        allow create: if googleAccount(uid)
+          && exists(/databases/$(database)/documents/users/$(uid))
+          && request.resource.data.keys().hasAll(['schemaVersion', 'handle', 'handleKey', 'bindingVersion', 'loremRating', 'consolidatedRating', 'progressVersion', 'createdAt'])
+          && request.resource.data.keys().hasOnly(['schemaVersion', 'handle', 'handleKey', 'bindingVersion', 'loremRating', 'consolidatedRating', 'progressVersion', 'createdAt'])
+          && request.resource.data.schemaVersion is int && request.resource.data.schemaVersion == 1
+          && request.resource.data.handle is string && request.resource.data.handle.matches('[A-Za-z0-9_.-]{1,64}')
+          && request.resource.data.handleKey == handleKey
+          && handleKey == 'cf_' + request.resource.data.handle.lower()
+          && request.resource.data.bindingVersion is int && request.resource.data.bindingVersion == 1
+          && request.resource.data.loremRating is int && request.resource.data.loremRating == 800
           && request.resource.data.consolidatedRating == null
-          && request.resource.data.version is int && request.resource.data.version == 0
-          && request.resource.data.createdAt == request.time;
+          && request.resource.data.progressVersion is int && request.resource.data.progressVersion == 0
+          && request.resource.data.createdAt is timestamp && request.resource.data.createdAt == request.time;
         allow update: if googleAccount(uid) && validHandleResult();
         allow delete: if false;
         function validHandleResult() {
@@ -60,13 +69,13 @@ service cloud.firestore {
           let old = resource.data;
           let a = getAfter(ap(uid, handleKey, n.lastIpsumId)).data;
           let before = get(ap(uid, handleKey, n.lastIpsumId)).data;
-          return n.diff(old).affectedKeys().hasOnly(['rating', 'version', 'consolidatedRating', 'lastIpsumId'])
-            && n.version == old.version + 1 && n.version is int && n.rating is int && n.rating >= 0
+          return n.diff(old).affectedKeys().hasOnly(['loremRating', 'progressVersion', 'consolidatedRating', 'lastIpsumId'])
+            && n.progressVersion == old.progressVersion + 1 && n.progressVersion is int && n.loremRating is int && n.loremRating >= 0
             && (n.consolidatedRating == null || (n.consolidatedRating is int && n.consolidatedRating >= 800
               && (old.consolidatedRating == null || n.consolidatedRating >= old.consolidatedRating)))
             && (old.consolidatedRating == null || n.consolidatedRating != null)
-            && before.state != 'FINAL' && a.state == 'FINAL' && a.version == old.version
-            && a.snapshot.initialRating == old.rating && a.result.finalRating == n.rating && unlocked(uid);
+            && before.state != 'FINAL' && a.state == 'FINAL' && a.version == old.progressVersion && a.bindingVersion == old.bindingVersion
+            && a.snapshot.initialRating == old.loremRating && a.result.finalRating == n.loremRating && unlocked(uid);
         }
 
         match /usedProblems/{problemKey} {
@@ -92,11 +101,11 @@ service cloud.firestore {
             let s = n.snapshot;
             let h = get(hp(uid, handleKey)).data;
             let marker = /databases/$(database)/documents/users/$(uid)/handles/$(handleKey)/usedProblems/$(string(s.contestId) + '_' + s.index);
-            return n.keys().hasAll(['handleKey', 'version', 'snapshot', 'state', 'startedAt', 'limitMillis', 'ruleVersion',
+            return n.keys().hasAll(['handleKey', 'bindingVersion', 'version', 'snapshot', 'state', 'startedAt', 'limitMillis', 'ruleVersion',
                 'hintAt', 'cutoffAt', 'closeReason', 'failure', 'result', 'processedAt', 'solvedOutsideAt'])
-              && n.keys().hasOnly(['handleKey', 'version', 'snapshot', 'state', 'startedAt', 'limitMillis', 'ruleVersion',
+              && n.keys().hasOnly(['handleKey', 'bindingVersion', 'version', 'snapshot', 'state', 'startedAt', 'limitMillis', 'ruleVersion',
                 'hintAt', 'cutoffAt', 'closeReason', 'failure', 'result', 'processedAt', 'solvedOutsideAt'])
-              && n.handleKey == handleKey && n.version == h.version && s.initialRating == h.rating
+              && n.handleKey == handleKey && n.version == h.progressVersion && n.bindingVersion == h.bindingVersion && s.initialRating == h.loremRating
               && n.state == 'ACTIVE' && n.startedAt == request.time && n.limitMillis == 7200000
               && n.ruleVersion == 'spark-2h-v1' && n.hintAt == null && n.cutoffAt == null
               && n.closeReason == null && n.failure == null && n.result == null && n.processedAt == null && n.solvedOutsideAt == null
@@ -113,7 +122,7 @@ service cloud.firestore {
               && s.originVersion == 'origin-20200701-v1' && s.category in ['FLUENCY', 'CURRENT_LEVEL', 'CHALLENGE']
               && s.desiredMin is int && s.desiredMax is int && s.fallback is int && s.fallback >= 0 && s.fallback <= 300
               && !exists(marker) && getAfter(marker).data.ipsumId == ipsumId && locked(uid, handleKey, ipsumId)
-              && (!exists(lp(uid)) || get(lp(uid)).data.ipsumId == null);
+              && !exists(lp(uid)) && selectedHandle(uid, handleKey, n.bindingVersion);
           }
           function validTransition() {
             let n = request.resource.data;
@@ -132,8 +141,9 @@ service cloud.firestore {
               || (old.state in ['ACTIVE', 'CLOSED_AWAITING_VERIFICATION'] && n.state == 'FINAL'
                 && changed.hasOnly(['state', 'result', 'processedAt']) && n.processedAt == request.time
                 && (old.state != 'ACTIVE' || n.result.accepted == true) && finalResult(n)
-                && getAfter(hp(uid, handleKey)).data.version == old.version + 1
-                && getAfter(hp(uid, handleKey)).data.rating == n.result.finalRating
+                && getAfter(hp(uid, handleKey)).data.progressVersion == old.version + 1
+                && getAfter(hp(uid, handleKey)).data.bindingVersion == old.bindingVersion
+                && getAfter(hp(uid, handleKey)).data.loremRating == n.result.finalRating
                 && getAfter(hp(uid, handleKey)).data.lastIpsumId == ipsumId && unlocked(uid))
               || (old.state == 'FINAL' && old.result.accepted == false && old.solvedOutsideAt == null
                 && changed.hasOnly(['solvedOutsideAt']) && n.solvedOutsideAt is timestamp
@@ -144,33 +154,55 @@ service cloud.firestore {
 
       match /runtime/{runtimeId} {
         allow read: if googleAccount(uid);
-        allow create, update: if googleAccount(uid) && runtimeId == 'current' && validLock();
-        allow delete: if false;
+      }
+
+      // Existence means an active lock, preserving the account handles contract.
+      match /runtime/current {
+        allow read: if googleAccount(uid);
+        allow create: if googleAccount(uid) && validLock();
+        allow update: if false;
+        allow delete: if googleAccount(uid) && releaseLock();
         function validLock() {
           let n = request.resource.data;
+          let a = getAfter(ap(uid, n.handleKey, n.ipsumId)).data;
           return n.keys().hasAll(['handleKey', 'ipsumId', 'checkedAt'])
             && n.keys().hasOnly(['handleKey', 'ipsumId', 'checkedAt']) && n.checkedAt == request.time
-            && ((!exists(lp(uid)) && n.ipsumId == null && n.handleKey == null)
-              || (exists(lp(uid)) && pulse()) || startLock() || releaseLock());
-        }
-        function pulse() {
-          let n = request.resource.data;
-          return n.ipsumId == resource.data.ipsumId && n.handleKey == resource.data.handleKey;
-        }
-        function startLock() {
-          let n = request.resource.data;
-          let a = getAfter(ap(uid, n.handleKey, n.ipsumId)).data;
-          return n.handleKey is string && n.ipsumId is string
-            && (!exists(lp(uid)) || resource.data.ipsumId == null)
+            && n.handleKey is string && n.ipsumId is string
             && !exists(ap(uid, n.handleKey, n.ipsumId)) && a.state == 'ACTIVE' && a.startedAt == request.time;
         }
         function releaseLock() {
-          let n = request.resource.data;
           let old = resource.data;
-          return old.ipsumId is string && n.ipsumId == null && n.handleKey == null
-            && get(ap(uid, old.handleKey, old.ipsumId)).data.state != 'FINAL'
+          return get(ap(uid, old.handleKey, old.ipsumId)).data.state != 'FINAL'
             && getAfter(ap(uid, old.handleKey, old.ipsumId)).data.state == 'FINAL';
         }
+      }
+      // A time confirmation must never create a lock or change the selected handle.
+      match /runtime/clock {
+        allow read: if googleAccount(uid);
+        allow create, update: if googleAccount(uid)
+          && exists(/databases/$(database)/documents/users/$(uid))
+          && request.resource.data.keys().hasOnly(['checkedAt'])
+          && request.resource.data.checkedAt == request.time;
+        allow delete: if false;
+      }
+      match /runtime/selection {
+        function validSelection() {
+          return googleAccount(uid)
+            && exists(/databases/$(database)/documents/users/$(uid))
+            && request.resource.data.keys().hasAll(['schemaVersion', 'handleKey', 'bindingVersion', 'selectionVersion', 'selectedAt'])
+            && request.resource.data.keys().hasOnly(['schemaVersion', 'handleKey', 'bindingVersion', 'selectionVersion', 'selectedAt'])
+            && request.resource.data.schemaVersion is int && request.resource.data.schemaVersion == 1
+            && request.resource.data.handleKey is string && request.resource.data.handleKey.matches('cf_[a-z0-9_.-]{1,64}')
+            && request.resource.data.bindingVersion is int && request.resource.data.bindingVersion >= 1
+            && request.resource.data.selectionVersion is int
+            && request.resource.data.selectedAt is timestamp && request.resource.data.selectedAt == request.time
+            && exists(/databases/$(database)/documents/users/$(uid)/handles/$(request.resource.data.handleKey))
+            && get(/databases/$(database)/documents/users/$(uid)/handles/$(request.resource.data.handleKey)).data.bindingVersion == request.resource.data.bindingVersion
+            && !exists(lp(uid)) && !existsAfter(lp(uid));
+        }
+        allow create: if validSelection() && request.resource.data.selectionVersion == 1;
+        allow update: if validSelection() && request.resource.data.selectionVersion == resource.data.selectionVersion + 1;
+        allow delete: if false;
       }
     }
 

@@ -15,6 +15,8 @@ import dev.lorem.app.domain.auth.AuthenticationFailure
 import dev.lorem.app.domain.auth.AuthenticationRepository
 import dev.lorem.app.domain.auth.AuthenticationState
 import dev.lorem.app.domain.auth.GoogleAccount
+import dev.lorem.app.data.handles.HandlesRemoteStore
+import dev.lorem.app.data.handles.FirestoreHandlesStore
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
@@ -26,6 +28,7 @@ import kotlinx.coroutines.tasks.await
 data class FirebaseAuthentication(
     val repository: AuthenticationRepository,
     val googleWebClientId: String?,
+    val handlesStore: HandlesRemoteStore? = null,
     val firestore: FirebaseFirestore? = null,
     val auth: FirebaseAuth? = null,
 ) {
@@ -50,9 +53,10 @@ data class FirebaseAuthentication(
                 return unavailable()
             }
             val auth = FirebaseAuth.getInstance(app)
-            val bootstrap = FirestoreAccountBootstrap(auth, FirebaseFirestore.getInstance(app))
-            return FirebaseAuthentication(GoogleSessionRepository(FirebaseGoogleIdentitySource(auth), bootstrap, scope), clientId,
-                FirebaseFirestore.getInstance(app), auth)
+            val firestore = FirebaseFirestore.getInstance(app)
+            val bootstrap = FirestoreAccountBootstrap(auth, firestore)
+            return FirebaseAuthentication(GoogleSessionRepository(FirebaseGoogleIdentitySource(auth), bootstrap, scope),
+                clientId, FirestoreHandlesStore(auth, firestore), firestore, auth)
         }
     }
 }

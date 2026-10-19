@@ -19,7 +19,7 @@ class MainActivity : ComponentActivity() {
         val container = (application as LoremApplication).container
         setContent {
             if (BuildConfig.FIREBASE_AUTH_ENABLED) {
-                FirebaseLoginApp(container.authentication, container.appearanceRepository, container.cloudTraining)
+                FirebaseLoginApp(container.authentication, container.appearanceRepository, container.handlesRepository, container.cloudTraining)
             } else LoremApp(
                 repository = container.loremRepository,
                 codeforcesRepository = container.codeforcesRepository,

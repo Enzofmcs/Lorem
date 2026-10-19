@@ -19,6 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.tasks.await
 import org.json.JSONObject
 import org.junit.After
@@ -30,16 +31,15 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.LooperMode
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import dev.lorem.app.data.handles.*
+import dev.lorem.app.data.local.RoomHandlesCache
+import dev.lorem.app.data.local.LoremDatabase
+import androidx.room.Room
 import dev.lorem.app.data.cloud.FirestoreTrainingRepository
 import dev.lorem.app.domain.cloud.*
 import dev.lorem.app.domain.RecommendIpsum
 import dev.lorem.app.domain.model.*
 import dev.lorem.app.domain.repository.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
-import java.io.File
 import java.time.Instant
 
 /** Opt-in SDK integration; never uses the real project in google-services.json. */
@@ -49,7 +49,7 @@ class FirestoreAccountBootstrapEmulatorTest {
     private lateinit var app: FirebaseApp
     private lateinit var auth: FirebaseAuth
     private lateinit var db: FirebaseFirestore
-    private val storeScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val cacheDatabases = mutableListOf<LoremDatabase>()
     private var submitted = emptyList<CodeforcesSubmission>()
     private var cfRating: Int? = 3500
     private var cfUnavailable = false
@@ -65,9 +65,10 @@ class FirestoreAccountBootstrapEmulatorTest {
     }
     private val scheduled = mutableListOf<CloudIpsum>()
     private fun repository(): FirestoreTrainingRepository {
-        val file = File(ApplicationProvider.getApplicationContext<Application>().cacheDir, "cloud-${UUID.randomUUID()}.preferences_pb")
+        val cache = Room.inMemoryDatabaseBuilder(ApplicationProvider.getApplicationContext(), LoremDatabase::class.java).build()
+        cacheDatabases.add(cache)
         return FirestoreTrainingRepository(db, { auth.currentUser?.uid }, cf,
-            PreferenceDataStoreFactory.create(scope = storeScope) { file },
+            AccountHandlesRepository(FirestoreHandlesStore(auth, db), cf, RoomHandlesCache(cache.accountHandlesDao())),
             CloudDeadline(android.os.SystemClock::elapsedRealtime) { 1 }, android.os.SystemClock::elapsedRealtime,
             { _, attempt, _ -> synchronized(scheduled) { scheduled.add(attempt) } }, RecommendIpsum { 0 })
     }
@@ -91,7 +92,7 @@ class FirestoreAccountBootstrapEmulatorTest {
     }
 
     @After fun disconnect() = runBlocking {
-        storeScope.cancel()
+        cacheDatabases.forEach { it.close() }
         if (::db.isInitialized) db.terminate().await()
         if (::app.isInitialized) app.delete()
     }
@@ -128,7 +129,7 @@ class FirestoreAccountBootstrapEmulatorTest {
         val profiles = (1..5).map { async(Dispatchers.IO) { repository.addHandle(uid, "TOURIST") } }.awaitAll()
         assertEquals(1, profiles.distinct().size)
         assertEquals(800, profiles.first().rating)
-        assertEquals("tourist", profiles.first().key)
+        assertEquals("cf_tourist", profiles.first().key)
         cfRating = null
         assertEquals(profiles.first(), repository.addHandle(uid, "tourist"))
         assertEquals(1, repository.load(uid).handles.size)
@@ -148,19 +149,19 @@ class FirestoreAccountBootstrapEmulatorTest {
         FirestoreAccountBootstrap(auth, db).ensureAccount(uid)
         val repository = repository()
         repository.addHandle(uid, "tourist")
-        repository.selectHandle(uid, "tourist")
-        val active = repository.start(uid, "tourist", "command")
-        assertEquals(active, repository.start(uid, "tourist", "command"))
+        repository.selectHandle(uid, "cf_tourist")
+        val active = repository.start(uid, "cf_tourist", "command")
+        assertEquals(active, repository.start(uid, "cf_tourist", "command"))
         assertTrue(scheduled.any { it.id == active.id })
         assertEquals(active, repository().load(uid).active)
-        try { repository.start(uid, "tourist", "second"); fail("Second active") } catch (_: IllegalStateException) { }
+        try { repository.start(uid, "cf_tourist", "second"); fail("Second active") } catch (_: IllegalStateException) { }
         // CF has second precision; make a real eligible timestamp and let server time reach it.
         val acceptedAt = (active.ipsum.startedAtEpochMillis / 1000 + 1) * 1000
         kotlinx.coroutines.delay((acceptedAt - System.currentTimeMillis()).coerceAtLeast(0) + 30)
         submitted = listOf(CodeforcesSubmission(123, active.ipsum.problem.id, "OK", Instant.ofEpochMilli(acceptedAt)))
         assertTrue(repository.reconcile(uid, active))
         assertTrue(repository.reconcile(uid, active))
-        val restored = repository().load(uid, "tourist")
+        val restored = repository().load(uid, "cf_tourist")
         assertNull(restored.active)
         assertEquals(1L, restored.handles.single().version)
         assertEquals(824, restored.handles.single().rating)
@@ -173,11 +174,12 @@ class FirestoreAccountBootstrapEmulatorTest {
         FirestoreAccountBootstrap(auth, db).ensureAccount(uid)
         val repository = repository()
         repository.addHandle(uid, "tourist")
-        val active = repository.start(uid, "tourist", "manual")
+        repository.selectHandle(uid, "cf_tourist")
+        val active = repository.start(uid, "cf_tourist", "manual")
         repository.hint(uid, active)
         assertNotNull(repository.load(uid).active!!.ipsum.hintRevealedAtEpochMillis)
         repository.close(uid, active, IpsumFailureReason.LOGIC_NOT_FOUND)
-        val final = repository.load(uid, "tourist")
+        val final = repository.load(uid, "cf_tourist")
         assertNull(final.active)
         assertEquals(780, final.handles.single().rating)
         assertEquals(IpsumStatus.PENDING, final.attempts.single().ipsum.status)
@@ -191,12 +193,13 @@ class FirestoreAccountBootstrapEmulatorTest {
         FirestoreAccountBootstrap(auth, db).ensureAccount(uid)
         val repository = repository()
         repository.addHandle(uid, "tourist")
-        val active = repository.start(uid, "tourist", "timeout-ac")
+        repository.selectHandle(uid, "cf_tourist")
+        val active = repository.start(uid, "cf_tourist", "timeout-ac")
         seedExpiredStartOnlyInEmulator(uid, active.id)
         val expired = repository.load(uid).active!!
         cfUnavailable = true
         assertFalse(repository.reconcile(uid, expired))
-        var state = repository.load(uid, "tourist")
+        var state = repository.load(uid, "cf_tourist")
         assertEquals(CloudIpsumState.CLOSED_AWAITING_VERIFICATION, state.active!!.state)
         assertEquals(800, state.handles.single().rating)
         cfUnavailable = false
@@ -211,7 +214,7 @@ class FirestoreAccountBootstrapEmulatorTest {
             Instant.ofEpochMilli(expired.expiresAtMillis / 1000 * 1000)))
         assertTrue(repository.reconcile(uid, expired))
         assertTrue(repository.reconcile(uid, expired))
-        state = repository.load(uid, "tourist")
+        state = repository.load(uid, "cf_tourist")
         assertNull(state.active)
         assertEquals(812, state.handles.single().rating)
         assertEquals(1L, state.handles.single().version)
@@ -223,15 +226,16 @@ class FirestoreAccountBootstrapEmulatorTest {
         FirestoreAccountBootstrap(auth, db).ensureAccount(uid)
         val repository = repository()
         repository.addHandle(uid, "tourist")
-        val active = repository.start(uid, "tourist", "timeout-failure")
+        repository.selectHandle(uid, "cf_tourist")
+        val active = repository.start(uid, "cf_tourist", "timeout-failure")
         seedExpiredStartOnlyInEmulator(uid, active.id)
         val expired = repository.load(uid).active!!
         assertTrue(repository.reconcile(uid, expired))
-        var state = repository.load(uid, "tourist")
+        var state = repository.load(uid, "cf_tourist")
         assertEquals(780, state.handles.single().rating)
         assertEquals(IPSUM_LIMIT_MILLIS, state.attempts.single().ipsum.totalTimeMillis())
         assertEquals(CloudCloseReason.TIME_LIMIT_EXCEEDED, state.attempts.single().closeReason)
-        val document = db.collection("users").document(uid).collection("handles").document("tourist")
+        val document = db.collection("users").document(uid).collection("handles").document("cf_tourist")
             .collection("ipsums").document(active.id).get(Source.SERVER).await()
         val originalStart = document.getTimestamp("startedAt")!!
         assertEquals(originalStart.nanoseconds, document.getTimestamp("cutoffAt")!!.nanoseconds)
@@ -239,7 +243,7 @@ class FirestoreAccountBootstrapEmulatorTest {
         submitted = listOf(CodeforcesSubmission(2, expired.ipsum.problem.id, "OK",
             Instant.ofEpochMilli((expired.expiresAtMillis / 1000 + 1) * 1000)))
         assertTrue(repository.reconcile(uid, expired))
-        state = repository.load(uid, "tourist")
+        state = repository.load(uid, "cf_tourist")
         assertEquals(780, state.handles.single().rating)
         assertEquals(1L, state.handles.single().version)
         assertEquals(IpsumStatus.SOLVED_OUTSIDE, state.attempts.single().ipsum.status)
@@ -252,21 +256,22 @@ class FirestoreAccountBootstrapEmulatorTest {
         FirestoreAccountBootstrap(auth, db).ensureAccount(uid)
         val repository = repository()
         repository.addHandle(uid, "tourist")
-        val active = repository.start(uid, "tourist", "online")
-        val online = repository.load(uid, "tourist")
+        repository.selectHandle(uid, "cf_tourist")
+        val active = repository.start(uid, "cf_tourist", "online")
+        val online = repository.load(uid, "cf_tourist")
         db.disableNetwork().await()
         try {
-            val cached = repository.load(uid, "tourist")
+            val cached = repository.load(uid, "cf_tourist")
             assertFalse(cached.online)
             assertEquals(active, cached.active)
             assertEquals(online.handles, cached.handles)
-            try { repository.start(uid, "tourist", "offline"); fail("New start must require server") }
+            try { repository.start(uid, "cf_tourist", "offline"); fail("New start must require server") }
             catch (_: com.google.firebase.firestore.FirebaseFirestoreException) { }
             catch (_: IllegalStateException) { }
         } finally { db.enableNetwork().await() }
-        var restored = repository.load(uid, "tourist")
+        var restored = repository.load(uid, "cf_tourist")
         kotlinx.coroutines.withTimeout(10_000) {
-            while (!restored.online) { kotlinx.coroutines.delay(100); restored = repository.load(uid, "tourist") }
+            while (!restored.online) { kotlinx.coroutines.delay(100); restored = repository.load(uid, "cf_tourist") }
         }
         assertTrue(restored.online)
         assertEquals(active.id, restored.active!!.id)
@@ -274,12 +279,50 @@ class FirestoreAccountBootstrapEmulatorTest {
         assertEquals(0L, restored.handles.single().version)
     }
 
+    @Test(timeout = 90_000) fun `merged handles contract survives training and releases selection without resetting account data`() = runBlocking {
+        val uid = signInGoogle()
+        FirestoreAccountBootstrap(auth, db).ensureAccount(uid)
+        // Create with the exact implementation already merged in story 35.
+        val store = FirestoreHandlesStore(auth, db)
+        val old = store.create(uid, dev.lorem.app.domain.handles.HandleIdentity.parse("Tourist"))
+        store.create(uid, dev.lorem.app.domain.handles.HandleIdentity.parse("Petr"))
+        store.select(uid, old.identity.key, old.bindingVersion)
+        val repository = repository()
+        assertEquals("cf_tourist", repository.selectedHandle(uid))
+        // Confirming server time does not create a lock or prevent the old selector from working.
+        assertNull(repository.load(uid).active)
+        store.select(uid, "cf_petr", 1)
+        assertEquals("cf_petr", repository().selectedHandle(uid))
+        try { repository.start(uid, "cf_tourist", "stale-selection"); fail("Stale selection") }
+        catch (_: IllegalStateException) { }
+        store.select(uid, "cf_tourist", 1)
+        val active = repository.start(uid, "cf_tourist", "merged-contract")
+        assertEquals(1L, active.bindingVersion)
+        try { store.select(uid, "cf_petr", 1); fail("Switch during active training") }
+        catch (e: dev.lorem.app.domain.handles.HandleException) {
+            assertEquals(dev.lorem.app.domain.handles.HandleFailure.IPSUM_ACTIVE, e.failure)
+        }
+        repository.close(uid, active, IpsumFailureReason.LOGIC_NOT_FOUND)
+        val updated = store.find(uid, "cf_tourist")!!
+        assertEquals(old.createdAtEpochMillis, updated.createdAtEpochMillis)
+        assertEquals(old.bindingVersion, updated.bindingVersion)
+        assertEquals(780, updated.loremRating)
+        assertEquals(1L, updated.progressVersion)
+        assertFalse(db.document("users/$uid/runtime/current").get(Source.SERVER).await().exists())
+        store.select(uid, "cf_petr", 1)
+        val observed = kotlinx.coroutines.withTimeout(10_000) { store.observe(uid).first { it.serverConfirmed } }
+        assertEquals("petr", observed.selection!!.handle)
+        assertFalse(observed.locked)
+        assertEquals(780, observed.handles.first { it.identity.key == "cf_tourist" }.loremRating)
+        assertEquals("cf_petr", repository().selectedHandle(uid))
+    }
+
     /** Synthetic clock fixture via the local emulator's rules-disabled test token, never a production endpoint. */
     private fun seedExpiredStartOnlyInEmulator(uid: String, id: String) {
         check(System.getenv("LOREM_FIREBASE_EMULATORS") == "true")
         val host = loopback("FIRESTORE_EMULATOR_HOST")
         val instant = Instant.ofEpochSecond(System.currentTimeMillis() / 1000 - 7203, 123_000)
-        val name = "projects/demo-lorem-local/databases/(default)/documents/users/$uid/handles/tourist/ipsums/$id"
+        val name = "projects/demo-lorem-local/databases/(default)/documents/users/$uid/handles/cf_tourist/ipsums/$id"
         val url = java.net.URL("http://${host.first}:${host.second}/v1/projects/demo-lorem-local/databases/(default)/documents:commit")
         val connection = url.openConnection() as java.net.HttpURLConnection
         connection.requestMethod = "POST"

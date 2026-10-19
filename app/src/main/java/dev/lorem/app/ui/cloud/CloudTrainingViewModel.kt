@@ -39,7 +39,6 @@ class CloudTrainingViewModel(private val uid: String, private val repository: Cl
         val selected = repository.selectedHandle(uid)
         val snapshot = repository.load(uid, selected)
         val key = snapshot.active?.handleKey ?: selected?.takeIf { k -> snapshot.handles.any { it.key == k } }
-            ?: snapshot.handles.firstOrNull()?.key
         val resolved = if (snapshot.active == null && key != selected) repository.load(uid, key) else snapshot
         mutableState.value = mutableState.value.copy(snapshot = resolved, selectedKey = key)
     }

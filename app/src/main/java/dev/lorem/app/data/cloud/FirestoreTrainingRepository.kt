@@ -1,20 +1,15 @@
 package dev.lorem.app.data.cloud
 
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Source
 import com.google.firebase.Timestamp
 import dev.lorem.app.domain.*
 import dev.lorem.app.domain.cloud.*
+import dev.lorem.app.domain.handles.HandlesRepository
 import dev.lorem.app.domain.model.*
 import dev.lorem.app.domain.repository.*
-import dev.lorem.app.domain.sync.ProfileLink
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.tasks.await
@@ -25,79 +20,68 @@ class FirestoreTrainingRepository(
     private val db: FirebaseFirestore,
     private val currentUid: () -> String?,
     private val cf: CodeforcesRepository,
-    private val preferences: DataStore<Preferences>,
+    private val accountHandles: HandlesRepository,
     override val deadline: CloudDeadline,
     private val elapsedMillis: () -> Long,
     private val schedule: (String, CloudIpsum, Long) -> Unit,
     private val recommender: RecommendIpsum = RecommendIpsum { kotlin.random.Random.nextInt(it) },
 ) : CloudTrainingRepository {
     private val verificationMutex = Mutex() // UI and worker share this API/persistence operation.
-    private val historyCache = java.util.concurrent.ConcurrentHashMap<ProfileLink, List<CloudIpsum>>()
+    private data class HistoryKey(val uid: String, val handle: String, val binding: Long, val version: Long)
+    private val historyCache = java.util.concurrent.ConcurrentHashMap<HistoryKey, List<CloudIpsum>>()
     private fun user(uid: String) = db.collection("users").document(uid)
     private fun handles(uid: String) = user(uid).collection("handles")
     private fun handle(uid: String, key: String) = handles(uid).document(key)
     private fun attempts(uid: String, key: String) = handle(uid, key).collection("ipsums")
     private fun runtime(uid: String) = user(uid).collection("runtime").document("current")
     private fun checkUid(uid: String) = check(uid.isNotBlank() && currentUid() == uid) { "Sessão alterada. Entre novamente." }
-    private fun selection(uid: String) = stringPreferencesKey("firebase_handle_${uid.length}_$uid")
+    private fun selection(uid: String) = user(uid).collection("runtime").document("selection")
+    private fun clock(uid: String) = user(uid).collection("runtime").document("clock")
     override suspend fun selectedHandle(uid: String): String? {
         checkUid(uid)
-        return preferences.data.first()[selection(uid)].also { checkUid(uid) }
+        val selected = withTimeoutOrNull(10_000) { selection(uid).get(Source.DEFAULT).await() }
+            ?: selection(uid).get(Source.CACHE).await()
+        checkUid(uid)
+        return selected.getString("handleKey")
     }
     override suspend fun selectHandle(uid: String, key: String) {
         checkUid(uid)
-        val lock = runtime(uid).get(Source.SERVER).await()
-        check(lock.getString("ipsumId") == null || lock.getString("handleKey") == key) {
-            "Encerre o Ipsum ativo antes de trocar de handle."
-        }
-        check(handle(uid, key).get(Source.SERVER).await().exists())
+        val profile = handle(uid, key).get(Source.SERVER).await().cloudHandle()
+        accountHandles.select(uid, key, profile.bindingVersion)
         checkUid(uid)
-        preferences.edit { checkUid(uid); it[selection(uid)] = key }
     }
 
     override suspend fun addHandle(uid: String, handle: String): CloudHandle {
         checkUid(uid)
-        cloudHandleKey(handle)
-        val user = (cf.user(handle.trim()) as? UserLookupResult.Success)?.user
-            ?: error("Não foi possível validar o handle no Codeforces. Tente novamente.")
-        val key = cloudHandleKey(user.handle)
+        val profile = accountHandles.add(uid, handle)
         checkUid(uid)
-        val ref = handle(uid, key)
-        db.runTransaction { tx ->
-            checkUid(uid)
-            if (!tx.get(ref).exists()) tx.set(ref, mapOf("handle" to user.handle, "handleKey" to key,
-                "rating" to 800, "consolidatedRating" to null, "version" to 0,
-                "createdAt" to FieldValue.serverTimestamp()))
-        }.await()
-        checkUid(uid)
-        return ref.get(Source.SERVER).await().cloudHandle().also { checkUid(uid) }
+        return CloudHandle(profile.identity.key, profile.identity.canonical, profile.loremRating,
+            profile.consolidatedRating, profile.progressVersion, profile.bindingVersion)
     }
 
     override suspend fun load(uid: String, selectedKey: String?): CloudSnapshot {
         checkUid(uid)
         val requestElapsed = elapsedMillis()
-        val (lock, online) = try {
+        val (pulse, online) = try {
             val confirmed = withTimeoutOrNull(10_000) {
                 db.runTransaction { tx ->
                     checkUid(uid)
-                    val ref = runtime(uid)
-                    val previous = tx.get(ref)
-                    if (previous.exists()) tx.update(ref, "checkedAt", FieldValue.serverTimestamp())
-                    else tx.set(ref, mapOf("handleKey" to null, "ipsumId" to null, "checkedAt" to FieldValue.serverTimestamp()))
+                    tx.set(clock(uid), mapOf("checkedAt" to FieldValue.serverTimestamp()))
                 }.await()
-                runtime(uid).get(Source.SERVER).await()
+                clock(uid).get(Source.SERVER).await()
             }
-            if (confirmed == null) runtime(uid).get(Source.CACHE).await() to false else confirmed to true
+            if (confirmed == null) clock(uid).get(Source.CACHE).await() to false else confirmed to true
         } catch (e: Exception) {
             if (e is CancellationException) throw e
             // Only availability failures permit cached viewing. Rules/auth errors must stay visible.
             val code = (e as? com.google.firebase.firestore.FirebaseFirestoreException)?.code
             if (code !in setOf(com.google.firebase.firestore.FirebaseFirestoreException.Code.UNAVAILABLE,
                     com.google.firebase.firestore.FirebaseFirestoreException.Code.DEADLINE_EXCEEDED)) throw e
-            runtime(uid).get(Source.CACHE).await() to false
+            clock(uid).get(Source.CACHE).await() to false
         }
         val source = if (online) Source.SERVER else Source.CACHE
-        if (online) deadline.confirm(uid, lock.getTimestamp("checkedAt")!!.toDate().time, requestElapsed)
+        if (online) deadline.confirm(uid, pulse.getTimestamp("checkedAt")!!.toDate().time, requestElapsed)
+        val lock = runtime(uid).get(source).await()
         val allHandles = handles(uid).get(source).await().documents.map { it.cloudHandle() }
         val activeKey = lock.getString("handleKey")
         val activeId = lock.getString("ipsumId")
@@ -105,7 +89,7 @@ class FirestoreTrainingRepository(
             attempts(uid, activeKey).document(activeId).get(source).await().cloudIpsum() else null
         val key = activeKey ?: selectedKey
         val profile = allHandles.firstOrNull { it.key == key }
-        val link = profile?.let { ProfileLink.of(it.key, it.version, uid) }
+        val link = profile?.let { HistoryKey(uid, it.key, it.bindingVersion, it.version) }
         val previous = link?.let { historyCache[it] }
         val closed = if (key == null) emptyList() else previous ?: attempts(uid, key).get(source).await().documents
             .map { it.cloudIpsum() }.sortedByDescending { it.ipsum.startedAtEpochMillis }
@@ -155,12 +139,16 @@ class FirestoreTrainingRepository(
             val old = tx.get(ref)
             val current = tx.get(handle(uid, key)).cloudHandle()
             val lock = tx.get(runtime(uid))
+            val selected = tx.get(selection(uid))
             val used = tx.get(marker)
             if (!old.exists()) {
                 check(current == profile) { "O rating mudou. Atualize e tente novamente." }
-                check(lock.getString("ipsumId") == null) { "Já existe um Ipsum ativo nesta conta." }
+                check(!lock.exists()) { "Já existe um Ipsum ativo nesta conta." }
+                check(selected.getString("handleKey") == key && selected.getLong("bindingVersion") == profile.bindingVersion) {
+                    "A seleção mudou. Selecione o handle e tente novamente."
+                }
                 check(!used.exists()) { "Este problema já foi usado. Tente novamente." }
-                tx.set(ref, mapOf("handleKey" to key, "version" to profile.version, "snapshot" to snap,
+                tx.set(ref, mapOf("handleKey" to key, "bindingVersion" to profile.bindingVersion, "version" to profile.version, "snapshot" to snap,
                     "state" to "ACTIVE", "startedAt" to FieldValue.serverTimestamp(), "limitMillis" to IPSUM_LIMIT_MILLIS,
                     "ruleVersion" to CLOUD_RULE_VERSION, "hintAt" to null, "cutoffAt" to null, "closeReason" to null,
                     "failure" to null, "result" to null, "processedAt" to null, "solvedOutsideAt" to null))
@@ -243,7 +231,8 @@ class FirestoreTrainingRepository(
                 // Another device may have revealed a hint or closed an earlier boundary while CF was loading.
                 check(latest == expected) { "O treino mudou durante a verificação. Tente novamente." }
                 check(lock.getString("ipsumId") == latest.id && lock.getString("handleKey") == latest.handleKey)
-                check(profile.version == latest.version && profile.rating == latest.ipsum.initialLoremRating)
+                check(profile.version == latest.version && profile.bindingVersion == latest.bindingVersion &&
+                    profile.rating == latest.ipsum.initialLoremRating)
                 val failure = latestDoc.getString("failure")?.let(IpsumFailureReason::valueOf)
                 val final = finalizeCloudIpsum(latest, verification, failure)
                 val consolidated = calculateConsolidatedRating(history.filter { it.id != latest.id }.map { it.ipsum } + final,
@@ -252,9 +241,9 @@ class FirestoreTrainingRepository(
                 val result = if (verification is CloudVerification.NoAccepted)
                     resultOf(final) + ("endedAt" to latestDoc.getTimestamp("cutoffAt")) else resultOf(final)
                 tx.update(ref, mapOf("state" to "FINAL", "result" to result, "processedAt" to FieldValue.serverTimestamp()))
-                tx.update(profileRef, mapOf("rating" to final.finalLoremRating, "version" to profile.version + 1,
+                tx.update(profileRef, mapOf("loremRating" to final.finalLoremRating, "progressVersion" to profile.version + 1,
                     "consolidatedRating" to consolidated, "lastIpsumId" to latest.id))
-                tx.set(runtime(uid), mapOf("handleKey" to null, "ipsumId" to null, "checkedAt" to FieldValue.serverTimestamp()))
+                tx.delete(runtime(uid))
             }
         }.await()
         checkUid(uid)

@@ -7,10 +7,11 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-internal const val LOREM_DATABASE_VERSION = 12
+internal const val LOREM_DATABASE_VERSION = 13
 
 @Database(
-    entities = [ProblemHistoryEntity::class, ProblemCatalogEntity::class, IpsumEntity::class, IpsumSubmissionEntity::class],
+    entities = [ProblemHistoryEntity::class, ProblemCatalogEntity::class, IpsumEntity::class, IpsumSubmissionEntity::class,
+        AccountHandleEntity::class, AccountSelectionEntity::class],
     version = LOREM_DATABASE_VERSION,
     exportSchema = false,
 )
@@ -18,13 +19,27 @@ abstract class LoremDatabase : RoomDatabase() {
     abstract fun problemHistoryDao(): ProblemHistoryDao
     abstract fun problemCatalogDao(): ProblemCatalogDao
     abstract fun ipsumDao(): IpsumDao
+    abstract fun accountHandlesDao(): AccountHandlesDao
 
     companion object {
         fun create(context: Context): LoremDatabase = Room.databaseBuilder(
             context,
             LoremDatabase::class.java,
             "lorem.db",
-        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12).build()
+        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13).build()
+
+        internal val MIGRATION_12_13 = object : Migration(12, 13) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("""CREATE TABLE IF NOT EXISTS account_handles (
+                    uid TEXT NOT NULL, handleKey TEXT NOT NULL, bindingVersion INTEGER NOT NULL,
+                    handle TEXT NOT NULL, loremRating INTEGER NOT NULL, consolidatedRating INTEGER,
+                    progressVersion INTEGER NOT NULL, createdAtEpochMillis INTEGER NOT NULL,
+                    PRIMARY KEY(uid, handleKey, bindingVersion))""".trimIndent())
+                db.execSQL("""CREATE TABLE IF NOT EXISTS account_selections (
+                    uid TEXT NOT NULL PRIMARY KEY, handleKey TEXT, bindingVersion INTEGER,
+                    selectionVersion INTEGER NOT NULL, locked INTEGER NOT NULL)""".trimIndent())
+            }
+        }
 
         internal val MIGRATION_11_12 = object : Migration(11, 12) {
             override fun migrate(db: SupportSQLiteDatabase) {

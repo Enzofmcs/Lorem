@@ -3,6 +3,9 @@ package dev.lorem.app
 import android.content.Context
 import androidx.work.WorkManager
 import dev.lorem.app.data.auth.FirebaseAuthentication
+import dev.lorem.app.data.handles.AccountHandlesRepository
+import dev.lorem.app.data.local.RoomHandlesCache
+import dev.lorem.app.domain.handles.HandlesRepository
 import dev.lorem.app.data.cloud.CloudIpsumScheduler
 import dev.lorem.app.data.cloud.FirestoreTrainingRepository
 import dev.lorem.app.domain.auth.AuthenticationState
@@ -37,7 +40,7 @@ class AppContainer(context: Context) {
         ?.account?.uid?.takeIf { it == authentication.auth?.currentUser?.uid }
     val cloudTraining by lazy {
         authentication.firestore?.let { firestore -> FirestoreTrainingRepository(firestore, ::validatedCloudUid,
-            codeforcesRepository, appContext.profileDataStore,
+            codeforcesRepository, requireNotNull(handlesRepository),
             CloudDeadline(android.os.SystemClock::elapsedRealtime) {
                 android.provider.Settings.Global.getInt(appContext.contentResolver, android.provider.Settings.Global.BOOT_COUNT, -1)
             }, android.os.SystemClock::elapsedRealtime, cloudScheduler::schedule) }
@@ -56,6 +59,10 @@ class AppContainer(context: Context) {
         gate = TwoSecondCodeforcesRequestGate(beforeRequest = retryAfter::awaitPermission),
         onRetryAfter = retryAfter::record,
     )
+    val handlesRepository: HandlesRepository? by lazy {
+        authentication.handlesStore?.let { AccountHandlesRepository(it, codeforcesRepository,
+            RoomHandlesCache(database.accountHandlesDao())) }
+    }
     val synchronizationCoordinator = SynchronizationCoordinator(
         loremRepository, codeforcesRepository, applicationScope,
         synchronizationStore,

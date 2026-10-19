@@ -55,6 +55,8 @@ comprovam AC de cliente modificado; nao prometer verificacao independente no ser
 [Contratos, configuracao, offline e migracao](docs/FIREBASE.md).
 O bloco nao depende da coorte real da 31 nem libera a integracao da 32.
 
+Integracao da PR 69 preserva a historia 35 da main: chaves `cf_`, selecao Firestore versionada, cache Room 13 e identidades por uid/binding/selecao. Treino atualiza `loremRating`/`progressVersion` e remove o lock atomicamente. [Evidencia integrada](docs/evidence/2026-10-19-firebase-merge-69.json).
+
 ## Escopo resumido
 
 O Lorem tem perfil local associado a um handle público, catálogo e histórico do Codeforces, recomendação inédita, execução de um Ipsum, resultados, pendências, rating interno, estatísticas, variedade e consolidação. O preview 33-37 acrescenta login/progresso Firebase e limite de 2h; a migracao e ativacao padrao pertencem a 38. Nao fazem parte do escopo recursos sociais, backend proprio fora desse bloco, editor de codigo ou gamificacao. Consulte [`docs/SPEC.md`](docs/SPEC.md) para as regras completas.

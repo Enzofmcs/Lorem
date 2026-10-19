@@ -9,7 +9,8 @@ import java.util.Date
 
 internal fun timestamp(millis: Long) = Timestamp(Date(millis))
 internal fun DocumentSnapshot.cloudHandle() = CloudHandle(id, getString("handle")!!,
-    getLong("rating")!!.toInt(), getLong("consolidatedRating")?.toInt(), getLong("version")!!)
+    getLong("loremRating")!!.toInt(), getLong("consolidatedRating")?.toInt(), getLong("progressVersion")!!,
+    getLong("bindingVersion")!!)
 
 internal fun snapshotOf(recommendation: IpsumRecommendation, rating: Int, handle: String, cf: Int?, cfAt: Long?): Map<String, Any?> {
     val p = recommendation.problem
@@ -74,5 +75,6 @@ internal fun DocumentSnapshot.cloudIpsum(): CloudIpsum {
         ), getTimestamp("cutoffAt")?.toDate()?.time,
         getString("closeReason")?.let(CloudCloseReason::valueOf),
         getTimestamp("processedAt")?.toDate()?.time,
-        startedTimestamp.seconds * 1000 + if (startedTimestamp.nanoseconds > 0) 1000 else 0)
+        startedTimestamp.seconds * 1000 + if (startedTimestamp.nanoseconds > 0) 1000 else 0,
+        getLong("bindingVersion")!!)
 }

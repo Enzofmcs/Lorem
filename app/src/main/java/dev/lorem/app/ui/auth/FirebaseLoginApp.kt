@@ -26,9 +26,12 @@ import dev.lorem.app.domain.repository.AppearanceRepository
 import dev.lorem.app.ui.theme.LoremTheme
 import dev.lorem.app.domain.cloud.CloudTrainingRepository
 import dev.lorem.app.ui.cloud.CloudTrainingDestination
+import dev.lorem.app.domain.handles.HandlesRepository
+import dev.lorem.app.ui.handles.AccountHandlesDestination
 
 @Composable
-fun FirebaseLoginApp(authentication: FirebaseAuthentication, appearance: AppearanceRepository, training: CloudTrainingRepository? = null) {
+fun FirebaseLoginApp(authentication: FirebaseAuthentication, appearance: AppearanceRepository,
+    handlesRepository: HandlesRepository? = null, training: CloudTrainingRepository? = null) {
     val model: AuthenticationViewModel = viewModel(factory = AuthenticationViewModel.factory(authentication.repository))
     val session by model.session.collectAsStateWithLifecycle()
     val busy by model.busy.collectAsStateWithLifecycle()
@@ -50,7 +53,9 @@ fun FirebaseLoginApp(authentication: FirebaseAuthentication, appearance: Appeara
             onRetry = model::refresh,
             onSignOut = { model.signOut { credentials?.clearState() } },
             signedInContent = { account ->
-                if (training != null) CloudTrainingDestination(account.uid, training) else HandleOnboardingDestination()
+                if (training != null) CloudTrainingDestination(account.uid, training)
+                else if (handlesRepository != null) AccountHandlesDestination(account.uid, handlesRepository)
+                else HandleOnboardingDestination()
             },
         )
     }
@@ -114,7 +119,7 @@ fun AuthenticationScreen(
 private fun HandleOnboardingDestination() {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.testTag("handle-onboarding")) {
         Text("Seus handles", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.semantics { heading() })
-        Text("A configuração dos handles ainda não está disponível nesta versão.")
+        Text("Não foi possível carregar seus handles. Tente entrar novamente.")
     }
 }
 

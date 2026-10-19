@@ -8,7 +8,7 @@
 
 **Foco atual:** Historias 35-37 implementadas em preview Spark: handles por conta, ciclo/rating Firestore e prazo de 2h. Proxima historia funcional 38. Historias 00-30 e gates cientificos 31/32 preservados.
 
-**Ultima historia verificada:** Historia 37 no preview Spark, em 2026-10-19; [evidencia 35-37](evidence/2026-10-19-firebase-35-37.json). Marco 30 preservado: 232 debug/170 release e 66 Python, contrato Android-Python com fixture explicita.
+**Ultima historia verificada:** Historia 37 no preview Spark, em 2026-10-19; [evidencia integrada da PR 69](evidence/2026-10-19-firebase-merge-69.json), preservando a [verificacao anterior 35-37](evidence/2026-10-19-firebase-35-37.json). Marco 30 preservado: 232 debug/170 release e 66 Python, contrato Android-Python com fixture explicita.
 
 **Primeiro item funcional pendente:** Historia 38 (migracao/rollout). Historia 31 continua BLOQUEADA: nenhum export real de Ipsums fornecido; o pre-registro nao substitui a coorte real.
 
@@ -2181,7 +2181,7 @@ Conferencias humanas opcionais D-014.
 
 **Historia:** Como usuario logado, quero cadastrar e alternar handles, mantendo um Rating Lorem independente para cada um.
 
-**Status:** IMPLEMENTADA E VERIFICADA EM PREVIEW Spark. Flag padrao false ate 38; novas Rules aguardam publicacao no projeto real. Confirmacao de Google unico da base 33/34 segue pendente. Sem OAuth/deploy reais alegados.
+**Status:** IMPLEMENTADA E VERIFICADA EM PREVIEW (Spark, D-040); novas Rules ainda precisam ser publicadas. Ciclo de treino 36-37 integrado na PR 69; rollout da 38 permanece pendente.
 
 **GitHub:** [#62 - Historia 35](https://github.com/Enzofmcs/Lorem/issues/62).
 
@@ -2199,15 +2199,15 @@ Conferencias humanas opcionais D-014.
 - [x] Listar/adicionar/selecionar handles e restaurar o progresso de cada um; login, sincronizacao, reinstalacao e reinsercao nao sobrescrevem o saldo existente. 800 nao vira piso da formula D-012.
 - [x] Migrar chaves de cache e ProfileLink para uid+handle+versao, isolar leituras/gravacoes/trabalhos e bloquear troca de handle durante Ipsum ativo; catalogo publico pode ser compartilhado.
 
-**Entrega demonstravel:** Conta A e conta B cadastram o mesmo handle em 800; treinar em A nao muda B, e alternar handles em A restaura cada progresso.
+**Entrega demonstravel da 35:** Contas A/B cadastram o mesmo handle em 800; alternar handles restaura saldo/consolidacao e selecao. SDK/Room novos simulam reinstalacao sem cache anterior. Progresso evoluido e lock sao fixtures locais identificadas; nao foram produzidos por treino em nuvem. A jornada integrada original (treinar em A sem mudar B) depende do ciclo da 36. Leitura de historicos ja e isolada por uid nas Rules; escrita/uso no treino continua na 36.
 
-**Verificacao planejada:** Nivel 4: criacao concorrente/idempotente, CF alto/unrated, caixa/normalizacao, mesmo handle em dois uids, cache/worker atrasado e restauracao sem reset; migracoes locais aditivas.
+**Verificacao:** Niveis 4/5: 16 Auth/Rules, 42 Android direcionados sem falhas/ignorados, incluindo cinco SDK/emuladores e tres Compose. Criacao concorrente/idempotente, CF alto/unrated, caixa/Locale.ROOT, mesmo handle em dois uids, cache/worker atrasado, logout/troca de conta, lock e restauracao sem reset cobertos; migracao aditiva Room 12->13 e cadeia 9->13 preservam legado. Regressao/build/lint e hashes na [evidencia da 35](evidence/2026-10-19-firebase-handles-35.json). Nenhum deploy/live OAuth alegado.
 
-**Evidencia automatizada:** SDK Kotlin de producao em Auth/Firestore Emulator, Rules com dois uids/dispositivos, dominio, UI e WorkManager; marco Android em [2026-10-19-firebase-35-37.json](evidence/2026-10-19-firebase-35-37.json). CF alto e unrated, criacao concorrente/canonica, restauracao sem reset, 800 sem piso, namespace uid+handle+versao e isolamento verificados. Cache novo e independente do Room legado; nao exige migracao destrutiva nem altera o arquivo a migrar na 38.
-
-TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014).
+Conferencias humanas opcionais (D-014); os testes automatizados exigidos sao obrigatorios.
 
 ---
+
+**Integracao com 36-37:** contrato cf_/loremRating/progressVersion, selecao versionada, cache Room 13 e identidades da PR 68 preservados. Verificacoes da combinacao registradas separadamente em [evidencia do merge](evidence/2026-10-19-firebase-merge-69.json).
 
 ### Historia 36 - Ciclo oficial do Ipsum e rating persistidos no Firestore
 

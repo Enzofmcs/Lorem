@@ -136,6 +136,20 @@ class SynchronizationWorkTest {
         }
     }
 
+    @Test fun `serialized cloud identity cannot be downgraded into a legacy worker of the same handle`() = runTest {
+        Fixture(backgroundScope).use { f ->
+            val legacy = f.link()
+            val cloud = ProfileLink.forAccount("uid-a", legacy.handle, 1, legacy.version.coerceAtLeast(1))
+            val data = SynchronizationScheduler.profileData(cloud)
+            assertEquals("uid-a", data.getString(SynchronizationWorker.UID))
+            assertEquals(1L, data.getLong(SynchronizationWorker.BINDING_VERSION, -1))
+            assertNotEquals(SynchronizationScheduler.ownerTag(legacy), SynchronizationScheduler.ownerTag(cloud))
+            assertEquals(ListenableWorker.Result.success(), f.worker(data).doWork())
+            assertEquals(0, f.remote.userCalls); assertEquals(0, f.remote.historyCalls)
+            assertEquals(1234, f.local.profile.first()!!.loremRating)
+        }
+    }
+
     @Test fun `abandoned import recovers persisted page cursor and catches the head before readiness`() = runTest {
         Fixture(backgroundScope).use { f ->
             val link = f.link()

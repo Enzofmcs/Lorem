@@ -45,10 +45,12 @@ irrestritas para compensar a ausencia de Functions.
 | Caminho | Conteudo e regra |
 |---|---|
 | `users/{uid}` | Somente schemaVersion=1 e createdAt do servidor; criar uma vez. |
-| `users/{uid}/handles/{handleKey}` | Handle canonico, rating, consolidacao e versao. Criacao em 800; atualizacao somente com resultado atomico. |
+| `users/{uid}/handles/{handleKey}` | Schema 1, chave cf_, bindingVersion=1, loremRating=800, consolidatedRating=null, progressVersion=0 e createdAt servidor na criacao; atualizacao de progresso somente com resultado atomico. |
 | `users/{uid}/handles/{handleKey}/ipsums/{ipsumId}` | Tentativa, snapshots imutaveis, prazo, dica e resultado unico. |
 | `users/{uid}/handles/{handleKey}/usedProblems/{contestId_index}` | Marker imutavel criado junto do inicio; impede repetir problema entre dispositivos. |
-| `users/{uid}/runtime/current` | Lock do unico ativo por uid e checkedAt do servidor para ancorar o prazo. |
+| `users/{uid}/runtime/selection` | Selecao cloud da 35: handleKey, bindingVersion, selectionVersion crescente e selectedAt servidor. |
+| `users/{uid}/runtime/current` | Existe somente enquanto ha um Ipsum ativo por uid; excluido atomicamente no resultado. Sua presenca bloqueia troca de handle. |
+| `users/{uid}/runtime/clock` | checkedAt do servidor para ancorar o prazo sem criar lock nem alterar selecao. |
 
 Na 33/34, Auth atualiza/valida token e exige sign_in_provider=google.com.
 O bootstrap captura o uid validado e usa `runTransaction`: le o proprio documento,
@@ -61,12 +63,30 @@ O cliente nao envia uid, e-mail ou nome no documento. Concorrencia, retry e
 restauracao nao reescrevem createdAt. Falha de Rules e diferente de provedor errado;
 rede/cota/configuracao ausentes deixam a sessao bloqueada com recuperacao.
 
-O cadastro da 35 usa user.info, normaliza a grafia canonica (trim/lowercase,
-Locale.ROOT) e valida o alfabeto publico CF para uma chave segura. Uma transacao
-cria somente se ausente; Rules exigem rating inicial 800 e recusam reset/sobrescrita indevida.
-Nao introduzir reserva global, OAuth Codeforces ou desafio de posse.
+## Handles implementados na 35 (D-040)
 
-Room e cache/arquivo legado; DataStore guarda configuracao/selecao. Dados pessoais,
+O cadastro consulta user.info pela API centralizada. Preserva a grafia canonica e
+usa chave `cf_` + trim/lowercase(Locale.ROOT), validada antes de RPC (1-64 caracteres
+ASCII de handle, sem barras ou separador de consulta). Nao existe reserva global,
+OAuth Codeforces nem desafio de posse. O rating oficial CF nao entra no comando.
+A transacao cria somente se ausente, com 800/null/versao 0 e timestamp do servidor;
+re-adicionar existente restaura os campos sem sequer depender de nova consulta CF.
+Rules exigem esquema exato/800 e negam reset e delete; progresso so muda na finalizacao atomica da 36.
+
+Selecao e persistida na nuvem, com bindingVersion e selectionVersion. A transacao
+le vinculo/selecao/lock antes da escrita; selecionar o mesmo vinculo e no-op.
+Rules exigem alvo proprio existente, versao anterior+1 e ausencia de current.
+A presenca do lock e conservadoramente bloqueante. UI so confirma selecao por
+snapshot do servidor; cache ou escrita pendente nao autorizam novas operacoes.
+O ciclo de treino 36-37 reutiliza estes mesmos documentos, sem recriar vinculos ou importar saldo legado. Rules de selecao verificam ausencia de lock antes e depois do commit, impedindo troca atomica junto com um inicio.
+
+Room 12->13 acrescenta apenas account_handles e account_selections, com uid/chave/
+binding separados. Nao transfere nem altera perfil, rating, ativo ou historicos
+legados; essa migracao de produto continua na 38. Cache nao regride versao de
+selecao/progresso sob resposta atrasada. ProfileLink e chaves de trabalho cloud
+incluem uid+handle+bindingVersion+selectionVersion; namespaces legados permanecem
+estaveis, e worker legado recusa contexto cloud. Catalogo publico continua comum.
+DataStore conserva configuracao/selecao legadas. Dados pessoais,
 leitores, workers e callbacks usam uid+handleKey+versao. Catalogo publico pode ser
 compartilhado. Trocar conta remove UI/listeners/trabalhos anteriores; callbacks
 atrasados nao liberam a identidade antiga. Com Ipsum ativo, nao trocar handle.
@@ -76,8 +96,8 @@ Sair nao reinicia o prazo; sincronizar exige voltar a uma sessao do uid correto.
 
 O Android reutiliza dominio D-012, criterio de origem da 29, importacao D-017,
 API centralizada (minimo 2s), paginacao, deduplicacao e retry. Nao embarcar Python
-nem habilitar a 32. Selecao DataStore usa namespace por uid; ProfileLink e cache
-de historico usam uid+handle+versao. O SDK Firestore mantem cache nos caminhos
+nem habilitar a 32. Selecao Firestore conserva as versoes da 35; ProfileLink usa uid+handle+binding+selecao. O cache
+de historico usa uid+handle+binding+progressVersion. O SDK Firestore mantem cache nos caminhos
 privados completos. Nenhum cache Room sem uid e reaproveitado; arquivo/migracao
 legado pertencem a 38, sem alteracao destrutiva do esquema local.
 
@@ -167,8 +187,8 @@ Rollout integrado somente apos 38; conferencia humana permanece opcional (D-014)
 ## Implementacao 35-37 e detalhes de recuperacao
 
 `FirestoreTrainingRepository` valida a identidade em cada operacao e callback de
-transacao. Cria handles com grafia canonica, chave lowercase e rating 800 somente
-quando o documento nao existe. A selecao DataStore e por uid; um lock remoto ativo
+transacao. Reutiliza AccountHandlesRepository/FirestoreHandlesStore para criar handles com chave cf_,
+grafia canonica e 800 somente quando o documento nao existe. A selecao versionada esta no Firestore; um lock remoto ativo
 sempre determina o handle efetivo, inclusive quando outro dispositivo iniciou o
 treino. A lista de tentativas usa cache uid+handle+versao para evitar reler todo
 o historico a cada polling. Catalogo e historico CF precisam de consulta completa
@@ -181,7 +201,7 @@ versao e lock no mesmo commit. Rules exigem conservacao de saldo, versao seguint
 snapshot imutavel e transicao unica. A verificacao CF e o calculo numerico sao do
 Android, com o limite de confianca Spark declarado acima.
 
-`checkedAt=serverTimestamp` ancora o horario ao `elapsedRealtime` e boot atual.
+`runtime/clock.checkedAt=serverTimestamp` ancora o horario ao `elapsedRealtime` e boot atual.
 A referencia e conservadora pelo instante de envio da consulta, nunca recua com
 nova confirmacao e nao usa o relogio civil. Pode fechar visualmente um pouco antes
 por latencia; Rules e timestamps completos decidem o encerramento definitivo.

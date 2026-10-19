@@ -42,7 +42,7 @@ Competidores de nivel iniciante-intermediario ou intermediario que ja utilizam o
 **Alteracao aprovada em 19/10/2026 (Spark, D-039):** Historias 33-38
 acrescentam Google/Firebase, varios handles por conta com 800 inicial e prazo de
 2h. O app atual ainda usa perfil local e a regra inicial D-009. Contratos de
-transicao/migracao e operacao sem rede: [FIREBASE.md](FIREBASE.md). Login e jornada 33-37 implementados em preview; migracao/rollout 38 planejados. Firebase sem Functions/Tasks/billing, com Rules e sincronizacao Android/WorkManager. O prazo de 2h e absoluto; a gravacao remota pode ocorrer depois, conforme rede/sistema/sessao. Veredito CF nao tem validacao independente no servidor neste escopo Spark.
+transicao/migracao e operacao sem rede: [FIREBASE.md](FIREBASE.md). Login e jornada 33-37 implementados em preview (D-040/D-041); migracao/rollout 38 planejados. Firebase sem Functions/Tasks/billing, com Rules e sincronizacao Android/WorkManager. O prazo de 2h e absoluto; a gravacao remota pode ocorrer depois, conforme rede/sistema/sessao. Veredito CF nao tem validacao independente no servidor neste escopo Spark.
 
 ### Dentro do escopo
 

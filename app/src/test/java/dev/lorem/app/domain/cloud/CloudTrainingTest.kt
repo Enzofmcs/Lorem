@@ -17,14 +17,14 @@ class CloudTrainingTest {
     private fun submission(id: Long, time: Long, verdict: String?) = CodeforcesSubmission(id, ProblemId(2000, "A"), verdict, Instant.ofEpochMilli(time))
 
     @Test fun `canonical handles and caches separate uids versions and case`() {
-        assertEquals("tourist", cloudHandleKey("  ToUrIsT "))
-        for (bad in listOf("../x", "x/y", "bad handle", "aa", "a".repeat(25))) {
-            try { cloudHandleKey(bad); fail(bad) } catch (_: IllegalArgumentException) { }
+        assertEquals("cf_tourist", cloudHandleKey("  ToUrIsT "))
+        for (bad in listOf("../x", "x/y", "bad handle", "", "a".repeat(65))) {
+            try { cloudHandleKey(bad); fail(bad) } catch (_: dev.lorem.app.domain.handles.HandleException) { }
         }
-        assertNotEquals(syncKey(SyncDataset.HISTORY, ProfileLink.of("tourist", 0, "A")),
-            syncKey(SyncDataset.HISTORY, ProfileLink.of("tourist", 0, "B")))
-        assertNotEquals(syncKey(SyncDataset.HISTORY, ProfileLink.of("tourist", 0, "A")),
-            syncKey(SyncDataset.HISTORY, ProfileLink.of("tourist", 1, "A")))
+        assertNotEquals(syncKey(SyncDataset.HISTORY, ProfileLink.forAccount("A", "tourist", 1, 1)),
+            syncKey(SyncDataset.HISTORY, ProfileLink.forAccount("B", "tourist", 1, 1)))
+        assertNotEquals(syncKey(SyncDataset.HISTORY, ProfileLink.forAccount("A", "tourist", 1, 1)),
+            syncKey(SyncDataset.HISTORY, ProfileLink.forAccount("A", "tourist", 1, 2)))
     }
     @Test fun `deadline before exactly and after two hours uses monotonic time`() {
         var elapsed = 100L

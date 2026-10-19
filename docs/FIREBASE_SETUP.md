@@ -22,9 +22,9 @@ configuracao recuperavel; nao e confundida com login por provedor errado.
 O usuario **confirmou a publicacao das Rules pelo Console** depois de receber o
 arquivo da versao Spark. O PR 66 ja foi integrado em main. A publicacao fica
 registrada como informacao do usuario, sem leitura administrativa pelo agente;
-a CLI deste ambiente continua sem conta administrativa conectada. Nao repetir
-deploy como pendencia. Nenhum indice adicional e necessario no esquema atual
-(indexes e fieldOverrides vazios).
+a CLI deste ambiente continua sem conta administrativa conectada. A confirmacao
+cobre a base 33/34; o contrato combinado 35-37 requer publicar as Rules atuais.
+Nenhum indice adicional e necessario (indexes e fieldOverrides vazios).
 
 33/34 aguardam somente a confirmacao da configuracao Google unica no projeto.
 OAuth/login real nao foram executados pelo agente. Conferencia humana do app e
@@ -166,3 +166,13 @@ create de conta nem voltar ao APK que dependia de Functions. Para retirar previe
 gerar APK sem a flag; historico legado nao foi migrado/apagado. Produção/migracao
 continuam na 38. Evidencias anteriores (Functions/configuracao inicial) sao
 historicas, nao validacao da versao Spark.
+
+## Compatibilidade da integracao PR 69
+
+A versao combinada preserva o esquema da historia 35 na main: handles `cf_`,
+`loremRating`, `bindingVersion`, `progressVersion` e selecao Firestore versionada.
+Room 13 e namespaces de ProfileLink/workers permanecem intactos. O lock
+`runtime/current` existe apenas durante um Ipsum e e excluido junto com o resultado;
+`runtime/clock` confirma tempo sem bloquear selecao. Publicar o arquivo Rules
+combinado inteiro; nao usar as Rules da branch anterior como versao atual.
+[Evidencia integrada](evidence/2026-10-19-firebase-merge-69.json); evidencias anteriores preservadas.

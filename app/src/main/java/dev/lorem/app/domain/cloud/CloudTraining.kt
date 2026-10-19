@@ -2,15 +2,13 @@ package dev.lorem.app.domain.cloud
 
 import dev.lorem.app.domain.calculateLoremRating
 import dev.lorem.app.domain.model.*
-import java.util.Locale
+import dev.lorem.app.domain.handles.HandleIdentity
 
 const val IPSUM_LIMIT_MILLIS = 7_200_000L
 const val CLOUD_RULE_VERSION = "spark-2h-v1"
 
-/** Codeforces handles use this alphabet; the lowercase value is already a safe Firestore key. */
-fun cloudHandleKey(handle: String): String = handle.trim().lowercase(Locale.ROOT).also {
-    require(it.matches(Regex("[a-z0-9_.-]{3,24}"))) { "Handle Codeforces inválido." }
-}
+/** Use the same canonical identity as account onboarding and its existing Firestore data. */
+fun cloudHandleKey(handle: String): String = HandleIdentity.parse(handle).key
 
 data class CloudHandle(
     val key: String,
@@ -18,6 +16,7 @@ data class CloudHandle(
     val rating: Int,
     val consolidatedRating: Int?,
     val version: Long,
+    val bindingVersion: Long = 1,
 )
 
 enum class CloudIpsumState { ACTIVE, CLOSED_AWAITING_VERIFICATION, FINAL }
@@ -33,6 +32,7 @@ data class CloudIpsum(
     val closeReason: CloudCloseReason? = null,
     val processedAtMillis: Long? = null,
     val firstEligibleSubmissionMillis: Long = ((ipsum.startedAtEpochMillis + 999) / 1000) * 1000,
+    val bindingVersion: Long = 1,
 ) {
     val expiresAtMillis: Long get() = ipsum.startedAtEpochMillis + IPSUM_LIMIT_MILLIS
     val boundaryMillis: Long get() = cutoffMillis ?: expiresAtMillis
