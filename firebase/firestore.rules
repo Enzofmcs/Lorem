@@ -20,7 +20,20 @@ service cloud.firestore {
 
       match /handles/{handleKey} {
         allow read: if googleAccount(uid);
-        allow write: if false;
+        allow create: if googleAccount(uid)
+          && exists(/databases/$(database)/documents/users/$(uid))
+          && request.resource.data.keys().hasAll(['schemaVersion', 'handle', 'handleKey', 'bindingVersion', 'loremRating', 'consolidatedRating', 'progressVersion', 'createdAt'])
+          && request.resource.data.keys().hasOnly(['schemaVersion', 'handle', 'handleKey', 'bindingVersion', 'loremRating', 'consolidatedRating', 'progressVersion', 'createdAt'])
+          && request.resource.data.schemaVersion is int && request.resource.data.schemaVersion == 1
+          && request.resource.data.handle is string && request.resource.data.handle.matches('[A-Za-z0-9_.-]{1,64}')
+          && request.resource.data.handleKey == handleKey
+          && handleKey == 'cf_' + request.resource.data.handle.lower()
+          && request.resource.data.bindingVersion is int && request.resource.data.bindingVersion == 1
+          && request.resource.data.loremRating is int && request.resource.data.loremRating == 800
+          && request.resource.data.consolidatedRating == null
+          && request.resource.data.progressVersion is int && request.resource.data.progressVersion == 0
+          && request.resource.data.createdAt is timestamp && request.resource.data.createdAt == request.time;
+        allow update, delete: if false;
 
         match /ipsums/{ipsumId} {
           allow read: if googleAccount(uid);
@@ -31,6 +44,26 @@ service cloud.firestore {
       match /runtime/{runtimeId} {
         allow read: if googleAccount(uid);
         allow write: if false;
+      }
+
+      match /runtime/selection {
+        function validSelection() {
+          return googleAccount(uid)
+            && exists(/databases/$(database)/documents/users/$(uid))
+            && request.resource.data.keys().hasAll(['schemaVersion', 'handleKey', 'bindingVersion', 'selectionVersion', 'selectedAt'])
+            && request.resource.data.keys().hasOnly(['schemaVersion', 'handleKey', 'bindingVersion', 'selectionVersion', 'selectedAt'])
+            && request.resource.data.schemaVersion is int && request.resource.data.schemaVersion == 1
+            && request.resource.data.handleKey is string && request.resource.data.handleKey.matches('cf_[a-z0-9_.-]{1,64}')
+            && request.resource.data.bindingVersion is int && request.resource.data.bindingVersion >= 1
+            && request.resource.data.selectionVersion is int
+            && request.resource.data.selectedAt is timestamp && request.resource.data.selectedAt == request.time
+            && exists(/databases/$(database)/documents/users/$(uid)/handles/$(request.resource.data.handleKey))
+            && get(/databases/$(database)/documents/users/$(uid)/handles/$(request.resource.data.handleKey)).data.bindingVersion == request.resource.data.bindingVersion
+            && !exists(/databases/$(database)/documents/users/$(uid)/runtime/current);
+        }
+        allow create: if validSelection() && request.resource.data.selectionVersion == 1;
+        allow update: if validSelection() && request.resource.data.selectionVersion == resource.data.selectionVersion + 1;
+        allow delete: if false;
       }
     }
 

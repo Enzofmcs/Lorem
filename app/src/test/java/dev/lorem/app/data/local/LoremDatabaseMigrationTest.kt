@@ -12,6 +12,36 @@ import org.robolectric.RobolectricTestRunner
 @RunWith(RobolectricTestRunner::class)
 class LoremDatabaseMigrationTest {
     @Test
+    fun `migration 12 to 13 adds empty account namespaces without assigning legacy history to a uid`() {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        val helper = FrameworkSQLiteOpenHelperFactory().create(SupportSQLiteOpenHelper.Configuration.builder(context)
+            .name("migration-12-13-${System.nanoTime()}.db")
+            .callback(object : SupportSQLiteOpenHelper.Callback(12) {
+                override fun onCreate(db: androidx.sqlite.db.SupportSQLiteDatabase) = Unit
+                override fun onUpgrade(db: androidx.sqlite.db.SupportSQLiteDatabase, oldVersion: Int, newVersion: Int) = Unit
+            }).build())
+        try {
+            val db = helper.writableDatabase
+            db.execSQL("CREATE TABLE ipsums (id INTEGER, status TEXT, ratingDelta INTEGER, finalLoremRating INTEGER)")
+            db.execSQL("INSERT INTO ipsums VALUES (1,'ACTIVE',NULL,NULL),(2,'PENDING',-20,1377)")
+            db.execSQL("CREATE TABLE problem_history (ownerHandle TEXT, contestId INTEGER)")
+            db.execSQL("INSERT INTO problem_history VALUES ('tourist',100)")
+            db.execSQL("CREATE TABLE problem_catalog (contestId INTEGER, name TEXT)")
+            db.execSQL("INSERT INTO problem_catalog VALUES (100,'Existing')")
+            LoremDatabase.MIGRATION_12_13.migrate(db)
+            db.query("SELECT status, ratingDelta, finalLoremRating FROM ipsums ORDER BY id").use {
+                it.moveToFirst(); assertEquals("ACTIVE", it.getString(0)); assertTrue(it.isNull(1))
+                it.moveToNext(); assertEquals(-20, it.getInt(1)); assertEquals(1377, it.getInt(2))
+            }
+            for (table in listOf("account_handles", "account_selections")) {
+                db.query("SELECT COUNT(*) FROM $table").use { it.moveToFirst(); assertEquals(0, it.getInt(0)) }
+            }
+            db.query("SELECT ownerHandle FROM problem_history").use { it.moveToFirst(); assertEquals("tourist", it.getString(0)) }
+            db.query("SELECT name FROM problem_catalog").use { it.moveToFirst(); assertEquals("Existing", it.getString(0)) }
+        } finally { helper.close() }
+    }
+
+    @Test
     fun `migration 11 to 12 preserves prior results without backfilling CF snapshots`() {
         val context = ApplicationProvider.getApplicationContext<android.content.Context>()
         val helper = FrameworkSQLiteOpenHelperFactory().create(

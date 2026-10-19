@@ -78,12 +78,16 @@ class SynchronizationScheduler(
         const val PROFILE_TAG = "lorem-profile-sync"
         const val CATALOG_PERIODIC = "lorem-catalog-periodic"
         const val CATALOG_PREPARE = "lorem-catalog-prepare"
-        fun ownerTag(link: ProfileLink) = "lorem-owner:${link.handle}:${link.version}"
+        fun ownerTag(link: ProfileLink) = "lorem-owner:${link.scopeKey}"
         fun profileName(link: ProfileLink) = "periodic:${ownerTag(link)}"
-        fun profileData(link: ProfileLink) = workDataOf(
-            SynchronizationWorker.KIND to SynchronizationWorker.PROFILE,
-            SynchronizationWorker.HANDLE to link.handle, SynchronizationWorker.VERSION to link.version,
-        )
+        fun profileData(link: ProfileLink) = Data.Builder()
+            .putString(SynchronizationWorker.KIND, SynchronizationWorker.PROFILE)
+            .putString(SynchronizationWorker.HANDLE, link.handle)
+            .putLong(SynchronizationWorker.VERSION, link.version)
+            .apply { link.uid?.let {
+                putString(SynchronizationWorker.UID, it)
+                putLong(SynchronizationWorker.BINDING_VERSION, link.bindingVersion)
+            } }.build()
         fun catalogData() = workDataOf(SynchronizationWorker.KIND to SynchronizationWorker.CATALOG)
         private fun network(batteryNotLow: Boolean = false) = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED).setRequiresBatteryNotLow(batteryNotLow).build()

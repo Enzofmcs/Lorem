@@ -1,4 +1,4 @@
-# Configurar Firebase Spark (Historias 33-34)
+# Configurar Firebase Spark (Historias 33-35)
 
 ## Entrega e limites
 
@@ -22,22 +22,33 @@ configuracao recuperavel; nao e confundida com login por provedor errado.
 O usuario **confirmou a publicacao das Rules pelo Console** depois de receber o
 arquivo da versao Spark. O PR 66 ja foi integrado em main. A publicacao fica
 registrada como informacao do usuario, sem leitura administrativa pelo agente;
-a CLI deste ambiente continua sem conta administrativa conectada. Nao repetir
-deploy como pendencia. Nenhum indice adicional e necessario no esquema atual
-(indexes e fieldOverrides vazios).
+a CLI deste ambiente continua sem conta administrativa conectada. Essa confirmacao
+cobre a base 33/34. **A historia 35 altera o arquivo firebase/firestore.rules:**
+publicar esta nova versao para liberar cadastro/selecao de handles no preview.
+Nao ha indice adicional no esquema atual (indexes e fieldOverrides vazios).
+O registro historico da publicacao anterior permanece intacto.
 
 33/34 aguardam somente a confirmacao da configuracao Google unica no projeto.
 OAuth/login real nao foram executados pelo agente. Conferencia humana do app e
 opcional (D-014); emulador nao comprova OAuth. [Registro da publicacao](evidence/2026-10-19-firebase-rules-publication.json).
 
-O preview termina em Seus handles, ponto de integracao da 35. Sem cadastro de
-handles/treino na nuvem, timeout ou migracao implementados nesta entrega. As Rules
-atuais negam todas as escritas em handles/ipsums/runtime; 35/36 adicionarao seus
-contratos especificos. WorkManager pertence a 37 e nao foi antecipado aqui.
+O preview da 35 permite listar/adicionar/selecionar handles, restaurando progresso
+e selecao pela nuvem com cache isolado por uid. user.info valida existencia; cada
+vinculo novo inicia em 800, mesmo com rating CF alto ou ausente. Mesmo handle em
+outra conta e permitido. Rules liberam somente criacao dos vinculos e atualizacao
+versionada da selecao; update/delete de handles, Ipsums e runtime/current seguem
+negados ate 36. Lock presente bloqueia troca. Sem treino em nuvem, timeout ou
+migracao de dados legados; WorkManager de prazo continua na 37.
 
 ## Evidencia local Spark
 
-Dez testes Auth/Firestore/Rules e 23 direcionados Android (incluindo bootstrap
+A historia 35 acrescenta seis casos de Rules (16 no total), tres testes do SDK
+Android real e testes de cache/VM/Compose/migracao. Comandos, resultados do marco
+e hashes em [evidencia da 35](evidence/2026-10-19-firebase-handles-35.json).
+Restauracao de progresso evoluido usa somente fixtures dos emuladores; nao e um
+ciclo de treino implementado. Nenhuma publicacao remota das novas Rules alegada.
+
+Base 33/34 preservada: dez testes Auth/Firestore/Rules e 23 direcionados Android (incluindo bootstrap
 Kotlin real em emuladores) passaram. Marco Android: 253 debug executados, tres
 opt-in ignorados no padrao e comprovados separadamente, 188 release, zero falhas;
 lint sem erros (58 avisos) e APK. Configuracao local validada, preview com flag
@@ -105,7 +116,7 @@ sem conta administrativa ou dados reais. Tokens Google sinteticos sao aceitos
 somente pelo Auth Emulator. A suite usa esses tokens com o SDK Firestore e as
 Rules reais: concorrencia, restauracao, timestamps, uid/provedor e payload forjado.
 
-Para exercitar o bootstrap Kotlin de producao contra os emuladores, inicia-los em
+Para exercitar bootstrap e handles Kotlin de producao contra os emuladores, inicia-los em
 um terminal (Java 21):
 
 ```bash
@@ -116,11 +127,13 @@ npx firebase emulators:start --project demo-lorem-local --only auth,firestore --
 Em outro terminal, na raiz com JDK 17/SDK Android:
 
 ```bash
-LOREM_FIREBASE_EMULATORS=true FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 ./gradlew :app:testDebugUnitTest --tests 'dev.lorem.app.data.auth.FirestoreAccountBootstrapEmulatorTest'
+LOREM_FIREBASE_EMULATORS=true FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 ./gradlew :app:testDebugUnitTest --tests 'dev.lorem.app.data.auth.FirestoreAccountBootstrapEmulatorTest' --tests 'dev.lorem.app.data.handles.FirestoreHandlesEmulatorTest'
 ```
 
 A suite Kotlin usa um FirebaseApp nomeado exclusivo e projeto demo, nunca o JSON
-real. Sem opt-in, esses dois testes sao ignorados no build comum. Em ambiente com
+real. Sem opt-in, esses cinco testes sao ignorados no build comum. CF e substituido
+por fixture apenas no teste; dados evoluidos/lock sao semeados por REST do emulador
+em loopback com projeto demo fixo, sem credencial Admin nem acesso remoto. Em ambiente com
 home restrito, usar caches gravaveis via XDG_CACHE_HOME/XDG_CONFIG_HOME/
 FIREBASE_EMULATORS_PATH e npm --cache, preservando proxy/CA. Sem identidade GCP,
 METADATA_SERVER_DETECTION=none evita buscar credenciais em metadata servers locais.
@@ -154,6 +167,7 @@ aguardar disponibilidade; nao recomendar Blaze como pre-requisito desta entrega.
 Para recuperar Rules de teste, republicar o commit Spark verificado anterior no
 mesmo projeto, sem apagar documentos. Nao usar as Rules anteriores que negavam
 create de conta nem voltar ao APK que dependia de Functions. Para retirar preview,
-gerar APK sem a flag; historico legado nao foi migrado/apagado. Produção/migracao
+gerar APK sem a flag; historico legado nao foi migrado/apagado. A 35 adiciona
+somente tabelas de cache Room, nao importa saldos legados. Producao/migracao
 continuam na 38. Evidencias anteriores (Functions/configuracao inicial) sao
 historicas, nao validacao da versao Spark.
