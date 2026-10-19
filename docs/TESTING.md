@@ -369,3 +369,14 @@ suites, hashes e certificado. [Guia atualizado](FIREBASE_SETUP.md).
 sem publicacao de Rules, consulta administrativa de provedor/banco/plano ou OAuth
 Google real. Evidencias Functions/JSON anteriores intactas, sem reapresenta-las
 como teste Spark. TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014).
+
+## Publicacao das Rules confirmada pelo usuario, 19/10/2026
+
+Atualizacao documental de Nivel 1, depois da integracao do PR 66 em main. O usuario
+confirmou a publicacao pelo Console apos receber o arquivo Spark verificado.
+[Registro separado](evidence/2026-10-19-firebase-rules-publication.json) identifica a
+fonte da confirmacao e a referencia/hash fornecida; nao equivale a leitura do
+ruleset ativo pelo agente ou login Google real. JSONs de testes anteriores intactos.
+Sem mudanca de runtime/Rules; nao repetir Gradle, lint, APK ou emuladores. Verificar
+diff, links, cinco sessoes e estado das issues. Somente Google no Auth real ainda
+aguarda confirmacao; conferencia humana do app permanece opcional (D-014).

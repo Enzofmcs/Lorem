@@ -39,7 +39,7 @@ com login Google e bootstrap transacional direto no Firestore; sem Functions,
 Cloud Tasks, billing ou backend externo como requisito. Rules permitem somente
 criar metadados minimos da propria conta Google e preservam isolamento por uid.
 JSON/OAuth Web/SHA-1 debug validados localmente; Firestore escolhido nam5 (US).
-Provedor e Rules remotos ainda nao verificados. [Configuracao Spark](docs/FIREBASE_SETUP.md).
+Usuario confirmou Rules publicadas; confirmacao de Google como unico provedor pendente. [Configuracao Spark](docs/FIREBASE_SETUP.md).
 
 Preview por -Plorem.firebaseAuthEnabled=true; padrao false ate 38. Seus handles e
 ponto de integracao da 35, sem cadastro/treino em nuvem nem perfil legado.
