@@ -53,6 +53,13 @@ class IpsumTests(unittest.TestCase):
         self.assertEqual((result['valid_attempts'],result['events'],result['censored']),(1,1,0))
         self.assertEqual(result['status'],'insufficient_data')
 
+    def test_cloud_protocol_is_not_silently_pooled_with_historical_local_observations(self):
+        value = fixture()
+        value.update(schema_version=2, export_version="ipsum-cloud-v2", data_kind="ipsum_cloud")
+        path=self.root/'cloud.json';write_json(path,value)
+        with self.assertRaisesRegex(StudyError,'separate protocol'):
+            prepare_ipsums(self.root,[path],offline=True)
+
     def test_no_data_is_insufficient_and_never_opens_test_or_requests_network(self):
         result=prepare_ipsums(self.root,offline=True)
         self.assertEqual((result['data_kind'],result['status']),('not_collected','insufficient_data'))

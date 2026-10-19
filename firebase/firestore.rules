@@ -78,6 +78,19 @@ service cloud.firestore {
             && a.snapshot.initialRating == old.loremRating && a.result.finalRating == n.loremRating && unlocked(uid);
         }
 
+        // Only public problem IDs are synchronized from the local archive; no legacy ratings or attempts.
+        match /exclusions/{problemKey} {
+          allow read: if googleAccount(uid);
+          allow create: if googleAccount(uid) && exists(hp(uid, handleKey))
+            && request.resource.data.keys().hasOnly(['contestId', 'index', 'source'])
+            && request.resource.data.contestId is int && request.resource.data.contestId > 0
+            && request.resource.data.index is string && request.resource.data.index.matches('[A-Za-z0-9]+')
+            && request.resource.data.source == 'legacy-device-v1'
+            && problemKey == string(request.resource.data.contestId) + '_' + request.resource.data.index;
+          allow update: if googleAccount(uid) && request.resource.data == resource.data;
+          allow delete: if false;
+        }
+
         match /usedProblems/{problemKey} {
           allow read: if googleAccount(uid);
           allow create: if googleAccount(uid) && validUsed();
@@ -121,6 +134,8 @@ service cloud.firestore {
               && s.originVerifiedAt is int && s.originVerifiedAt > 0 && s.originSource == 'codeforces:contest.list'
               && s.originVersion == 'origin-20200701-v1' && s.category in ['FLUENCY', 'CURRENT_LEVEL', 'CHALLENGE']
               && s.desiredMin is int && s.desiredMax is int && s.fallback is int && s.fallback >= 0 && s.fallback <= 300
+              && !exists(/databases/$(database)/documents/users/$(uid)/handles/$(handleKey)/exclusions/$(string(s.contestId) + '_' + s.index))
+              && !existsAfter(/databases/$(database)/documents/users/$(uid)/handles/$(handleKey)/exclusions/$(string(s.contestId) + '_' + s.index))
               && !exists(marker) && getAfter(marker).data.ipsumId == ipsumId && locked(uid, handleKey, ipsumId)
               && !exists(lp(uid)) && selectedHandle(uid, handleKey, n.bindingVersion);
           }

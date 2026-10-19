@@ -22,7 +22,7 @@ Prioridades, nesta ordem:
 - Identifique um problema por `contestId + index`, nunca apenas pelo nome.
 - Um problema ja tentado, resolvido, usado em outro Ipsum ou pendente nao pode ser recomendado.
 - So pode existir um Ipsum ativo; no bloco Firebase 33-38, a garantia passa a ser por uid entre handles/dispositivos.
-- Bloco 33-38 aprovado: Spark (D-039), Google/Firestore, uid+handle, 800 por vinculo novo e prazo absoluto 2h. 35-37 implementadas em preview; 38 (migracao/rollout) pendente. Confirmacao de Google unico pendente. Publicacao confirmada pelo usuario cobre somente Rules 33/34; as novas Rules 35-37 ainda precisam de publicacao. WorkManager nao garante instante fisico e nunca estende prazo. Contratos em docs/FIREBASE.md e configuracao em docs/FIREBASE_SETUP.md.
+- Bloco Firebase 33-38 (D-039/D-043): entrada Google/Firestore padrao, 800 por novo vinculo, prazo absoluto 2h e arquivo local somente leitura na 38. Google unico e Rules 35-37 confirmados pelo usuario; Rules 38 de exclusoes ainda precisam ser publicadas. Room 14 preserva legado sem uid e sincroniza somente IDs de problemas excluidos. WorkManager pode atrasar a gravacao, nunca estender prazo.
 - Handles iguais em uids diferentes sao permitidos; nao adicionar verificacao extra de posse CF. Login/troca de handle nao reiniciam rating; avaliacoes antigas permanecem preservadas.
 - Submissoes anteriores ao inicio nao contam para o Ipsum atual.
 - Um Ipsum encerrado nao pode alterar o rating duas vezes.
@@ -52,25 +52,25 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
-- **Bloco Firebase Spark em 19/10/2026 (D-039):** 35-37 implementadas em preview por `-Plorem.firebaseAuthEnabled=true`, padrao false ate 38. Handles canonicos por uid, 800 somente na criacao, recomendacao CF verificada, snapshots imutaveis, lock por uid, resultado/rating/consolidacao atomicos e prazo 2h com WorkManager. Selecao cloud versionada, chave cf_, loremRating/progressVersion/bindingVersion e Room 13 da PR 68 preservados; cache de historico isolado por uid+handle+binding+progresso; Room legado preservado, migracao na 38. Rules 33/34 publicadas conforme usuario; novas Rules 35-37 ainda nao publicadas pelo agente. Google unico pendente; OAuth real nao testado; configuracao Android local ignorada pode precisar ser restaurada neste checkout. Nao habilita a 32.
+- **Bloco Firebase Spark:** 33/34 fechadas com confirmacao de Google unico pelo usuario; 35-37 integradas na PR 69. Historia 38 implementada e verificada: arquivo local Room 14, reconciliacao de ativo, exclusoes entre clientes e export v2; Firebase por padrao. JSON Android ausente neste checkout; sem OAuth real. Evidencia da configuracao/escopo: docs/evidence/2026-10-19-firebase-google-scope-confirmation.json. Novas Rules 38 precisam de publicacao.
 - **Integracao PR 69 (D-041):** historia 35 da main preservada (D-040), treino 36-37 adaptado aos contratos existentes; current existe somente durante um ativo e clock separado confirma prazo. Verificados 27 Auth/Rules, 300 debug executados/1 smoke opt-in separado, 216 release e 13 SDK reais em emuladores; lint sem erros e APK. Evidencia da combinacao em docs/evidence/2026-10-19-firebase-merge-69.json; registros historicos 35 e 35-37 preservados.
 - **Marco 35-37 anterior a integracao:** 20 testes Rules/Auth, 278 debug (277 executados/1 smoke opt-in aprovado separadamente), 200 release; nove testes com SDK Kotlin real em emuladores, incluindo cache offline/precisao do prazo. Lint sem erros (58 avisos) e APK preview. JSON ignorado ausente neste checkout; entrada bloqueada sem configuracao, conforme smoke. Evidencia: docs/evidence/2026-10-19-firebase-35-37.json. TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014).
 - **Marco Spark 33/34:** dez testes Auth/Rules e 23 direcionados Android com bootstrap Kotlin real/emuladores; regressao 256 debug (253 executados/3 opt-in ignorados e aprovados separadamente) e 188 release, sem falhas; lint sem erros e APK preview. Evidencia em docs/evidence/2026-10-19-firebase-spark-33-34.json. Node 24/Java 21 para tooling, JDK 17 Android. Historias parciais por estado remoto, nao por conferencia humana opcional.
-- **Limite Spark:** Android consulta Codeforces/calcula resultado; Rules nao comprovam AC de cliente modificado. 35-37 usam SDK/transacoes/Rules e WorkManager agendado no inicio, reparado no resume/login. Atrasos/sessao/rede podem adiar gravacao, nunca estender 2h. Fechamento sem verificacao completa preserva lock e saldo. Proxima historia funcional: 38.
+- **Limite Spark:** Android consulta Codeforces/calcula resultado; Rules nao comprovam AC de cliente modificado. 35-37 usam SDK/transacoes/Rules e WorkManager agendado no inicio, reparado no resume/login. Atrasos/sessao/rede podem adiar gravacao, nunca estender 2h. Fechamento sem verificacao completa preserva lock e saldo. A 38 mantem esse limite e congela o arquivo legado apos reconciliar o ativo.
 - **Historico preservado:** evidencias anteriores em docs/evidence/2026-10-19-firebase-33-34.json e docs/evidence/2026-10-19-firebase-android-config.json descrevem Functions/configuracao inicial, nao a arquitetura Spark. D-039 substitui compute de D-033/D-037/D-038; nam5/preview/isolamento preservados.
 - **Contrato do novo bloco:** [Firebase, prazo e migracao](docs/FIREBASE.md). Requisitos novos substituem a exclusao anterior de login/Firebase e o rating inicial D-009 somente prospectivamente (D-033 a D-039).
 
-- **Foco:** Historias 35-37 implementadas em preview; proxima historia funcional 38 (migracao/rollout). Historias 00-30 preservadas; 31 com pre-registro/ferramenta e evidencia real pendente.
-- **Ultima historia verificada:** Historia 37 no preview Spark; evidencia em docs/evidence/2026-10-19-firebase-35-37.json. Marco 30 de 2026-10-18 preservado: 232 debug/170 release e 66 Python, exportacao local/contrato Android-Python e snapshots anteriores.
-- **Primeiro item funcional pendente:** Historia 38. Estudo 31 continua BLOQUEADO para conclusao empirica por ausencia de coorte real; limiares fixados em TRANSPORT_PROTOCOL.md/D-032 antes do teste.
-- **Proxima entrega demonstravel:** migracao/rollout da 38 apos preparar o projeto real. Em paralelo, o estudo ainda exige coletar/exportar coorte real e aplicar evaluate-ipsums com modelos congelados da 28, sem retunar teste.
-- **Bloqueios conhecidos:** nenhum export real fornecido (n=0, insufficient_data). 32 depende de evidencia/decisao favoravel da 31; 29 atendida. Teste manual opcional (D-014).
+- **Foco:** entrega final 33-38 implementada/verificada. Historia 31 retirada do escopo pelo usuario (D-042); 32 fica fora desta entrega por dependencia, sem previsoes. Historias 00-30 e evidencias anteriores preservadas.
+- **Ultima historia verificada:** Historia 38, 310 debug/223 release sem falhas/ignorados, 14 SDK reais em emuladores, 29 Auth/Rules, 85 Python; lint sem erros e APK. Evidencia em docs/evidence/2026-10-19-android-38.json. Marco 30 de 2026-10-18 preservado: 232 debug/170 release e 66 Python, exportacao local/contrato Android-Python e snapshots anteriores.
+- **Primeiro item funcional pendente:** nenhum no escopo ativo apos a 38; entrega em PR. A 31 nao e mais trabalho pendente do produto; foi retirada do escopo por solicitacao do usuario. A 32 nao sera implementada nesta entrega.
+- **Proxima entrega demonstravel:** jornada integrada 38, arquivo anterior somente leitura, saldo cloud separado, prazo original e exclusoes restauradas em outro cliente.
+- **Configuracao real restante:** restaurar google-services.json local neste checkout e publicar as Rules 38; usuario ja confirmou Google unico e publicacao 35-37. Teste manual continua opcional (D-014).
 
-Ferramenta/pre-registro 31: [TRANSPORT_PROTOCOL.md](study/TRANSPORT_PROTOCOL.md),
+Registro historico da 31 retirada do escopo (D-042), sem trabalho empirico pendente nesta entrega: [TRANSPORT_PROTOCOL.md](study/TRANSPORT_PROTOCOL.md),
 84 testes Python e [evidencia](study/evidence/2026-10-19-transport/verification.json).
 Piso final 100 participantes/2.000 tentativas/1.000 eventos mais precisao dos ICs;
-nao substituir por piso de preparo nem fixtures. `evaluate-ipsums` nunca habilita
-integracao automaticamente, mesmo com limites favoraveis: exigir decisao real da 31.
+registro historico, sem substituir por fixtures. `evaluate-ipsums` nunca habilita
+integracao automaticamente; a 32 permanece fora desta entrega (D-042).
 
 Marco Android 29-30: 232 testes debug e 170 release sem falhas; lint sem erros
 (avisos de dependencias/icone) e `assembleDebug` concluido. Room 9->12 validado.
@@ -174,4 +174,4 @@ Validacao com Ipsums: [protocolo](study/IPSUM_PROTOCOL.md),
 [estado real vazio](study/evidence/2026-10-18-ipsum-data-status.json) e
 [evidencia Android](docs/evidence/2026-10-18-android-30.json). CF historico ausente
 nao e preenchido pelo perfil atual; pausas desconhecidas nao viram zero. Manter
-32 bloqueada e nao apresentar fixtures como evidencia de transporte.
+32 desativada/fora desta entrega (D-042), sem apresentar fixtures como evidencia de transporte.

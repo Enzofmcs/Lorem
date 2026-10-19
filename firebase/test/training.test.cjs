@@ -219,3 +219,29 @@ test('existing story35 selection survives clock confirmation and cannot switch a
   await assertSucceeds(start(c));
   await assertFails(deleteDoc(doc(c.db, lockPath(c.uid))));
 });
+
+test('legacy exclusions synchronize only public problem ids and are immutable across retries and accounts', async () => {
+  const a = await account(), b = await account();
+  for (const c of [a, b]) await setDoc(doc(c.db, path(c.uid)), handleData());
+  const ref = doc(a.db, `${path(a.uid)}/exclusions/2000_A`);
+  const data = {contestId: 2000, index: 'A', source: 'legacy-device-v1'};
+  await assertSucceeds(setDoc(ref, data)); await assertSucceeds(setDoc(ref, data));
+  await assertFails(updateDoc(ref, {index: 'B'})); await assertFails(deleteDoc(ref));
+  await assertFails(getDoc(doc(b.db, ref.path)));
+  await assertFails(setDoc(doc(a.db, `${path(a.uid)}/exclusions/2001_A`), {...data, uid: a.uid}));
+  await assertFails(setDoc(doc(a.db, `${path(a.uid)}/exclusions/9999_A`), data));
+  await assertFails(setDoc(doc(a.db, `${path(a.uid, 'cf_missing')}/exclusions/2000_A`), data));
+  await assertFails(start(a));
+  await assertSucceeds(start(b));
+  assert.equal((await getDoc(doc(a.db, path(a.uid)))).data().loremRating, 800);
+});
+
+test('an atomic exclusion cannot be combined with a new attempt on the excluded problem', async () => {
+  const c = await account(); await setDoc(doc(c.db, path(c.uid)), handleData()); await ensureSelection(c);
+  const batch = writeBatch(c.db);
+  batch.set(doc(c.db, `${path(c.uid)}/exclusions/2000_A`), {contestId: 2000, index: 'A', source: 'legacy-device-v1'});
+  batch.set(doc(c.db, `${path(c.uid)}/ipsums/one`), attemptData());
+  batch.set(doc(c.db, `${path(c.uid)}/usedProblems/2000_A`), {ipsumId: 'one'});
+  batch.set(doc(c.db, lockPath(c.uid)), {handleKey: 'cf_tourist', ipsumId: 'one', checkedAt: serverTimestamp()});
+  await assertFails(batch.commit());
+});

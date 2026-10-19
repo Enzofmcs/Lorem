@@ -34,18 +34,19 @@ As Histórias 10 e 11 foram concluídas após a confirmação do usuário de tod
 
 ## Login e perfis Firebase
 
-Solicitacao de 19/10/2026, refeita para **Spark (D-039)**: **33/34 parciais**,
+Solicitacao de 19/10/2026, refeita para **Spark (D-039)**: **33/34 implementadas**,
 com login Google e bootstrap transacional direto no Firestore; sem Functions,
 Cloud Tasks, billing ou backend externo como requisito. Rules preservam isolamento
 por uid e transicoes atomicas entre tentativas, rating e lock.
 JSON/OAuth Web/SHA-1 debug validados localmente; Firestore escolhido nam5 (US).
-Usuario confirmou Rules 33/34 publicadas; novas Rules 35-37 aguardam publicacao.
-Confirmacao de Google como unico provedor pendente. [Configuracao Spark](docs/FIREBASE_SETUP.md).
+Usuario confirmou a publicacao das Rules combinadas 35-37 apos a PR 69;
+[registro da confirmacao](docs/evidence/2026-10-19-firebase-rules-35-37-publication.json), sem leitura administrativa pelo agente.
+Google como unico provedor confirmado pelo usuario (D-042). [Configuracao Spark](docs/FIREBASE_SETUP.md).
 
-Preview por -Plorem.firebaseAuthEnabled=true; padrao false ate 38.
+A historia 38 torna o fluxo Firebase padrao; o build continua reproduzivel sem JSON e mostra configuracao ausente.
 **35-37 implementadas:** adicionar/selecionar handles, 800 por vinculo novo,
 progresso Firestore independente, ciclo do Ipsum com rating unico, historico,
-estatisticas, upsolve e prazo absoluto 2h. Dados legados aguardam migracao na 38.
+estatisticas, upsolve e prazo absoluto 2h. A 38 preserva dados legados em arquivo local somente leitura, sem importar saldos para a nuvem.
 Android verifica Codeforces/calcula rating e sincroniza por SDK/Rules;
 WorkManager pode executar com app fechado, mas atrasar. O prazo nao aumenta
 por atraso e o processamento pode aguardar conectividade/sessao. Rules nao
@@ -53,13 +54,13 @@ comprovam AC de cliente modificado; nao prometer verificacao independente no ser
 
 [Historias e ordem](docs/ROADMAP.md#novo-bloco-contas-firebase-e-prazo-maximo-do-ipsum-33-38) ·
 [Contratos, configuracao, offline e migracao](docs/FIREBASE.md).
-O bloco nao depende da coorte real da 31 nem libera a integracao da 32.
+A historia 31 foi retirada do escopo pelo usuario; a 32 fica fora desta entrega e as previsoes permanecem desativadas.
 
 Integracao da PR 69 preserva a historia 35 da main: chaves `cf_`, selecao Firestore versionada, cache Room 13 e identidades por uid/binding/selecao. Treino atualiza `loremRating`/`progressVersion` e remove o lock atomicamente. [Evidencia integrada](docs/evidence/2026-10-19-firebase-merge-69.json).
 
 ## Escopo resumido
 
-O Lorem tem perfil local associado a um handle público, catálogo e histórico do Codeforces, recomendação inédita, execução de um Ipsum, resultados, pendências, rating interno, estatísticas, variedade e consolidação. O preview 33-37 acrescenta login/progresso Firebase e limite de 2h; a migracao e ativacao padrao pertencem a 38. Nao fazem parte do escopo recursos sociais, backend proprio fora desse bloco, editor de codigo ou gamificacao. Consulte [`docs/SPEC.md`](docs/SPEC.md) para as regras completas.
+O Lorem tem perfil local associado a um handle público, catálogo e histórico do Codeforces, recomendação inédita, execução de um Ipsum, resultados, pendências, rating interno, estatísticas, variedade e consolidação. O preview 33-37 acrescenta login/progresso Firebase e limite de 2h; a 38 acrescenta migracao/arquivo local e ativacao padrao. Nao fazem parte do escopo recursos sociais, backend proprio fora desse bloco, editor de codigo ou gamificacao. Consulte [`docs/SPEC.md`](docs/SPEC.md) para as regras completas.
 
 ## Arquitetura inicial
 
@@ -203,3 +204,11 @@ A proposta combina WorkManager em segundo plano, consulta frequente durante o
 Ipsum visível e temas claro/escuro em azul profundo e verde. Consulte o
 [roadmap](docs/ROADMAP.md#historia-15---base-segura-para-sincronizacao-automatica),
 [estratégia de sincronização](docs/SYNC.md) e [direção visual](docs/DESIGN.md).
+
+A 38 acrescenta exclusoes persistidas por uid+handle: apenas IDs publicos de
+problemas sao sincronizados, sem avaliacoes/saldos do arquivo local. Publicar as
+Rules atuais antes de instalar esta versao; a confirmacao anterior cobre 35-37.
+O arquivo antigo e consultavel mesmo sem login. Exports sao locais e opcionais;
+o protocolo cloud v2 nao e misturado ao protocolo historico do estudo.
+
+[Verificacao da historia 38](docs/evidence/2026-10-19-android-38.json): 310 debug, 223 release, 29 Auth/Rules e 85 Python, sem falhas; lint sem erros e APK. Teste manual opcional nao executado.

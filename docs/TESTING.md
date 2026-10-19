@@ -461,3 +461,31 @@ Comandos completos, resultados e hashes da arvore combinada:
 iniciados com FIREBASE_EMULATORS_PATH no cache gravavel e NO_PROXY para loopback;
 Node 24/Java 21 para tooling e JDK 17/SDK 35 para Android. Nenhum projeto Firebase
 real alterado. TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014).
+
+## Publicacao combinada das Rules confirmada, 19/10/2026
+
+Atualizacao documental de Nivel 1 apos a PR 69: usuario informou que adicionou as
+Rules ao Firebase. [Registro separado](evidence/2026-10-19-firebase-rules-35-37-publication.json)
+associa a confirmacao ao arquivo combinado, sem afirmar leitura do hash remoto,
+OAuth real ou configuracao de provedor. Evidencias automatizadas anteriores ficam
+intactas. Verificar JSON, hash local, diff e links; sem repetir Gradle/emuladores
+para uma confirmacao documental. Google unico e JSON Android local continuam
+pendentes. TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014).
+
+## Historia 38: adocao e arquivo local
+
+Niveis 4/5. Room 13->14 e cadeia antiga, snapshots/ratings/duracoes preservados,
+triggers de somente leitura, inicio/prazo original, API indisponivel/incompleta,
+TESTING, AC elegivel recebido tarde, encerramento manual fixo e concorrencia.
+SDK Kotlin real com Auth/Firestore Emulator cobre arquivo real de teste, bloqueio
+antes de reconciliar, novo saldo 800, exclusoes sincronizadas e cliente sem arquivo,
+resultado unico, export pseudonimo, troca de uid e saldo independente. Rules cobrem
+imutabilidade, uid, esquema e exclusao atomica com inicio. Compose verifica arquivo
+separado mesmo apos trocar conta/sair. Entrada padrao e configuracao ausente verificadas.
+
+Exports v1 historicos continuam compativeis; v2 omite identificadores e separa
+protocolos. Testes Python existentes sao regressao do software preservado; a 31
+foi retirada do escopo pelo usuario e nenhum resultado empirico e fabricado.
+No marco executar Rules/SDK, test lint assembleDebug e smoke padrao, registrar
+contagens/hashes em evidence/2026-10-19-android-38.json. Sem OAuth/deploy reais.
+TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014).

@@ -7,11 +7,11 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-internal const val LOREM_DATABASE_VERSION = 13
+internal const val LOREM_DATABASE_VERSION = 14
 
 @Database(
     entities = [ProblemHistoryEntity::class, ProblemCatalogEntity::class, IpsumEntity::class, IpsumSubmissionEntity::class,
-        AccountHandleEntity::class, AccountSelectionEntity::class],
+        AccountHandleEntity::class, AccountSelectionEntity::class, LegacyRolloutEntity::class],
     version = LOREM_DATABASE_VERSION,
     exportSchema = false,
 )
@@ -19,6 +19,7 @@ abstract class LoremDatabase : RoomDatabase() {
     abstract fun problemHistoryDao(): ProblemHistoryDao
     abstract fun problemCatalogDao(): ProblemCatalogDao
     abstract fun ipsumDao(): IpsumDao
+    abstract fun legacyRolloutDao(): LegacyRolloutDao
     abstract fun accountHandlesDao(): AccountHandlesDao
 
     companion object {
@@ -26,7 +27,24 @@ abstract class LoremDatabase : RoomDatabase() {
             context,
             LoremDatabase::class.java,
             "lorem.db",
-        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13).build()
+        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14).addCallback(ARCHIVE_CALLBACK).build()
+
+        internal val MIGRATION_13_14 = object : Migration(13, 14) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS legacy_rollout (id INTEGER NOT NULL PRIMARY KEY, phase TEXT NOT NULL, profileJson TEXT, activeIpsumId INTEGER, cutoffAt INTEGER, failure TEXT)")
+            }
+        }
+        internal val ARCHIVE_CALLBACK = object : Callback() {
+            override fun onOpen(db: SupportSQLiteDatabase) {
+                for (table in listOf("ipsums", "ipsum_submissions", "problem_history")) {
+                    for (operation in listOf("INSERT", "UPDATE", "DELETE")) {
+                        db.execSQL("CREATE TRIGGER IF NOT EXISTS freeze_${table}_${operation} BEFORE $operation ON $table WHEN EXISTS (SELECT 1 FROM legacy_rollout WHERE phase = 'FROZEN') BEGIN SELECT RAISE(ABORT, 'Legacy archive is read only'); END")
+                    }
+                }
+                db.execSQL("CREATE TRIGGER IF NOT EXISTS freeze_rollout BEFORE UPDATE ON legacy_rollout WHEN OLD.phase = 'FROZEN' BEGIN SELECT RAISE(ABORT, 'Legacy archive is read only'); END")
+                db.execSQL("CREATE TRIGGER IF NOT EXISTS retain_rollout BEFORE DELETE ON legacy_rollout BEGIN SELECT RAISE(ABORT, 'Legacy archive must be preserved'); END")
+            }
+        }
 
         internal val MIGRATION_12_13 = object : Migration(12, 13) {
             override fun migrate(db: SupportSQLiteDatabase) {

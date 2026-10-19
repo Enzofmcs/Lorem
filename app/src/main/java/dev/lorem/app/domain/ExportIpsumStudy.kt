@@ -14,6 +14,7 @@ data class IpsumStudyExport(
     val attempts: List<Ipsum>,
     val activeOmitted: Int,
     val dataKind: String,
+    val sampleScope: String = "",
 )
 
 class ExportIpsumStudy(private val repository: LoremRepository, private val nowMillis: () -> Long = System::currentTimeMillis) {

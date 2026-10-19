@@ -25,6 +25,8 @@ def _integer(value, *, positive=True):
 
 
 def validate_export(value):
+    if value.get("export_version") == "ipsum-cloud-v2":
+        raise StudyError("Cloud exports use a separate protocol; the historical local cohort cannot include them")
     if value.get("schema_version") != 1 or value.get("export_version") != PROTOCOL["export_version"]:
         raise StudyError("Unsupported Ipsum export version")
     if value.get("data_kind") not in ("ipsum_local", "synthetic"):

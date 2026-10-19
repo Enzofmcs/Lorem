@@ -7,9 +7,10 @@ Cloud Tasks, billing ou backend externo como requisito. Firestore escolhido:
 
 33/34 em preview: login, validacao de sessao e bootstrap transacional direto pelo
 SDK Firestore. Usuario confirmou a publicacao das Rules; a configuracao de Google
-unico ainda aguarda confirmacao. Nao houve leitura administrativa pelo agente
+unico foi confirmado pelo usuario (D-042). Nao houve leitura administrativa pelo agente
 nem login Google real. Conferencia humana e opcional (D-014). **35-37 implementadas
-em preview; 38 planejada. Novas Rules 35-37 aguardam publicacao.**
+integradas; 38 implementada e verificada. Usuario confirmou a publicacao das Rules combinadas 35-37 apos a PR 69.**
+[Registro da confirmacao](evidence/2026-10-19-firebase-rules-35-37-publication.json); sem readback administrativo.
 [Estado e comandos](FIREBASE_SETUP.md); [historias e aceite](ROADMAP.md).
 As evidencias antigas descrevem a implementacao anterior e permanecem intactas.
 
@@ -161,7 +162,7 @@ comeca em 800; nao importar rating CF/legado. Nuvem preexistente restaura saldo.
 Preservar exclusoes de problemas antigos e reimportar historico publico; saldo novo
 nao torna tentativas antigas ineditas. Reconciliar ativo legado sem reiniciar inicio.
 
-31/32 mantem gates cientificos. Versionar identidade/rating inicial/prazo e limite
+A 31 foi retirada do escopo pelo usuario (D-042); 32 fica fora desta entrega e sem previsoes. Protocolos/evidencias historicos sao preservados. Versionar identidade/rating inicial/prazo e limite
 de confianca nos exports. Revisar compatibilidade e agrupamento de handles
 repetidos antes de novas coortes. UID/e-mail/handle nao entram no export; nenhuma
 coleta de estudo ou upload e automatico.
@@ -235,3 +236,25 @@ Verificacao automatizada usa somente `demo-lorem-local`: Rules com duas contas/
 dispositivos e o SDK Kotlin de producao. Fixtures de timeout alteram apenas o
 inicio no emulador de teste, incluindo fracao submilissegundo; nao sao treinos
 reais nem evidencia cientifica da 31. [Evidencias 35-37](evidence/2026-10-19-firebase-35-37.json).
+
+## Adocao implementada na 38 (D-043)
+
+Room 13->14 acrescenta legacy_rollout sem uid. Nenhum arquivo e atribuido a conta
+Google. A primeira transicao captura o perfil anterior e identifica ativo; ele
+preserva inicio/prazo original, aceita AC elegivel recebido tarde e aguarda
+cobertura completa/TESTING. A primeira fronteira manual ou timeout fica persistida.
+Resultado e congelamento sao atomicos; triggers SQLite tornam ipsums, submissoes
+e historico local somente leitura. Avaliacoes ja encerradas nao sao recalculadas.
+UI separa Arquivo local deste aparelho do progresso Google e permite export local.
+
+Novos vinculos seguem em 800. Antes do treino, IDs antigos sao sincronizados em
+users/{uid}/handles/{handleKey}/exclusions/{contestId_index}; campos permitidos:
+contestId/index/source=legacy-device-v1, imutaveis, sem rating/uid/handle no corpo.
+SDK e Rules excluem esses IDs tambem em clientes sem o arquivo. Escritas sao
+idempotentes por lotes; falha/retry nao abre um treino parcial nem reseta saldo.
+Essas permissoes sao novas e exigem publicar as Rules 38.
+
+Firebase passa a entrada padrao. Sem JSON, mostrar configuracao ausente; sem rede,
+restauracao da sessao exige verificacao e treino novo continua bloqueado. Arquivo
+local congelado e consultavel offline. Override false e somente desenvolvimento
+antes da migracao; nao reabilita escrita em arquivo ja congelado.

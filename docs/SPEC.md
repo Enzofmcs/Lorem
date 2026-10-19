@@ -42,7 +42,7 @@ Competidores de nivel iniciante-intermediario ou intermediario que ja utilizam o
 **Alteracao aprovada em 19/10/2026 (Spark, D-039):** Historias 33-38
 acrescentam Google/Firebase, varios handles por conta com 800 inicial e prazo de
 2h. O app atual ainda usa perfil local e a regra inicial D-009. Contratos de
-transicao/migracao e operacao sem rede: [FIREBASE.md](FIREBASE.md). Login e jornada 33-37 implementados em preview (D-040/D-041); migracao/rollout 38 planejados. Firebase sem Functions/Tasks/billing, com Rules e sincronizacao Android/WorkManager. O prazo de 2h e absoluto; a gravacao remota pode ocorrer depois, conforme rede/sistema/sessao. Veredito CF nao tem validacao independente no servidor neste escopo Spark.
+transicao/migracao e operacao sem rede: [FIREBASE.md](FIREBASE.md). Login e jornada 33-38 implementados (D-040 a D-043), com Firebase padrao e arquivo local somente leitura. Firebase sem Functions/Tasks/billing, com Rules e sincronizacao Android/WorkManager. O prazo de 2h e absoluto; a gravacao remota pode ocorrer depois, conforme rede/sistema/sessao. Veredito CF nao tem validacao independente no servidor neste escopo Spark.
 
 ### Dentro do escopo
 
@@ -268,3 +268,16 @@ pequenas entregas verticais.
 - GitHub, instrucoes para agentes: https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/add-custom-instructions/add-repository-instructions
 - GitHub, task lists: https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/about-tasklists
 - Codeforces API: https://codeforces.com/apiHelp
+
+## Escopo final confirmado em 19/10/2026
+
+D-042: Google e o unico provedor conforme confirmacao do usuario. Historia 31
+retirada do escopo por solicitacao explicita; 32 nao faz parte desta entrega por
+depender dessa validacao. Nao habilitar previsoes nem reinterpretar fixtures como
+resultado empirico. Codigo/evidencias historicos permanecem como registro.
+
+D-043: a 38 preserva arquivo local sem uid e sem importar rating para a conta.
+Ativo anterior usa inicio original e prazo absoluto de 2h, ou primeira fronteira
+manual; API incompleta/TESTING impede resultado definitivo e novo treino. Apenas
+problemas excluidos sao sincronizados como IDs publicos por uid+handle. Arquivo
+congelado e somente leitura; saldo cloud novo e 800, saldo existente nao reseta.
