@@ -36,21 +36,18 @@ As Histórias 10 e 11 foram concluídas após a confirmação do usuário de tod
 
 Solicitacao de 19/10/2026, refeita para **Spark (D-039)**: **33/34 parciais**,
 com login Google e bootstrap transacional direto no Firestore; sem Functions,
-Cloud Tasks, billing ou backend externo como requisito. A **35 implementa o
-cadastro e a selecao de handles**, com isolamento por uid e rating inicial 800.
-Rules permitem criar conta/vinculos e atualizar somente a selecao; progresso e
-Ipsums aguardam o contrato transacional da 36.
+Cloud Tasks, billing ou backend externo como requisito. Rules preservam isolamento
+por uid e transicoes atomicas entre tentativas, rating e lock.
 JSON/OAuth Web/SHA-1 debug validados localmente; Firestore escolhido nam5 (US).
-Usuario confirmou a publicacao das Rules 33/34. **As novas Rules da 35 precisam
-ser publicadas**; confirmacao de Google como unico provedor pendente.
-[Configuracao Spark](docs/FIREBASE_SETUP.md).
+Usuario confirmou Rules 33/34 publicadas; novas Rules 35-37 aguardam publicacao.
+Confirmacao de Google como unico provedor pendente. [Configuracao Spark](docs/FIREBASE_SETUP.md).
 
-Preview por -Plorem.firebaseAuthEnabled=true; padrao false ate 38. Seus handles
-valida user.info, lista/adiciona/seleciona vinculos, restaura saldo/consolidacao e
-selecao da nuvem, sem reset por caixa/login/reinsercao. Cache Room 13 separado por
-uid; dados legados preservados. Sem treino em nuvem nesta entrega.
-**36-38 planejadas:** ciclo do Ipsum, prazo absoluto 2h e migracao/rollout. Android verifica Codeforces/calcula rating e sincroniza por SDK/Rules;
-WorkManager na 37 pode executar com app fechado, mas atrasar. O prazo nao aumenta
+Preview por -Plorem.firebaseAuthEnabled=true; padrao false ate 38.
+**35-37 implementadas:** adicionar/selecionar handles, 800 por vinculo novo,
+progresso Firestore independente, ciclo do Ipsum com rating unico, historico,
+estatisticas, upsolve e prazo absoluto 2h. Dados legados aguardam migracao na 38.
+Android verifica Codeforces/calcula rating e sincroniza por SDK/Rules;
+WorkManager pode executar com app fechado, mas atrasar. O prazo nao aumenta
 por atraso e o processamento pode aguardar conectividade/sessao. Rules nao
 comprovam AC de cliente modificado; nao prometer verificacao independente no servidor.
 
@@ -58,9 +55,11 @@ comprovam AC de cliente modificado; nao prometer verificacao independente no ser
 [Contratos, configuracao, offline e migracao](docs/FIREBASE.md).
 O bloco nao depende da coorte real da 31 nem libera a integracao da 32.
 
+Integracao da PR 69 preserva a historia 35 da main: chaves `cf_`, selecao Firestore versionada, cache Room 13 e identidades por uid/binding/selecao. Treino atualiza `loremRating`/`progressVersion` e remove o lock atomicamente. [Evidencia integrada](docs/evidence/2026-10-19-firebase-merge-69.json).
+
 ## Escopo resumido
 
-O Lorem tem perfil local associado a um handle público, catálogo e histórico do Codeforces, recomendação inédita, execução de um Ipsum, resultados, pendências, rating interno, estatísticas, variedade e consolidação. O bloco 33-38 acrescenta login/progresso Firebase; o treino atual continua local e o preview permite login e cadastro/selecao de handles. Nao fazem parte do escopo recursos sociais, backend proprio fora desse bloco, editor de codigo ou gamificacao. Consulte [`docs/SPEC.md`](docs/SPEC.md) para as regras completas.
+O Lorem tem perfil local associado a um handle público, catálogo e histórico do Codeforces, recomendação inédita, execução de um Ipsum, resultados, pendências, rating interno, estatísticas, variedade e consolidação. O preview 33-37 acrescenta login/progresso Firebase e limite de 2h; a migracao e ativacao padrao pertencem a 38. Nao fazem parte do escopo recursos sociais, backend proprio fora desse bloco, editor de codigo ou gamificacao. Consulte [`docs/SPEC.md`](docs/SPEC.md) para as regras completas.
 
 ## Arquitetura inicial
 

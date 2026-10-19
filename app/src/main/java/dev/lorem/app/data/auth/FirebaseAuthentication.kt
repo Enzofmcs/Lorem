@@ -29,6 +29,8 @@ data class FirebaseAuthentication(
     val repository: AuthenticationRepository,
     val googleWebClientId: String?,
     val handlesStore: HandlesRemoteStore? = null,
+    val firestore: FirebaseFirestore? = null,
+    val auth: FirebaseAuth? = null,
 ) {
     companion object {
         fun create(context: Context, scope: CoroutineScope): FirebaseAuthentication = try {
@@ -54,7 +56,7 @@ data class FirebaseAuthentication(
             val firestore = FirebaseFirestore.getInstance(app)
             val bootstrap = FirestoreAccountBootstrap(auth, firestore)
             return FirebaseAuthentication(GoogleSessionRepository(FirebaseGoogleIdentitySource(auth), bootstrap, scope),
-                clientId, FirestoreHandlesStore(auth, firestore))
+                clientId, FirestoreHandlesStore(auth, firestore), firestore, auth)
         }
     }
 }

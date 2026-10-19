@@ -290,6 +290,41 @@ No marco integrado: suite Rules/SDK, `test`, `lint`, `assembleDebug`.
 Conferencias humanas continuam opcionais D-014; nenhuma execucao real e alegada
 por estes criterios planejados. Contratos detalhados em [FIREBASE.md](FIREBASE.md).
 
+## Implementacao 35-37 em 19/10/2026
+
+Nivel 4 durante o desenvolvimento; Nivel 5 no marco. Suite Rules usa somente
+Auth/Firestore Emulator `demo-lorem-local`, Node 24/Java 21. Os testes Kotlin
+opt-in exercitam `FirestoreTrainingRepository` real, com JDK 17 e SDK 35. Flags/
+hosts dos emuladores sao inputs das tarefas de teste, para nao reutilizar resultado
+ignorado depois de ativar o opt-in. Nenhum OAuth ou deploy real e alegado.
+
+```bash
+npm --prefix firebase test
+./gradlew :app:testDebugUnitTest --tests 'dev.lorem.app.domain.cloud.*' --tests 'dev.lorem.app.ui.cloud.*' --tests 'dev.lorem.app.ui.CloudTrainingScreenTest' --tests 'dev.lorem.app.data.cloud.*' --tests 'dev.lorem.app.data.remote.CodeforcesApiRepositoryTest'
+```
+
+Com Auth/Firestore Emulator iniciados separadamente conforme FIREBASE_SETUP.md:
+
+```bash
+LOREM_FIREBASE_EMULATORS=true FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 ./gradlew test lint assembleDebug --max-workers=2 --console=plain
+./gradlew :app:testDebugUnitTest --tests 'dev.lorem.app.FirebaseEntryTest' assembleDebug -Plorem.firebaseAuthEnabled=true --max-workers=2 --console=plain
+```
+
+Cobertura: criacao concorrente e canonica em 800 para CF alto/unrated; dois uids
+com mesmo handle e dois dispositivos/handles concorrentes; snapshots, dica,
+marker de problema usado, resposta perdida/retry, rating/consolidacao atomicos e
+versao unica; SDK/cache offline sem novo inicio; fronteiras de 2h e precisao
+submilissegundo; falha da API, dados malformados/consulta incompleta e TESTING;
+AC elegivel descoberto tarde, timeout sem AC e upsolve sem recalculo. Relogio
+monotonic/boot, job unico/reparo/uid/versao e sigilo/fechamento UI tambem cobertos.
+O teste de cache usa LRU em memoria e INSTRUMENTATION_TEST para manter o looper
+principal ativo nas continuacoes do SDK. O app usa o cache persistente padrao do
+Firestore. Fixtures de timeout usam somente REST local com bypass de Rules do emulador;
+nao sao credenciais administrativas nem evidencia de treinos reais da 31.
+
+Resultados e hashes: [evidencia 35-37](evidence/2026-10-19-firebase-35-37.json).
+TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014). Ativacao padrao/migracao ficam na 38.
+
 ## Evidencia historica da base 33/34 antes de Spark em 19/10/2026
 
 - Backend: `npm --prefix firebase/functions test`, Node 22, Java 21, seis testes
@@ -409,3 +444,20 @@ D-012, implementar ciclo 36/timeout 37 ou iniciar migracao de produto 38.
 
 [Evidencia, suites/comandos e hashes](evidence/2026-10-19-firebase-handles-35.json).
 TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014).
+
+## Integracao das PRs 68/69 em 19/10/2026
+
+Nivel 4/5: preservar a historia 35 ja integrada (schema cf_, bindingVersion,
+loremRating/progressVersion, selecao cloud, Room 13 e ProfileLink). Reexecutar
+Auth/Rules, SDK Kotlin real e regressao Android na combinacao, em vez de reutilizar
+apenas a evidencia da branch antiga. SDK comeca com FirestoreHandlesStore da 35,
+restaura a selecao em outro repositorio, confirma tempo sem criar lock, recusa
+inicio com selecao divergente/troca durante treino, encerra e restaura saldo e
+selecao sem reinicializar createdAt/binding. Rules recusam troca+inicio atomicos,
+binding forjado e exclusao isolada do lock. runtime/clock e separado de current.
+
+Comandos completos, resultados e hashes da arvore combinada:
+[evidencia PR 69](evidence/2026-10-19-firebase-merge-69.json). Emuladores locais
+iniciados com FIREBASE_EMULATORS_PATH no cache gravavel e NO_PROXY para loopback;
+Node 24/Java 21 para tooling e JDK 17/SDK 35 para Android. Nenhum projeto Firebase
+real alterado. TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014).

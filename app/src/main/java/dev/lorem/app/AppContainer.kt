@@ -6,6 +6,10 @@ import dev.lorem.app.data.auth.FirebaseAuthentication
 import dev.lorem.app.data.handles.AccountHandlesRepository
 import dev.lorem.app.data.local.RoomHandlesCache
 import dev.lorem.app.domain.handles.HandlesRepository
+import dev.lorem.app.data.cloud.CloudIpsumScheduler
+import dev.lorem.app.data.cloud.FirestoreTrainingRepository
+import dev.lorem.app.domain.auth.AuthenticationState
+import dev.lorem.app.domain.cloud.CloudDeadline
 import dev.lorem.app.data.local.LocalLoremRepository
 import dev.lorem.app.data.local.LoremDatabase
 import dev.lorem.app.data.local.PreferencesAppearanceRepository
@@ -24,12 +28,23 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collectLatest
 
 class AppContainer(context: Context) {
     private val appContext = context.applicationContext
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val authenticationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     val authentication by lazy { FirebaseAuthentication.create(appContext, authenticationScope) }
+    private val cloudScheduler by lazy { CloudIpsumScheduler(appContext) }
+    fun validatedCloudUid(): String? = (authentication.repository.state.value as? AuthenticationState.SignedIn)
+        ?.account?.uid?.takeIf { it == authentication.auth?.currentUser?.uid }
+    val cloudTraining by lazy {
+        authentication.firestore?.let { firestore -> FirestoreTrainingRepository(firestore, ::validatedCloudUid,
+            codeforcesRepository, requireNotNull(handlesRepository),
+            CloudDeadline(android.os.SystemClock::elapsedRealtime) {
+                android.provider.Settings.Global.getInt(appContext.contentResolver, android.provider.Settings.Global.BOOT_COUNT, -1)
+            }, android.os.SystemClock::elapsedRealtime, cloudScheduler::schedule) }
+    }
     private val database = LoremDatabase.create(context)
     val loremRepository: LoremRepository = LocalLoremRepository(
         dataStore = context.profileDataStore,
@@ -68,6 +83,21 @@ class AppContainer(context: Context) {
                 cancelAllWorkByTag(SynchronizationScheduler.PROFILE_TAG)
                 cancelUniqueWork(SynchronizationScheduler.CATALOG_PERIODIC)
                 cancelUniqueWork(SynchronizationScheduler.CATALOG_PREPARE)
+            }
+            applicationScope.launch {
+                var previous: String? = null
+                authentication.repository.state.collectLatest { state ->
+                    val uid = (state as? AuthenticationState.SignedIn)?.account?.uid
+                    if (uid != previous) {
+                        previous?.let { cloudScheduler.cancel(it); cloudTraining?.deadline?.clear(it) }
+                        previous = uid
+                    }
+                    if (uid != null) try {
+                        cloudTraining?.load(uid, cloudTraining?.selectedHandle(uid))
+                    } catch (e: Exception) {
+                        if (e is kotlinx.coroutines.CancellationException) throw e
+                    }
+                }
             }
             return
         }

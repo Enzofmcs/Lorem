@@ -22,6 +22,8 @@ sealed interface SubmissionHistoryResult {
     data class Success(
         val submissions: List<CodeforcesSubmission>,
         val receivedCount: Int = submissions.size,
+        /** False when any response entry could not be parsed; never infer absence of AC from it. */
+        val verificationComplete: Boolean = true,
     ) : SubmissionHistoryResult
     data class Failed(val message: String) : SubmissionHistoryResult
     data object RateLimited : SubmissionHistoryResult
