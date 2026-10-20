@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-20",
+  "task": "Google provider interruption diagnostic after PR85",
+  "base": "7fa80c4d366c567114f0366ab7866e4d1379f008",
+  "observed_by_user": "A entrada foi interrompida pelo Google",
+  "conclusion": "Credential provider cancellation occurs before Firebase token exchange; root cause on device remains unknown.",
+  "implementation": [
+    "Bounded numeric status/detail codes from AndroidX-wrapped ApiException messages only",
+    "Distinguish AndroidX Activity RESULT_CANCELED from Google API status",
+    "No raw exception messages, tokens, email or UID; no login flow, OAuth or Rules change"
+  ],
+  "verification": {
+    "command": "./gradlew :app:testDebugUnitTest --tests 'dev.lorem.app.ui.auth.GoogleCredentialRequestTest' --tests 'dev.lorem.app.ui.auth.AuthenticationViewModelTest' --tests 'dev.lorem.app.ui.AuthenticationScreenTest' --tests 'dev.lorem.app.data.auth.GoogleSessionRepositoryTest' --tests 'dev.lorem.app.data.auth.FirebaseFailureTest' :app:assembleDebug --max-workers=2 --console=plain",
+    "tests": 33,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "assembleDebug": "passed",
+    "coverage": [
+      "Real GMS ApiException message format and AndroidX exceptions",
+      "Numeric-code extraction and redaction of arbitrary provider messages",
+      "Existing session, UI, ViewModel and Firebase failure regressions"
+    ]
+  },
+  "limitations": [
+    "No device provider logs received yet",
+    "No real Google account picker exercised by agent",
+    "TESTE MANUAL OPCIONAL - NÃO EXECUTADO (D-014)"
+  ]
+}

@@ -52,6 +52,8 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
+- **Diagnóstico Google após PR85, 20/10/2026:** usuário agora observa “A entrada foi interrompida pelo Google”; falha localizada no provedor antes da troca Firebase, sem causa específica comprovada. Logs distinguem retorno da Activity de status Google e preservam apenas códigos numéricos, sem mensagens brutas. 33 testes direcionados sem falhas/ignorados e APK. [Evidência](docs/evidence/2026-10-20-google-provider-diagnostic.json). Aguardando códigos do aparelho; nenhum ajuste OAuth/Rules ou mudança de fluxo.
+
 - **Correção pós-43: entrada Google, 20/10/2026:** retorno silencioso reportado após escolher conta. Revalidar explicitamente a identidade atual após troca do token; não depender de novo evento para mesmo uid. Interrupção/credencial ausente exibem feedback, troca/validação limitadas a 30s e sem reinício por resume. Logs de etapas/códigos sob `LoremAuth`, sem tokens/e-mail/uid/mensagens brutas. 343 debug/245 release sem falhas ou ignorados, 16 SDK reais incluídos, 43 direcionados de autenticação e 14 rechecados após reforçar a asserção de uid; lint sem erros (58 avisos) e APK. [Evidência](docs/evidence/2026-10-20-google-login-fix.json). OAuth/Rules confirmados pelo usuário; causa do provedor no aparelho ainda não observada. JSON ausente neste checkout; nenhum deploy ou login Google real pelo agente.
 
 Atualização operacional em 20/10/2026: [OAuth e Rules confirmados pelo responsável](docs/evidence/2026-10-20-firebase-oauth-rules-confirmation.json). Marcos anteriores abaixo preservam o estado observado na ocasião.
