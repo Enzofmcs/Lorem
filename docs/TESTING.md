@@ -541,3 +541,7 @@ Nenhum estudo Python modificado; nenhuma recoleta/ativação experimental, OAuth
 ## Confirmação operacional após PR84, 20/10/2026
 
 Atualização somente documental: [confirmação do responsável](evidence/2026-10-20-firebase-oauth-rules-confirmation.json). Usuário confirmou OAuth autorizado e Rules atualizadas, e adicionará o JSON localmente. Evidência anterior de testes/estado local preservada. Verificados JSON, SHA-256 de referência local, diff e ausência de mudanças no runtime; sem novo Gradle ou emuladores. Sem deploy/readback/login real pelo agente. TESTE MANUAL OPCIONAL - NÃO EXECUTADO (D-014).
+
+## Correção do retorno Google após a 43, 20/10/2026
+
+343 debug/245 release sem falhas ou ignorados, 16 SDK reais incluídos, 43 direcionados de autenticação e 14 rechecados após reforçar a asserção de uid; lint sem erros (58 avisos) e APK. [Evidência e comandos](evidence/2026-10-20-google-login-fix.json). Antes da correção, dois testes reproduziram sessão que não avançava sem nova notificação ou na mesma conta. Regressão cobre interrupção visível, retry, timeout sem postergação pelo resume, isolamento de resposta atrasada e logs sem dados da conta. Integração com SDK real passa pela troca Google em emulador, listener, validação e bootstrap confirmado. Seletor Google e causa real no aparelho não observados. Rechecados os 14 testes do repositório após reforçar somente a asserção de troca de uid. TESTE MANUAL OPCIONAL - NÃO EXECUTADO (D-014).

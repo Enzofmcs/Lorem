@@ -69,3 +69,34 @@ permissões de exclusões e leitura de snapshots anteriores. Não apagar documen
 limpar armazenamento, regravar avaliações ou reativar escrita no arquivo local.
 No Spark, o Android consulta o Codeforces e calcula o resultado. Rules não provam
 AC de cliente modificado; WorkManager exige aparelho/rede/sessão e pode atrasar.
+
+## Diagnóstico do retorno da conta Google
+
+Correção pós-43: [evidência](evidence/2026-10-20-google-login-fix.json). O usuário relatou que o seletor
+fecha e o botão volta a Entrar com Google sem mensagem. O aplicativo agora informa
+interrupção/credencial ausente e retoma explicitamente a validação após a troca do
+token, mesmo sem nova emissão do listener ou com a mesma conta. Firebase e
+validação de sessão têm espera limitada a 30s, com falha recuperável; nunca entrar
+apenas com token trocado ou conta em cache.
+
+No Logcat do Android Studio, usar `tag:LoremAuth`. Pelo terminal:
+
+```bash
+adb logcat -v time -s LoremAuth
+```
+
+| Última etapa/código | O que indica |
+| --- | --- |
+| google_picker_opened | Solicitação enviada ao seletor |
+| credential_provider_cancelled / google_picker_interrupted | Google interrompeu a entrega; o Firebase ainda não recebeu uma credencial |
+| google_credential_unavailable | Provedor não entregou credencial Google válida |
+| google_credential_received → firebase_exchange_started | Credencial entregue; troca no Firebase começou |
+| firebase_sdk_error:CODIGO:MOTIVO / firebase_exchange_failed:MOTIVO | Falha do SDK, com código operacional para diagnóstico |
+| session_token_validated → account_bootstrap_started | Sessão Google validada; aguardando confirmação da conta no Firestore |
+| account_bootstrap_succeeded → session_ready → ui_auth_state:signed_in | Sessão confirmada e exibida pela interface |
+| session_failed:NETWORK | Falha de rede ou limite de espera; repetir após recuperar conectividade |
+
+Os logs registram nomes de etapas e códigos, sem tokens, UID, e-mail ou mensagens
+brutas de exceções. A causa do retorno do provedor no aparelho não foi observada
+neste ambiente; a configuração OAuth/Rules confirmada pelo usuário permanece
+registrada. Nenhum deploy nem modificação de OAuth/Rules integra esta correção.

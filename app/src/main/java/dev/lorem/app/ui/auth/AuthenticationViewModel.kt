@@ -3,6 +3,7 @@ package dev.lorem.app.ui.auth
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import dev.lorem.app.data.auth.authLog
 import dev.lorem.app.domain.auth.AuthenticationFailure
 import dev.lorem.app.domain.auth.AuthenticationRepository
 import kotlinx.coroutines.CancellationException
@@ -11,7 +12,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class AuthenticationViewModel(private val repository: AuthenticationRepository) : ViewModel() {
+class AuthenticationViewModel(private val repository: AuthenticationRepository,
+    private val diagnostic: (String) -> Unit = {}) : ViewModel() {
     val session = repository.state
     private val mutableBusy = MutableStateFlow(false)
     val busy = mutableBusy.asStateFlow()
@@ -25,11 +27,20 @@ class AuthenticationViewModel(private val repository: AuthenticationRepository) 
             mutableBusy.value = true
             mutableError.value = null
             try {
-                mutableError.value = repository.signInWithGoogle(requestToken())
+                diagnostic("google_picker_opened")
+                val token = requestToken()
+                diagnostic("google_credential_received")
+                mutableError.value = repository.signInWithGoogle(token)
+                mutableError.value?.let { diagnostic("sign_in_failed:${it.name}") }
             } catch (_: GoogleSignInCancelled) {
-                // Dismissing the account picker is a normal return to login.
+                diagnostic("google_picker_interrupted")
+                mutableError.value = AuthenticationFailure.CANCELLED
+            } catch (_: GoogleCredentialUnavailable) {
+                diagnostic("google_credential_unavailable")
+                mutableError.value = AuthenticationFailure.CREDENTIAL_UNAVAILABLE
             } catch (error: Exception) {
                 if (error is CancellationException) throw error
+                diagnostic("sign_in_exception:${error.javaClass.simpleName}")
                 mutableError.value = AuthenticationFailure.UNKNOWN
             } finally {
                 mutableBusy.value = false
@@ -38,6 +49,7 @@ class AuthenticationViewModel(private val repository: AuthenticationRepository) 
     }
 
     fun signOut(clearCredentialState: suspend () -> Unit = {}) {
+        diagnostic("sign_out")
         signInJob?.cancel()
         mutableError.value = null
         repository.signOut() // Hide authenticated content before any asynchronous cleanup.
@@ -47,12 +59,15 @@ class AuthenticationViewModel(private val repository: AuthenticationRepository) 
         }
     }
 
-    fun refresh() = repository.retry()
+    fun refresh() {
+        // Returning from the account picker raises ON_START; it must not restart an owned sign-in.
+        if (signInJob?.isActive != true) repository.retry()
+    }
 
     companion object {
         fun factory(repository: AuthenticationRepository) = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T = AuthenticationViewModel(repository) as T
+            override fun <T : ViewModel> create(modelClass: Class<T>): T = AuthenticationViewModel(repository, ::authLog) as T
         }
     }
 }

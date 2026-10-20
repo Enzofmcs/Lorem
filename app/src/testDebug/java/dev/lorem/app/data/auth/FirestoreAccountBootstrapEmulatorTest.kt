@@ -14,6 +14,9 @@ import com.google.firebase.firestore.MemoryCacheSettings
 import com.google.firebase.firestore.MemoryLruGcSettings
 import com.google.firebase.firestore.Source
 import dev.lorem.app.domain.auth.AuthenticationFailure
+import dev.lorem.app.domain.auth.AuthenticationState
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import java.util.UUID
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import dev.lorem.app.data.rollout.StudyPseudonyms
@@ -440,6 +443,33 @@ class FirestoreAccountBootstrapEmulatorTest {
         } finally { legacyDb.close() }
     }
 
+    @LooperMode(LooperMode.Mode.INSTRUMENTATION_TEST)
+    @Test(timeout = 60_000) fun `production auth listener and sign in continuation reach confirmed session with real SDK`() = runBlocking {
+        val sessionScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+        val events = mutableListOf<String>()
+        try {
+            val sessions = withContext(Dispatchers.Main) {
+                GoogleSessionRepository(FirebaseGoogleIdentitySource(auth), FirestoreAccountBootstrap(auth, db), sessionScope,
+                    diagnostic = events::add)
+            }
+            val token = googleCredentialToken()
+            assertNull(withContext(Dispatchers.Main) { sessions.signInWithGoogle(token) })
+            val ready = withTimeout(15_000) { sessions.state.first { it is AuthenticationState.SignedIn } } as AuthenticationState.SignedIn
+            assertEquals(auth.currentUser!!.uid, ready.account.uid)
+            val account = db.collection("users").document(ready.account.uid).get(Source.SERVER).await()
+            val created = account.getTimestamp("createdAt")
+            assertNotNull(created)
+            assertNull(withContext(Dispatchers.Main) { sessions.signInWithGoogle(token) })
+            withTimeout(15_000) { sessions.state.first { it is AuthenticationState.SignedIn } }
+            assertEquals(created, db.collection("users").document(ready.account.uid).get(Source.SERVER).await().getTimestamp("createdAt"))
+            withContext(Dispatchers.Main) { sessions.signOut() }
+            assertEquals(AuthenticationState.SignedOut, sessions.state.value)
+            assertTrue(events.contains("session_ready"))
+            assertFalse(events.joinToString().contains(token))
+            assertFalse(events.joinToString().contains(ready.account.uid))
+        } finally { sessionScope.cancel() }
+    }
+
     /** Synthetic clock fixture via the local emulator's rules-disabled test token, never a production endpoint. */
     private fun seedExpiredStartOnlyInEmulator(uid: String, id: String) {
         check(System.getenv("LOREM_FIREBASE_EMULATORS") == "true")
@@ -459,7 +489,10 @@ class FirestoreAccountBootstrapEmulatorTest {
         try { assertEquals(200, connection.responseCode) } finally { connection.disconnect() }
     }
 
-    private suspend fun signInGoogle(): String {
+    private suspend fun signInGoogle(): String =
+        auth.signInWithCredential(GoogleAuthProvider.getCredential(googleCredentialToken(), null)).await().user!!.uid
+
+    private fun googleCredentialToken(): String {
         val sub = "android-${UUID.randomUUID()}"
         fun encode(value: JSONObject) = Base64.encodeToString(value.toString().toByteArray(),
             Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
@@ -469,7 +502,7 @@ class FirestoreAccountBootstrapEmulatorTest {
                 .put("email_verified", true).put("iss", "https://accounts.google.com")
                 .put("aud", "emulator-only").put("iat", System.currentTimeMillis() / 1000)
                 .put("exp", System.currentTimeMillis() / 1000 + 3600)) + "."
-        return auth.signInWithCredential(GoogleAuthProvider.getCredential(token, null)).await().user!!.uid
+        return token
     }
 
     private fun loopback(variable: String): Pair<String, Int> {

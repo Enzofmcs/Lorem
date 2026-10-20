@@ -6,6 +6,8 @@
 
 ## Estado atual
 
+**Correção após 40–43:** entrada Google sem retorno visual corrigida nos caminhos reproduzidos; continuidade explícita da sessão, feedback e logs `LoremAuth`. 343 debug/245 release sem falhas ou ignorados, 16 SDK reais incluídos, 43 direcionados de autenticação e 14 rechecados após reforçar a asserção de uid; lint sem erros (58 avisos) e APK. [Evidência](evidence/2026-10-20-google-login-fix.json). Sem reprodução do seletor Google real no aparelho.
+
 **Foco atual:** histórias 40–43 implementadas e verificadas localmente; navegação/telas cloud, filtros/gráficos/tema, preparação incremental e pendências automáticas. [Paridade](CLOUD_EXPERIENCE.md).
 
 **Última história verificada:** 43, em 20/10/2026. 332 debug/237 release sem falhas ou ignorados, 15 SDK reais em emuladores, 34 Auth/Rules; lint sem erros (58 avisos) e APK. [Evidência](evidence/2026-10-20-cloud-40-43.json). Marcos anteriores preservados.
@@ -2334,6 +2336,8 @@ TESTE MANUAL OPCIONAL - NÃO EXECUTADO (D-014).
 <a id="historia-40"></a>
 
 ### Historia 40 - Compatibilidade do cliente atual com Firebase e registro de operação
+
+Correção posterior em 20/10/2026: [retorno do login e diagnóstico](evidence/2026-10-20-google-login-fix.json). Logs `LoremAuth` diferenciam provedor Google, troca Firebase, validação e bootstrap; preservadas as confirmações operacionais do responsável.
 
 **GitHub:** [#73](https://github.com/Enzofmcs/Lorem/issues/73) · planejamento central [#72](https://github.com/Enzofmcs/Lorem/issues/72).
 

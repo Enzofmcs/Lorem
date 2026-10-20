@@ -1,6 +1,7 @@
 package dev.lorem.app.ui.auth
 
 import android.content.Context
+import dev.lorem.app.data.auth.authLog
 import android.annotation.SuppressLint
 import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
@@ -30,11 +31,14 @@ class GoogleCredentialRequest(context: Context, private val webClientId: String)
             ).build()
             val credential = manager.getCredential(activityContext, request).credential
             return googleIdToken(credential)
-        } catch (_: GetCredentialCancellationException) {
+        } catch (error: GetCredentialCancellationException) {
+            authLog("credential_provider_cancelled:${error.javaClass.simpleName}")
             throw GoogleSignInCancelled()
-        } catch (_: NoCredentialException) {
+        } catch (error: NoCredentialException) {
+            authLog("credential_provider_empty:${error.javaClass.simpleName}")
             throw GoogleCredentialUnavailable()
-        } catch (_: GetCredentialException) {
+        } catch (error: GetCredentialException) {
+            authLog("credential_provider_failed:${error.javaClass.simpleName}")
             throw GoogleCredentialUnavailable()
         }
     }

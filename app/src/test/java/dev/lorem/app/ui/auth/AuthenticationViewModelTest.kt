@@ -16,9 +16,10 @@ class AuthenticationViewModelTest {
         override val state = MutableStateFlow<AuthenticationState>(AuthenticationState.SignedOut)
         val tokens = mutableListOf<String>()
         var failure: AuthenticationFailure? = null
+        var retries = 0
         override suspend fun signInWithGoogle(idToken: String): AuthenticationFailure? { tokens += idToken; return failure }
         override fun signOut() { state.value = AuthenticationState.SignedOut }
-        override fun retry() = Unit
+        override fun retry() { retries++ }
     }
 
     @Test fun `double tap opens only one picker and cancel permits another login`() = runTest {
@@ -34,11 +35,12 @@ class AuthenticationViewModelTest {
         picker.completeExceptionally(GoogleSignInCancelled())
         runCurrent()
         assertFalse(model.busy.value)
-        assertNull(model.error.value)
+        assertEquals(AuthenticationFailure.CANCELLED, model.error.value)
         assertTrue(repo.tokens.isEmpty())
         model.signIn { "valid-token" }
         runCurrent()
         assertEquals(listOf("valid-token"), repo.tokens)
+        assertNull(model.error.value)
     }
 
     @Test fun `sign out hides account before credential cleanup and cancels pending picker`() = runTest {
@@ -71,4 +73,22 @@ class AuthenticationViewModelTest {
         assertNull(model.error.value)
         assertEquals(AuthenticationState.SignedOut, model.session.value)
     }
+    @Test fun `missing credential produces feedback and returning from picker does not reset the sign in`() = runTest {
+        val repo = Repository()
+        val events = mutableListOf<String>()
+        val model = AuthenticationViewModel(repo, events::add)
+        val picker = CompletableDeferred<String>()
+        model.signIn { picker.await() }; runCurrent()
+        model.refresh()
+        assertEquals(0, repo.retries)
+        picker.completeExceptionally(GoogleCredentialUnavailable()); runCurrent()
+        assertEquals(AuthenticationFailure.CREDENTIAL_UNAVAILABLE, model.error.value)
+        assertFalse(model.busy.value)
+        assertTrue(events.contains("google_credential_unavailable"))
+        model.signIn { "sensitive-token" }; runCurrent()
+        assertNull(model.error.value)
+        assertFalse(events.joinToString().contains("sensitive-token"))
+        model.refresh(); assertEquals(1, repo.retries)
+    }
+
 }
