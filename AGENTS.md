@@ -73,10 +73,10 @@ backend ou abstracao sem necessidade concreta.
 - **Historico preservado:** evidencias anteriores em docs/evidence/2026-10-19-firebase-33-34.json e docs/evidence/2026-10-19-firebase-android-config.json descrevem Functions/configuracao inicial, nao a arquitetura Spark. D-039 substitui compute de D-033/D-037/D-038; nam5/preview/isolamento preservados.
 - **Contrato do novo bloco:** [Firebase, prazo e migracao](docs/FIREBASE.md). Requisitos novos substituem a exclusao anterior de login/Firebase e o rating inicial D-009 somente prospectivamente (D-033 a D-039).
 
-- **Foco atual:** evolução 39 (D-044) implementada/verificada com ativação desabilitada. **Marco anterior:** entrega final 33-38 implementada/verificada. Historia 31 retirada do escopo pelo usuario (D-042); 32 fica fora desta entrega por dependencia, sem previsoes. Historias 00-30 e evidencias anteriores preservadas.
+- **Foco atual (20/10/2026, D-045 a D-047):** planejar/implementar 40–49: recuperar paridade da UX Firebase (40–43) e investigar tempos por ratings x/y em notebooks Jupyter (44–49). [Direção, contratos e ordem](docs/REDIRECTION.md); [acompanhamento #72](https://github.com/Enzofmcs/Lorem/issues/72). Histórias novas PLANEJADAS, sem implementação alegada. A 39 segue verificada/desativada; 31 retirada e 32 fora da entrega. Evidências anteriores preservadas.
 - **Última história verificada:** 39; evidência acima. **Marco anterior, preservado:** História 38, 310 debug/223 release sem falhas/ignorados, 14 SDK reais em emuladores, 29 Auth/Rules, 85 Python; lint sem erros e APK. Evidencia em docs/evidence/2026-10-19-android-38.json. Marco 30 de 2026-10-18 preservado: 232 debug/170 release e 66 Python, exportacao local/contrato Android-Python e snapshots anteriores.
-- **Primeiro item funcional pendente:** nenhum no escopo ativo apos a 38; entrega em PR. A 31 nao e mais trabalho pendente do produto; foi retirada do escopo por solicitacao do usuario. A 32 nao sera implementada nesta entrega.
-- **Proxima entrega demonstravel:** jornada integrada 38, arquivo anterior somente leitura, saldo cloud separado, prazo original e exclusoes restauradas em outro cliente.
+- **Primeiros itens pendentes:** 40 (contrato cliente/Rules e operação) e, independentemente, 44 (Jupyter e dados). Não exigir Firebase/coorte Ipsum para a frente científica. Ordem do app: 40→41→42, com 43 após 41; estudo: 44→45→46→47→48→49.
+- **Próximas entregas demonstráveis:** experiência completa sobre Firestore e notebooks reproduzíveis com mapas x/y, curvas e quartis disponíveis. O Git não contém snapshot bruto/KM completo: restaurar por hash ou registrar nova coleta opt-in; fixture não conclui recuperação empírica.
 - **Configuracao real restante:** restaurar google-services.json local neste checkout e publicar as Rules 38; usuario ja confirmou Google unico e publicacao 35-37. Teste manual continua opcional (D-014).
 
 Registro historico da 31 retirada do escopo (D-042), sem trabalho empirico pendente nesta entrega: [TRANSPORT_PROTOCOL.md](study/TRANSPORT_PROTOCOL.md),
@@ -102,6 +102,14 @@ MAE 15,135 min e Brier integrado 0,122746; AFT 15,892/0,126693. Somente quatro g
 reservados; erros de tempo nos resolvidos tem vies e suporte diferente. D-012
 continua em producao; nenhum retuning no teste ou transporte para Ipsums autorizado.
 Comparacao entre epocas e correcao temporal fora do escopo.
+
+## Regras do novo bloco 40–49
+
+- Notebooks orquestram `lorem_study`; não copiar o núcleo testado para células. Run All offline por padrão, sem coleta/retreino silenciosos.
+- Tempo é aproximação sequencial, com censura; não resolveu no orçamento não significa incapacidade permanente. Mostrar cobertura e indisponibilidade.
+- Contrato analítico proposto `analysis-time-bands-v2`: P25/P50/P75 e orçamento h. Não reinterpretar T1/T2/T3 p50/p75/p90 da 39 nem ativar pontos/previsões.
+- Reutilizar telas/componentes anteriores com dados cloud; preservar uid/handle, 800, prazo, exclusões, snapshots e arquivo legado. Não reativar gravação local da conta.
+- Coorte de Ipsums não é requisito da nova entrega. Teste já examinado não serve para retuning ou nova alegação independente.
 
 ## Politica de contexto
 

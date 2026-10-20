@@ -1,5 +1,16 @@
 # Estudo Python do Lorem
 
+## Próxima entrega planejada em 20/10/2026
+
+Histórias **44–49**: seis notebooks de dados/reprodução, qualidade, ratings x/y,
+curvas/quartis, estabilidade e demonstração. [Plano e contratos](../docs/REDIRECTION.md)
+· [Issues #77–82](https://github.com/Enzofmcs/Lorem/issues/72).
+Os módulos e comandos abaixo permanecem a base reutilizável; notebooks ainda não
+foram implementados. Coorte Ipsum não é requisito. Agregados estão no Git; snapshot
+bruto/KM completo precisam ser restaurados ou recolhidos em nova execução opt-in.
+Os novos limiares são analíticos e não habilitam pontuação experimental.
+
+
 Implementacao das Historias 22-28, com preparo local da 30 e ferramenta pre-registrada da 31: coleta auditavel, tentativas sequenciais,
 particoes por contest, Kaplan-Meier/D-012, AFT censurado e avaliacao reservada.
 Amostra real: 19 contests elegiveis, 274.073 tentativas validas. Teste: quatro

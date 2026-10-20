@@ -1,5 +1,10 @@
 # Especificacao do produto Lorem
 
+> **Planejamento 40–49 (20/10/2026):** [REDIRECTION.md](REDIRECTION.md) define
+> paridade da interface cloud e estudo visual em Jupyter. Este bloco preserva
+> regras atuais de treino/conta e não ativa previsões, altera pontos ou reavalia
+> histórico. Critérios de entrega ficam em ROADMAP.md.
+
 > Fonte de verdade para visao, escopo e regras funcionais estaveis. Consulte somente
 > a secao relacionada a regra em alteracao. Progresso fica em [`ROADMAP.md`](ROADMAP.md)
 > e escolhas em aberto ficam em [`DECISIONS.md`](DECISIONS.md).
@@ -41,7 +46,7 @@ Competidores de nivel iniciante-intermediario ou intermediario que ja utilizam o
 
 **Alteracao aprovada em 19/10/2026 (Spark, D-039):** Historias 33-38
 acrescentam Google/Firebase, varios handles por conta com 800 inicial e prazo de
-2h. O app atual ainda usa perfil local e a regra inicial D-009. Contratos de
+2h. A jornada Firebase é padrão desde a 38; a inicial D-009 é histórica e novos vínculos usam 800. Contratos de
 transicao/migracao e operacao sem rede: [FIREBASE.md](FIREBASE.md). Login e jornada 33-38 implementados (D-040 a D-043), com Firebase padrao e arquivo local somente leitura. Firebase sem Functions/Tasks/billing, com Rules e sincronizacao Android/WorkManager. O prazo de 2h e absoluto; a gravacao remota pode ocorrer depois, conforme rede/sistema/sessao. Veredito CF nao tem validacao independente no servidor neste escopo Spark.
 
 ### Dentro do escopo

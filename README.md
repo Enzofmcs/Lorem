@@ -1,5 +1,12 @@
 # Lorem
 
+> **Direção vigente — 20/10/2026:** [histórias 40–49](docs/REDIRECTION.md) planejadas
+> para recuperar a experiência completa sobre Firebase e apresentar em Jupyter a
+> distribuição do tempo até AC por ratings do participante/problema.
+> [Acompanhar o bloco #72](https://github.com/Enzofmcs/Lorem/issues/72).
+> Notebooks e paridade ainda não foram implementados; pontuação experimental segue
+> desativada e a nova entrega não exige usuários do Ipsum.
+
 Lorem é um aplicativo Android de treino individual para programação competitiva. O produto recomenda exercícios inéditos do Codeforces adequados ao nível do usuário e acompanha sua evolução.
 
 Um **Ipsum** é a tentativa oficial e cronometrada de resolver um problema recomendado. Recomendação, cronômetro persistente, detecção de submissões, resultado, Rating Lorem, histórico, upsolve, estatísticas, variedade e consolidação de faixa já estão implementados.
@@ -8,7 +15,7 @@ Um **Ipsum** é a tentativa oficial e cronometrada de resolver um problema recom
 
 ## Estado atual
 
-A base Android de módulo único implementa as Histórias 00–21 e 29–30:
+A base Android de módulo único implementou as capacidades das Histórias 00–21 e 29–30 listadas abaixo. Parte da interface permanece no fluxo local anterior e ainda precisa de adaptação à jornada Firebase padrão (41–43); a lista não é uma declaração de paridade atual:
 
 - Kotlin, Jetpack Compose e Material 3;
 - navegação que restaura o Ipsum ativo;
@@ -171,7 +178,7 @@ Consulte o [roadmap](docs/ROADMAP.md) e o [roteiro de demonstração](docs/DEMO.
 O planejamento de 18/10/2026 acrescenta **22–28 — Estudo quantitativo em Python**:
 coleta e preparo auditáveis, estimativa de tempo até AC, probabilidades para um
 orçamento explícito, avaliação e relatório reproduzível. São **24 horas estimadas**
-para uma primeira versão. As Histórias 22–28 estão implementadas; a suite atual tem 66 testes Python, incluindo o preparo da 30.
+para uma primeira versão. As Histórias 22–28 estão implementadas; o marco da 30 registrou 66 testes Python. O marco posterior da 39 registra 91, conforme sua evidência.
 A amostra tem 19 contests elegíveis e 274.073 tentativas válidas. A avaliação de
 35.367 tentativas em quatro contests reservados favoreceu a referência simples
 por delta em relação ao AFT: MAE 15,1 vs 15,9 min nos resolvidos, com denominadores
@@ -186,9 +193,9 @@ metadados persistidos, CF conhecido antes do início e exportação local de Ips
 encerrados em Configurações. Legados/ativos/avaliações preservados; D-012 vigente.
 [Protocolo e comandos de Ipsums](study/IPSUM_PROTOCOL.md).
 
-**31–32 bloqueadas:** nenhum export real foi fornecido. Precisamos de uma coorte
-real para avaliar os ratings e as previsões antes da integração. O piso de preparo
-não comprova precisão. A [ferramenta e o pré-registro da 31](study/TRANSPORT_PROTOCOL.md)
+**31 retirada do escopo; 32 fora da entrega (D-042):** nenhum export real foi fornecido.
+Transporte para Ipsum permanece não validado, sem ser condição para o novo estudo
+44–49. O piso de preparo não comprova precisão. A [ferramenta e o pré-registro da 31](study/TRANSPORT_PROTOCOL.md)
 já definem a comparação e os limites antes do teste real. O estudo não inclui comparação entre épocas/correção temporal.
 [Progresso e critérios](docs/ROADMAP.md) · [Evidência Android](docs/evidence/2026-10-18-android-30.json).
 

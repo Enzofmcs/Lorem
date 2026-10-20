@@ -1,5 +1,11 @@
 # Demonstracao do Lorem
 
+> **Situação em 20/10/2026:** o roteiro 00–21 abaixo é referência da experiência
+> anterior. A jornada Firebase padrão ainda não expõe todas essas telas; histórias
+> 41–43 recuperam a paridade. A história 49 acrescentará demonstração Jupyter
+> offline de ratings x/y, qualidade, curvas e quartis. Não apresentar os recursos
+> planejados como já disponíveis. [Direção](REDIRECTION.md).
+
 O roteiro percorre as Historias 00-21. O ensaio em dispositivo e opcional; o aceite
 funcional usa os testes automatizados, conforme D-014.
 

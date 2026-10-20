@@ -1,5 +1,10 @@
 # Política de pontos por curva de tempo — decisão v1
 
+> **20/10/2026:** este contrato `time-curve-v1` continua preservado e desativado.
+> O [novo estudo](REDIRECTION.md) planeja `analysis-time-bands-v2` (P25/P50/P75 e
+> orçamento h). Seus T1/T2/T3/T4 não rebatizam os campos p50/p75/p90 desta política
+> nem alteram snapshots, Rules ou pontuação. Integração exige decisão futura.
+
 ## Decisão anterior à implementação
 
 T1 é a referência do par de ratings; T2 inicia a resolução lenta; T3 encerra
