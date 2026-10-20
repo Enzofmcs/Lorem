@@ -15,6 +15,18 @@ import com.google.firebase.firestore.MemoryLruGcSettings
 import com.google.firebase.firestore.Source
 import dev.lorem.app.domain.auth.AuthenticationFailure
 import java.util.UUID
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import dev.lorem.app.data.rollout.StudyPseudonyms
+import dev.lorem.app.data.rollout.LocalLegacyMigration
+import dev.lorem.app.data.local.LocalLoremRepository
+import dev.lorem.app.data.local.toEntity
+import dev.lorem.app.data.local.toStudyJson
+import dev.lorem.app.StatisticsFixtures
+import dev.lorem.app.domain.rollout.LegacyMigration
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -49,6 +61,10 @@ class FirestoreAccountBootstrapEmulatorTest {
     private lateinit var app: FirebaseApp
     private lateinit var auth: FirebaseAuth
     private lateinit var db: FirebaseFirestore
+    private val exportScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val exportIds by lazy { StudyPseudonyms(PreferenceDataStoreFactory.create(scope = exportScope) {
+        File(ApplicationProvider.getApplicationContext<Application>().cacheDir, "export-${UUID.randomUUID()}.preferences_pb")
+    }) }
     private val cacheDatabases = mutableListOf<LoremDatabase>()
     private var submitted = emptyList<CodeforcesSubmission>()
     private var cfRating: Int? = 3500
@@ -64,13 +80,13 @@ class FirestoreAccountBootstrapEmulatorTest {
         })
     }
     private val scheduled = mutableListOf<CloudIpsum>()
-    private fun repository(): FirestoreTrainingRepository {
+    private fun repository(legacy: LegacyMigration? = null): FirestoreTrainingRepository {
         val cache = Room.inMemoryDatabaseBuilder(ApplicationProvider.getApplicationContext(), LoremDatabase::class.java).build()
         cacheDatabases.add(cache)
         return FirestoreTrainingRepository(db, { auth.currentUser?.uid }, cf,
             AccountHandlesRepository(FirestoreHandlesStore(auth, db), cf, RoomHandlesCache(cache.accountHandlesDao())),
             CloudDeadline(android.os.SystemClock::elapsedRealtime) { 1 }, android.os.SystemClock::elapsedRealtime,
-            { _, attempt, _ -> synchronized(scheduled) { scheduled.add(attempt) } }, RecommendIpsum { 0 })
+            { _, attempt, _ -> synchronized(scheduled) { scheduled.add(attempt) } }, RecommendIpsum { 0 }, legacy, exportIds)
     }
 
     @Before fun connectOnlyToDemoEmulators() {
@@ -92,6 +108,7 @@ class FirestoreAccountBootstrapEmulatorTest {
     }
 
     @After fun disconnect() = runBlocking {
+        exportScope.cancel()
         cacheDatabases.forEach { it.close() }
         if (::db.isInitialized) db.terminate().await()
         if (::app.isInitialized) app.delete()
@@ -315,6 +332,63 @@ class FirestoreAccountBootstrapEmulatorTest {
         assertFalse(observed.locked)
         assertEquals(780, observed.handles.first { it.identity.key == "cf_tourist" }.loremRating)
         assertEquals("cf_petr", repository().selectedHandle(uid))
+    }
+
+    @Test(timeout = 90_000) fun `rollout preserves local archive syncs exclusions and restores cloud progress without assigning legacy ratings`() = runBlocking {
+        val uid = signInGoogle()
+        FirestoreAccountBootstrap(auth, db).ensureAccount(uid)
+        val context = ApplicationProvider.getApplicationContext<Application>()
+        val legacyDb = Room.inMemoryDatabaseBuilder(context, LoremDatabase::class.java).addCallback(LoremDatabase.ARCHIVE_CALLBACK).build()
+        try {
+            val preferences = PreferenceDataStoreFactory.create(scope = exportScope) { File(context.cacheDir, "legacy-${UUID.randomUUID()}.preferences_pb") }
+            val local = LocalLoremRepository(preferences, legacyDb.problemHistoryDao(), legacyDb.problemCatalogDao(), legacyDb.ipsumDao(),
+                archiveStarted = { legacyDb.legacyRolloutDao().state() != null })
+            local.saveProfile(StatisticsFixtures.profile)
+            val old = StatisticsFixtures.finished.first().copy(problem = (cf.problems() as ProblemCatalogResult.Success).problems.first())
+            legacyDb.ipsumDao().insert(old.toEntity())
+            val oldActive = local.createActiveIpsum(StatisticsFixtures.attempt(0, IpsumStatus.ACTIVE).copy(
+                startedAtEpochMillis = System.currentTimeMillis() - 7_203_000, problem = old.problem))
+            val migration = LocalLegacyMigration(legacyDb, local, cf, pseudonyms = exportIds)
+            val training = repository(migration)
+            assertEquals(800, training.addHandle(uid, "tourist").rating)
+            training.selectHandle(uid, "cf_tourist")
+            cfComplete = false
+            try { training.start(uid, "cf_tourist", "rollout"); fail("Pending legacy verification") }
+            catch (_: IllegalStateException) { }
+            assertFalse(db.document("users/$uid/runtime/current").get(Source.SERVER).await().exists())
+            cfComplete = true
+            assertTrue(migration.reconcile().ready)
+            val archived = legacyDb.legacyRolloutDao().attempts()
+            assertEquals(old.toEntity(), archived.first())
+            assertEquals(oldActive.startedAtEpochMillis + 7_200_000, archived.last().endedAtEpochMillis)
+            val active = training.start(uid, "cf_tourist", "rollout")
+            assertNotEquals(old.problem.id, active.ipsum.problem.id)
+            val exclusion = db.document("users/$uid/handles/cf_tourist/exclusions/${old.problem.id.contestId}_${old.problem.id.index}").get(Source.SERVER).await()
+            assertEquals(setOf("contestId", "index", "source"), exclusion.data!!.keys)
+            val acceptedAt = (active.ipsum.startedAtEpochMillis / 1000 + 1) * 1000
+            kotlinx.coroutines.delay((acceptedAt - System.currentTimeMillis()).coerceAtLeast(0) + 30)
+            submitted = listOf(CodeforcesSubmission(701, active.ipsum.problem.id, "OK", Instant.ofEpochMilli(acceptedAt)))
+            assertTrue(training.reconcile(uid, active))
+            val export = training.exportStudy(uid, "cf_tourist")
+            assertEquals(1, export.attempts.size)
+            val serialized = export.toStudyJson("test")
+            assertFalse(serialized.contains(uid)); assertFalse(serialized.contains("Tourist")); assertFalse(serialized.contains("tourist"))
+            assertEquals("ipsum-cloud-v2", JSONObject(serialized).getString("export_version"))
+            // A client with no local archive must still honor the synchronized exclusion.
+            val fresh = repository()
+            assertEquals("cf_tourist", fresh.selectedHandle(uid))
+            assertEquals(824, fresh.load(uid, "cf_tourist").handles.single().rating)
+            val next = fresh.start(uid, "cf_tourist", "fresh-device")
+            assertNotEquals(old.problem.id, next.ipsum.problem.id)
+            assertNotEquals(active.ipsum.problem.id, next.ipsum.problem.id)
+            val other = signInGoogle()
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
+            assertNotEquals(uid, other)
+            FirestoreAccountBootstrap(auth, db).ensureAccount(other)
+            try { fresh.load(uid); fail("Stale uid") } catch (_: IllegalStateException) { }
+            assertEquals(800, repository().addHandle(other, "tourist").rating)
+            assertEquals(archived, legacyDb.legacyRolloutDao().attempts())
+        } finally { legacyDb.close() }
     }
 
     /** Synthetic clock fixture via the local emulator's rules-disabled test token, never a production endpoint. */

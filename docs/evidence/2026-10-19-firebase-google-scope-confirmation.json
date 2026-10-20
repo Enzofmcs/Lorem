@@ -1,0 +1,13 @@
+{
+  "recordedAt": "2026-10-19T20:35:35.492677-03:00",
+  "source": "user_confirmation_in_chat",
+  "googleOnlyProviderConfirmation": true,
+  "googleOnlyUserMessage": "Sim, somente Google",
+  "study31ScopeUserMessage": "ignore essa história, ela não é plausivel pro escopo",
+  "story31Status": "removed_from_active_scope_by_user",
+  "story32Status": "not_implemented; excluded_from_delivery_due_to_removed_validation_dependency",
+  "remoteProviderReadbackPerformed": false,
+  "realGoogleOAuthExecuted": false,
+  "existingStudyCodeAndEvidencePreserved": true,
+  "manualAppTest": "TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014)"
+}

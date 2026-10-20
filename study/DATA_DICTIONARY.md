@@ -140,3 +140,19 @@ com hash/seed fixos. Export conflitante/coorte congelada alterada e recusado.
 Cobertura e valid_attempts/observed_attempts, indefinida sem observacoes.
 Manifesto sem dados reais registra not_collected/insufficient_data; nao ha metricas
 nem decisao de integracao sem evidencia da 31.
+
+### Export cloud da historia 38
+
+ipsum-cloud-v2 usa schema_version=2, data_kind=ipsum_cloud, whitelist de tentativas
+FINAL e omite ativo/aguardando verificacao. identity_version=installation-handle-v1,
+initial_rating_policy=binding-800-v1, time_limit_ms=7200000,
+clock_policy=server-start-monotonic-v1 e verification_trust=android-codeforces-client-v1.
+participant_key e UUID aleatorio por handle nesta instalacao: o mesmo handle em
+uids diferentes fica agrupado aqui. sample_id inclui namespace opaco aleatorio por
+uid/handle/binding para nao colidir sequencias. UID/e-mail/handle/namespace direto
+nao sao exportados. Reinstalacoes nao sao automaticamente identificadas/agrupadas.
+
+O preparador historico rejeita cloud v2 explicitamente antes de rede: diferencas
+na identidade, inicial 800, prazo e confianca nao podem ser misturadas silenciosamente.
+A 31 foi retirada do escopo pelo usuario; a 32 fica fora da entrega e sem previsoes.
+O export e recurso local opcional da 38, sem coleta/upload automatico.

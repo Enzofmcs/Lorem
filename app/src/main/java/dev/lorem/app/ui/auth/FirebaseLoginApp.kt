@@ -31,7 +31,7 @@ import dev.lorem.app.ui.handles.AccountHandlesDestination
 
 @Composable
 fun FirebaseLoginApp(authentication: FirebaseAuthentication, appearance: AppearanceRepository,
-    handlesRepository: HandlesRepository? = null, training: CloudTrainingRepository? = null) {
+    handlesRepository: HandlesRepository? = null, training: CloudTrainingRepository? = null, migration: dev.lorem.app.domain.rollout.LegacyMigration? = null) {
     val model: AuthenticationViewModel = viewModel(factory = AuthenticationViewModel.factory(authentication.repository))
     val session by model.session.collectAsStateWithLifecycle()
     val busy by model.busy.collectAsStateWithLifecycle()
@@ -52,6 +52,7 @@ fun FirebaseLoginApp(authentication: FirebaseAuthentication, appearance: Appeara
             onSignIn = { credentials?.let { model.signIn { it.getIdToken(context) } } },
             onRetry = model::refresh,
             onSignOut = { model.signOut { credentials?.clearState() } },
+            deviceContent = { migration?.let { dev.lorem.app.ui.rollout.LegacyArchiveDestination(it) } },
             signedInContent = { account ->
                 if (training != null) CloudTrainingDestination(account.uid, training)
                 else if (handlesRepository != null) AccountHandlesDestination(account.uid, handlesRepository)
@@ -70,12 +71,14 @@ fun AuthenticationScreen(
     onSignIn: () -> Unit,
     onRetry: () -> Unit,
     onSignOut: () -> Unit,
+    deviceContent: @Composable () -> Unit = {},
     signedInContent: @Composable (GoogleAccount) -> Unit = { HandleOnboardingDestination() },
 ) {
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)
             .verticalScroll(rememberScrollState()).padding(24.dp), verticalArrangement = Arrangement.spacedBy(24.dp)) {
             Text("Lorem", style = MaterialTheme.typography.displayMedium, modifier = Modifier.semantics { heading() })
+            deviceContent()
             when (state) {
                 AuthenticationState.Loading -> {
                     CircularProgressIndicator(Modifier.align(Alignment.CenterHorizontally))

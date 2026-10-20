@@ -26,7 +26,7 @@ class TrainingHarness(scope: CoroutineScope) : AutoCloseable {
     val remote = ScriptedTrainingCodeforces()
 
     private fun openDatabase() = Room.databaseBuilder(context, LoremDatabase::class.java, databaseFile.absolutePath)
-        .addMigrations(LoremDatabase.MIGRATION_9_10, LoremDatabase.MIGRATION_10_11, LoremDatabase.MIGRATION_11_12, LoremDatabase.MIGRATION_12_13).build()
+        .addMigrations(LoremDatabase.MIGRATION_9_10, LoremDatabase.MIGRATION_10_11, LoremDatabase.MIGRATION_11_12, LoremDatabase.MIGRATION_12_13, LoremDatabase.MIGRATION_13_14).build()
     private fun openRepository() = LocalLoremRepository(store, database.problemHistoryDao(), database.problemCatalogDao(), database.ipsumDao())
     fun reopen() {
         database.close()

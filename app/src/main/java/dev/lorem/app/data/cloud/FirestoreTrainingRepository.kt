@@ -25,6 +25,8 @@ class FirestoreTrainingRepository(
     private val elapsedMillis: () -> Long,
     private val schedule: (String, CloudIpsum, Long) -> Unit,
     private val recommender: RecommendIpsum = RecommendIpsum { kotlin.random.Random.nextInt(it) },
+    private val legacy: dev.lorem.app.domain.rollout.LegacyMigration? = null,
+    private val pseudonyms: dev.lorem.app.data.rollout.StudyPseudonyms? = null,
 ) : CloudTrainingRepository {
     private val verificationMutex = Mutex() // UI and worker share this API/persistence operation.
     private data class HistoryKey(val uid: String, val handle: String, val binding: Long, val version: Long)
@@ -120,13 +122,26 @@ class FirestoreTrainingRepository(
         check(before.online) { "Conecte-se para iniciar um novo Ipsum." }
         check(before.active == null) { "Já existe um Ipsum ativo nesta conta." }
         val profile = before.handles.firstOrNull { it.key == key } ?: error("Selecione um handle válido.")
+        check(legacy?.reconcile()?.ready != false) { "Conclua a verificação do Ipsum anterior no arquivo local." }
+        val exclusionsRef = handle(uid, key).collection("exclusions")
+        val localExclusions = legacy?.exclusions(profile.handle).orEmpty()
+        for (chunk in localExclusions.toList().chunked(400)) {
+            checkUid(uid)
+            val batch = db.batch()
+            chunk.forEach { id -> batch.set(exclusionsRef.document("${id.contestId}_${id.index}"),
+                mapOf("contestId" to id.contestId, "index" to id.index, "source" to "legacy-device-v1")) }
+            batch.commit().await()
+        }
+        val exclusions = exclusionsRef.get(Source.SERVER).await().documents.map {
+            ProblemId(requireNotNull(it.getLong("contestId")), requireNotNull(it.getString("index")))
+        }.toSet()
         val history = (cf.submissionHistory(profile.handle) as? SubmissionHistoryResult.Success)?.takeIf { it.verificationComplete }?.submissions
             ?: error("Atualize o histórico completo do Codeforces antes de iniciar.")
         val catalog = (cf.problems() as? ProblemCatalogResult.Success)?.problems
             ?: error("Não foi possível preparar o catálogo verificado. Tente novamente.")
         checkUid(uid)
         val prior = attempts(uid, key).get(Source.SERVER).await().documents.map { it.cloudIpsum() }
-        val recommendation = recommender.recommend(profile.rating, catalog, buildProblemHistory(history), prior.map { it.ipsum }, profile.handle)
+        val recommendation = recommender.recommend(profile.rating, catalog.filter { it.id !in exclusions }, buildProblemHistory(history), prior.map { it.ipsum }, profile.handle)
             ?: error("Nenhum problema inédito disponível nesta faixa.")
         val official = (cf.user(profile.handle) as? UserLookupResult.Success)?.user
             ?: error("Não foi possível atualizar o perfil Codeforces.")
@@ -160,6 +175,21 @@ class FirestoreTrainingRepository(
         val result = ref.get(Source.SERVER).await().cloudIpsum()
         load(uid, key) // Confirms server time and schedules deadline before returning to the screen.
         result
+    }
+
+    override suspend fun exportStudy(uid: String, key: String): IpsumStudyExport {
+        checkUid(uid)
+        val profile = handle(uid, key).get(Source.SERVER).await().cloudHandle()
+        val selected = selection(uid).get(Source.SERVER).await()
+        check(selected.getString("handleKey") == key)
+        val all = attempts(uid, key).get(Source.SERVER).await().documents.map { it.cloudIpsum() }
+        val ids = requireNotNull(pseudonyms)
+        val result = IpsumStudyExport(dev.lorem.app.domain.sync.ProfileLink.forAccount(uid, profile.handle,
+            profile.bindingVersion, requireNotNull(selected.getLong("selectionVersion"))),
+            ids.participant(profile.handle), System.currentTimeMillis(), all.filter { it.state == CloudIpsumState.FINAL }.map { it.ipsum },
+            all.count { it.state != CloudIpsumState.FINAL }, "ipsum_cloud", ids.sampleScope(uid, "$key:${profile.bindingVersion}"))
+        checkUid(uid)
+        return result
     }
 
     override suspend fun hint(uid: String, attempt: CloudIpsum) {

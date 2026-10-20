@@ -12,6 +12,31 @@ import org.robolectric.RobolectricTestRunner
 @RunWith(RobolectricTestRunner::class)
 class LoremDatabaseMigrationTest {
     @Test
+    fun `migration 13 to 14 adds an unassigned rollout marker and preserves local and account data`() {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        val helper = FrameworkSQLiteOpenHelperFactory().create(SupportSQLiteOpenHelper.Configuration.builder(context)
+            .name("migration-13-14-${System.nanoTime()}.db")
+            .callback(object : SupportSQLiteOpenHelper.Callback(13) {
+                override fun onCreate(db: androidx.sqlite.db.SupportSQLiteDatabase) = Unit
+                override fun onUpgrade(db: androidx.sqlite.db.SupportSQLiteDatabase, oldVersion: Int, newVersion: Int) = Unit
+            }).build())
+        try {
+            val db = helper.writableDatabase
+            db.execSQL("CREATE TABLE ipsums (id INTEGER, startedAtEpochMillis INTEGER, endedAtEpochMillis INTEGER, finalLoremRating INTEGER, snapshot TEXT)")
+            db.execSQL("INSERT INTO ipsums VALUES (1,100,7200100,1377,'immutable snapshot')")
+            db.execSQL("CREATE TABLE account_handles (uid TEXT, handleKey TEXT, loremRating INTEGER)")
+            db.execSQL("INSERT INTO account_handles VALUES ('account','cf_tourist',800)")
+            LoremDatabase.MIGRATION_13_14.migrate(db)
+            db.query("SELECT * FROM legacy_rollout").use { assertEquals(0,it.count) }
+            db.query("SELECT startedAtEpochMillis,endedAtEpochMillis,finalLoremRating,snapshot FROM ipsums").use {
+                it.moveToFirst(); assertEquals(100L,it.getLong(0)); assertEquals(7200100L,it.getLong(1));
+                assertEquals(1377,it.getInt(2)); assertEquals("immutable snapshot",it.getString(3))
+            }
+            db.query("SELECT uid,loremRating FROM account_handles").use { it.moveToFirst(); assertEquals("account",it.getString(0)); assertEquals(800,it.getInt(1)) }
+        } finally { helper.close() }
+    }
+
+    @Test
     fun `migration 12 to 13 adds empty account namespaces without assigning legacy history to a uid`() {
         val context = ApplicationProvider.getApplicationContext<android.content.Context>()
         val helper = FrameworkSQLiteOpenHelperFactory().create(SupportSQLiteOpenHelper.Configuration.builder(context)

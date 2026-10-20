@@ -6,22 +6,23 @@
 
 ## Estado atual
 
-**Foco atual:** Historias 35-37 implementadas em preview Spark: handles por conta, ciclo/rating Firestore e prazo de 2h. Proxima historia funcional 38. Historias 00-30 e gates cientificos 31/32 preservados.
+**Foco atual:** historia 38 implementada e verificada: migracao/arquivo local, exclusoes e fluxo Google/Firestore padrao. 33/34 com Google unico confirmado; 35-37 integradas. 31 retirada do escopo pelo usuario, 32 fora desta entrega (D-042).
 
 **Ultima historia verificada:** Historia 37 no preview Spark, em 2026-10-19; [evidencia integrada da PR 69](evidence/2026-10-19-firebase-merge-69.json), preservando a [verificacao anterior 35-37](evidence/2026-10-19-firebase-35-37.json). Marco 30 preservado: 232 debug/170 release e 66 Python, contrato Android-Python com fixture explicita.
 
-**Primeiro item funcional pendente:** Historia 38 (migracao/rollout). Historia 31 continua BLOQUEADA: nenhum export real de Ipsums fornecido; o pre-registro nao substitui a coorte real.
+**Primeiro item funcional pendente:** nenhum no escopo ativo apos a 38; entrega em PR. A 31 foi retirada do escopo; os criterios empiricos historicos abaixo nao sao trabalho pendente desta entrega. A 32 permanece sem implementacao/previsoes.
 
-**Proxima entrega demonstravel:** migracao e jornada integrada da 38, com projeto real preparado. No estudo, coletar novas tentativas com snapshots anteriores e preparar coorte por participante; sem integrar previsoes antes da 31.
+**Proxima entrega demonstravel:** arquivo local preservado e separado da conta, novo handle em 800, timeout/resultado unico e restauracao de progresso/exclusoes em outro cliente.
 
-**Bloqueios conhecidos:** Ipsums reais n=0/insufficient_data. 32 exige evidencia e decisao favoravel da 31; dependencia 29 atendida. Conferencia manual opcional (D-014).
+**Configuracao real:** Google unico confirmado pelo usuario. Rules 35-37 publicadas conforme usuario; publicar as Rules 38 e restaurar o JSON Android local neste checkout. Conferencia manual opcional (D-014).
 
 **Novo bloco planejado em 19/10/2026:** Historias 33-38, login Google/Firebase,
 perfis por uid+handle com rating inicial 800 e limite absoluto de 2h por Ipsum.
 35-37 implementadas em preview: handles, ciclo/rating Firestore e prazo absoluto 2h.
 Proxima funcionalidade: 38 (migracao/rollout); nao depende dos dados reais da 31.
 33/34 mantem confirmacao de Google unico pendente. Publicacao informada antes
-cobre somente Rules 33/34; novas Rules 35-37 precisam ser publicadas.
+cobria Rules 33/34; usuario confirmou depois a publicacao das Rules combinadas 35-37 apos a PR 69.
+[Registro da confirmacao](evidence/2026-10-19-firebase-rules-35-37-publication.json), sem leitura administrativa pelo agente.
 [Contratos e migracao](FIREBASE.md) · [Configuracao](FIREBASE_SETUP.md).
 
 ## Como atualizar
@@ -2009,7 +2010,7 @@ insufficient_data, sem particoes/metricas/integracao. [Protocolo](../study/IPSUM
 
 **Historia:** Como pesquisador, quero avaliar se ratings e previsoes se transportam para Ipsums antes de autorizar seu uso no aplicativo.
 
-**Status:** PARCIAL / BLOQUEADO para conclusao empirica: nenhum export real de Ipsums fornecido (n=0/insufficient_data). Pre-registro e ferramenta de avaliacao implementados em 2026-10-19; comparacao/decisao reais ainda pendentes.
+**Status:** RETIRADA DO ESCOPO ATIVO pelo usuario em 19/10/2026 (D-042). Software/protocolo historicos preservados; sem alegar conclusao empirica. Criterios abaixo sao registro historico, nao pendencias desta entrega.
 
 **GitHub:** [#54 - Historia 31](https://github.com/Enzofmcs/Lorem/issues/54).
 
@@ -2052,7 +2053,7 @@ vazio e plano em [evidencia da 31](../study/evidence/2026-10-19-transport/manife
 
 **Historia:** Como usuario, quero consultar estimativas validadas com orcamento e incerteza, mantendo o funcionamento local e minhas avaliacoes anteriores.
 
-**Status:** BLOQUEADO: evidencia e decisao favoravel da Historia 31. Historia 29 implementada; nenhum modelo/previsao integrado ao app.
+**Status:** FORA DESTA ENTREGA por dependencia da 31 retirada do escopo (D-042). Nenhum modelo/previsao integrado ou habilitado; criterios abaixo permanecem historicos, sem aceite fabricado.
 
 **GitHub:** [#55 - Historia 32](https://github.com/Enzofmcs/Lorem/issues/55).
 
@@ -2088,12 +2089,12 @@ neste planejamento.
 
 Solicitacao de **19/10/2026**, planejada contra `main` em
 `2092c2f299e1590d791f93e59bdf5e60189bc707`. **33/34 refeitas para Spark (D-039):
-base/login e JSON verificados localmente; Rules publicadas conforme usuario e confirmacao de Google unico pendente.
-35-37 implementadas em preview; 38 planejada. Novas Rules 35-37 aguardam publicacao.** Contratos e casos de borda:
+base/login e JSON verificados localmente; Rules 35-37 e Google unico confirmados pelo usuario.
+35-37 integradas; 38 implementada e verificada. Publicar permissoes de exclusao da 38.** Contratos e casos de borda:
 [FIREBASE.md](FIREBASE.md). Decisoes D-033 a D-039 em [DECISIONS.md](DECISIONS.md).
 
 Ordem recomendada: **33 -> 34 -> 35 -> 36 -> 37 -> 38**. O bloco e independente
-da conclusao empirica da 31; a 32 permanece bloqueada. As 00-30 e seus snapshots
+do estudo historico: 31 retirada do escopo e 32 fora desta entrega (D-042). As 00-30 e seus snapshots
 nao sao reabertos. Estimativas preliminares somam **44-72 h de trabalho**, incluem
 SDK/Rules/WorkManager/migracao/verificacao, excluem espera por configuracao e podem
 ser refinadas na 33; nao pertencem ao orcamento de 24h do estudo Python.
@@ -2117,7 +2118,7 @@ Conferencias humanas opcionais D-014.
 
 **Historia:** Como desenvolvedor, quero configurar Authentication Google e Firestore no plano Spark para persistir contas sem exigir billing ou servicos pagos.
 
-**Status:** PARCIAL, refeita para Spark (D-039): base, Rules e bootstrap direto no Firestore implementados; usuario confirmou Rules publicadas. Confirmacao de Google como unico provedor ainda pendente; sem leitura administrativa pelo agente. JSON Android local validado; Firestore escolhido nam5 (US). Sem Functions/Tasks/backend externo. [Configuracao](FIREBASE_SETUP.md).
+**Status:** IMPLEMENTADA E VERIFICADA (Spark, D-039/D-042). Usuario confirmou Rules 35-37 publicadas e Google como unico provedor; sem leitura administrativa/OAuth pelo agente. JSON historicamente validado, mas ausente neste checkout. Novas permissoes de exclusao da 38 precisam de publicacao. [Configuracao](FIREBASE_SETUP.md).
 
 **GitHub:** [#60 - Historia 33](https://github.com/Enzofmcs/Lorem/issues/60).
 
@@ -2135,13 +2136,13 @@ Conferencias humanas opcionais D-014.
 - [x] Preservar leituras isoladas por uid/provedor e negar escritas de handles/ipsums/runtime ate contratos especificos das 35/36; nenhuma permissao generica por estar autenticado.
 - [x] Verificar em emuladores tokens ausentes/nao Google, acesso cruzado, campos/horarios forjados, batch indevido e transacoes concorrentes/idempotentes, incluindo SDK Android real.
 - [x] Registrar publicacao das Rules no projeto pelo responsavel: usuario confirmou pelo chat apos receber firebase/firestore.rules do commit d4a569f. [Registro](evidence/2026-10-19-firebase-rules-publication.json); sem leitura administrativa pelo agente e sem exigir novo deploy.
-- [ ] Confirmar Google como unico provedor ativado no Auth real. PENDENTE: confirmacao solicitada ao usuario; JSON/build/emuladores nao demonstram ausencia de outros provedores.
+- [x] Google como unico provedor confirmado pelo usuario: "Sim, somente Google". [Registro](evidence/2026-10-19-firebase-google-scope-confirmation.json), sem readback administrativo.
 
 **Entrega demonstravel:** Configuracao Spark e criacao protegida da propria conta, sem Function, custo de billing obrigatorio ou acesso a outra conta.
 
 **Verificacao planejada:** Niveis 3/4: Rules/protocolo com Auth+Firestore Emulator, bootstrap SDK Kotlin e marco Android; testar falhas de rede/cota/permissao sem sessao falsa. Conferencia humana opcional (D-014).
 
-**Evidencia:** dez testes Auth/Firestore/Rules em Node 24/Java 21; 23 testes direcionados Android, incluindo dois do bootstrap Kotlin real em emuladores, sem falhas/ignorados. Regressao: 256 debug (253 executados/3 opt-in ignorados), 188 release sem falhas; lint sem erros e APK. Os tres opt-in passaram na execucao direcionada. [Evidencia Spark](evidence/2026-10-19-firebase-spark-33-34.json). Registros anteriores preservados como historicos. Usuario confirmou publicacao das Rules posteriormente; Google unico ainda aguarda confirmacao.
+**Evidencia:** dez testes Auth/Firestore/Rules em Node 24/Java 21; 23 testes direcionados Android, incluindo dois do bootstrap Kotlin real em emuladores, sem falhas/ignorados. Regressao: 256 debug (253 executados/3 opt-in ignorados), 188 release sem falhas; lint sem erros e APK. Os tres opt-in passaram na execucao direcionada. [Evidencia Spark](evidence/2026-10-19-firebase-spark-33-34.json). Registros anteriores preservados como historicos. Usuario confirmou publicacao das Rules posteriormente; Google unico foi confirmado posteriormente pelo usuario (D-042).
 
 ---
 
@@ -2149,7 +2150,7 @@ Conferencias humanas opcionais D-014.
 
 **Historia:** Como usuario, quero entrar somente com Google, recuperar minha sessao e ter minha conta criada sem depender do plano Blaze.
 
-**Status:** PARCIAL, refeita para Spark (D-039): Credential Manager/Google ID/Firebase Auth e bootstrap SDK Firestore implementados; usuario confirmou Rules publicadas. Falta confirmar Google unico no Auth real. Destino Seus handles e a integracao da 35, sem cadastro/treino legado. [Configuracao](FIREBASE_SETUP.md).
+**Status:** IMPLEMENTADA E VERIFICADA (Spark, D-039/D-042). Sessao/Google/SDK/Rules verificados automaticamente; Google unico confirmado pelo usuario. OAuth interativo permanece conferencia opcional nao executada. Jornada integrada na 38, sem transferir arquivo legado para a conta. [Configuracao](FIREBASE_SETUP.md).
 
 **GitHub:** [#61 - Historia 34](https://github.com/Enzofmcs/Lorem/issues/61).
 
@@ -2167,7 +2168,7 @@ Conferencias humanas opcionais D-014.
 - [x] Tratar cancelamento, rede/offline, quota Spark, token revogado/expirado e Rules ausentes/configuracao incorreta; exibir carregamento/erro e recuperacao sem confundir permissao negada com provedor errado ou autorizar por cache/fila offline.
 - [x] Sair/trocar conta remove UI e cancela observers/callbacks/trabalhos anteriores; resposta atrasada nunca restaura uid antigo. Sair nao apaga dados nem reinicia prazo de futuros Ipsums.
 - [x] Registrar separadamente a publicacao das Rules confirmada pelo usuario, sem apresenta-la como leitura administrativa ou OAuth testado. [Registro](evidence/2026-10-19-firebase-rules-publication.json).
-- [ ] Registrar confirmacao de Google como unico provedor no projeto real; pergunta de configuracao enviada ao usuario. Teste interativo do app continua opcional (D-014).
+- [x] Google unico confirmado pelo usuario e registrado na [evidencia de configuracao/escopo](evidence/2026-10-19-firebase-google-scope-confirmation.json). Teste interativo do app continua opcional (D-014).
 
 **Entrega demonstravel:** Login Google, restauracao, saida e troca com conta Firestore criada idempotentemente; nenhuma Function e nenhum dado legado exposto. Selecao/cadastro de handles pertence a 35.
 
@@ -2181,7 +2182,7 @@ Conferencias humanas opcionais D-014.
 
 **Historia:** Como usuario logado, quero cadastrar e alternar handles, mantendo um Rating Lorem independente para cada um.
 
-**Status:** IMPLEMENTADA E VERIFICADA EM PREVIEW (Spark, D-040); novas Rules ainda precisam ser publicadas. Ciclo de treino 36-37 integrado na PR 69; rollout da 38 permanece pendente.
+**Status:** IMPLEMENTADA E VERIFICADA EM PREVIEW (Spark, D-040); publicacao das Rules combinadas confirmada pelo usuario apos a PR 69. Ciclo de treino 36-37 integrado na PR 69; a 38 acrescenta o rollout verificado.
 
 **GitHub:** [#62 - Historia 35](https://github.com/Enzofmcs/Lorem/issues/62).
 
@@ -2213,7 +2214,7 @@ Conferencias humanas opcionais (D-014); os testes automatizados exigidos sao obr
 
 **Historia:** Como usuario, quero que tentativas e evolucao fiquem salvas na minha conta e que cada resultado altere meu rating uma unica vez.
 
-**Status:** IMPLEMENTADA E VERIFICADA EM PREVIEW Spark. Flag padrao false ate 38; novas Rules aguardam publicacao no projeto real. Confirmacao de Google unico da base 33/34 segue pendente. Sem OAuth/deploy reais alegados.
+**Status:** IMPLEMENTADA E VERIFICADA EM PREVIEW Spark. A 38 torna a flag true por padrao; publicacao das Rules combinadas confirmada pelo usuario apos a PR 69. Google unico confirmado pelo usuario (D-042). Sem OAuth/deploy reais alegados.
 
 **GitHub:** [#63 - Historia 36](https://github.com/Enzofmcs/Lorem/issues/63).
 
@@ -2246,7 +2247,7 @@ TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014).
 
 **Historia:** Como usuario, quero que um Ipsum feche automaticamente ao atingir duas horas e conte como tentativa sem AC quando nao houver AC valido no prazo.
 
-**Status:** IMPLEMENTADA E VERIFICADA EM PREVIEW Spark. Flag padrao false ate 38; novas Rules aguardam publicacao no projeto real. Confirmacao de Google unico da base 33/34 segue pendente. Sem OAuth/deploy reais alegados.
+**Status:** IMPLEMENTADA E VERIFICADA EM PREVIEW Spark. A 38 torna a flag true por padrao; publicacao das Rules combinadas confirmada pelo usuario apos a PR 69. Google unico confirmado pelo usuario (D-042). Sem OAuth/deploy reais alegados.
 
 **GitHub:** [#64 - Historia 37](https://github.com/Enzofmcs/Lorem/issues/64).
 
@@ -2279,24 +2280,24 @@ TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014).
 
 **Historia:** Como usuario atual ou novo, quero adotar o login e os perfis em nuvem preservando meus registros anteriores e entendendo meu novo progresso.
 
-**Status:** PLANEJADA; todos os criterios funcionais pendentes.
+**Status:** IMPLEMENTADA E VERIFICADA (D-043). Room 14/arquivo somente leitura, reconciliacao do ativo, exclusoes entre clientes, exports cloud v2 e entrada Firebase padrao. OAuth real nao alegado; novas Rules precisam de publicacao.
 
 **GitHub:** [#65 - Historia 38](https://github.com/Enzofmcs/Lorem/issues/65).
 
 **Estimativa preliminar:** 8-12 h.
 
-**Dependencias:** Historias 34-37; compatibilidade com exportacao da 30 e gates 31/32.
+**Dependencias:** Historias 34-37 e compatibilidade com exportacao da 30; escopo final da 31/32 em D-042.
 
 **Referencia:** [FIREBASE.md](FIREBASE.md) e [TESTING.md](TESTING.md).
 
 #### Criterios de aceite
 
-- [ ] Implementar migracao idempotente/aditiva com arquivo local legado somente leitura, snapshots/rating/consolidacao/duracoes antigas intactos e contexto de conta correto; nunca atribuir o arquivo a outro uid.
-- [ ] Explicar arquivo anterior versus progresso Firebase: vinculo novo inicia 800, vinculo em nuvem existente restaura saldo; nao importar rating CF/legado para o novo saldo nem recalcular avaliacoes antigas.
-- [ ] Encerrar/reconciliar ativo legado com inicio preservado e limite de 2h antes do treino novo; preservar exclusoes de tentativas/Ipsums antigos e reimportar historico CF sem tornar problemas antigos ineditos.
-- [ ] Automatizar jornada Google/sessao, dois uids com mesmo handle, varios handles, reinstalacao/segundo dispositivo, falha apos commit, logout, expiracao e AC posterior, usando fakes apenas no escopo de teste.
-- [ ] Versionar identidade/rating inicial/prazo dos novos snapshots e exports sem UID/e-mail/handle diretos; documentar compatibilidade e agrupamento de handles repetidos antes de usar novas coortes na 31, mantendo a 32 bloqueada.
-- [ ] Atualizar demonstracao e guia de configuracao/deploy/recuperacao; registrar evidencias de Rules/SDK Firestore Spark e test/lint/assembleDebug antes de liberar o novo fluxo integrado. Teste manual permanece opcional.
+- [x] Implementar migracao idempotente/aditiva com arquivo local legado somente leitura, snapshots/rating/consolidacao/duracoes antigas intactos e contexto de conta correto; nunca atribuir o arquivo a outro uid.
+- [x] Explicar arquivo anterior versus progresso Firebase: vinculo novo inicia 800, vinculo em nuvem existente restaura saldo; nao importar rating CF/legado para o novo saldo nem recalcular avaliacoes antigas.
+- [x] Encerrar/reconciliar ativo legado com inicio preservado e limite de 2h antes do treino novo; preservar exclusoes de tentativas/Ipsums antigos e reimportar historico CF sem tornar problemas antigos ineditos.
+- [x] Automatizar jornada Google/sessao, dois uids com mesmo handle, varios handles, reinstalacao/segundo dispositivo, falha apos commit, logout, expiracao e AC posterior, usando fakes apenas no escopo de teste.
+- [x] Versionar identidade/rating inicial/prazo dos novos snapshots e exports sem UID/e-mail/handle diretos; documentar compatibilidade e agrupamento de handles repetidos antes de usar novas coortes na 31, mantendo a 32 desativada/fora desta entrega.
+- [x] Atualizar demonstracao e guia de configuracao/deploy/recuperacao; registrar evidencias de Rules/SDK Firestore Spark e test/lint/assembleDebug antes de liberar o novo fluxo integrado. Teste manual permanece opcional.
 
 **Entrega demonstravel:** Migrar instalacao com historico e ativo, entrar com Google, criar perfil 800, completar/expirar um Ipsum e recuperar os dados sem vazamento ou dupla avaliacao.
 
@@ -2305,6 +2306,8 @@ TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014).
 Conferencias humanas opcionais (D-014); os testes automatizados exigidos sao obrigatorios.
 
 ---
+
+**Evidencia automatizada da 38:** [2026-10-19-android-38.json](evidence/2026-10-19-android-38.json): 310 debug/223 release sem falhas ou ignorados, 14 SDK reais nos emuladores, 29 Auth/Rules e 85 Python; lint sem erros e APK padrao. Migracao/concorrencia/read-only, jornada com arquivo real de teste e cliente sem arquivo, isolamento, export e UI verificados. Google unico confirmado pelo usuario; publicar Rules 38 e restaurar JSON local neste checkout antes de usar o projeto real. TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014).
 
 ## 10. Marcos demonstraveis
 
@@ -2315,7 +2318,7 @@ Conferencias humanas opcionais (D-014); os testes automatizados exigidos sao obr
 - **E - Automacao (15-17):** preparacao, manutencao e deteccao sem cliques obrigatorios.
 - **F - Apresentacao (18-21):** temas e telas consistentes, acessiveis e demonstraveis.
 - **G-J - Extensao quantitativa (22-32):** progresso e gates registrados nas respectivas historias; 31/32 continuam pendentes de evidencia real.
-- **K - Contas e dados Firebase (33-36):** 33/34 refeitas para Spark e em preview, configuracao remota pendente; handles, 800 inicial e ciclo das 35/36 ainda planejados.
-- **L - Prazo e adocao (37-38):** limite de 2h com recuperacao, migracao e jornada integrada verificados; planejado.
+- **K - Contas e dados Firebase (33-36):** implementadas/verificadas, com Google unico e Rules 35-37 confirmados pelo usuario.
+- **L - Prazo e adocao (37-38):** 37 integrada; 38 implementada e verificada. Publicar Rules 38 e garantir configuracao Android local para o projeto real.
 
 ---

@@ -5,7 +5,7 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
-// Builds without a Firebase project remain reproducible. The opt-in login reports
+// Builds without a Firebase project remain reproducible. The Firebase entry reports
 // missing configuration explicitly instead of using a fabricated production app.
 if (file("google-services.json").isFile) apply(plugin = "com.google.gms.google-services")
 
@@ -20,7 +20,7 @@ android {
         versionCode = 1
         versionName = "0.1.0"
         buildConfigField("boolean", "FIREBASE_AUTH_ENABLED",
-            providers.gradleProperty("lorem.firebaseAuthEnabled").orNull?.toBooleanStrict()?.toString() ?: "false")
+            providers.gradleProperty("lorem.firebaseAuthEnabled").orNull?.toBooleanStrict()?.toString() ?: "true")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

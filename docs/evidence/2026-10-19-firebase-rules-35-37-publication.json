@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-19T19:30:55.297920-03:00",
+  "event": "Combined Firestore Rules 35-37 publication confirmed by user",
+  "source": "user_confirmation_in_chat",
+  "userMessage": "pronto, adicionei as rules no firebase, e agora?",
+  "publicationConfirmedByUser": true,
+  "referenceAssociatedWithConfirmation": {
+    "repository": "Enzofmcs/Lorem",
+    "pullRequest": "https://github.com/Enzofmcs/Lorem/pull/69",
+    "mainCommit": "825fb3f0c0d4a7a1a11d5f1e11ab442f74726f3a",
+    "path": "firebase/firestore.rules",
+    "sha256": "d03105eade3ab47a36a299d0929168b22e988f6e4cf54229532df15994948621"
+  },
+  "versionAssociation": "Current combined rules associated from the conversation after PR69 merge; deployed hash not independently read back.",
+  "remoteRulesReadbackPerformed": false,
+  "administrativeIdentityAvailable": false,
+  "googleOnlyProviderConfirmation": "pending",
+  "liveGoogleSignInTested": false,
+  "androidConfigPresentInThisCheckout": false,
+  "sourceCodeChanged": false,
+  "previousAutomatedEvidence": "2026-10-19-firebase-merge-69.json",
+  "manualAppTest": "TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014)"
+}

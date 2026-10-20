@@ -16,10 +16,8 @@ import org.robolectric.annotation.Config
 class FirebaseEntryTest {
     @get:Rule val compose = createAndroidComposeRule<MainActivity>()
 
-    @Test fun `opt in entry isolates a legacy profile and respects Firebase configuration`() {
+    @Test fun `default Firebase entry respects configuration and excludes legacy training`() {
         assumeTrue(BuildConfig.FIREBASE_AUTH_ENABLED)
-        val container = (compose.activity.application as LoremApplication).container
-        runBlocking { container.loremRepository.saveProfile(StatisticsFixtures.profile) }
         val context = compose.activity
         val oauthResource = context.resources.getIdentifier("default_web_client_id", "string", context.packageName)
         if (oauthResource != 0) {
@@ -27,7 +25,7 @@ class FirebaseEntryTest {
             compose.onNodeWithTag("google-sign-in").assertIsEnabled()
             compose.onNodeWithText("O login ainda não está disponível nesta versão do aplicativo.").assertDoesNotExist()
         } else {
-            compose.onNodeWithText("O login ainda não está disponível nesta versão do aplicativo.").assertIsDisplayed()
+            compose.onNodeWithText("O login ainda não está disponível nesta versão do aplicativo.").performScrollTo().assertIsDisplayed()
             compose.onNodeWithTag("google-sign-in").assertIsNotEnabled()
         }
         compose.onNodeWithTag("tab-home").assertDoesNotExist()

@@ -35,7 +35,15 @@ fun CloudTrainingDestination(uid: String, repository: CloudTrainingRepository) {
     val active = state.snapshot?.active
     val expired = active != null && (now == null || now!! >= active.expiresAtMillis)
     LaunchedEffect(active?.id, expired) { if (expired) model.refresh() }
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
     CloudTrainingScreen(state, now, model::add, model::select, model::start, model::hint, model::close, model::refresh, model::upsolve)
+        val selected = state.selectedKey
+        if (selected != null && state.snapshot?.active == null) {
+            dev.lorem.app.ui.components.IpsumStudyExportAction(
+                prepare = { repository.exportStudy(uid, selected) },
+                isCurrent = { repository.selectedHandle(uid) == selected })
+        }
+    }
 }
 
 @Composable

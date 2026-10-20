@@ -156,3 +156,19 @@ Para demonstrar a ferramenta da 31 sem dados ficticios, executar `evaluate-ipsum
 conforme [guia Python](../study/README.md#avaliacao-local-de-transporte-31-evidencia-real-pendente).
 O [pre-registro](../study/TRANSPORT_PROTOCOL.md) e os hashes ficam visiveis;
 sem exports, o relatorio registra n=0/insufficient_data e nao calcula metricas.
+
+## Jornada integrada 38
+
+1. Atualizar a instalacao sem limpar dados e usar as Rules 38 no projeto Spark.
+2. Conferir Arquivo local deste aparelho: historico/rating anteriores separados
+   da conta Google e somente leitura, sem importar saldo.
+3. Se havia ativo, preservar inicio/prazo. Concluir no Codeforces ou encerrar com
+   motivo; sem rede/TESTING, aguardar verificacao antes de abrir outro treino.
+4. Entrar com Google, cadastrar handle e observar 800 somente se o vinculo e novo.
+5. Completar/expirar Ipsum, repetir atualizacao e recuperar em outro cliente:
+   resultado aplicado uma vez e problemas do arquivo nao voltam a ser candidatos.
+6. Trocar conta: mesmo handle pode iniciar seu proprio saldo, sem receber o rating
+   do arquivo ou de outra conta. Export local omite identificadores diretos/ativo.
+
+Conferencia humana opcional; nao alegada como executada. Historia 31 retirada do
+escopo pelo usuario, 32 fora desta entrega; nao demonstrar previsoes estatisticas.

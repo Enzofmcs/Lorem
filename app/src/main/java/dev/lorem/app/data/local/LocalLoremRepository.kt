@@ -40,6 +40,7 @@ class LocalLoremRepository(
     private val problemHistoryDao: ProblemHistoryDao,
     private val problemCatalogDao: ProblemCatalogDao,
     private val ipsumDao: IpsumDao,
+    private val archiveStarted: suspend () -> Boolean = { false },
 ) : LoremRepository {
     override val studyDataKind: String = "ipsum_local"
     private val profileMutation = Mutex()
@@ -60,7 +61,7 @@ class LocalLoremRepository(
         }
         .map { preferences ->
             val current = readProfile(preferences)
-            if (current == null) null else reconcileTrainingProgress(current, preferences[LINK_VERSION] ?: 0L)
+            if (current == null || archiveStarted()) current else reconcileTrainingProgress(current, preferences[LINK_VERSION] ?: 0L)
         }.flowOn(Dispatchers.IO)
 
     override val problemHistory: Flow<List<ProblemHistory>> = profile
@@ -91,6 +92,7 @@ class LocalLoremRepository(
     override suspend fun saveProfile(profile: LocalProfile) = profileMutation.withLock { saveProfileUnlocked(profile) }
 
     private suspend fun saveProfileUnlocked(profile: LocalProfile) {
+        checkWritable()
         require(profile.handle.isNotBlank()) { "handle must not be blank" }
         require(profile.displayName.isNotBlank()) { "displayName must not be blank" }
         val active = ipsumDao.observeActive().first()
@@ -121,6 +123,7 @@ class LocalLoremRepository(
     }
 
     override suspend fun markHistorySynchronized(ownerHandle: String, atEpochMillis: Long) {
+        checkWritable()
         dataStore.edit { preferences ->
             if (preferences[HANDLE]?.let(::normalizeHandle) == normalizeHandle(ownerHandle)) {
                 preferences[LAST_SYNC] = maxOf(preferences[LAST_SYNC] ?: 0L, atEpochMillis)
@@ -129,6 +132,7 @@ class LocalLoremRepository(
     }
 
     override suspend fun updateProfileMetadata(ownerHandle: String, displayName: String, officialRating: Int?, observedAtEpochMillis: Long?) {
+        checkWritable()
         dataStore.edit { preferences ->
             if (preferences[HANDLE]?.let(::normalizeHandle) == normalizeHandle(ownerHandle)) {
                 preferences[HANDLE] = ownerHandle.trim()
@@ -141,6 +145,7 @@ class LocalLoremRepository(
     }
 
     override suspend fun clearProfile() = profileMutation.withLock {
+        checkWritable()
         dataStore.edit { preferences ->
             preferences[LINK_VERSION] = (preferences[LINK_VERSION] ?: 0L) + 1L
             preferences.remove(LEGACY_DISPLAY_NAME)
@@ -169,6 +174,7 @@ class LocalLoremRepository(
     }
 
     override suspend fun saveProblemHistory(ownerHandle: String, history: List<ProblemHistory>) {
+        checkWritable()
         val normalizedOwner = normalizeHandle(ownerHandle)
         require(normalizedOwner.isNotBlank()) { "ownerHandle must not be blank" }
         problemHistoryDao.upsertAll(history.map { it.toEntity(normalizedOwner) })
@@ -193,6 +199,7 @@ class LocalLoremRepository(
     }
 
     private suspend fun createActiveIpsumUnlocked(ipsum: Ipsum): Ipsum {
+        checkWritable()
         require(ipsum.id == 0L) { "new Ipsum must not have an id" }
         require(ipsum.startedAtEpochMillis > 0) { "startedAtEpochMillis must be positive" }
         val current = readProfile(dataStore.data.first())
@@ -208,6 +215,7 @@ class LocalLoremRepository(
     }
 
     override suspend fun revealIpsumHint(ipsumId: Long, revealedAtEpochMillis: Long) {
+        checkWritable()
         require(revealedAtEpochMillis > 0) { "revealedAtEpochMillis must be positive" }
         ipsumDao.revealHintOnce(ipsumId, revealedAtEpochMillis)
     }
@@ -216,6 +224,7 @@ class LocalLoremRepository(
         ipsumId: Long,
         submissions: List<IpsumSubmission>,
     ): IpsumUpdate {
+        checkWritable()
         val update = ipsumDao.record(ipsumId, submissions.map(IpsumSubmission::toEntity))
         refreshTrainingProgress()
         return update
@@ -226,6 +235,7 @@ class LocalLoremRepository(
         reason: IpsumFailureReason,
         endedAtEpochMillis: Long,
     ): Boolean {
+        checkWritable()
         require(endedAtEpochMillis > 0) { "endedAtEpochMillis must be positive" }
         val ended = ipsumDao.endWithoutAc(ipsumId, reason.name, endedAtEpochMillis)
         refreshTrainingProgress()
@@ -243,8 +253,11 @@ class LocalLoremRepository(
         return IpsumResult(ipsum, errors)
     }
 
-    override suspend fun markIpsumsSolvedOutside(firstAcceptedAtByIpsumId: Map<Long, Long>): Int =
-        ipsumDao.markSolvedOutside(firstAcceptedAtByIpsumId)
+    override suspend fun markIpsumsSolvedOutside(firstAcceptedAtByIpsumId: Map<Long, Long>): Int {
+        checkWritable()
+        return ipsumDao.markSolvedOutside(firstAcceptedAtByIpsumId)
+    }
+    private suspend fun checkWritable() { check(!archiveStarted()) { "O arquivo local é somente leitura." } }
 
     private suspend fun refreshTrainingProgress() {
         val preferences = dataStore.data.first()

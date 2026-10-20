@@ -114,6 +114,7 @@ interface CloudTrainingRepository {
     suspend fun addHandle(uid: String, handle: String): CloudHandle
     suspend fun selectedHandle(uid: String): String?
     suspend fun selectHandle(uid: String, key: String)
+    suspend fun exportStudy(uid: String, key: String): dev.lorem.app.domain.IpsumStudyExport? = null
     suspend fun start(uid: String, key: String, commandId: String): CloudIpsum
     suspend fun hint(uid: String, attempt: CloudIpsum)
     suspend fun close(uid: String, attempt: CloudIpsum, reason: IpsumFailureReason)

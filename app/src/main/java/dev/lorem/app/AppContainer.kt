@@ -43,7 +43,8 @@ class AppContainer(context: Context) {
             codeforcesRepository, requireNotNull(handlesRepository),
             CloudDeadline(android.os.SystemClock::elapsedRealtime) {
                 android.provider.Settings.Global.getInt(appContext.contentResolver, android.provider.Settings.Global.BOOT_COUNT, -1)
-            }, android.os.SystemClock::elapsedRealtime, cloudScheduler::schedule) }
+            }, android.os.SystemClock::elapsedRealtime, cloudScheduler::schedule,
+            legacy = legacyMigration, pseudonyms = studyPseudonyms) }
     }
     private val database = LoremDatabase.create(context)
     val loremRepository: LoremRepository = LocalLoremRepository(
@@ -51,6 +52,7 @@ class AppContainer(context: Context) {
         problemHistoryDao = database.problemHistoryDao(),
         problemCatalogDao = database.problemCatalogDao(),
         ipsumDao = database.ipsumDao(),
+        archiveStarted = { database.legacyRolloutDao().state() != null },
     )
     val appearanceRepository = PreferencesAppearanceRepository(context.profileDataStore)
     private val synchronizationStore = PreferencesSynchronizationStore(context.profileDataStore)
@@ -59,6 +61,9 @@ class AppContainer(context: Context) {
         gate = TwoSecondCodeforcesRequestGate(beforeRequest = retryAfter::awaitPermission),
         onRetryAfter = retryAfter::record,
     )
+    private val studyPseudonyms by lazy { dev.lorem.app.data.rollout.StudyPseudonyms(appContext.profileDataStore) }
+    val legacyMigration by lazy { dev.lorem.app.data.rollout.LocalLegacyMigration(database, loremRepository,
+        codeforcesRepository, pseudonyms = studyPseudonyms) }
     val handlesRepository: HandlesRepository? by lazy {
         authentication.handlesStore?.let { AccountHandlesRepository(it, codeforcesRepository,
             RoomHandlesCache(database.accountHandlesDao())) }
@@ -84,6 +89,7 @@ class AppContainer(context: Context) {
                 cancelUniqueWork(SynchronizationScheduler.CATALOG_PERIODIC)
                 cancelUniqueWork(SynchronizationScheduler.CATALOG_PREPARE)
             }
+            dev.lorem.app.data.rollout.scheduleLegacyMigration(appContext)
             applicationScope.launch {
                 var previous: String? = null
                 authentication.repository.state.collectLatest { state ->

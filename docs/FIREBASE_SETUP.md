@@ -1,4 +1,4 @@
-# Configurar Firebase Spark (Historias 33-37)
+# Configurar Firebase Spark (Historias 33-38)
 
 ## Entrega e limites
 
@@ -23,20 +23,22 @@ O usuario **confirmou a publicacao das Rules pelo Console** depois de receber o
 arquivo da versao Spark. O PR 66 ja foi integrado em main. A publicacao fica
 registrada como informacao do usuario, sem leitura administrativa pelo agente;
 a CLI deste ambiente continua sem conta administrativa conectada. A confirmacao
-cobre a base 33/34; o contrato combinado 35-37 requer publicar as Rules atuais.
+cobria a base 33/34. Depois da PR 69, o usuario confirmou a publicacao das Rules
+combinadas 35-37; [registro separado](evidence/2026-10-19-firebase-rules-35-37-publication.json).
+Sem leitura administrativa do ruleset pelo agente.
 Nenhum indice adicional e necessario (indexes e fieldOverrides vazios).
 
-33/34 aguardam somente a confirmacao da configuracao Google unica no projeto.
+33/34 tem Google unico confirmado pelo usuario; o registro nao e leitura administrativa.
 OAuth/login real nao foram executados pelo agente. Conferencia humana do app e
 opcional (D-014); emulador nao comprova OAuth. [Registro da publicacao](evidence/2026-10-19-firebase-rules-publication.json).
 
 O preview agora implementa 35-37: handles, treino/rating Firestore e prazo 2h.
-**A publicacao confirmada anteriormente cobre somente as Rules 33/34.** O arquivo
-firebase/firestore.rules mudou para validar handles, markers de problemas usados,
-tentativas e lock. Publicar essa nova versao pelo procedimento abaixo antes de
-usar os novos fluxos no projeto real. Nenhum novo indice e necessario. Nao houve
-deploy remoto nesta implementacao. A confirmacao de Google unico permanece pendente.
-Migracao do arquivo local e ativacao padrao continuam na 38.
+A publicacao das Rules combinadas foi confirmada pelo usuario apos a PR 69.
+O arquivo firebase/firestore.rules valida handles, selecao, markers, tentativas,
+clock e lock. O procedimento abaixo fica como referencia para futuras alteracoes,
+sem exigir repetir a publicacao da mesma versao. A 38 acrescenta permissoes que precisam ser publicadas; nenhum novo indice e necessario.
+Google unico foi confirmado pelo usuario (D-042).
+A 38 implementa arquivo local/migracao e torna Firebase padrao; publicar tambem suas permissoes de exclusao.
 
 No checkout de verificacao 35-37, o google-services.json ignorado nao estava
 presente. O APK preview foi verificado com o bloqueio explicito de configuracao
@@ -150,7 +152,7 @@ abre seletor nem autentica uma conta Google real. No marco: test/lint/assembleDe
 ./gradlew assembleDebug -Plorem.firebaseAuthEnabled=true
 ```
 
-Flag false por padrao ate rollout 38. Sem configuracao nao existe conta falsa;
+Firebase true por padrao a partir da 38. Sem configuracao nao existe conta falsa;
 com true, somente token validado e transacao confirmada liberam os handles e treino.
 Rede, cota Spark ou Rules incorretas deixam a sessao bloqueada com retry. Sair/
 trocar limpa a UI e callbacks antigos; workers legados ficam cancelados/inertes.
@@ -162,9 +164,10 @@ aguardar disponibilidade; nao recomendar Blaze como pre-requisito desta entrega.
 
 Para recuperar Rules de teste, republicar o commit Spark verificado anterior no
 mesmo projeto, sem apagar documentos. Nao usar as Rules anteriores que negavam
-create de conta nem voltar ao APK que dependia de Functions. Para retirar preview,
-gerar APK sem a flag; historico legado nao foi migrado/apagado. Produção/migracao
-continuam na 38. Evidencias anteriores (Functions/configuracao inicial) sao
+create de conta nem voltar ao APK que dependia de Functions. A partir da 38, nao usar uma versao antiga para voltar a escrever no arquivo
+congelado. Atualizar sem limpar dados, manter o arquivo somente leitura e usar
+as Rules atuais com exclusions. O override false e somente para desenvolvimento
+antes da migracao, sem desbloquear escrita no arquivo ja congelado. Evidencias anteriores (Functions/configuracao inicial) sao
 historicas, nao validacao da versao Spark.
 
 ## Compatibilidade da integracao PR 69
@@ -176,3 +179,31 @@ Room 13 e namespaces de ProfileLink/workers permanecem intactos. O lock
 `runtime/clock` confirma tempo sem bloquear selecao. Publicar o arquivo Rules
 combinado inteiro; nao usar as Rules da branch anterior como versao atual.
 [Evidencia integrada](evidence/2026-10-19-firebase-merge-69.json); evidencias anteriores preservadas.
+
+## Proximo passo apos a publicacao confirmada das Rules
+
+1. Google unico ja foi confirmado pelo usuario; conferir novamente somente se alterar provedores.
+2. Garantir o google-services.json Android atualizado em app/google-services.json;
+   ele continua ausente neste checkout e nao deve ser versionado.
+3. Atualizar o projeto com a main que contem a PR 69 e compilar, na raiz:
+   ./gradlew assembleDebug -Plorem.firebaseAuthEnabled=true.
+4. Abrir o APK preview; login Google, cadastro de handle e inicio/recuperacao de
+   Ipsum sao uma conferencia manual opcional, nao um gate da proxima historia.
+
+A 38 implementa migracao e habilita o fluxo por padrao no aplicativo. As Rules
+35-37 publicadas anteriormente precisam receber as novas permissoes de exclusao. Nenhuma execucao OAuth
+real foi comprovada pelo registro de publicacao.
+
+## Publicacao da versao 38
+
+O arquivo firebase/firestore.rules inclui a colecao exclusions, com IDs publicos
+de problemas antigos e regras de imutabilidade/isolamento. Publicar o arquivo
+inteiro desta entrega antes de usar o APK 38 no projeto real. A confirmacao de
+publicacao das Rules 35-37 permanece historica, sem reapresenta-la como deploy 38.
+Nao ha Functions, novo indice ou billing. Nao apagar documentos para recuperar.
+
+Com google-services.json local, ./gradlew assembleDebug ja usa Firebase por padrao.
+Sem o arquivo, o APK informa configuracao ausente. O arquivo local antigo aparece
+separado da conta, e um ativo nao reconciliado bloqueia somente novos treinos.
+Desinstalar/limpar dados remove o arquivo local; para preserva-lo, atualizar o APK
+sem limpar armazenamento. Exports cloud sao opcionais, locais e nao usam UID/e-mail/handle.
