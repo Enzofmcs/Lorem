@@ -6,24 +6,13 @@
 
 ## Estado atual
 
-**Foco atual:** historia 38 implementada e verificada: migracao/arquivo local, exclusoes e fluxo Google/Firestore padrao. 33/34 com Google unico confirmado; 35-37 integradas. 31 retirada do escopo pelo usuario, 32 fora desta entrega (D-042).
+**Foco atual:** histórias 40–43 implementadas e verificadas localmente; navegação/telas cloud, filtros/gráficos/tema, preparação incremental e pendências automáticas. [Paridade](CLOUD_EXPERIENCE.md).
 
-**Ultima historia verificada:** Historia 37 no preview Spark, em 2026-10-19; [evidencia integrada da PR 69](evidence/2026-10-19-firebase-merge-69.json), preservando a [verificacao anterior 35-37](evidence/2026-10-19-firebase-35-37.json). Marco 30 preservado: 232 debug/170 release e 66 Python, contrato Android-Python com fixture explicita.
+**Última história verificada:** 43, em 20/10/2026. 332 debug/237 release sem falhas ou ignorados, 15 SDK reais em emuladores, 34 Auth/Rules; lint sem erros (58 avisos) e APK. [Evidência](evidence/2026-10-20-cloud-40-43.json). Marcos anteriores preservados.
 
-**Primeiro item funcional pendente:** nenhum no escopo ativo apos a 38; entrega em PR. A 31 foi retirada do escopo; os criterios empiricos historicos abaixo nao sao trabalho pendente desta entrega. A 32 permanece sem implementacao/previsoes.
+**Próxima entrega demonstrável:** Home → preparação → Ipsum → resultado persistido; histórico/estatísticas durante ativo, tema/handles em Configurações e arquivo local separado. 44–49 pertencem ao planejamento #72, fora desta implementação. A 31 permanece retirada e 32 desabilitada.
 
-**Proxima entrega demonstravel:** arquivo local preservado e separado da conta, novo handle em 800, timeout/resultado unico e restauracao de progresso/exclusoes em outro cliente.
-
-**Configuracao real:** Google unico confirmado pelo usuario. Rules 35-37 publicadas conforme usuario; publicar as Rules 38 e restaurar o JSON Android local neste checkout. Conferencia manual opcional (D-014).
-
-**Novo bloco planejado em 19/10/2026:** Historias 33-38, login Google/Firebase,
-perfis por uid+handle com rating inicial 800 e limite absoluto de 2h por Ipsum.
-35-37 implementadas em preview: handles, ciclo/rating Firestore e prazo absoluto 2h.
-Proxima funcionalidade: 38 (migracao/rollout); nao depende dos dados reais da 31.
-33/34 mantem confirmacao de Google unico pendente. Publicacao informada antes
-cobria Rules 33/34; usuario confirmou depois a publicacao das Rules combinadas 35-37 apos a PR 69.
-[Registro da confirmacao](evidence/2026-10-19-firebase-rules-35-37-publication.json), sem leitura administrativa pelo agente.
-[Contratos e migracao](FIREBASE.md) · [Configuracao](FIREBASE_SETUP.md).
+**Configuração restante:** adicionar `app/google-services.json` localmente e recompilar. OAuth autorizado e Rules atualizadas confirmados pelo usuário em 20/10/2026; [confirmação do responsável](evidence/2026-10-20-firebase-oauth-rules-confirmation.json). Sem deploy, leitura remota ou login Google real pelo agente. [Operação e recuperação](FIREBASE_OPERATION.md). D-012 vigente; time-curve-v1 desabilitada.
 
 ## Como atualizar
 
@@ -2337,6 +2326,150 @@ Desenvolver software não declara concluída a avaliação empírica retirada da
 sem apresentar simulações como validação empírica. Novas Rules precisam de publicação
 antes de usar este cliente com o projeto real. Nenhum deploy foi executado.
 TESTE MANUAL OPCIONAL - NÃO EXECUTADO (D-014).
+
+## Recuperação da experiência Firebase — 40–43
+
+332 debug/237 release sem falhas ou ignorados, 15 SDK reais em emuladores, 34 Auth/Rules; lint sem erros (58 avisos) e APK. [Matriz de paridade e budgets](CLOUD_EXPERIENCE.md); [operação e pendências remotas](FIREBASE_OPERATION.md). OAuth e atualização das Rules confirmados pelo responsável; JSON local ainda será adicionado. [confirmação do responsável](evidence/2026-10-20-firebase-oauth-rules-confirmation.json). Sem leitura remota ou login real pelo agente. TESTE MANUAL OPCIONAL - NÃO EXECUTADO (D-014).
+
+<a id="historia-40"></a>
+
+### Historia 40 - Compatibilidade do cliente atual com Firebase e registro de operação
+
+**GitHub:** [#73](https://github.com/Enzofmcs/Lorem/issues/73) · planejamento central [#72](https://github.com/Enzofmcs/Lorem/issues/72).
+
+**História:** Como usuário, quero iniciar e concluir um Ipsum na versão atual sem bloqueios causados por configuração ou incompatibilidade entre cliente e Rules.
+
+**Status:** IMPLEMENTADA E VERIFICADA LOCALMENTE em 20/10/2026. [Evidência](evidence/2026-10-20-cloud-40-43.json).
+
+**Frente:** Aplicativo.
+
+**Dependências:** Nenhuma história nova; parte da main 73c322a.
+
+**Contexto e escopo:** Prioridade P0 do aplicativo. Conferir o contrato da história 39, que grava snapshot.scoring mesmo no fallback, e a compatibilidade com as Rules 38/39. Distinguir falha de código, configuração local, confirmação do responsável e estado remoto efetivamente observado.
+
+**Arquivos de referência:** app/build.gradle.kts; data/auth; data/cloud; firebase/firestore.rules; docs/FIREBASE_SETUP.md; docs/evidence.
+
+#### Critérios de aceite
+
+- [x] Reproduzir em emuladores o início D-012 com snapshot.scoring contra as Rules atuais e a recusa esperada pelas Rules antigas; verificar encerramento, retry e aplicação única do resultado.
+- [x] Documentar matriz cliente/Rules, configuração Android/OAuth necessária e erros recuperáveis; ausência de google-services.json não deve ser apresentada como autenticação operacional.
+- [x] Registrar separadamente versão local testada, evidência de publicação fornecida pelo responsável e leitura remota, quando disponível. Não afirmar deploy, login real ou compatibilidade remota sem evidência.
+- [x] Preparar a sequência concreta de publicação/configuração e recuperação, sem deploy automático, exclusão de dados ou relaxamento de Rules. Sem acesso remoto, registrar a pendência operacional de forma explícita.
+- [x] Manter D-012 e time-curve-v1 desabilitada; preservar inicial 800, prazo absoluto, snapshots, arquivo legado e isolamento por uid/handle.
+
+**Entrega demonstrável:** Início, AC/timeout e retry comprovados no emulador com o contrato atual; checklist operacional identifica exatamente o que falta no projeto real.
+
+**Verificação proporcional:** Níveis 3/4 conforme TESTING.md: Rules e SDK reais em emuladores para os contratos afetados. Sem build/recoleta científica por alteração apenas documental. Confirmação remota pendente não deve ser ocultada por testes locais.
+
+**Limites comuns:** preservar evidências antigas, regras de conta/handle, saldo inicial 800, prazo de 2h e avaliações persistidas. Não ativar previsões/pontos experimentais ou fazer deploy por esta tarefa. Sem coorte Ipsum obrigatória. Conferências manuais opcionais conforme D-014.
+
+---
+
+<a id="historia-41"></a>
+
+### Historia 41 - Recuperar navegação, início, Ipsum e resultado na jornada Firebase
+
+**GitHub:** [#74](https://github.com/Enzofmcs/Lorem/issues/74) · planejamento central [#72](https://github.com/Enzofmcs/Lorem/issues/72).
+
+**História:** Como usuário autenticado, quero ter a navegação e o fluxo de treino completos das telas anteriores usando meu progresso Firebase.
+
+**Status:** IMPLEMENTADA E VERIFICADA LOCALMENTE em 20/10/2026. [Evidência](evidence/2026-10-20-cloud-40-43.json).
+
+**Frente:** Aplicativo.
+
+**Dependências:** História 40
+
+**Contexto e escopo:** Reaproveitar a experiência das histórias 18–20 e componentes existentes, adaptando estados e ações cloud. A referência visual anterior é 931c410; o fluxo local não deve virar uma segunda fonte gravável para a conta.
+
+**Arquivos de referência:** MainActivity; ui/auth; ui/cloud; ui/navigation; ui/components; ui/screens/HomeScreen.kt, IpsumScreen.kt e IpsumResultScreen.kt.
+
+#### Critérios de aceite
+
+- [x] Disponibilizar navegação coerente por Início, Histórico, Estatísticas e Configurações, com shell reutilizável; retirar a conta Google/gerência de handles do centro permanente da tela de treino.
+- [x] Adaptar os componentes existentes para Home, ativo e resultado cloud, incluindo último resultado, retorno ao início, dica, encerramento com motivo e explicação persistida da avaliação.
+- [x] Restaurar rota e Ipsum ativo após recriação; diferenciar carregamento, offline, erro e CLOSED_AWAITING_VERIFICATION, sem interpretar estado temporariamente vazio como ausência de tentativa.
+- [x] Preservar prazo original e sigilo de rating do problema, tags e categoria durante o ativo; dado de outro uid/handle ou resposta atrasada nunca pode aparecer ao trocar contexto.
+- [x] Não recalcular resultados na UI, importar saldo legado, reativar workers locais para dados cloud ou mudar política de pontos; ativo e resultado usam os snapshots oficiais.
+- [x] Incluir casos automatizados de navegação de ponta a ponta para ativo, encerramento, restauração e troca de conta, verificando recursos disponíveis além da integridade de dados.
+
+**Entrega demonstrável:** Login → Home → Ipsum → resultado → último resultado, com retomada do mesmo ativo e conta correta.
+
+**Verificação proporcional:** Níveis 1/3, e 4 quando identidade/persistência for tocada: Compose/Robolectric e integração dos estados. Aproveitar testes existentes; teste manual visual opcional não substitui cobertura funcional.
+
+**Limites comuns:** preservar evidências antigas, regras de conta/handle, saldo inicial 800, prazo de 2h e avaliações persistidas. Não ativar previsões/pontos experimentais ou fazer deploy por esta tarefa. Sem coorte Ipsum obrigatória. Conferências manuais opcionais conforme D-014.
+
+---
+
+<a id="historia-42"></a>
+
+### Historia 42 - Restaurar histórico, gráficos, filtros e configurações sobre dados cloud
+
+**GitHub:** [#75](https://github.com/Enzofmcs/Lorem/issues/75) · planejamento central [#72](https://github.com/Enzofmcs/Lorem/issues/72).
+
+**História:** Como usuário, quero consultar meu histórico e minha evolução com gráficos e filtros, mantendo o progresso de cada conta e handle separado.
+
+**Status:** IMPLEMENTADA E VERIFICADA LOCALMENTE em 20/10/2026. [Evidência](evidence/2026-10-20-cloud-40-43.json).
+
+**Frente:** Aplicativo.
+
+**Dependências:** História 41
+
+**Contexto e escopo:** Recuperar a paridade das histórias 19 e 21. Reutilizar buildIpsumHistory/buildIpsumStatistics, componentes e cálculos atuais, adaptando a fonte cloud.
+
+**Arquivos de referência:** ui/screens/HistoryScreen.kt, StatisticsScreen.kt e ConfigurationScreen.kt; domínio de histórico/estatísticas; adaptadores cloud; arquivo legado.
+
+#### Critérios de aceite
+
+- [x] Disponibilizar filtros de situação (AC na tentativa, pendente e resolvido depois), rating e tag, com limpeza de filtros e estado vazio compreensível.
+- [x] Exibir evolução do Rating Lorem, indicadores por rating/tag, com/sem dica e progresso de consolidação, com denominadores e ausência de amostra explícitos.
+- [x] Permitir abrir problemas encerrados no Codeforces e consultar detalhes/resultados; oferecer consulta de histórico/estatísticas durante um ativo sem revelar metadados do problema ativo.
+- [x] Restaurar seletor de tema e controles de conta/handle/preparação em destinos apropriados; troca proibida durante ativo permanece protegida.
+- [x] Manter o arquivo local anterior acessível e identificado como somente leitura, separado do saldo e das estatísticas cloud; não reescrever ou importar avaliações.
+- [x] Listas longas usam composição preguiçosa; filtros e rolagem não vazam entre uid/handle. AC posterior não altera a taxa de AC original nem o rating.
+- [x] Comparar por matriz os recursos anteriores e os destinos cloud entregues, com testes funcionais de filtros, gráfico alimentado por dados corretos e troca de contexto.
+
+**Entrega demonstrável:** Filtrar uma pendência, abrir seu problema, visualizar a evolução e mudar o tema com dados cloud; consultar separadamente o arquivo antigo.
+
+**Verificação proporcional:** Níveis 1/2/3, subindo a 4 se tocar isolamento. Testar semântica dos filtros/denominadores e identidade; não criar testes que apenas espelham texto ou detalhes de layout.
+
+**Limites comuns:** preservar evidências antigas, regras de conta/handle, saldo inicial 800, prazo de 2h e avaliações persistidas. Não ativar previsões/pontos experimentais ou fazer deploy por esta tarefa. Sem coorte Ipsum obrigatória. Conferências manuais opcionais conforme D-014.
+
+---
+
+<a id="historia-43"></a>
+
+### Historia 43 - Recuperar preparação e atualização de pendências com custo de rede controlado
+
+**GitHub:** [#76](https://github.com/Enzofmcs/Lorem/issues/76) · planejamento central [#72](https://github.com/Enzofmcs/Lorem/issues/72).
+
+**História:** Como usuário, quero iniciar treinos com preparação compreensível e reconhecer meus upsolves sem verificar cada pendência manualmente.
+
+**Status:** IMPLEMENTADA E VERIFICADA LOCALMENTE em 20/10/2026. [Evidência](evidence/2026-10-20-cloud-40-43.json).
+
+**Frente:** Aplicativo.
+
+**Dependências:** História 41
+
+**Contexto e escopo:** Repor capacidades das histórias 15–17 na arquitetura Spark. Medir o custo atual de início, que consulta histórico completo, catálogo e perfil, antes de escolher cache/incremental.
+
+**Arquivos de referência:** FirestoreTrainingRepository; CloudTrainingViewModel; CloudIpsumWork; API Codeforces; cache/coordenadores; UI de preparação.
+
+#### Critérios de aceite
+
+- [x] Registrar chamadas, páginas, duração e estados do início em cenários controlados, distinguindo medição de latência de dispositivo e contagem determinística em teste.
+- [x] Exibir progresso e retry por etapa de preparação; evitar reconsultas completas redundantes usando dados públicos reutilizáveis e atualização incremental quando a cobertura continuar comprovada.
+- [x] Preservar detecção de problemas já tentados, corte de origem e exclusões; cache incompleto ou antigo não pode autorizar recomendação sem a atualização exigida.
+- [x] Verificar pendências automaticamente em lotes limitados no contexto cloud correto; upsolve altera somente classificação e metadados posteriores, nunca avaliação original.
+- [x] Coordenar UI/WorkManager para evitar concorrência e polling duplicado; respeitar gate central de pelo menos 2s, Retry-After, rede, sessão e budgets explícitos.
+- [x] Não prometer atualização em instante exato ou job independente de dispositivo no Spark. Testar resposta atrasada, paginação incompleta, retomada e troca de uid/handle.
+
+**Entrega demonstrável:** Preparar e iniciar um Ipsum com progresso por etapa; reconhecer AC posterior em pendência sem ação individual e sem duplicar rating.
+
+**Verificação proporcional:** Níveis 3/4: contagem de requisições com transporte controlado, cobertura incremental, isolamento, idempotência e execução agendada. Comparar antes/depois no mesmo cenário, sem prometer melhoria de latência não medida.
+
+**Limites comuns:** preservar evidências antigas, regras de conta/handle, saldo inicial 800, prazo de 2h e avaliações persistidas. Não ativar previsões/pontos experimentais ou fazer deploy por esta tarefa. Sem coorte Ipsum obrigatória. Conferências manuais opcionais conforme D-014.
+
+---
 
 ## 10. Marcos demonstraveis
 

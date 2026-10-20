@@ -52,7 +52,7 @@ fun IpsumResultScreen(state: IpsumResultUiState, onClose: () -> Unit) {
                             Text("Erros definitivos: ${ipsum.errorCount}")
                             val errors = result.errorVerdicts.groupingBy { it }.eachCount().entries
                                 .joinToString { "${it.key} (${it.value})" }.ifEmpty { "nenhum" }
-                            Text("Tipos de erro: $errors", style = MaterialTheme.typography.bodySmall)
+                            Text(if (result.errorVerdictsAvailable) "Tipos de erro: $errors" else "Tipos de erro: não registrados neste snapshot", style = MaterialTheme.typography.bodySmall)
                             ipsum.failureReason?.let { Text("Motivo: ${it.label}") }
                         }
                     }

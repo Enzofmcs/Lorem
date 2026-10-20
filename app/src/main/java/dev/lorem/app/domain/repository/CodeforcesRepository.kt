@@ -49,7 +49,7 @@ interface CodeforcesRepository {
     /** One request/page. receivedCount includes entries without a usable problem identity. */
     suspend fun submissionPage(handle: String, from: Int, count: Int): SubmissionHistoryResult =
         when (val result = submissionHistory(handle)) {
-            is SubmissionHistoryResult.Success -> SubmissionHistoryResult.Success(result.submissions.drop(from - 1).take(count))
+            is SubmissionHistoryResult.Success -> SubmissionHistoryResult.Success(result.submissions.drop(from - 1).take(count), verificationComplete = result.verificationComplete)
             else -> result
         }
 

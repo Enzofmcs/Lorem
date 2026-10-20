@@ -22,7 +22,7 @@ Prioridades, nesta ordem:
 - Identifique um problema por `contestId + index`, nunca apenas pelo nome.
 - Um problema ja tentado, resolvido, usado em outro Ipsum ou pendente nao pode ser recomendado.
 - So pode existir um Ipsum ativo; no bloco Firebase 33-38, a garantia passa a ser por uid entre handles/dispositivos.
-- Bloco Firebase 33-38 (D-039/D-043): entrada Google/Firestore padrao, 800 por novo vinculo, prazo absoluto 2h e arquivo local somente leitura na 38. Google unico e Rules 35-37 confirmados pelo usuario; Rules 38 de exclusoes ainda precisam ser publicadas. Room 14 preserva legado sem uid e sincroniza somente IDs de problemas excluidos. WorkManager pode atrasar a gravacao, nunca estender prazo.
+- Bloco Firebase 33-38 (D-039/D-043): entrada Google/Firestore padrao, 800 por novo vinculo, prazo absoluto 2h e arquivo local somente leitura na 38. Google unico, OAuth autorizado e atualizacao das Rules confirmados pelo usuario; adicionar google-services.json local permanece pendente (confirmacao de 20/10/2026). Room 14 preserva legado sem uid e sincroniza somente IDs de problemas excluidos. WorkManager pode atrasar a gravacao, nunca estender prazo.
 - Handles iguais em uids diferentes sao permitidos; nao adicionar verificacao extra de posse CF. Login/troca de handle nao reiniciam rating; avaliacoes antigas permanecem preservadas.
 - Submissoes anteriores ao inicio nao contam para o Ipsum atual.
 - Um Ipsum encerrado nao pode alterar o rating duas vezes.
@@ -52,6 +52,10 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
+Atualização operacional em 20/10/2026: [OAuth e Rules confirmados pelo responsável](docs/evidence/2026-10-20-firebase-oauth-rules-confirmation.json). Marcos anteriores abaixo preservam o estado observado na ocasião.
+
+- **Histórias 40–43, 20/10/2026:** experiência cloud recuperada com shell/telas anteriores, histórico/gráficos/filtros, tema/conta em Configurações e ativo restaurável. Preparação por etapas com cache público/incremental verificado, budgets e pendências automáticas em lotes sob a trava compartilhada. 332 debug/237 release sem falhas ou ignorados, 15 SDK reais em emuladores, 34 Auth/Rules; lint sem erros (58 avisos) e APK. [Evidência](docs/evidence/2026-10-20-cloud-40-43.json), [paridade/budgets](docs/CLOUD_EXPERIENCE.md), [operação](docs/FIREBASE_OPERATION.md). Rules39 inalteradas; cliente D-012 recusado por Rules38 e aceito pelas atuais em emulador. OAuth e atualização das Rules confirmados pelo usuário em 20/10/2026; resta adicionar o JSON local. Sem deploy/readback/login real pelo agente. [Confirmação](docs/evidence/2026-10-20-firebase-oauth-rules-confirmation.json). D-012 ativa e time-curve-v1 desabilitada.
+
 - **Evolução após 38 — D-044/história 39:** política experimental de pontos por
   curva implementada no cloud, com função pura, snapshot imutável, ganho zero,
   decomposição no resultado e exportação. [Contrato](docs/TIME_SCORING.md),
@@ -73,11 +77,11 @@ backend ou abstracao sem necessidade concreta.
 - **Historico preservado:** evidencias anteriores em docs/evidence/2026-10-19-firebase-33-34.json e docs/evidence/2026-10-19-firebase-android-config.json descrevem Functions/configuracao inicial, nao a arquitetura Spark. D-039 substitui compute de D-033/D-037/D-038; nam5/preview/isolamento preservados.
 - **Contrato do novo bloco:** [Firebase, prazo e migracao](docs/FIREBASE.md). Requisitos novos substituem a exclusao anterior de login/Firebase e o rating inicial D-009 somente prospectivamente (D-033 a D-039).
 
-- **Foco atual:** evolução 39 (D-044) implementada/verificada com ativação desabilitada. **Marco anterior:** entrega final 33-38 implementada/verificada. Historia 31 retirada do escopo pelo usuario (D-042); 32 fica fora desta entrega por dependencia, sem previsoes. Historias 00-30 e evidencias anteriores preservadas.
-- **Última história verificada:** 39; evidência acima. **Marco anterior, preservado:** História 38, 310 debug/223 release sem falhas/ignorados, 14 SDK reais em emuladores, 29 Auth/Rules, 85 Python; lint sem erros e APK. Evidencia em docs/evidence/2026-10-19-android-38.json. Marco 30 de 2026-10-18 preservado: 232 debug/170 release e 66 Python, exportacao local/contrato Android-Python e snapshots anteriores.
-- **Primeiro item funcional pendente:** nenhum no escopo ativo apos a 38; entrega em PR. A 31 nao e mais trabalho pendente do produto; foi retirada do escopo por solicitacao do usuario. A 32 nao sera implementada nesta entrega.
-- **Proxima entrega demonstravel:** jornada integrada 38, arquivo anterior somente leitura, saldo cloud separado, prazo original e exclusoes restauradas em outro cliente.
-- **Configuracao real restante:** restaurar google-services.json local neste checkout e publicar as Rules 38; usuario ja confirmou Google unico e publicacao 35-37. Teste manual continua opcional (D-014).
+- **Foco atual:** 40–43 implementadas/verificadas localmente; pendências operacionais explícitas no runbook. **Marco anterior:** entrega final 33-38 implementada/verificada. Historia 31 retirada do escopo pelo usuario (D-042); 32 fica fora desta entrega por dependencia, sem previsoes. Historias 00-30 e evidencias anteriores preservadas.
+- **Última história verificada:** 43; evidência 2026-10-20 acima. **Marco anterior, preservado:** História 38, 310 debug/223 release sem falhas/ignorados, 14 SDK reais em emuladores, 29 Auth/Rules, 85 Python; lint sem erros e APK. Evidencia em docs/evidence/2026-10-19-android-38.json. Marco 30 de 2026-10-18 preservado: 232 debug/170 release e 66 Python, exportacao local/contrato Android-Python e snapshots anteriores.
+- **Primeiro item funcional pendente:** nenhum nas histórias 40–43; adição do JSON local e recompilação continuam com o usuário; OAuth/Rules confirmados. A 31 nao e mais trabalho pendente do produto; foi retirada do escopo por solicitacao do usuario. A 32 nao sera implementada nesta entrega.
+- **Proxima entrega demonstravel:** jornada cloud com abas, preparação por etapa, retomada, resultado/último resultado, filtros/gráficos/tema e AC posterior automático; arquivo anterior separado.
+- **Configuracao real restante:** adicionar google-services.json local e recompilar; usuário confirmou OAuth autorizado e Rules atualizadas em 20/10/2026. Nenhuma leitura administrativa remota pelo agente. Teste manual continua opcional (D-014).
 
 Registro historico da 31 retirada do escopo (D-042), sem trabalho empirico pendente nesta entrega: [TRANSPORT_PROTOCOL.md](study/TRANSPORT_PROTOCOL.md),
 84 testes Python e [evidencia](study/evidence/2026-10-19-transport/verification.json).

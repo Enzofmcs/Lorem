@@ -16,11 +16,15 @@ data class CloudTrainingUiState(
     val selectedKey: String? = null,
     val busy: Boolean = false,
     val error: String? = null,
+    val preparation: CloudPreparationProgress? = null,
+    val pendingUpdate: dev.lorem.app.ui.PendingUpdateUiState = dev.lorem.app.ui.PendingUpdateUiState.Idle,
 )
 
-class CloudTrainingViewModel(private val uid: String, private val repository: CloudTrainingRepository) : ViewModel() {
+class CloudTrainingViewModel(private val uid: String, private val repository: CloudTrainingRepository,
+    private val elapsedMillis: () -> Long = { System.nanoTime() / 1_000_000 }) : ViewModel() {
     private val mutableState = MutableStateFlow(CloudTrainingUiState())
     val state = mutableState.asStateFlow()
+    private var pendingRefreshAt: Long? = null
     private var pendingStart: Pair<String, String>? = null
     init { refresh() }
 
@@ -47,20 +51,33 @@ class CloudTrainingViewModel(private val uid: String, private val repository: Cl
         val active = mutableState.value.snapshot?.active
         if (active != null) { repository.reconcile(uid, active); reload() }
     }
-    fun add(handle: String) = action {
-        val added = repository.addHandle(uid, handle)
-        // An existing active attempt continues to own the selected destination.
-        if (mutableState.value.snapshot?.active == null) repository.selectHandle(uid, added.key)
+    private suspend fun changeSelection(key: String) {
+        repository.selectHandle(uid, key)
+        pendingRefreshAt = null
+        pendingStart = null
+        // Clear the previous handle before a possibly slow/offline load of the new context.
+        mutableState.value = mutableState.value.copy(snapshot = null, selectedKey = key, preparation = null,
+            pendingUpdate = dev.lorem.app.ui.PendingUpdateUiState.Idle)
         reload()
     }
-    fun select(key: String) = action { repository.selectHandle(uid, key); pendingStart = null; reload() }
+    fun add(handle: String) = action {
+        val added = repository.addHandle(uid, handle)
+        if (mutableState.value.snapshot?.active == null) changeSelection(added.key) else reload()
+    }
+    fun select(key: String) = action {
+        check(mutableState.value.snapshot?.active == null) { "Conclua o treino antes de trocar de handle." }
+        changeSelection(key)
+    }
     fun start() = action {
         val key = requireNotNull(mutableState.value.selectedKey)
         val command = pendingStart?.takeIf { it.first == key }?.second ?: UUID.randomUUID().toString().also {
             pendingStart = key to it
         }
-        repository.start(uid, key, command)
+        repository.startPrepared(uid, key, command) { progress ->
+            mutableState.value = mutableState.value.copy(preparation = progress)
+        }
         pendingStart = null
+        mutableState.value = mutableState.value.copy(preparation = null)
         reload()
     }
     fun hint() = action { repository.hint(uid, requireNotNull(mutableState.value.snapshot?.active)); reload() }
@@ -69,6 +86,23 @@ class CloudTrainingViewModel(private val uid: String, private val repository: Cl
         reload()
     }
     fun upsolve(attempt: CloudIpsum) = action { repository.reconcile(uid, attempt); reload() }
+    fun updatePending(force: Boolean = false) {
+        if (!force && pendingRefreshAt?.let { elapsedMillis() - it in 0 until 900_000 } == true) return
+        action {
+            val key = mutableState.value.selectedKey ?: return@action
+            pendingRefreshAt = elapsedMillis()
+            mutableState.value = mutableState.value.copy(pendingUpdate = dev.lorem.app.ui.PendingUpdateUiState.Loading)
+            try {
+                val moved = repository.refreshPending(uid, key, force)
+                reload()
+                mutableState.value = mutableState.value.copy(pendingUpdate = dev.lorem.app.ui.PendingUpdateUiState.Success(moved))
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+                mutableState.value = mutableState.value.copy(pendingUpdate = dev.lorem.app.ui.PendingUpdateUiState.Error(
+                    e.message ?: "Não foi possível atualizar as pendências."))
+            }
+        }
+    }
     fun now(): Long? = repository.deadline.now(uid)
 
     companion object {

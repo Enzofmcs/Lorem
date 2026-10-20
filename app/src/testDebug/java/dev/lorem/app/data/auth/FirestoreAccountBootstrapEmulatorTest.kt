@@ -171,6 +171,8 @@ class FirestoreAccountBootstrapEmulatorTest {
         repository.addHandle(uid, "tourist")
         repository.selectHandle(uid, "cf_tourist")
         val active = repository.start(uid, "cf_tourist", "command")
+        assertEquals(LEGACY_SCORING_POLICY, active.ipsum.scoringSnapshot!!.policyVersion)
+        assertNull(active.ipsum.scoringSnapshot!!.limits)
         assertEquals(active, repository.start(uid, "cf_tourist", "command"))
         assertTrue(scheduled.any { it.id == active.id })
         assertEquals(active, repository().load(uid).active)
@@ -298,8 +300,16 @@ class FirestoreAccountBootstrapEmulatorTest {
         assertEquals(document.getTimestamp("cutoffAt"), (document.get("result") as Map<*, *>)["endedAt"])
         submitted = listOf(CodeforcesSubmission(2, expired.ipsum.problem.id, "OK",
             Instant.ofEpochMilli((expired.expiresAtMillis / 1000 + 1) * 1000)))
-        assertTrue(repository.reconcile(uid, expired))
+        val original = state.attempts.single().ipsum
+        cfComplete = false
+        try { repository.refreshPending(uid, "cf_tourist", true); fail("Incomplete window") } catch (_: IllegalStateException) {}
+        assertEquals(IpsumStatus.PENDING, repository.load(uid, "cf_tourist").attempts.single().ipsum.status)
+        cfComplete = true
+        assertEquals(1, repository.refreshPending(uid, "cf_tourist", true))
+        assertEquals(0, repository.refreshPending(uid, "cf_tourist", true))
         state = repository.load(uid, "cf_tourist")
+        assertEquals(original.copy(status = IpsumStatus.SOLVED_OUTSIDE,
+            solvedOutsideAtEpochMillis = submitted.single().createdAt.toEpochMilli()), state.attempts.single().ipsum)
         assertEquals(780, state.handles.single().rating)
         assertEquals(1L, state.handles.single().version)
         assertEquals(IpsumStatus.SOLVED_OUTSIDE, state.attempts.single().ipsum.status)

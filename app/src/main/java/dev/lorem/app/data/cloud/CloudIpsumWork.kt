@@ -20,6 +20,14 @@ class CloudIpsumScheduler(private val context: Context) {
             .addTag(TAG).addTag("$TAG:$uid").build()
         WorkManager.getInstance(context).enqueueUniqueWork("$TAG:$uid:${attempt.handleKey}:${attempt.id}:${if (verifying) "verify" else "deadline"}", ExistingWorkPolicy.KEEP, work)
     }
+    fun maintenance(uid: String) {
+        val work = PeriodicWorkRequestBuilder<CloudPendingWorker>(15, TimeUnit.MINUTES)
+            .setInputData(workDataOf("uid" to uid))
+            .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
+            .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS)
+            .addTag(TAG).addTag("$TAG:$uid").build()
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork("$TAG:pending:$uid", ExistingPeriodicWorkPolicy.KEEP, work)
+    }
     fun cancel(uid: String) { WorkManager.getInstance(context).cancelAllWorkByTag("$TAG:$uid") }
     companion object { const val TAG = "firebase-ipsum" }
 }
@@ -54,4 +62,33 @@ internal suspend fun reconcileCloudWork(uid: String, key: String, id: String, ve
     if (active.id != id || active.handleKey != key || active.version != version) return true
     if (validatedUid() != uid) return false
     return repository.reconcile(uid, active)
+}
+
+
+/** Best effort device work, never a promise of an exact server execution time. */
+class CloudPendingWorker(context: Context, parameters: WorkerParameters) : CoroutineWorker(context, parameters) {
+    override suspend fun doWork(): Result {
+        if (!BuildConfig.FIREBASE_AUTH_ENABLED) return Result.success()
+        val uid = inputData.getString("uid") ?: return Result.failure()
+        val container = (applicationContext as LoremApplication).container
+        val current = container.validatedCloudUid()
+        if (current != uid) return if (current == null) Result.retry() else Result.success()
+        val repository = container.cloudTraining ?: return Result.retry()
+        return try {
+            if (maintainCloudWork(uid, container::validatedCloudUid, repository)) Result.success() else Result.retry()
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            Result.retry()
+        }
+    }
+}
+
+internal suspend fun maintainCloudWork(uid: String, validatedUid: () -> String?, repository: CloudTrainingRepository): Boolean {
+    if (validatedUid() != uid) return false
+    val key = repository.selectedHandle(uid) ?: return true
+    val snapshot = repository.load(uid, key)
+    if (!snapshot.online || validatedUid() != uid) return false
+    snapshot.active?.let { return repository.reconcile(uid, it) }
+    repository.refreshPending(uid, key)
+    return validatedUid() == uid
 }

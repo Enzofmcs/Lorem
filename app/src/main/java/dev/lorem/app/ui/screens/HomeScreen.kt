@@ -31,10 +31,13 @@ fun HomeScreen(
     consolidation: ConsolidationProgress? = null,
     preparation: PreparationUiState? = null,
     dataSourceNotice: String? = null,
+    requiresLocalPreparation: Boolean = true,
+    startEnabled: Boolean = true,
 ) {
     var showConsolidation by rememberSaveable(profile.handle) { mutableStateOf(false) }
     val blockedReason = when {
         hasActiveIpsum -> null
+        !requiresLocalPreparation -> null
         profile.lastSyncEpochMillis <= 0 -> "Seu histórico está sendo preparado. A primeira importação precisa terminar para garantir um problema inédito."
         !catalogReady && preparation?.catalog?.lastSuccessEpochMillis != null -> "Nenhum problema com data de origem verificada desde 01/07/2020 está disponível. Atualize o catálogo em Configurações."
         !catalogReady -> "Estamos preparando os problemas do seu treino. Aguarde o catálogo ficar disponível."
@@ -54,7 +57,7 @@ fun HomeScreen(
         LoremPrimaryAction(
             label = if (hasActiveIpsum) "Continuar Ipsum" else "Iniciar Ipsum",
             onClick = { if (hasActiveIpsum) onNavigate(LoremDestination.Ipsum.route) else onStartIpsum() },
-            enabled = blockedReason == null,
+            enabled = blockedReason == null && (hasActiveIpsum || startEnabled),
             busy = !hasActiveIpsum && startIpsumState == StartIpsumUiState.Loading,
         )
         if (hasActiveIpsum) {

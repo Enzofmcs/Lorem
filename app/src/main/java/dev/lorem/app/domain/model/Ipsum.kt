@@ -50,7 +50,7 @@ data class Ipsum(
     val timeGain: dev.lorem.app.domain.TimeGain? = null,
 )
 
-data class IpsumResult(val ipsum: Ipsum, val errorVerdicts: List<String>)
+data class IpsumResult(val ipsum: Ipsum, val errorVerdicts: List<String>, val errorVerdictsAvailable: Boolean = true)
 
 fun Ipsum.totalTimeMillis(): Long? = endedAtEpochMillis?.let {
     elapsedIpsumMillis(startedAtEpochMillis, it)

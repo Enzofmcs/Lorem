@@ -28,6 +28,8 @@ import dev.lorem.app.domain.cloud.CloudTrainingRepository
 import dev.lorem.app.ui.cloud.CloudTrainingDestination
 import dev.lorem.app.domain.handles.HandlesRepository
 import dev.lorem.app.ui.handles.AccountHandlesDestination
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
 
 @Composable
 fun FirebaseLoginApp(authentication: FirebaseAuthentication, appearance: AppearanceRepository,
@@ -37,6 +39,8 @@ fun FirebaseLoginApp(authentication: FirebaseAuthentication, appearance: Appeara
     val busy by model.busy.collectAsStateWithLifecycle()
     val error by model.error.collectAsStateWithLifecycle()
     val theme by appearance.themePreference.collectAsStateWithLifecycle(ThemePreference.SYSTEM)
+    val appearanceScope = rememberCoroutineScope()
+    var appearanceError by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
     val credentials = remember(authentication.googleWebClientId) {
         authentication.googleWebClientId?.let { GoogleCredentialRequest(context.applicationContext, it) }
@@ -49,12 +53,25 @@ fun FirebaseLoginApp(authentication: FirebaseAuthentication, appearance: Appeara
     }
     LoremTheme(preference = theme) {
         AuthenticationScreen(session, busy, error,
+            fullScreenSignedIn = training != null,
             onSignIn = { credentials?.let { model.signIn { it.getIdToken(context) } } },
             onRetry = model::refresh,
             onSignOut = { model.signOut { credentials?.clearState() } },
             deviceContent = { migration?.let { dev.lorem.app.ui.rollout.LegacyArchiveDestination(it) } },
             signedInContent = { account ->
-                if (training != null) CloudTrainingDestination(account.uid, training)
+                if (training != null) CloudTrainingDestination(account.uid, training, theme,
+                    onThemeChange = { preference -> appearanceScope.launch {
+                        try { appearance.setThemePreference(preference); appearanceError = null }
+                        catch (e: Exception) { if (e is CancellationException) throw e; appearanceError = "Não foi possível salvar o tema. Tente novamente." }
+                    } }, settingsContent = {
+                        Text("Conta Google conectada", style = MaterialTheme.typography.titleLarge)
+                        Text(account.displayName ?: account.email ?: "Sua conta")
+                        OutlinedButton(onClick = { model.signOut { credentials?.clearState() } }, modifier = Modifier.testTag("google-sign-out")) {
+                            Text("Sair ou trocar de conta")
+                        }
+                        appearanceError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                        migration?.let { dev.lorem.app.ui.rollout.LegacyArchiveDestination(it) }
+                    })
                 else if (handlesRepository != null) AccountHandlesDestination(account.uid, handlesRepository)
                 else HandleOnboardingDestination()
             },
@@ -71,9 +88,14 @@ fun AuthenticationScreen(
     onSignIn: () -> Unit,
     onRetry: () -> Unit,
     onSignOut: () -> Unit,
+    fullScreenSignedIn: Boolean = false,
     deviceContent: @Composable () -> Unit = {},
     signedInContent: @Composable (GoogleAccount) -> Unit = { HandleOnboardingDestination() },
 ) {
+    if (fullScreenSignedIn && state is AuthenticationState.SignedIn) {
+        key(state.account.uid) { signedInContent(state.account) }
+        return
+    }
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)
             .verticalScroll(rememberScrollState()).padding(24.dp), verticalArrangement = Arrangement.spacedBy(24.dp)) {

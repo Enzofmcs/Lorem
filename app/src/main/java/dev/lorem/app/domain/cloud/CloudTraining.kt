@@ -124,7 +124,17 @@ interface CloudTrainingRepository {
     suspend fun selectHandle(uid: String, key: String)
     suspend fun exportStudy(uid: String, key: String): dev.lorem.app.domain.IpsumStudyExport? = null
     suspend fun start(uid: String, key: String, commandId: String): CloudIpsum
+    suspend fun startPrepared(uid: String, key: String, commandId: String,
+        progress: (CloudPreparationProgress) -> Unit): CloudIpsum = start(uid, key, commandId)
+    suspend fun refreshPending(uid: String, key: String, force: Boolean = false): Int = 0
     suspend fun hint(uid: String, attempt: CloudIpsum)
     suspend fun close(uid: String, attempt: CloudIpsum, reason: IpsumFailureReason)
     suspend fun reconcile(uid: String, attempt: CloudIpsum): Boolean
 }
+
+
+enum class CloudPreparationStage(val label: String) {
+    HISTORY("Histórico Codeforces"), CATALOG("Catálogo e origem dos problemas"),
+    PROFILE("Perfil Codeforces"), SAVING("Escolha e gravação do Ipsum")
+}
+data class CloudPreparationProgress(val stage: CloudPreparationStage, val detail: String)

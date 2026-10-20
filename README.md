@@ -6,6 +6,21 @@ Um **Ipsum** é a tentativa oficial e cronometrada de resolver um problema recom
 
 > O [`AGENTS.md`](AGENTS.md) é o guia operacional compacto. A fonte de verdade detalhada está dividida por assunto em [`docs/`](docs/README.md). Este README apresenta apenas a visão técnica de entrada.
 
+## Histórias 40–43
+
+Jornada Firebase recuperada: abas Início/Histórico/Estatísticas, treino e resultado
+persistido, filtros/gráficos, tema/conta/handles em Configurações e arquivo local
+separado. Preparação por etapas com retomada e cobertura incremental verificada;
+AC posterior automático em lotes limitados, sem alterar a avaliação original.
+
+332 debug/237 release sem falhas ou ignorados, 15 SDK reais em emuladores, 34 Auth/Rules; lint sem erros (58 avisos) e APK.
+[Paridade e custo de rede](docs/CLOUD_EXPERIENCE.md) ·
+[Compatibilidade e operação Firebase](docs/FIREBASE_OPERATION.md) ·
+[Evidência](docs/evidence/2026-10-20-cloud-40-43.json).
+OAuth autorizado e Rules atualizadas foram confirmados pelo usuário em 20/10/2026.
+Resta adicionar `app/google-services.json` localmente e recompilar.
+[Registro da confirmação](docs/evidence/2026-10-20-firebase-oauth-rules-confirmation.json); nenhum deploy ou login real pelo agente. D-012 permanece vigente, time-curve-v1 desabilitada.
+
 ## Estado atual
 
 A base Android de módulo único implementa as Histórias 00–21 e 29–30:

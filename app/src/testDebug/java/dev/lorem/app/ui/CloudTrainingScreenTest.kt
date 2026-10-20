@@ -1,12 +1,9 @@
 package dev.lorem.app.ui
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.StateRestorationTester
 import dev.lorem.app.domain.cloud.*
 import dev.lorem.app.domain.*
 import dev.lorem.app.domain.model.*
@@ -23,78 +20,110 @@ import org.robolectric.annotation.Config
 @Config(sdk = [35])
 class CloudTrainingScreenTest {
     @get:Rule val compose = createComposeRule()
-    private val active = CloudIpsum("id", "tourist", 0, CloudIpsumState.ACTIVE,
+    private val active = CloudIpsum("command", "cf_tourist", 0, CloudIpsumState.ACTIVE,
         Ipsum(1, "Tourist", CodeforcesProblem(ProblemId(2000, "A"), "Private training", 1200, setOf("math", "dp")),
             923, IpsumCategory.CHALLENGE, 1100, 1200, 1200, 0, 1000, status = IpsumStatus.ACTIVE,
-            scoringSnapshot = ScoringSnapshot(TIME_CURVE_POLICY, TimeLimits(1800000, 3600000, 7200000),
-                modelVersion = "synthetic-v1", artifactSha256 = "a".repeat(64), inputRating = 1200, unavailableReason = null)))
-    private fun state(attempt: CloudIpsum? = active) = CloudTrainingUiState(CloudSnapshot(
-        listOf(CloudHandle("tourist", "Tourist", 923, null, 0)), attempt, listOfNotNull(attempt), true), "tourist")
-    @Test fun `active hides rating category and tags until confirmed hint and expiry removes training controls`() {
-        val time = mutableStateOf<Long?>(1000)
-        var hints = 0
-        compose.setContent { LoremTheme {
-            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-                CloudTrainingScreen(state(), time.value, {}, {}, {}, { hints++ }, {}, {}, {})
-            }
-        } }
-        compose.onNodeWithText("Rating Lorem: 923").assertDoesNotExist()
+            scoringSnapshot = ScoringSnapshot(LEGACY_SCORING_POLICY, null, modelVersion = null, artifactSha256 = null,
+                inputRating = 1200, unavailableReason = "activation_disabled")))
+    private fun final(status: IpsumStatus = IpsumStatus.COMPLETED) = active.copy(state = CloudIpsumState.FINAL,
+        ipsum = active.ipsum.copy(status = status, endedAtEpochMillis = 61000, ratingDelta = 24, finalLoremRating = 947,
+            solvedOutsideAtEpochMillis = if (status == IpsumStatus.SOLVED_OUTSIDE) 62000 else null))
+    private fun state(attempt: CloudIpsum? = active, history: List<CloudIpsum> = emptyList()) = CloudTrainingUiState(CloudSnapshot(
+        listOf(CloudHandle("cf_tourist", "Tourist", 923, null, 0)), attempt, history + listOfNotNull(attempt), true), "cf_tourist")
+    @Test fun `active resumes after recreation hides metadata and closes into saved result then last result`() {
+        val restoration = StateRestorationTester(compose)
+        val state = mutableStateOf(state())
+        restoration.setContent { LoremTheme { CloudTrainingApp("A", state.value, 1000, {}, {}, {}, {}, {}, {}, {}) } }
+        compose.onNodeWithText("Private training").assertExists()
         compose.onNodeWithText("1200", substring = true).assertDoesNotExist()
-        compose.onNodeWithText("CHALLENGE", substring = true).assertDoesNotExist()
         compose.onNodeWithText("math", substring = true).assertDoesNotExist()
-        compose.onNodeWithText("Ganho base", substring = true).assertDoesNotExist()
-        compose.onNodeWithText("time-curve-v1", substring = true).assertDoesNotExist()
-        compose.onNodeWithText("Revelar dica").performScrollTo().performClick()
-        assertEquals(0, hints)
+        restoration.emulateSavedInstanceStateRestore()
+        compose.onNodeWithText("Private training").assertExists()
+        compose.runOnIdle { state.value = state(null, listOf(final())) }
+        compose.onNodeWithText("Resultado do Ipsum").assertExists()
+        compose.onNodeWithText("Voltar ao início").performScrollTo().performClick()
+        compose.onNodeWithText("Ver último resultado").performScrollTo().performClick()
+        compose.onNodeWithText("Resultado do Ipsum").assertExists()
+    }
+    @Test fun `history and statistics stay accessible during active and filters reset across accounts`() {
+        val uid = mutableStateOf("A")
+        val previous = final(IpsumStatus.SOLVED_OUTSIDE).copy(id = "previous", ipsum = final(IpsumStatus.SOLVED_OUTSIDE).ipsum.copy(
+            id = 2, problem = CodeforcesProblem(ProblemId(2001, "B"), "Earlier problem", 800, setOf("greedy"))))
+        val state = mutableStateOf(state(history = listOf(previous)))
+        compose.setContent { LoremTheme { CloudTrainingApp(uid.value, state.value, 1000, {}, {}, {}, {}, {}, {}, {}) } }
+        compose.onNodeWithText("Voltar ao início").performScrollTo().performClick()
+        compose.onNodeWithTag("tab-history").performClick()
+        compose.onNodeWithTag("situation-SOLVED_OUTSIDE_IPSUM").performClick()
+        compose.onNodeWithTag("history-list").performScrollToNode(hasText("Earlier problem"))
+        compose.onNodeWithText("Earlier problem").assertExists()
+        compose.onNodeWithText("Private training").assertDoesNotExist()
+        compose.onNodeWithTag("tab-statistics").performClick()
+        compose.onNodeWithTag("statistics-list").performScrollToNode(hasText("AC no Ipsum: 0"))
+        compose.onNodeWithText("AC no Ipsum: 0").assertExists()
+        compose.onNodeWithTag("statistics-list").performScrollToNode(hasTestTag("statistics-evolution-chart"))
+        compose.onNodeWithTag("statistics-evolution-chart").assertExists()
+        compose.onNodeWithTag("tab-history").performClick()
+        compose.onNodeWithTag("history-list").performScrollToIndex(0)
+        compose.onNodeWithTag("situation-SOLVED_OUTSIDE_IPSUM").assertIsSelected()
+        compose.runOnIdle { uid.value = "B"; state.value = state(null) }
+        compose.onNodeWithTag("tab-history").performClick()
+        compose.onNodeWithTag("situation-SOLVED_IN_IPSUM").assertIsSelected()
+        compose.onNodeWithText("Earlier problem").assertDoesNotExist()
+    }
+    @Test fun `home start hint confirmation and close reason callbacks traverse the cloud journey`() {
+        val state = mutableStateOf(state(null))
+        var hinted = false
+        var reason: IpsumFailureReason? = null
+        compose.setContent { LoremTheme { CloudTrainingApp("A", state.value, 1000, {}, {},
+            onStart = { state.value = state() }, onHint = {
+                hinted = true
+                state.value = state(active.copy(ipsum = active.ipsum.copy(hintRevealedAtEpochMillis = 1000)))
+            }, onClose = { selected ->
+                reason = selected
+                state.value = state(null, listOf(final(IpsumStatus.PENDING).let {
+                    it.copy(ipsum = it.ipsum.copy(failureReason = selected, ratingDelta = -20, finalLoremRating = 903))
+                }))
+            }, onRefresh = {}, onPending = {}) } }
+        compose.onNodeWithText("Iniciar Ipsum").performScrollTo().performClick()
+        compose.onNodeWithText("Revelar tópicos").performScrollTo().performClick()
+        assertFalse(hinted)
         compose.onNodeWithText("Revelar", useUnmergedTree = true).performClick()
-        assertEquals(1, hints)
-        compose.runOnIdle { time.value = active.expiresAtMillis }
-        compose.onNodeWithText("Revelar dica").assertDoesNotExist()
-        compose.onNodeWithText("Abrir problema no Codeforces").assertDoesNotExist()
-        compose.onNodeWithText("Treino fechado · aguardando verificação").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("Iniciar Ipsum · até 2h").assertDoesNotExist()
+        assertTrue(hinted)
+        compose.onNodeWithText("Tópicos: dp, math").assertExists()
+        compose.onNodeWithText("Encerrar sem AC").performScrollTo().performClick()
+        compose.onNodeWithText(IpsumFailureReason.LOGIC_NOT_FOUND.label).performClick()
+        compose.onNodeWithText("Encerrar", useUnmergedTree = true).performClick()
+        assertEquals(IpsumFailureReason.LOGIC_NOT_FOUND, reason)
+        compose.onNodeWithText("Resultado do Ipsum").assertExists()
     }
-    @Test fun `offline without trusted time cannot continue training or start another attempt`() {
-        compose.setContent { LoremTheme {
-            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-                CloudTrainingScreen(state().let { it.copy(snapshot = it.snapshot!!.copy(online = false)) }, null, {}, {}, {}, {}, {}, {}, {})
-            }
-        } }
+    @Test fun `offline untrusted clock and awaiting verification never present absence or training controls`() {
+        val state = state().let { it.copy(snapshot = it.snapshot!!.copy(online = false)) }
+        compose.setContent { LoremTheme { CloudTrainingApp("A", state, null, {}, {}, {}, {}, {}, {}, {}) } }
+        compose.onNodeWithText("Confirmando prazo do Ipsum salvo…").assertExists()
+        compose.onNodeWithText("Revelar tópicos").assertDoesNotExist()
+        compose.onNodeWithText("Abrir no Codeforces").assertDoesNotExist()
+        compose.onNodeWithText("Voltar ao início").performClick()
+        compose.onNodeWithText("Continuar Ipsum").assertExists()
+    }
+    @Test fun `closed and elapsed deadline keep distinct status without training controls`() {
+        val state = mutableStateOf(state(active.copy(state = CloudIpsumState.CLOSED_AWAITING_VERIFICATION)))
+        compose.setContent { LoremTheme { CloudTrainingApp("A", state.value, active.expiresAtMillis, {}, {}, {}, {}, {}, {}, {}) } }
         compose.onNodeWithText("Treino fechado · aguardando verificação").assertExists()
-        compose.onNodeWithText("Revelar dica").assertDoesNotExist()
-        compose.onNodeWithText("Adicionar handle").assertDoesNotExist()
-        compose.onNodeWithText("Iniciar Ipsum · até 2h").assertDoesNotExist()
+        compose.onNodeWithText("Revelar tópicos").assertDoesNotExist()
+        compose.runOnIdle { state.value = state() }
+        compose.onNodeWithText("Prazo atingido · aguardando verificação").assertExists()
+        compose.onNodeWithText("Encerrar sem AC").assertDoesNotExist()
     }
-    @Test fun `finished AC with zero gain explains saved base time band and hint`() {
-        val gain = applyTimeScoring(24, 7200000, TimeLimits(1800000, 3600000, 7200000), 1.25, .5, true, TIME_CURVE_POLICY)
-        val final = active.copy(state = CloudIpsumState.FINAL, ipsum = active.ipsum.copy(status = IpsumStatus.COMPLETED,
-            endedAtEpochMillis = active.expiresAtMillis, ratingDelta = 0, finalLoremRating = 923, timeGain = gain))
-        compose.setContent { LoremTheme {
-            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-                CloudTrainingScreen(state(null).let { it.copy(snapshot = it.snapshot!!.copy(attempts = listOf(final))) },
-                    active.expiresAtMillis + 1000, {}, {}, {}, {}, {}, {}, {})
-            }
-        } }
-        compose.onNodeWithText("Rating 923 → 923 (0)").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("Sem ganho positivo. Ganho base: 24", substring = true).performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("ajuste por tempo: -24", substring = true).assertExists()
-        compose.onNodeWithText("ganho final: 0", substring = true).assertExists()
-    }
-    @Test fun `finished timeout exposes original result and upsolve action without changing original status`() {
-        val final = active.copy(state = CloudIpsumState.FINAL, cutoffMillis = active.expiresAtMillis,
-            closeReason = CloudCloseReason.TIME_LIMIT_EXCEEDED, ipsum = active.ipsum.copy(status = IpsumStatus.PENDING,
-                endedAtEpochMillis = active.expiresAtMillis, failureReason = IpsumFailureReason.TIME_EXPIRED,
-                ratingDelta = -20, finalLoremRating = 903))
-        var upsolves = 0
-        compose.setContent { LoremTheme {
-            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-                CloudTrainingScreen(state(null).let { it.copy(snapshot = it.snapshot!!.copy(attempts = listOf(final))) },
-                    active.expiresAtMillis + 1000, {}, {}, {}, {}, {}, {}, { upsolves++ })
-            }
-        } }
-        compose.onNodeWithText("Faltou tempo.").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("Rating 923 → 903 (-20)").assertExists()
-        compose.onNodeWithText("Verificar AC posterior").performScrollTo().performClick()
-        assertEquals(1, upsolves)
+    @Test fun `settings moves account and theme out of training and locks handle selection during active`() {
+        var selected = 0; var changed: ThemePreference? = null
+        compose.setContent { LoremTheme { CloudTrainingApp("A", state(), 1000, {}, { selected++ }, {}, {}, {}, {}, {},
+            onThemeChange = { changed = it }, settingsContent = { androidx.compose.material3.Text("Account controls") }) } }
+        compose.onNodeWithText("Account controls").assertDoesNotExist()
+        compose.onNodeWithText("Voltar ao início").performScrollTo().performClick()
+        compose.onNodeWithContentDescription("Configurações").performClick()
+        compose.onNodeWithText("Tourist · selecionado").assertIsNotEnabled()
+        compose.onNodeWithText("Escuro").performScrollTo().performClick()
+        assertEquals(ThemePreference.DARK, changed); assertEquals(0, selected)
+        compose.onNodeWithText("Account controls").performScrollTo().assertIsDisplayed()
     }
 }
