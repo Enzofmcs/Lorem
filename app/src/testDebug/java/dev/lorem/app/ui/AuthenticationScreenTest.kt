@@ -61,4 +61,21 @@ class AuthenticationScreenTest {
         compose.onNodeWithTag("google-sign-in").assertDoesNotExist()
         compose.onNodeWithText("Preparando sua sessão…").assertIsDisplayed()
     }
+    @Test fun `interrupted account selection shows feedback and permits retry instead of a silent return`() {
+        var attempts = 0
+        compose.setContent { LoremTheme { AuthenticationScreen(AuthenticationState.SignedOut, false,
+            AuthenticationFailure.CANCELLED, { attempts++ }, {}, {}) } }
+        compose.onNodeWithTag("google-sign-in-feedback").assertIsDisplayed()
+        compose.onNodeWithText("A entrada foi interrompida pelo Google. Tente novamente.").assertExists()
+        compose.onNodeWithTag("google-sign-in").assertIsEnabled().performClick()
+        assertEquals(1, attempts)
+    }
+    @Test fun `a sign in error remains visible while a previous session is loading`() {
+        compose.setContent { LoremTheme { AuthenticationScreen(AuthenticationState.Loading, false,
+            AuthenticationFailure.CREDENTIAL_UNAVAILABLE, {}, {}, {}) } }
+        compose.onNodeWithTag("google-sign-in-feedback").assertIsDisplayed()
+        compose.onNodeWithText("O Google não retornou uma credencial de acesso. Tente novamente.").assertExists()
+        compose.onNodeWithTag("handle-onboarding").assertDoesNotExist()
+    }
+
 }

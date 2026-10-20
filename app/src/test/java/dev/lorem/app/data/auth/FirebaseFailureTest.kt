@@ -41,4 +41,14 @@ class FirebaseFailureTest {
             }
         }
     }
+    @Test fun `diagnostic log keeps SDK error code without provider message or credentials`() = runTest {
+        org.robolectric.shadows.ShadowLog.clear()
+        try { firebaseCall<Unit> { throw FirebaseFirestoreException("sensitive-token account@example.invalid", Code.PERMISSION_DENIED) } }
+        catch (_: AuthenticationException) { }
+        val events = org.robolectric.shadows.ShadowLog.getLogsForTag("LoremAuth").map { it.msg }
+        assertTrue(events.contains("firebase_sdk_error:PERMISSION_DENIED:CONFIGURATION"))
+        assertFalse(events.joinToString().contains("sensitive-token"))
+        assertFalse(events.joinToString().contains("account@example.invalid"))
+    }
+
 }

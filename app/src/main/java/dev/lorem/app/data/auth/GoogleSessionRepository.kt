@@ -7,6 +7,8 @@ import dev.lorem.app.domain.auth.AuthenticationState
 import dev.lorem.app.domain.auth.GoogleAccount
 import java.util.concurrent.atomic.AtomicLong
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
@@ -37,11 +39,14 @@ class GoogleSessionRepository(
     private val source: GoogleIdentitySource,
     private val bootstrap: AccountBootstrap,
     private val scope: CoroutineScope,
+    private val timeoutMillis: Long = 30_000,
+    private val diagnostic: (String) -> Unit = {},
 ) : AuthenticationRepository {
     private val mutableState = MutableStateFlow<AuthenticationState>(AuthenticationState.Loading)
     override val state: StateFlow<AuthenticationState> = mutableState.asStateFlow()
     private val generation = AtomicLong()
     private var verification: Job? = null
+    private var verifyingUid: String? = null
     private var signedOutFailure: AuthenticationFailure? = null
 
     init {
@@ -49,26 +54,39 @@ class GoogleSessionRepository(
     }
 
     private fun verify(account: GoogleAccount?) {
+        if (account != null && verifyingUid == account.uid && verification?.isActive == true) return
         val expectedGeneration = generation.incrementAndGet()
         verification?.cancel()
+        verifyingUid = account?.uid
         if (account == null) {
             mutableState.value = signedOutFailure?.let { AuthenticationState.Failed(it, false) }
                 ?: AuthenticationState.SignedOut
             return
         }
+        diagnostic("session_validation_started")
         mutableState.value = AuthenticationState.Loading
         verification = scope.launch {
             try {
-                val validated = source.validate(account.uid)
-                if (validated.uid != account.uid || source.currentAccount?.uid != account.uid) return@launch
-                bootstrap.ensureAccount(account.uid)
+                val validated = withTimeout(timeoutMillis) {
+                    val result = source.validate(account.uid)
+                    if (result.uid != account.uid || source.currentAccount?.uid != account.uid) {
+                        throw AuthenticationException(AuthenticationFailure.INVALID_SESSION)
+                    }
+                    diagnostic("session_token_validated")
+                    diagnostic("account_bootstrap_started")
+                    bootstrap.ensureAccount(account.uid)
+                    diagnostic("account_bootstrap_succeeded")
+                    result
+                }
                 if (generation.get() == expectedGeneration && source.currentAccount?.uid == account.uid) {
+                    diagnostic("session_ready")
                     mutableState.value = AuthenticationState.SignedIn(validated)
                 }
             } catch (error: Exception) {
-                if (error is CancellationException) throw error
-                if (generation.get() != expectedGeneration) return@launch
+                if (error is CancellationException && error !is TimeoutCancellationException) throw error
+                if (generation.get() != expectedGeneration || source.currentAccount?.uid != account.uid) return@launch
                 val failure = failureOf(error)
+                diagnostic("session_failed:${failure.name}")
                 val invalid = failure == AuthenticationFailure.INVALID_SESSION ||
                     failure == AuthenticationFailure.PROVIDER_NOT_ALLOWED
                 if (invalid) {
@@ -84,11 +102,18 @@ class GoogleSessionRepository(
         if (idToken.isBlank()) return AuthenticationFailure.INVALID_SESSION
         signedOutFailure = null
         return try {
-            source.signIn(idToken)
-            null // Only token validation + a confirmed Firestore transaction can publish SignedIn.
+            diagnostic("firebase_exchange_started")
+            withTimeout(timeoutMillis) { source.signIn(idToken) }
+            diagnostic("firebase_exchange_succeeded")
+            val account = source.currentAccount ?: throw AuthenticationException(AuthenticationFailure.INVALID_SESSION)
+            // The SDK may emit the same identity again, or its listener may arrive after the Task.
+            // Do not depend on a distinct auth notification to resume the selected account.
+            val authorized = mutableState.value as? AuthenticationState.SignedIn
+            if (authorized?.account?.uid != account.uid) verify(account)
+            null // Only validation + confirmed Firestore transaction may publish SignedIn.
         } catch (error: Exception) {
-            if (error is CancellationException) throw error
-            failureOf(error)
+            if (error is CancellationException && error !is TimeoutCancellationException) throw error
+            failureOf(error).also { diagnostic("firebase_exchange_failed:${it.name}") }
         }
     }
 
@@ -100,8 +125,13 @@ class GoogleSessionRepository(
         source.signOut()
     }
 
-    override fun retry() = verify(source.currentAccount)
+    override fun retry() {
+        if (verification?.isActive != true) verify(source.currentAccount)
+    }
 
-    private fun failureOf(error: Exception) = (error as? AuthenticationException)?.reason
-        ?: AuthenticationFailure.UNKNOWN
+    private fun failureOf(error: Exception) = when (error) {
+        is TimeoutCancellationException -> AuthenticationFailure.NETWORK
+        is AuthenticationException -> error.reason
+        else -> AuthenticationFailure.UNKNOWN
+    }
 }

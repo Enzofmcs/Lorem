@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.GoogleAuthProvider
@@ -55,13 +56,13 @@ data class FirebaseAuthentication(
             val auth = FirebaseAuth.getInstance(app)
             val firestore = FirebaseFirestore.getInstance(app)
             val bootstrap = FirestoreAccountBootstrap(auth, firestore)
-            return FirebaseAuthentication(GoogleSessionRepository(FirebaseGoogleIdentitySource(auth), bootstrap, scope),
+            return FirebaseAuthentication(GoogleSessionRepository(FirebaseGoogleIdentitySource(auth), bootstrap, scope, diagnostic = ::authLog),
                 clientId, FirestoreHandlesStore(auth, firestore), firestore, auth)
         }
     }
 }
 
-private class FirebaseGoogleIdentitySource(private val auth: FirebaseAuth) : GoogleIdentitySource {
+internal class FirebaseGoogleIdentitySource(private val auth: FirebaseAuth) : GoogleIdentitySource {
     override val currentAccount: GoogleAccount? get() = auth.currentUser?.account()
     override val accounts = callbackFlow {
         val listener = FirebaseAuth.AuthStateListener { trySend(it.currentUser?.account()) }
@@ -101,7 +102,14 @@ internal suspend fun <T> firebaseCall(block: suspend () -> T): T = try {
     block()
 } catch (error: Exception) {
     if (error is CancellationException || error is AuthenticationException) throw error
-    throw AuthenticationException(firebaseFailureOf(error))
+    val failure = firebaseFailureOf(error)
+    val code = when (error) {
+        is FirebaseAuthException -> error.errorCode
+        is FirebaseFirestoreException -> error.code.name
+        else -> error.javaClass.simpleName
+    }
+    authLog("firebase_sdk_error:$code:${failure.name}")
+    throw AuthenticationException(failure)
 }
 
 internal fun firebaseFailureOf(error: Exception): AuthenticationFailure = when (error) {

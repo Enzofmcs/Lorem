@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "date_client": "2026-10-20",
+  "base_commit": "8cbb36b002cac1ee34ea271206b96dbbf2982a7f",
+  "task": "Google account picker closes and returns silently to sign-in; requested diagnostic logs",
+  "reported_device_state": "Returns to Entrar com Google without any feedback",
+  "reproduced_before_fix": {
+    "command": "./gradlew :app:testDebugUnitTest --tests *GoogleSessionRepositoryTest --max-workers=2 --console=plain",
+    "tests": 10,
+    "failed": 2,
+    "cases": [
+      "Selected SDK account without auth notification never resumed verification",
+      "Same account re-login after failed bootstrap remained failed"
+    ]
+  },
+  "fixes": [
+    "After SDK exchange, continue validation from current identity without depending on distinct auth listener emission",
+    "Coalesce verification while same UID is pending; Activity resume does not restart owned login or its timeout",
+    "Only validated Google claims and confirmed Firestore account bootstrap publish SignedIn",
+    "Credential cancellation and missing credential show feedback; errors remain visible during Loading",
+    "Firebase exchange and session verification each have a 30000ms recoverable deadline",
+    "Ignore failures from old validation when current SDK UID has changed",
+    "Log controlled stages and SDK error codes under LoremAuth, excluding tokens, emails, UIDs and raw exception messages"
+  ],
+  "commands": {
+    "targeted": "LOREM_FIREBASE_EMULATORS=true FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 ./gradlew :app:testDebugUnitTest --tests *Authentication*Test --tests *GoogleSessionRepositoryTest --tests *GoogleCredentialRequestTest --tests *FirebaseFailureTest --tests *FirestoreAccountBootstrapEmulatorTest --max-workers=2 --console=plain",
+    "full": "LOREM_FIREBASE_EMULATORS=true FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 ./gradlew test lint assembleDebug --max-workers=2 --console=plain",
+    "refined_uid_assertion": "./gradlew :app:testDebugUnitTest --tests *GoogleSessionRepositoryTest --max-workers=2 --console=plain"
+  },
+  "verification": {
+    "targeted_auth_tests": 43,
+    "debug_full": {
+      "tests": 343,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "release_full": {
+      "tests": 245,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "uid_regression_recheck": {
+      "tests": 14,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "sdk_real_included_in_debug": 16,
+    "lint": {
+      "Error": 0,
+      "Fatal": 0,
+      "Warning": 58
+    },
+    "apk_sha256": "515777025b0426c2a30b60115c2a05347a0724bcd64a9d0fac34e2d73ec0e89d",
+    "apk_bytes": 18930616
+  },
+  "logcat": {
+    "tag": "LoremAuth",
+    "command": "adb logcat -v time -s LoremAuth",
+    "fields": "Controlled stage, failure enum, SDK error code or exception class only"
+  },
+  "limits": {
+    "android_json_present_in_agent_checkout": false,
+    "real_google_picker_on_user_device_exercised": false,
+    "google_provider_root_cause_observed_on_device": false,
+    "rules_or_oauth_changed_by_agent": false
+  },
+  "manual": "TESTE MANUAL OPCIONAL - NÃO EXECUTADO (D-014)",
+  "prior_operational_confirmation": "2026-10-20-firebase-oauth-rules-confirmation.json remains valid; no new deployment required by this patch"
+}

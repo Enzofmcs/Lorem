@@ -14,17 +14,22 @@ class GoogleSessionRepositoryTest {
 
     private class Source(initial: GoogleAccount? = null) : GoogleIdentitySource {
         override val accounts = MutableStateFlow(initial)
-        override val currentAccount get() = accounts.value
+        override val currentAccount get() = exchangeAccount ?: accounts.value
         var signInFailure: AuthenticationFailure? = null
+        var validationReply: CompletableDeferred<GoogleAccount>? = null
         var validationFailure: AuthenticationFailure? = null
         var tokens = mutableListOf<String>()
+        var exchangeAccount: GoogleAccount? = null
+        var exchangeWait: CompletableDeferred<Unit>? = null
         override suspend fun signIn(idToken: String) {
             signInFailure?.let { throw AuthenticationException(it) }
+            exchangeWait?.await()
             tokens += idToken
         }
         override suspend fun validate(expectedUid: String): GoogleAccount {
             validationFailure?.let { throw AuthenticationException(it) }
-            return checkNotNull(accounts.value?.takeIf { it.uid == expectedUid })
+            validationReply?.let { return it.await() }
+            return checkNotNull(currentAccount?.takeIf { it.uid == expectedUid })
         }
         override fun signOut() { accounts.value = null }
     }
@@ -106,7 +111,7 @@ class GoogleSessionRepositoryTest {
         val source = Source()
         val repo = GoogleSessionRepository(source, AccountBootstrap {}, backgroundScope)
         runCurrent()
-        assertNull(repo.signInWithGoogle("google-token"))
+        assertEquals(AuthenticationFailure.INVALID_SESSION, repo.signInWithGoogle("google-token"))
         assertEquals(listOf("google-token"), source.tokens)
         assertEquals(AuthenticationState.SignedOut, repo.state.value)
         assertEquals(AuthenticationFailure.INVALID_SESSION, repo.signInWithGoogle(" "))
@@ -143,4 +148,88 @@ class GoogleSessionRepositoryTest {
             assertEquals(AuthenticationState.SignedIn(a), repo.state.value)
         }
     }
+    @Test fun `Google exchange resumes validation when auth listener has not emitted the selected account`() = runTest {
+        val source = Source()
+        val server = CompletableDeferred<Unit>()
+        var checked = 0
+        val repo = GoogleSessionRepository(source, AccountBootstrap { checked++; server.await() }, backgroundScope)
+        runCurrent()
+        source.exchangeAccount = a
+        assertNull(repo.signInWithGoogle("token"))
+        runCurrent()
+        assertEquals(AuthenticationState.Loading, repo.state.value)
+        assertEquals(1, checked)
+        server.complete(Unit); runCurrent()
+        assertEquals(AuthenticationState.SignedIn(a), repo.state.value)
+    }
+    @Test fun `selecting the same Google account after failed bootstrap restarts validation without a new auth event`() = runTest {
+        val source = Source(a)
+        var unavailable = true
+        val repo = GoogleSessionRepository(source, AccountBootstrap {
+            if (unavailable) throw AuthenticationException(AuthenticationFailure.NETWORK)
+        }, backgroundScope)
+        runCurrent()
+        assertEquals(AuthenticationState.Failed(AuthenticationFailure.NETWORK, true), repo.state.value)
+        unavailable = false
+        assertNull(repo.signInWithGoogle("retry")); runCurrent()
+        assertEquals(AuthenticationState.SignedIn(a), repo.state.value)
+    }
+
+    @Test fun `hung verification has a bounded recoverable failure and resume cannot postpone it`() = runTest {
+        val source = Source(a)
+        val server = CompletableDeferred<Unit>()
+        val repo = GoogleSessionRepository(source, AccountBootstrap { server.await() }, backgroundScope, timeoutMillis = 1000)
+        runCurrent(); advanceTimeBy(750)
+        repo.retry(); runCurrent() // The Activity returned from the picker; do not restart its clock.
+        advanceTimeBy(251); runCurrent()
+        assertEquals(AuthenticationState.Failed(AuthenticationFailure.NETWORK, true), repo.state.value)
+        server.complete(Unit)
+        repo.retry(); runCurrent()
+        assertEquals(AuthenticationState.SignedIn(a), repo.state.value)
+    }
+    @Test fun `hung token exchange returns an actionable error instead of leaving the button busy`() = runTest {
+        val source = Source().apply { exchangeWait = CompletableDeferred() }
+        val repo = GoogleSessionRepository(source, AccountBootstrap {}, backgroundScope, timeoutMillis = 1000)
+        runCurrent()
+        var failure: AuthenticationFailure? = null
+        val job = launch { failure = repo.signInWithGoogle("sensitive-token") }
+        runCurrent(); advanceTimeBy(1001); runCurrent()
+        assertEquals(AuthenticationFailure.NETWORK, failure)
+        assertTrue(job.isCompleted)
+        assertEquals(AuthenticationState.SignedOut, repo.state.value)
+    }
+    @Test fun `auth notification and explicit sign in continuation share one validation and log no identity`() = runTest {
+        val source = Source(a)
+        val server = CompletableDeferred<Unit>()
+        var count = 0
+        val events = mutableListOf<String>()
+        val repo = GoogleSessionRepository(source, AccountBootstrap { count++; server.await() }, backgroundScope,
+            diagnostic = events::add)
+        runCurrent()
+        assertNull(repo.signInWithGoogle("sensitive-token")); runCurrent()
+        assertEquals(1, count)
+        server.complete(Unit); runCurrent()
+        assertEquals(AuthenticationState.SignedIn(a), repo.state.value)
+        assertTrue(events.containsAll(listOf("firebase_exchange_started", "firebase_exchange_succeeded", "session_validation_started",
+            "session_token_validated", "account_bootstrap_started", "account_bootstrap_succeeded", "session_ready")))
+        for (privateValue in listOf("sensitive-token", a.uid, a.email!!)) assertFalse(events.joinToString().contains(privateValue))
+    }
+
+    @Test fun `a late validation error for old uid cannot sign out the newly selected SDK account`() = runTest {
+        val source = Source(a)
+        val reply = CompletableDeferred<GoogleAccount>()
+        source.validationReply = reply
+        val repo = GoogleSessionRepository(source, AccountBootstrap {}, backgroundScope)
+        runCurrent()
+        // SDK identity changed, but its queued auth notification has not been collected yet.
+        source.exchangeAccount = b
+        reply.complete(a); runCurrent()
+        assertEquals(b, source.currentAccount)
+        assertEquals(a, source.accounts.value) // Old validation must not call signOut on the newer SDK identity.
+        assertEquals(AuthenticationState.Loading, repo.state.value)
+        source.validationReply = null
+        source.accounts.value = b; runCurrent()
+        assertEquals(AuthenticationState.SignedIn(b), repo.state.value)
+    }
+
 }

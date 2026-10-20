@@ -18,6 +18,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.lorem.app.data.auth.FirebaseAuthentication
+import dev.lorem.app.data.auth.authLog
 import dev.lorem.app.domain.auth.AuthenticationFailure
 import dev.lorem.app.domain.auth.AuthenticationState
 import dev.lorem.app.domain.auth.GoogleAccount
@@ -41,6 +42,14 @@ fun FirebaseLoginApp(authentication: FirebaseAuthentication, appearance: Appeara
     val theme by appearance.themePreference.collectAsStateWithLifecycle(ThemePreference.SYSTEM)
     val appearanceScope = rememberCoroutineScope()
     var appearanceError by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(session) {
+        authLog("ui_auth_state:" + when (val current = session) {
+            AuthenticationState.Loading -> "validating"
+            AuthenticationState.SignedOut -> "signed_out"
+            is AuthenticationState.SignedIn -> "signed_in"
+            is AuthenticationState.Failed -> "failed:${current.reason.name}"
+        })
+    }
     val context = LocalContext.current
     val credentials = remember(authentication.googleWebClientId) {
         authentication.googleWebClientId?.let { GoogleCredentialRequest(context.applicationContext, it) }
@@ -54,7 +63,7 @@ fun FirebaseLoginApp(authentication: FirebaseAuthentication, appearance: Appeara
     LoremTheme(preference = theme) {
         AuthenticationScreen(session, busy, error,
             fullScreenSignedIn = training != null,
-            onSignIn = { credentials?.let { model.signIn { it.getIdToken(context) } } },
+            onSignIn = { model.signIn { credentials?.getIdToken(context) ?: throw GoogleCredentialUnavailable() } },
             onRetry = model::refresh,
             onSignOut = { model.signOut { credentials?.clearState() } },
             deviceContent = { migration?.let { dev.lorem.app.ui.rollout.LegacyArchiveDestination(it) } },
@@ -101,6 +110,12 @@ fun AuthenticationScreen(
             .verticalScroll(rememberScrollState()).padding(24.dp), verticalArrangement = Arrangement.spacedBy(24.dp)) {
             Text("Lorem", style = MaterialTheme.typography.displayMedium, modifier = Modifier.semantics { heading() })
             deviceContent()
+            val failure = error ?: (state as? AuthenticationState.Failed)?.reason
+            failure?.let {
+                Text(it.message(), color = if (it == AuthenticationFailure.CANCELLED)
+                    MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error,
+                    modifier = Modifier.testTag("google-sign-in-feedback"))
+            }
             when (state) {
                 AuthenticationState.Loading -> {
                     CircularProgressIndicator(Modifier.align(Alignment.CenterHorizontally))
@@ -123,8 +138,6 @@ fun AuthenticationScreen(
                 else -> {
                     Text("Seu próximo treino começa aqui.", style = MaterialTheme.typography.headlineSmall)
                     Text("Entre com sua conta Google para acessar o Lorem.")
-                    val failure = error ?: (state as? AuthenticationState.Failed)?.reason
-                    failure?.let { Text(it.message(), color = MaterialTheme.colorScheme.error) }
                     Button(onClick = onSignIn,
                         enabled = !busy && failure != AuthenticationFailure.CONFIGURATION,
                         modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("google-sign-in")) {
@@ -154,5 +167,7 @@ private fun AuthenticationFailure.message() = when (this) {
     AuthenticationFailure.QUOTA -> "O limite de uso do serviço foi atingido. Tente novamente mais tarde."
     AuthenticationFailure.INVALID_SESSION -> "Sua sessão expirou. Entre novamente com Google."
     AuthenticationFailure.PROVIDER_NOT_ALLOWED -> "Use sua conta Google para entrar no Lorem."
+    AuthenticationFailure.CANCELLED -> "A entrada foi interrompida pelo Google. Tente novamente."
+    AuthenticationFailure.CREDENTIAL_UNAVAILABLE -> "O Google não retornou uma credencial de acesso. Tente novamente."
     AuthenticationFailure.UNKNOWN -> "Não foi possível entrar. Tente novamente."
 }
