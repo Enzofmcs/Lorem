@@ -1,5 +1,12 @@
 # Estudo quantitativo de tempo e AC
 
+> **Direção vigente em 20/10/2026 (D-045/D-047):** [REDIRECTION.md](REDIRECTION.md)
+> orienta as histórias 44–49. Foco em distribuição de tempo por ratings x/y,
+> notebooks, P25/P50/P75 e orçamento h. AFT e avaliação anteriores são preservados.
+> A 31 foi retirada do escopo e a 32 fica fora da entrega; coorte Ipsum não é
+> condição para o novo estudo. O corpo abaixo preserva o protocolo histórico v1;
+> novas tabelas/contratos devem ser versionados sem reinterpretá-lo.
+
 Protocolo fixado em 18/10/2026; **avaliacao reservada real concluida nas 27-28**.
 Amostra: 20 contests adquiridos/19 elegiveis e 274.073 tentativas validas, particoes
 11/4/4. Teste: 35.367 tentativas em quatro contests. AFT Weibull 0,1 congelado antes
@@ -8,7 +15,7 @@ resolvidos tem selecao; D-012 usa CF como referencia experimental, sem medir err
 real do app com Lorem. [Relatorio](../study/results/2026-10-18/report/REPORT.md),
 [metodo](../study/MODEL.md) e [evidencia](../study/evidence/2026-10-18-evaluation-report.json).
 Historias 29-30 implementadas: corte no Android, snapshots anteriores e exportacao
-local. **Amostra real de Ipsums ausente; 31-32 bloqueadas.**
+local. **Amostra real de Ipsums ausente; 31 retirada do escopo e 32 fora da entrega (D-042).**
 Em 19/10/2026, [pre-registro/ferramenta da 31](../study/TRANSPORT_PROTOCOL.md)
 fixaram limiares antes do teste; a conclusao empirica segue pendente.
 O [piloto anterior](../study/evidence/2026-10-18-pilot-real.json), com variantes

@@ -1,5 +1,10 @@
 # Contrato de dados v1
 
+> **Planejamento 44–49:** [nova direção](../docs/REDIRECTION.md). Este arquivo
+> preserva contratos existentes. `analysis-time-bands-v2` será uma saída analítica
+> separada, com agrupamento x/y, suporte, quantis nullable e orçamento h; não é
+> mudança já implementada de schema nem dos snapshots `time-curve-v1`.
+
 Configuracao: `schema_version=1`, `protocol_version=sequential-v1`,
 `eligibility_version=origin-20200701-v1`, modelo `kaplan-meier-v1`. Datas e duracoes
 brutas sao segundos UTC; previsoes sao minutos. `null` significa ausente/nao

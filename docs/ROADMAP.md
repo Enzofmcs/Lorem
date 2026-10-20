@@ -6,24 +6,27 @@
 
 ## Estado atual
 
-**Foco atual:** historia 38 implementada e verificada: migracao/arquivo local, exclusoes e fluxo Google/Firestore padrao. 33/34 com Google unico confirmado; 35-37 integradas. 31 retirada do escopo pelo usuario, 32 fora desta entrega (D-042).
+**Foco atual (20/10/2026):** novo bloco **40–49 PLANEJADO**, documentado em
+[REDIRECTION.md](REDIRECTION.md), decisões D-045 a D-047 e [issue central #72](https://github.com/Enzofmcs/Lorem/issues/72).
+Recuperar a experiência Firebase e tornar o estudo de tempos por ratings x/y visual
+em Jupyter. Criar planejamento não conclui os critérios funcionais abaixo.
 
-**Ultima historia verificada:** Historia 37 no preview Spark, em 2026-10-19; [evidencia integrada da PR 69](evidence/2026-10-19-firebase-merge-69.json), preservando a [verificacao anterior 35-37](evidence/2026-10-19-firebase-35-37.json). Marco 30 preservado: 232 debug/170 release e 66 Python, contrato Android-Python com fixture explicita.
+**Última história verificada:** 39, política experimental implementada com ativação
+desabilitada; [evidência](evidence/2026-10-19-time-scoring-39.json). Marcos anteriores
+00–30 e 33–38 preservados. A 31 foi retirada do escopo (D-042); a 32 permanece fora
+da entrega. A 39 autoriza software experimental, sem validação de transporte.
 
-**Primeiro item funcional pendente:** nenhum no escopo ativo apos a 38; entrega em PR. A 31 foi retirada do escopo; os criterios empiricos historicos abaixo nao sao trabalho pendente desta entrega. A 32 permanece sem implementacao/previsoes.
+**Primeiros itens pendentes:** 40 e 44, em frentes independentes. Aplicativo:
+40→41→42, com 43 após 41. Estudo: 44→45→46→47→48→49. Sem exigência de coorte Ipsum.
 
-**Proxima entrega demonstravel:** arquivo local preservado e separado da conta, novo handle em 800, timeout/resultado unico e restauracao de progresso/exclusoes em outro cliente.
+**Próximas entregas demonstráveis:** navegação, resultados, filtros e gráficos
+sobre dados cloud; notebooks com cobertura, mapas x/y, curvas e quartis disponíveis.
 
-**Configuracao real:** Google unico confirmado pelo usuario. Rules 35-37 publicadas conforme usuario; publicar as Rules 38 e restaurar o JSON Android local neste checkout. Conferencia manual opcional (D-014).
-
-**Novo bloco planejado em 19/10/2026:** Historias 33-38, login Google/Firebase,
-perfis por uid+handle com rating inicial 800 e limite absoluto de 2h por Ipsum.
-35-37 implementadas em preview: handles, ciclo/rating Firestore e prazo absoluto 2h.
-Proxima funcionalidade: 38 (migracao/rollout); nao depende dos dados reais da 31.
-33/34 mantem confirmacao de Google unico pendente. Publicacao informada antes
-cobria Rules 33/34; usuario confirmou depois a publicacao das Rules combinadas 35-37 apos a PR 69.
-[Registro da confirmacao](evidence/2026-10-19-firebase-rules-35-37-publication.json), sem leitura administrativa pelo agente.
-[Contratos e migracao](FIREBASE.md) · [Configuracao](FIREBASE_SETUP.md).
+**Condições reais conhecidas:** Google único e publicação 35–37 confirmados pelo
+responsável; estado remoto das extensões 38/39 não conferido nesta revisão. A 39
+exige Rules compatíveis com snapshot.scoring mesmo no fallback. A 40 separa teste
+local e comprovação operacional; sem deploy automático. O Git não contém snapshot
+bruto/KM completo; a 44 trata restauração ou nova coleta opt-in sem inventar dados.
 
 ## Como atualizar
 
@@ -87,6 +90,18 @@ da 20. [SYNC.md](SYNC.md) e [DESIGN.md](DESIGN.md) detalham os planos.
 As Historias 15-17 foram implementadas e verificadas em 2026-10-15 e as Historias 18-21 em 2026-10-16; o bloco planejado esta concluido.
 
 ## Sumario rapido
+
+- [Novo bloco 40–49](#novo-bloco-40-49)
+- [Historia 40 - Compatibilidade do cliente atual com Firebase e registro de operação](#historia-40)
+- [Historia 41 - Recuperar navegação, início, Ipsum e resultado na jornada Firebase](#historia-41)
+- [Historia 42 - Restaurar histórico, gráficos, filtros e configurações sobre dados cloud](#historia-42)
+- [Historia 43 - Recuperar preparação e atualização de pendências com custo de rede controlado](#historia-43)
+- [Historia 44 - Base Jupyter e recuperação reproduzível dos dados do estudo](#historia-44)
+- [Historia 45 - Notebook de qualidade, cobertura e definição do tempo até AC](#historia-45)
+- [Historia 46 - Notebook de tempos por rating do participante e do problema](#historia-46)
+- [Historia 47 - Notebook de quartis e orçamento de tempo com limiares versionados](#historia-47)
+- [Historia 48 - Notebook de estabilidade, incerteza e comparação com o estudo anterior](#historia-48)
+- [Historia 49 - Demonstração interativa e atualização do método e resultados do TCC](#historia-49)
 
 - [Historia 00 - Estrutura basica](#historia-00---estrutura-basica)
 - [Historia 01 - Vincular o handle do Codeforces](#historia-01---vincular-o-handle-do-codeforces)
@@ -2338,6 +2353,367 @@ sem apresentar simulações como validação empírica. Novas Rules precisam de 
 antes de usar este cliente com o projeto real. Nenhum deploy foi executado.
 TESTE MANUAL OPCIONAL - NÃO EXECUTADO (D-014).
 
+<a id="novo-bloco-40-49"></a>
+
+## Novo bloco 40–49
+
+Planejamento de 20/10/2026, solicitado após a revisão da main 73c322a.
+[Direção e justificativa](REDIRECTION.md) · [Issue central #72](https://github.com/Enzofmcs/Lorem/issues/72).
+Todas as histórias abaixo estão planejadas. A implementação, as novas análises e a
+recuperação operacional não foram executadas por esta alteração documental.
+
+<a id="historia-40"></a>
+
+### Historia 40 - Compatibilidade do cliente atual com Firebase e registro de operação
+
+**GitHub:** [#73](https://github.com/Enzofmcs/Lorem/issues/73) · planejamento central [#72](https://github.com/Enzofmcs/Lorem/issues/72).
+
+**História:** Como usuário, quero iniciar e concluir um Ipsum na versão atual sem bloqueios causados por configuração ou incompatibilidade entre cliente e Rules.
+
+**Status:** PLANEJADA — implementação e critérios ainda pendentes.
+
+**Frente:** Aplicativo.
+
+**Dependências:** Nenhuma história nova; parte da main 73c322a.
+
+**Contexto e escopo:** Prioridade P0 do aplicativo. Conferir o contrato da história 39, que grava snapshot.scoring mesmo no fallback, e a compatibilidade com as Rules 38/39. Distinguir falha de código, configuração local, confirmação do responsável e estado remoto efetivamente observado.
+
+**Arquivos de referência:** app/build.gradle.kts; data/auth; data/cloud; firebase/firestore.rules; docs/FIREBASE_SETUP.md; docs/evidence.
+
+#### Critérios de aceite
+
+- [ ] Reproduzir em emuladores o início D-012 com snapshot.scoring contra as Rules atuais e a recusa esperada pelas Rules antigas; verificar encerramento, retry e aplicação única do resultado.
+- [ ] Documentar matriz cliente/Rules, configuração Android/OAuth necessária e erros recuperáveis; ausência de google-services.json não deve ser apresentada como autenticação operacional.
+- [ ] Registrar separadamente versão local testada, evidência de publicação fornecida pelo responsável e leitura remota, quando disponível. Não afirmar deploy, login real ou compatibilidade remota sem evidência.
+- [ ] Preparar a sequência concreta de publicação/configuração e recuperação, sem deploy automático, exclusão de dados ou relaxamento de Rules. Sem acesso remoto, registrar a pendência operacional de forma explícita.
+- [ ] Manter D-012 e time-curve-v1 desabilitada; preservar inicial 800, prazo absoluto, snapshots, arquivo legado e isolamento por uid/handle.
+
+**Entrega demonstrável:** Início, AC/timeout e retry comprovados no emulador com o contrato atual; checklist operacional identifica exatamente o que falta no projeto real.
+
+**Verificação proporcional:** Níveis 3/4 conforme TESTING.md: Rules e SDK reais em emuladores para os contratos afetados. Sem build/recoleta científica por alteração apenas documental. Confirmação remota pendente não deve ser ocultada por testes locais.
+
+**Limites comuns:** preservar evidências antigas, regras de conta/handle, saldo inicial 800, prazo de 2h e avaliações persistidas. Não ativar previsões/pontos experimentais ou fazer deploy por esta tarefa. Sem coorte Ipsum obrigatória. Conferências manuais opcionais conforme D-014.
+
+---
+
+<a id="historia-41"></a>
+
+### Historia 41 - Recuperar navegação, início, Ipsum e resultado na jornada Firebase
+
+**GitHub:** [#74](https://github.com/Enzofmcs/Lorem/issues/74) · planejamento central [#72](https://github.com/Enzofmcs/Lorem/issues/72).
+
+**História:** Como usuário autenticado, quero ter a navegação e o fluxo de treino completos das telas anteriores usando meu progresso Firebase.
+
+**Status:** PLANEJADA — implementação e critérios ainda pendentes.
+
+**Frente:** Aplicativo.
+
+**Dependências:** História 40
+
+**Contexto e escopo:** Reaproveitar a experiência das histórias 18–20 e componentes existentes, adaptando estados e ações cloud. A referência visual anterior é 931c410; o fluxo local não deve virar uma segunda fonte gravável para a conta.
+
+**Arquivos de referência:** MainActivity; ui/auth; ui/cloud; ui/navigation; ui/components; ui/screens/HomeScreen.kt, IpsumScreen.kt e IpsumResultScreen.kt.
+
+#### Critérios de aceite
+
+- [ ] Disponibilizar navegação coerente por Início, Histórico, Estatísticas e Configurações, com shell reutilizável; retirar a conta Google/gerência de handles do centro permanente da tela de treino.
+- [ ] Adaptar os componentes existentes para Home, ativo e resultado cloud, incluindo último resultado, retorno ao início, dica, encerramento com motivo e explicação persistida da avaliação.
+- [ ] Restaurar rota e Ipsum ativo após recriação; diferenciar carregamento, offline, erro e CLOSED_AWAITING_VERIFICATION, sem interpretar estado temporariamente vazio como ausência de tentativa.
+- [ ] Preservar prazo original e sigilo de rating do problema, tags e categoria durante o ativo; dado de outro uid/handle ou resposta atrasada nunca pode aparecer ao trocar contexto.
+- [ ] Não recalcular resultados na UI, importar saldo legado, reativar workers locais para dados cloud ou mudar política de pontos; ativo e resultado usam os snapshots oficiais.
+- [ ] Incluir casos automatizados de navegação de ponta a ponta para ativo, encerramento, restauração e troca de conta, verificando recursos disponíveis além da integridade de dados.
+
+**Entrega demonstrável:** Login → Home → Ipsum → resultado → último resultado, com retomada do mesmo ativo e conta correta.
+
+**Verificação proporcional:** Níveis 1/3, e 4 quando identidade/persistência for tocada: Compose/Robolectric e integração dos estados. Aproveitar testes existentes; teste manual visual opcional não substitui cobertura funcional.
+
+**Limites comuns:** preservar evidências antigas, regras de conta/handle, saldo inicial 800, prazo de 2h e avaliações persistidas. Não ativar previsões/pontos experimentais ou fazer deploy por esta tarefa. Sem coorte Ipsum obrigatória. Conferências manuais opcionais conforme D-014.
+
+---
+
+<a id="historia-42"></a>
+
+### Historia 42 - Restaurar histórico, gráficos, filtros e configurações sobre dados cloud
+
+**GitHub:** [#75](https://github.com/Enzofmcs/Lorem/issues/75) · planejamento central [#72](https://github.com/Enzofmcs/Lorem/issues/72).
+
+**História:** Como usuário, quero consultar meu histórico e minha evolução com gráficos e filtros, mantendo o progresso de cada conta e handle separado.
+
+**Status:** PLANEJADA — implementação e critérios ainda pendentes.
+
+**Frente:** Aplicativo.
+
+**Dependências:** História 41
+
+**Contexto e escopo:** Recuperar a paridade das histórias 19 e 21. Reutilizar buildIpsumHistory/buildIpsumStatistics, componentes e cálculos atuais, adaptando a fonte cloud.
+
+**Arquivos de referência:** ui/screens/HistoryScreen.kt, StatisticsScreen.kt e ConfigurationScreen.kt; domínio de histórico/estatísticas; adaptadores cloud; arquivo legado.
+
+#### Critérios de aceite
+
+- [ ] Disponibilizar filtros de situação (AC na tentativa, pendente e resolvido depois), rating e tag, com limpeza de filtros e estado vazio compreensível.
+- [ ] Exibir evolução do Rating Lorem, indicadores por rating/tag, com/sem dica e progresso de consolidação, com denominadores e ausência de amostra explícitos.
+- [ ] Permitir abrir problemas encerrados no Codeforces e consultar detalhes/resultados; oferecer consulta de histórico/estatísticas durante um ativo sem revelar metadados do problema ativo.
+- [ ] Restaurar seletor de tema e controles de conta/handle/preparação em destinos apropriados; troca proibida durante ativo permanece protegida.
+- [ ] Manter o arquivo local anterior acessível e identificado como somente leitura, separado do saldo e das estatísticas cloud; não reescrever ou importar avaliações.
+- [ ] Listas longas usam composição preguiçosa; filtros e rolagem não vazam entre uid/handle. AC posterior não altera a taxa de AC original nem o rating.
+- [ ] Comparar por matriz os recursos anteriores e os destinos cloud entregues, com testes funcionais de filtros, gráfico alimentado por dados corretos e troca de contexto.
+
+**Entrega demonstrável:** Filtrar uma pendência, abrir seu problema, visualizar a evolução e mudar o tema com dados cloud; consultar separadamente o arquivo antigo.
+
+**Verificação proporcional:** Níveis 1/2/3, subindo a 4 se tocar isolamento. Testar semântica dos filtros/denominadores e identidade; não criar testes que apenas espelham texto ou detalhes de layout.
+
+**Limites comuns:** preservar evidências antigas, regras de conta/handle, saldo inicial 800, prazo de 2h e avaliações persistidas. Não ativar previsões/pontos experimentais ou fazer deploy por esta tarefa. Sem coorte Ipsum obrigatória. Conferências manuais opcionais conforme D-014.
+
+---
+
+<a id="historia-43"></a>
+
+### Historia 43 - Recuperar preparação e atualização de pendências com custo de rede controlado
+
+**GitHub:** [#76](https://github.com/Enzofmcs/Lorem/issues/76) · planejamento central [#72](https://github.com/Enzofmcs/Lorem/issues/72).
+
+**História:** Como usuário, quero iniciar treinos com preparação compreensível e reconhecer meus upsolves sem verificar cada pendência manualmente.
+
+**Status:** PLANEJADA — implementação e critérios ainda pendentes.
+
+**Frente:** Aplicativo.
+
+**Dependências:** História 41
+
+**Contexto e escopo:** Repor capacidades das histórias 15–17 na arquitetura Spark. Medir o custo atual de início, que consulta histórico completo, catálogo e perfil, antes de escolher cache/incremental.
+
+**Arquivos de referência:** FirestoreTrainingRepository; CloudTrainingViewModel; CloudIpsumWork; API Codeforces; cache/coordenadores; UI de preparação.
+
+#### Critérios de aceite
+
+- [ ] Registrar chamadas, páginas, duração e estados do início em cenários controlados, distinguindo medição de latência de dispositivo e contagem determinística em teste.
+- [ ] Exibir progresso e retry por etapa de preparação; evitar reconsultas completas redundantes usando dados públicos reutilizáveis e atualização incremental quando a cobertura continuar comprovada.
+- [ ] Preservar detecção de problemas já tentados, corte de origem e exclusões; cache incompleto ou antigo não pode autorizar recomendação sem a atualização exigida.
+- [ ] Verificar pendências automaticamente em lotes limitados no contexto cloud correto; upsolve altera somente classificação e metadados posteriores, nunca avaliação original.
+- [ ] Coordenar UI/WorkManager para evitar concorrência e polling duplicado; respeitar gate central de pelo menos 2s, Retry-After, rede, sessão e budgets explícitos.
+- [ ] Não prometer atualização em instante exato ou job independente de dispositivo no Spark. Testar resposta atrasada, paginação incompleta, retomada e troca de uid/handle.
+
+**Entrega demonstrável:** Preparar e iniciar um Ipsum com progresso por etapa; reconhecer AC posterior em pendência sem ação individual e sem duplicar rating.
+
+**Verificação proporcional:** Níveis 3/4: contagem de requisições com transporte controlado, cobertura incremental, isolamento, idempotência e execução agendada. Comparar antes/depois no mesmo cenário, sem prometer melhoria de latência não medida.
+
+**Limites comuns:** preservar evidências antigas, regras de conta/handle, saldo inicial 800, prazo de 2h e avaliações persistidas. Não ativar previsões/pontos experimentais ou fazer deploy por esta tarefa. Sem coorte Ipsum obrigatória. Conferências manuais opcionais conforme D-014.
+
+---
+
+<a id="historia-44"></a>
+
+### Historia 44 - Base Jupyter e recuperação reproduzível dos dados do estudo
+
+**GitHub:** [#77](https://github.com/Enzofmcs/Lorem/issues/77) · planejamento central [#72](https://github.com/Enzofmcs/Lorem/issues/72).
+
+**História:** Como pesquisador, quero executar e apresentar a investigação em notebooks que reutilizem o pipeline Python existente e identifiquem a origem de cada resultado.
+
+**Status:** PLANEJADA — implementação e critérios ainda pendentes.
+
+**Frente:** Estudo.
+
+**Dependências:** Nenhuma história nova; parte da main 73c322a.
+
+**Contexto e escopo:** Criar study/notebooks/00_dados_e_reproducao.ipynb e ambiente separado de notebooks, sem copiar o núcleo de lorem_study para células. Independente do trabalho Firebase e de coorte Ipsum.
+
+**Arquivos de referência:** study/notebooks; study/pyproject.toml; locks de dependências; study/scripts; study/README.md; manifestos locais.
+
+#### Critérios de aceite
+
+- [ ] Inventariar coleta, preparo, KM, AFT, avaliação, relatório, curvas/pontos e transporte; mapear cada etapa a notebook/seção ou referência histórica explícita. Código reutilizável continua nos módulos testados.
+- [ ] Criar ambiente Jupyter documentado e versões fixadas compatíveis com Python do projeto; comandos para execução em kernel limpo e exportação HTML, com caminhos configuráveis no Windows/Linux.
+- [ ] Oferecer modo offline de apresentação dos agregados versionados e modo de reanálise do snapshot completo. Identificar que agregados não permitem reconstruir observações ou a tabela KM completa.
+- [ ] Localizar/restaurar snapshot bruto e modelo completo por caminhos explícitos e validar hashes; se ausentes, registrar bloqueio dos critérios reais e oferecer coleta opt-in em novo diretório/versionamento, sem sobrescrever a execução de 18/10.
+- [ ] Run All não faz coleta, retreino ou rede silenciosa; módulos/CLI são reutilizados com parâmetros e diretório de trabalho identificados. Não exibir handles nos outputs versionados.
+- [ ] Smoke de notebooks com fixture claramente sintética comprova execução técnica; reprodução real exige dados reais, hashes e outputs identificados. Não concluir recuperação real somente com fixture.
+
+**Entrega demonstrável:** Abrir o notebook, identificar snapshot/configuração e reproduzir resultados disponíveis offline; executar pipeline real apenas quando o snapshot necessário estiver disponível.
+
+**Verificação proporcional:** Níveis 2/3: kernel limpo, importação, caminhos, ausência de rede por padrão e compatibilidade com CLI. Nenhum Gradle ou teste Android neste bloco.
+
+**Limites comuns:** preservar evidências antigas, regras de conta/handle, saldo inicial 800, prazo de 2h e avaliações persistidas. Não ativar previsões/pontos experimentais ou fazer deploy por esta tarefa. Sem coorte Ipsum obrigatória. Conferências manuais opcionais conforme D-014.
+
+---
+
+<a id="historia-45"></a>
+
+### Historia 45 - Notebook de qualidade, cobertura e definição do tempo até AC
+
+**GitHub:** [#78](https://github.com/Enzofmcs/Lorem/issues/78) · planejamento central [#72](https://github.com/Enzofmcs/Lorem/issues/72).
+
+**História:** Como pesquisador, quero mostrar como cada tentativa entra na análise e qual tempo foi observado, antes de interpretar diferenças de rating.
+
+**Status:** PLANEJADA — implementação e critérios ainda pendentes.
+
+**Frente:** Estudo.
+
+**Dependências:** História 44
+
+**Contexto e escopo:** Criar 01_qualidade_da_amostra.ipynb com auditoria das observações reais e explicação visual da aproximação sequencial.
+
+**Arquivos de referência:** study/notebooks/01_qualidade_da_amostra.ipynb; lorem_study/prepare.py e io.py; DATA_DICTIONARY.md; protocolo vigente.
+
+#### Critérios de aceite
+
+- [ ] Construir tabela analítica por sample_id a partir de features/labels/audit, com join validado, unidades, evento/censura, âncora, ratings e identificadores de grupos.
+- [ ] Apresentar funil de observadas, excluídas, eventos e censuras, por contest e faixa de rating, sem dupla contagem; manter participantes/problemas/contests distintos visíveis.
+- [ ] Explicar com linha temporal a âncora sequencial: A=10min/B=28min resulta em 18min para B; contrastar com tempo desde início e desde primeira submissão como estimandos diferentes, sem alegar dedicação exclusiva.
+- [ ] Preservar elegibilidade atual (oficiais individuais, oldRating positivo, origem verificável desde 01/07/2020 e exclusão integral de contests especiais/com variantes), além dos motivos de sequência inválida.
+- [ ] Ausência de submissão não vira fracasso; ausência de AC em tentativa válida é censura no fim observado. Não preencher tempos desconhecidos nem usar rating atual/newRating como rating anterior.
+- [ ] Relacionar gráficos e totais ao snapshot; apresentar seleção dos prefixos, abandono informativo e rating de problema observado na coleta como limitações.
+
+**Entrega demonstrável:** Selecionar um contest/faixa e explicar visualmente quantas tentativas ficaram e como seu tempo foi calculado.
+
+**Verificação proporcional:** Testes direcionados de joins, unidades e contagens, reutilizando testes de prepare. Conferir totais reais contra manifesto do snapshot; fixture não valida a cobertura empírica.
+
+**Limites comuns:** preservar evidências antigas, regras de conta/handle, saldo inicial 800, prazo de 2h e avaliações persistidas. Não ativar previsões/pontos experimentais ou fazer deploy por esta tarefa. Sem coorte Ipsum obrigatória. Conferências manuais opcionais conforme D-014.
+
+---
+
+<a id="historia-46"></a>
+
+### Historia 46 - Notebook de tempos por rating do participante e do problema
+
+**GitHub:** [#79](https://github.com/Enzofmcs/Lorem/issues/79) · planejamento central [#72](https://github.com/Enzofmcs/Lorem/issues/72).
+
+**História:** Como pesquisador, quero comparar a distribuição do tempo até AC para pares de níveis x/y e verificar o que se perde ao usar apenas a diferença de ratings.
+
+**Status:** PLANEJADA — implementação e critérios ainda pendentes.
+
+**Frente:** Estudo.
+
+**Dependências:** História 45
+
+**Contexto e escopo:** Criar 02_ratings_e_tempos.ipynb e funções reutilizáveis de estratificação bidimensional. O KM por delta existente permanece como referência histórica.
+
+**Arquivos de referência:** study/notebooks/02_ratings_e_tempos.ipynb; novos helpers de análise em lorem_study; baseline.py; configuração/protocolo analítico.
+
+#### Critérios de aceite
+
+- [ ] Definir antes de analisar os contrastes uma grade explícita de faixas de oldRating e problem_rating, incluindo limites, largura e população. Registrar grade principal e sensibilidades propostas; não escolher células por resultado favorável.
+- [ ] Estimar curvas KM por par de faixas e comparar com delta. Explicitar que 1200/1600 no demo antigo usa bin de delta=400 e não uma amostra exclusiva do par exato.
+- [ ] Gerar mapas de calor de mediana e P(AC até 30/60/120min) quando identificáveis, com unidades e cores consistentes; exibir suporte em tabela complementar.
+- [ ] Informar por célula tentativas, eventos, censuras, participantes, problemas, contests e em risco nos horizontes; declarar filtros mínimos como filtros de exibição, não garantia de precisão.
+- [ ] Células esparsas, sem seguimento ou fora do domínio ficam indisponíveis com motivo. Não usar fallback global silencioso nem interpolação/extrapolação disfarçada de observação do par.
+- [ ] Respeitar partições congeladas para estimativas candidatas a validação; exploração com todo o snapshot deve vir rotulada como descritiva, sem alegação de teste independente.
+
+**Entrega demonstrável:** Selecionar duas regiões x/y e mostrar curvas, mediana, chances por orçamento e cobertura, comparando com o agrupamento apenas por delta.
+
+**Verificação proporcional:** Níveis 2/3: fronteiras dos bins (inclusive delta negativo), contagens, KM e indisponibilidade. Figuras conferidas com as tabelas geradoras.
+
+**Limites comuns:** preservar evidências antigas, regras de conta/handle, saldo inicial 800, prazo de 2h e avaliações persistidas. Não ativar previsões/pontos experimentais ou fazer deploy por esta tarefa. Sem coorte Ipsum obrigatória. Conferências manuais opcionais conforme D-014.
+
+---
+
+<a id="historia-47"></a>
+
+### Historia 47 - Notebook de quartis e orçamento de tempo com limiares versionados
+
+**GitHub:** [#80](https://github.com/Enzofmcs/Lorem/issues/80) · planejamento central [#72](https://github.com/Enzofmcs/Lorem/issues/72).
+
+**História:** Como pesquisador, quero identificar faixas de tempo interpretáveis para cada região de ratings e distinguir lentidão, falta de suporte e término do orçamento.
+
+**Status:** PLANEJADA — implementação e critérios ainda pendentes.
+
+**Frente:** Estudo.
+
+**Dependências:** História 46
+
+**Contexto e escopo:** Criar 03_curvas_e_quantis.ipynb com contrato analítico analysis-time-bands-v2. Não alterar time-curve-v1, snapshots Android, Rules ou cálculo do rating.
+
+**Arquivos de referência:** study/notebooks/03_curvas_e_quantis.ipynb; helpers analíticos; novo contrato de dados analíticos; docs/REDIRECTION.md.
+
+#### Critérios de aceite
+
+- [ ] Definir T1=P25, T2=P50, T3=P75 da distribuição até AC com censura; T4=h é orçamento operacional configurável (padrão de demonstração 120min), nunca P100.
+- [ ] Explicar as faixas: antes de P25 muito rápido; P25–P50 mais rápido que a mediana; P50–P75 metade mais lenta da região central; acima de P75 lento até h; fora de h fora do orçamento. A região central usual é P25–P75.
+- [ ] Quantil não alcançado no seguimento é null com motivo; nunca converter falta de P75/P90 em 120min. Se quantis empatarem ou ultrapassarem h, mostrar marcos parciais/faixas vazias ou orçamento incompatível, sem deslocar limites artificialmente.
+- [ ] Separar dados censurados dos AC após orçamento; reportar P(T<=h) e explicitar que não resolveu no prazo não significa incapacidade permanente. AC exatamente em h é elegível quando observado, coerente com a fronteira inclusiva do app.
+- [ ] Percentis somente dos resolvidos, se exibidos, ficam em painel condicional claramente separado; não substituem os quantis KM da população de tentativas elegíveis.
+- [ ] Registrar schema/protocolo, agrupamento, amostra, unidade, estimador, razões de ausência e horizonte em toda exportação. O contrato antigo da história 39 continua p50/p75/p90 e desativado.
+- [ ] Demonstrar caso real com P(AC<=120)<0,75 (consulta histórica 1200/1600) e explicar por que P75 não é identificado até esse horizonte; não reconstruir curva completa de três probabilidades.
+
+**Entrega demonstrável:** Manipular x/y/h e visualizar curva e marcos disponíveis, incluindo uma região onde o quartil superior não pode ser estimado.
+
+**Verificação proporcional:** Nível 2/3: eventos/censuras empatados, quantil ausente, tempo em segundos/minutos, fronteira h, bins e não mutação dos artefatos antigos. Limiares são referência descritiva, sem validação pedagógica.
+
+**Limites comuns:** preservar evidências antigas, regras de conta/handle, saldo inicial 800, prazo de 2h e avaliações persistidas. Não ativar previsões/pontos experimentais ou fazer deploy por esta tarefa. Sem coorte Ipsum obrigatória. Conferências manuais opcionais conforme D-014.
+
+---
+
+<a id="historia-48"></a>
+
+### Historia 48 - Notebook de estabilidade, incerteza e comparação com o estudo anterior
+
+**GitHub:** [#81](https://github.com/Enzofmcs/Lorem/issues/81) · planejamento central [#72](https://github.com/Enzofmcs/Lorem/issues/72).
+
+**História:** Como pesquisador, quero saber em quais regiões as faixas de tempo são estáveis e comunicar corretamente a força das conclusões.
+
+**Status:** PLANEJADA — implementação e critérios ainda pendentes.
+
+**Frente:** Estudo.
+
+**Dependências:** História 47
+
+**Contexto e escopo:** Criar 04_estabilidade_e_limites.ipynb. AFT/D-012 e a avaliação antiga ficam como comparações secundárias; não retunar no teste já examinado.
+
+**Arquivos de referência:** study/notebooks/04_estabilidade_e_limites.ipynb; helpers de incerteza/avaliação; relatórios e manifestos históricos preservados.
+
+#### Critérios de aceite
+
+- [ ] Congelar plano da nova análise com grade, horizontes, sensibilidades e política de suporte antes das comparações; registrar que o teste de quatro contests já foi examinado.
+- [ ] Reapresentar resultados históricos AFT/KM/D-012 com seus denominadores e identificar mediana/intervalo entre tentativas versus intervalo de confiança da estimativa.
+- [ ] Investigar estabilidade entre contests/grupos de problemas compartilhados e faixas; usar reamostragem por grupos, registrar quantidade de grupos e efeitos de participantes repetidos.
+- [ ] Mostrar ICs e réplicas sem quantil identificável, com proporção de indisponibilidade; não descartar réplicas ausentes para fabricar um IC ou afirmar precisão por número de linhas.
+- [ ] Comparar a definição sequencial principal com sensibilidades rotuladas como outras janelas/estimandos, incluindo a observação até última submissão quando aplicável; não escolher a janela mais favorável como verdade.
+- [ ] Exploração no snapshot existente pode concluir associações descritivas. Para nova alegação preditiva, reservar novos contests/grupos não usados no ajuste/exploração, sem compartilhamento de problemas entre partições; repetir usuário permanece limitação explícita.
+- [ ] Se dados novos não existirem, declarar avaliação preditiva nova não realizada e ainda entregar a análise exploratória; não bloquear o TCC inteiro nem criar métricas sintéticas como evidência.
+
+**Entrega demonstrável:** Comparar regiões e contests, visualizar incerteza e identificar onde não há suporte suficiente para generalização.
+
+**Verificação proporcional:** Testes direcionados de reamostragem/agrupamento, sementes e réplicas indisponíveis. Reprodução da comparação histórica sem sobrescrita nem mudança de escolhas congeladas.
+
+**Limites comuns:** preservar evidências antigas, regras de conta/handle, saldo inicial 800, prazo de 2h e avaliações persistidas. Não ativar previsões/pontos experimentais ou fazer deploy por esta tarefa. Sem coorte Ipsum obrigatória. Conferências manuais opcionais conforme D-014.
+
+---
+
+<a id="historia-49"></a>
+
+### Historia 49 - Demonstração interativa e atualização do método e resultados do TCC
+
+**GitHub:** [#82](https://github.com/Enzofmcs/Lorem/issues/82) · planejamento central [#72](https://github.com/Enzofmcs/Lorem/issues/72).
+
+**História:** Como autor do TCC, quero apresentar uma investigação visual reproduzível que responda à pergunta x/y e explique seus limites e a relação com o aplicativo.
+
+**Status:** PLANEJADA — implementação e critérios ainda pendentes.
+
+**Frente:** Estudo e documentação.
+
+**Dependências:** História 48
+
+**Contexto e escopo:** Criar 05_demonstracao.ipynb, exports estáticos e roteiro; atualizar a documentação acadêmica do repositório. Edição de arquivo externo do artigo não integra esta história sem incluir explicitamente esse artefato na implementação.
+
+**Arquivos de referência:** study/notebooks/05_demonstracao.ipynb; study/results/<nova-execucao>; docs/DEMO.md, QUANTITATIVE.md, ROADMAP.md; study/README.md; texto metodológico versionado.
+
+#### Critérios de aceite
+
+- [ ] Disponibilizar controles de rating x/y, orçamento e agrupamento com curva, marcos, probabilidade e suporte lado a lado; informar quando o valor selecionado corresponde a uma faixa e quando não há dados.
+- [ ] Exportar HTML offline com saídas reais, figuras PNG/SVG e tabelas CSV/JSON com unidades, fontes, hashes, parâmetros e legenda, sem expor identificadores de participantes.
+- [ ] Permitir Run All em ordem e kernel limpo dos seis notebooks; separar modo agregado, reanálise real, aquisição opt-in e smoke sintético, documentando pré-requisitos e resultados não reproduzidos.
+- [ ] Reorientar pergunta, método, resultados, discussão e conclusão: distribuição de tempos em contests como foco, comparação AFT secundária, limitações de sequência/censura/amostragem e ausência de eficácia pedagógica medida.
+- [ ] Mapear exportação Ipsum/transporte e simulações de pontuação aos protocolos históricos ou apêndices opcionais, com n=0 real e cenários sintéticos explícitos; não exigir recrutamento/coorte da história 31.
+- [ ] Explicar que referência Codeforces não valida Rating Lorem, equivalência de escalas ou bônus/penalidade; manter a política da 39 desativada e integração de novos limiares como decisão futura.
+- [ ] Roteiro apresenta resultado real e caso indisponível; consolidar status das histórias com links às evidências, sem chamar o planejamento de implementação concluída.
+
+**Entrega demonstrável:** Apresentação offline de 5–10 minutos: pergunta → qualidade → mapa x/y → curva/quartis → estabilidade → limites e relação com Lorem.
+
+**Verificação proporcional:** Execução headless em kernel limpo sobre os dados disponíveis, inspeção das figuras/HTML e conferência entre tabelas e texto. Bloqueios de dados reais permanecem explícitos; nenhuma compilação Android por edição apenas do estudo.
+
+**Limites comuns:** preservar evidências antigas, regras de conta/handle, saldo inicial 800, prazo de 2h e avaliações persistidas. Não ativar previsões/pontos experimentais ou fazer deploy por esta tarefa. Sem coorte Ipsum obrigatória. Conferências manuais opcionais conforme D-014.
+
+
 ## 10. Marcos demonstraveis
 
 - **A - Espinha funcional (00-07):** handle, recomendacao, Ipsum, submissao e resultado.
@@ -2346,8 +2722,9 @@ TESTE MANUAL OPCIONAL - NÃO EXECUTADO (D-014).
 - **D - Entrega (14):** fluxo completo testado, explicavel e demonstravel.
 - **E - Automacao (15-17):** preparacao, manutencao e deteccao sem cliques obrigatorios.
 - **F - Apresentacao (18-21):** temas e telas consistentes, acessiveis e demonstraveis.
-- **G-J - Extensao quantitativa (22-32):** progresso e gates registrados nas respectivas historias; 31/32 continuam pendentes de evidencia real.
+- **G-J - Extensão quantitativa (22–32):** 22–30 e evidências preservadas; 31 retirada do escopo e 32 fora da entrega (D-042). A nova frente 44–49 não exige coorte Ipsum.
 - **K - Contas e dados Firebase (33-36):** implementadas/verificadas, com Google unico e Rules 35-37 confirmados pelo usuario.
 - **L - Prazo e adocao (37-38):** 37 integrada; 38 implementada e verificada. Publicar Rules 38 e garantir configuracao Android local para o projeto real.
 
----
+- **M — Paridade Firebase (40–43): PLANEJADA.** Navegação, treino/resultado, histórico, estatísticas e atualização com identidade preservada.
+- **N — Estudo visual (44–49): PLANEJADO.** Dados reproduzíveis, mapas x/y, quartis, incerteza e demonstração offline.
