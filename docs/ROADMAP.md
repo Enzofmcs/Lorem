@@ -8,11 +8,11 @@
 
 **Correção após 40–43:** entrada Google sem retorno visual corrigida nos caminhos reproduzidos; continuidade explícita da sessão, feedback e logs `LoremAuth`. 343 debug/245 release sem falhas ou ignorados, 16 SDK reais incluídos, 43 direcionados de autenticação e 14 rechecados após reforçar a asserção de uid; lint sem erros (58 avisos) e APK. [Evidência](evidence/2026-10-20-google-login-fix.json). Sem reprodução do seletor Google real no aparelho.
 
-**Foco atual:** histórias 40–43 implementadas e verificadas localmente; navegação/telas cloud, filtros/gráficos/tema, preparação incremental e pendências automáticas. [Paridade](CLOUD_EXPERIENCE.md).
+**Foco atual:** histórias 44–48 implementadas e verificadas com nova coleta real: cinco notebooks, auditoria, curvas x/y, quartis/orçamento e estabilidade. 20 contests adquiridos/19 elegíveis, 355.796 tentativas válidas. [Relatório](../study/results/2026-10-20-notebooks/REPORT.md), [evidência](../study/evidence/2026-10-20-notebooks.json). 40–43 e suas evidências permanecem preservadas.
 
-**Última história verificada:** 43, em 20/10/2026. 332 debug/237 release sem falhas ou ignorados, 15 SDK reais em emuladores, 34 Auth/Rules; lint sem erros (58 avisos) e APK. [Evidência](evidence/2026-10-20-cloud-40-43.json). Marcos anteriores preservados.
+**Última história verificada:** 48, em 20/10/2026. 114 testes Python sem falhas/ignorados, 23 novos também sem site-packages; 15 kernels limpos (cinco reais, cinco agregados, cinco sintéticos). Retomada real offline com zero chamadas e mesmo hash. Marco Android anterior: [40–43](evidence/2026-10-20-cloud-40-43.json), sem alteração Android neste bloco.
 
-**Próxima entrega demonstrável:** Home → preparação → Ipsum → resultado persistido; histórico/estatísticas durante ativo, tema/handles em Configurações e arquivo local separado. 44–49 pertencem ao planejamento #72, fora desta implementação. A 31 permanece retirada e 32 desabilitada.
+**Próxima entrega demonstrável:** notebooks 00–04 com dados reais novos e comparação histórica preservada. A 49 permanece planejada, fora deste bloco; 31 retirada e 32 desabilitada. Snapshot de 18/10 não recuperado; usuário autorizou nova amostra, identificada separadamente (D-048).
 
 **Configuração restante:** adicionar `app/google-services.json` localmente e recompilar. OAuth autorizado e Rules atualizadas confirmados pelo usuário em 20/10/2026; [confirmação do responsável](evidence/2026-10-20-firebase-oauth-rules-confirmation.json). Sem deploy, leitura remota ou login Google real pelo agente. [Operação e recuperação](FIREBASE_OPERATION.md). D-012 vigente; time-curve-v1 desabilitada.
 
@@ -120,6 +120,12 @@ As Historias 15-17 foram implementadas e verificadas em 2026-10-15 e as Historia
 - [Historia 36 - Ciclo oficial do Ipsum e rating persistidos no Firestore](#historia-36---ciclo-oficial-do-ipsum-e-rating-persistidos-no-firestore)
 - [Historia 37 - Encerramento automatico do Ipsum em ate duas horas](#historia-37---encerramento-automatico-do-ipsum-em-ate-duas-horas)
 - [Historia 38 - Migracao e jornada integrada de contas e prazo](#historia-38---migracao-e-jornada-integrada-de-contas-e-prazo)
+
+- [Historia 44 - Base Jupyter e recuperação reproduzível dos dados do estudo](#historia-44)
+- [Historia 45 - Notebook de qualidade, cobertura e definição do tempo até AC](#historia-45)
+- [Historia 46 - Notebook de tempos por rating do participante e do problema](#historia-46)
+- [Historia 47 - Notebook de quartis e orçamento de tempo com limiares versionados](#historia-47)
+- [Historia 48 - Notebook de estabilidade, incerteza e comparação com o estudo anterior](#historia-48)
 
 ### Historia 00 - Estrutura basica
 
@@ -2472,6 +2478,122 @@ Correção posterior em 20/10/2026: [retorno do login e diagnóstico](evidence/2
 **Verificação proporcional:** Níveis 3/4: contagem de requisições com transporte controlado, cobertura incremental, isolamento, idempotência e execução agendada. Comparar antes/depois no mesmo cenário, sem prometer melhoria de latência não medida.
 
 **Limites comuns:** preservar evidências antigas, regras de conta/handle, saldo inicial 800, prazo de 2h e avaliações persistidas. Não ativar previsões/pontos experimentais ou fazer deploy por esta tarefa. Sem coorte Ipsum obrigatória. Conferências manuais opcionais conforme D-014.
+
+---
+
+## Estudo Jupyter — histórias 44–48
+
+Implementadas e verificadas em 20/10/2026, conforme [planejamento #72](https://github.com/Enzofmcs/Lorem/issues/72).
+[Direção e método](REDIRECTION.md), [execução/recuperação](../study/notebooks/README.md),
+[relatório real novo](../study/results/2026-10-20-notebooks/REPORT.md) e
+[evidência](../study/evidence/2026-10-20-notebooks.json). Snapshot antigo ausente;
+nova coleta autorizada pelo usuário, com plano prévio e proveniência própria.
+Conferência humana: TESTE MANUAL OPCIONAL - NÃO EXECUTADO (D-014).
+
+<a id="historia-44"></a>
+
+### Historia 44 - Base Jupyter e recuperação reproduzível dos dados do estudo
+
+**GitHub:** [#77](https://github.com/Enzofmcs/Lorem/issues/77).
+**Status:** IMPLEMENTADA E VERIFICADA com dados reais novos em 20/10/2026.
+**Dependências:** Nenhuma história nova. **Notebook:** [00_dados_e_reproducao.ipynb](../study/notebooks/00_dados_e_reproducao.ipynb).
+
+#### Critérios de aceite
+
+- [x] Inventário de coleta/preparo, KM, AFT, avaliação/relatório, curvas/pontos e transporte mapeado a notebooks ou referências históricas; núcleo reutilizado em módulos.
+- [x] Ambiente Jupyter e dependências fixadas; cinco kernels limpos, export HTML/JSON/SVG/PNG, caminhos explícitos Windows/Linux (execução verificada em Linux).
+- [x] Modo agregado real offline e modo completo com validação de snapshot/brutos/modelos; agregados nunca reconstroem observações/KM completo.
+- [x] Backup antigo procurado em GitHub e ambiente acessível, sem recuperação. Alternativa autorizada pelo usuário: nova coleta real em diretório separado, plano/seed anteriores aos resultados e hashes próprios; 18/10 preservado.
+- [x] Run All não coleta, retreina ou acessa HTTP; inputs/outputs separados, sem handles/pseudônimos publicados.
+- [x] Cinco notebooks passaram com fixture explicitamente sintética e com a nova amostra real; retomada offline preservou snapshot com zero chamadas; backup novo incluiu audit e foi verificado por leitura do archive.
+
+**Verificação:** testes direcionados e regressão Python, execução limpa com agregados/sintético/real, hashes e outputs identificados na evidência do bloco. Sem Gradle, alterações Android, Rules ou pontuação.
+
+---
+
+<a id="historia-45"></a>
+
+### Historia 45 - Notebook de qualidade, cobertura e definição do tempo até AC
+
+**GitHub:** [#78](https://github.com/Enzofmcs/Lorem/issues/78).
+**Status:** IMPLEMENTADA E VERIFICADA com dados reais novos em 20/10/2026.
+**Dependências:** 44. **Notebook:** [01_qualidade_da_amostra.ipynb](../study/notebooks/01_qualidade_da_amostra.ipynb).
+
+#### Critérios de aceite
+
+- [x] Join 1:1 por sample_id entre features/labels/audit validado com hashes, unidades, âncora, evento/censura, ratings e grupos.
+- [x] Funil por contest e faixa reconciliado ao manifesto: 496.370 observadas = 313.893 eventos + 41.903 censuras + 140.574 exclusões; distintos não são somados entre estratos.
+- [x] Linha temporal didática identificada: A=10/B=28 → 18min para B; desde início e primeira submissão são outros estimandos, sem alegar dedicação exclusiva.
+- [x] Preservados oficiais individuais, oldRating positivo, origem desde 01/07/2020, exclusão integral de especiais/variantes e motivos de sequência inválida.
+- [x] Sem submissão não vira fracasso; sem AC em janela válida é censura; não imputar rating futuro/atual ou tempos desconhecidos.
+- [x] Totais/gráficos identificados pelo snapshot; prefixos, abandono informativo e rating de problema observado na coleta explicitados como limites.
+
+**Verificação:** testes direcionados e regressão Python, execução limpa com agregados/sintético/real, hashes e outputs identificados na evidência do bloco. Sem Gradle, alterações Android, Rules ou pontuação.
+
+---
+
+<a id="historia-46"></a>
+
+### Historia 46 - Notebook de tempos por rating do participante e do problema
+
+**GitHub:** [#79](https://github.com/Enzofmcs/Lorem/issues/79).
+**Status:** IMPLEMENTADA E VERIFICADA com dados reais novos em 20/10/2026.
+**Dependências:** 45. **Notebook:** [02_ratings_e_tempos.ipynb](../study/notebooks/02_ratings_e_tempos.ipynb).
+
+#### Critérios de aceite
+
+- [x] Grade principal x/y de 400 em [0,4000), bordas [a,b), sensibilidades 200/800 e população congeladas antes da coleta/comparações.
+- [x] KM por par de faixas e por delta descritivo; consulta antiga 1200/1600 identificada como bin de delta do treino, não par exato.
+- [x] Mapas de mediana e P(AC≤30/60/120) com unidades/cores consistentes e dados geradores publicados; 40 células passam pelo filtro de exibição.
+- [x] Suporte por célula: tentativas/eventos/censuras, participantes/problemas/contests/grupos e em risco. Piso 50/20/2 é filtro, não garantia de precisão.
+- [x] Células vazias/esparsas, sem seguimento ou fora da grade indisponíveis com motivo; sem fallback global/interpolação/extrapolação.
+- [x] Partições de 11/4/4 contests inteiros validadas; modo train disponível por plano. Toda a nova amostra explorada é descritiva, sem teste independente.
+
+**Verificação:** testes direcionados e regressão Python, execução limpa com agregados/sintético/real, hashes e outputs identificados na evidência do bloco. Sem Gradle, alterações Android, Rules ou pontuação.
+
+---
+
+<a id="historia-47"></a>
+
+### Historia 47 - Notebook de quartis e orçamento de tempo com limiares versionados
+
+**GitHub:** [#80](https://github.com/Enzofmcs/Lorem/issues/80).
+**Status:** IMPLEMENTADA E VERIFICADA com dados reais novos em 20/10/2026.
+**Dependências:** 46. **Notebook:** [03_curvas_e_quantis.ipynb](../study/notebooks/03_curvas_e_quantis.ipynb).
+
+#### Critérios de aceite
+
+- [x] Contrato analysis-time-bands-v2: T1=P25, T2=P50, T3=P75 com censura; T4=h operacional configurável, padrão 120min, nunca P100.
+- [x] Faixas interpretadas e região central P25–P75 explicadas; limites não significam capacidade permanente ou validação pedagógica.
+- [x] Quantil ausente=null+motivo; empates/faixas vazias e orçamento incompatível preservados, sem mover limites ou substituir ausências por 120min.
+- [x] AC exatamente em h incluído; AC posterior, censura antes de h e censura em/depois de h separados; P(AC≤h) só com seguimento.
+- [x] Percentis só dos resolvidos não substituem os quantis KM; distinção documentada sem painel condicional enganoso.
+- [x] Toda exportação registra schema/protocolo, agrupamento, amostra, unidade, estimador, motivos e horizonte; time-curve-v1 p50/p75/p90 inalterada/desabilitada.
+- [x] Caso antigo real F(120)=0,622099<0,75 reapresentado sem reconstruir a curva; nova região x=[1200,1600)/y=[1600,2000) também tem P75 não identificado.
+
+**Verificação:** testes direcionados e regressão Python, execução limpa com agregados/sintético/real, hashes e outputs identificados na evidência do bloco. Sem Gradle, alterações Android, Rules ou pontuação.
+
+---
+
+<a id="historia-48"></a>
+
+### Historia 48 - Notebook de estabilidade, incerteza e comparação com o estudo anterior
+
+**GitHub:** [#81](https://github.com/Enzofmcs/Lorem/issues/81).
+**Status:** IMPLEMENTADA E VERIFICADA com dados reais novos em 20/10/2026.
+**Dependências:** 47. **Notebook:** [04_estabilidade_e_limites.ipynb](../study/notebooks/04_estabilidade_e_limites.ipynb).
+
+#### Critérios de aceite
+
+- [x] Plano/seed/suporte/sensibilidades anteriores às comparações; teste histórico de quatro contests explicitamente já examinado, sem retuning.
+- [x] AFT/KM/D-012 históricos com denominadores, métricas/ICs originais e intervalos preditivos separados de ICs da estimativa.
+- [x] Estabilidade entre grupos, por grupo e leave-one-group-out, bootstrap com reposição/multiplicidade e contagem de participantes repetidos.
+- [x] 200 réplicas na região principal com dez grupos: P75 ausente em 158 (79%), IC=null; P(AC≤120) ausente em duas (1%), IC=null. Ausências não descartadas.
+- [x] Sensibilidades de grade 200/800 e estimandos sequencial, desde início e censura até última submissão rotuladas; sem escolher resultado favorável como verdade.
+- [x] Nova análise é descritiva; nova alegação preditiva exige novos grupos não examinados e sem problemas compartilhados. Participantes repetidos permanecem limitação.
+- [x] Avaliação preditiva nova não realizada explicitamente; análise exploratória real entregue sem bloquear TCC nem fabricar métricas sintéticas como evidência.
+
+**Verificação:** testes direcionados e regressão Python, execução limpa com agregados/sintético/real, hashes e outputs identificados na evidência do bloco. Sem Gradle, alterações Android, Rules ou pontuação.
 
 ---
 

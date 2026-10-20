@@ -156,3 +156,32 @@ O preparador historico rejeita cloud v2 explicitamente antes de rede: diferencas
 na identidade, inicial 800, prazo e confianca nao podem ser misturadas silenciosamente.
 A 31 foi retirada do escopo pelo usuario; a 32 fica fora da entrega e sem previsoes.
 O export e recurso local opcional da 38, sem coleta/upload automatico.
+
+## Exportações descritivas dos notebooks (44–48)
+
+`analysis-time-bands-v2` é independente de `time-curve-v1` e de snapshots Android.
+Plano em `configs/analysis-time-bands-v2.json`; fontes e execução em
+[notebooks/README.md](notebooks/README.md). O protocolo analítico é identificado
+separadamente de `source.data_protocol_version=sequential-v1` e da versão de
+elegibilidade usada no preparo original.
+
+| Campo/arquivo | Contrato |
+|---|---|
+| `plan.json` / `plan_sha256` | Grade, suporte de exibição, sensibilidades, horizontes, seed, réplicas e escopo congelados antes da leitura de observações. |
+| `source` | Tipo de dados, snapshot/modelos/preparo/partições/audit verificados; agregado histórico não equivale a snapshot recuperado. |
+| `grouping` | Faixas oldRating/problem_rating, bordas [a,b), escopo all_descriptive ou train e suporte. |
+| `quality.json` | Funil disjunto; totais/distintos não somados entre estratos; seleção explícita. Não publica sample_id/participant_key. |
+| `ratings.json` | Células x/y e referências delta, curvas KM e suporte; vazios/esparsos com motivo, sem fallback global. |
+| `support` | Tentativas, eventos, censuras, participantes, problemas contestId+index, contests, grupos e em risco em cada horizonte (inclui empates). |
+| `quantiles.json` | T1=P25/T2=P50/T3=P75 em minutos; T4=h operacional. Quantil não alcançado=null+motivo; >h preservado com exceeds_budget; empates/faixas vazias explícitos. |
+| `budget_outcomes` | AC observado ≤h (inclusivo), AC depois de h, censura antes de h (desfecho desconhecido), censura em/depois de h. |
+| `stability.json` | Reamostragem de grupos com multiplicidade, hash dos sorteios, réplicas, ausências, IC95% ou motivo, por grupo/leave-one-out, repetição de participantes e sensibilidades. |
+| `historical-comparison.json` | Métricas/denominadores/ICs da avaliação de 18/10 preservada; não é avaliação nova ou comparação pareada com a amostra nova. |
+| `execution.json` | Cinco kernels limpos, células/hashes e modos de execução; fixture rotulada synthetic. |
+
+Tempos de observações continuam em segundos; curvas guardam `seconds` e
+quantis/budgets são minutos. Não preencher dados ausentes por zero ou pelo
+orçamento. T4 não é P100. IC da estimativa difere de P25–P75 entre tentativas.
+Um quantil não identificado em qualquer réplica impede IC95% sob a política
+conservadora registrada; a proporção ausente permanece visível. Os arquivos
+agregados não publicam identificadores individuais ou handles.

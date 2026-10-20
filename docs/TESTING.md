@@ -545,3 +545,22 @@ Atualização somente documental: [confirmação do responsável](evidence/2026-
 ## Correção do retorno Google após a 43, 20/10/2026
 
 343 debug/245 release sem falhas ou ignorados, 16 SDK reais incluídos, 43 direcionados de autenticação e 14 rechecados após reforçar a asserção de uid; lint sem erros (58 avisos) e APK. [Evidência e comandos](evidence/2026-10-20-google-login-fix.json). Antes da correção, dois testes reproduziram sessão que não avançava sem nova notificação ou na mesma conta. Regressão cobre interrupção visível, retry, timeout sem postergação pelo resume, isolamento de resposta atrasada e logs sem dados da conta. Integração com SDK real passa pela troca Google em emulador, listener, validação e bootstrap confirmado. Seletor Google e causa real no aparelho não observados. Rechecados os 14 testes do repositório após reforçar somente a asserção de troca de uid. TESTE MANUAL OPCIONAL - NÃO EXECUTADO (D-014).
+
+## Jupyter 44–48, 20/10/2026
+
+Níveis 2/3 no desenvolvimento e marco Python: **114 testes sem falhas/ignorados**,
+23 novos também sem site-packages. 15 kernels limpos via nbclient/nbconvert:
+cinco agregados históricos, cinco synthetic identificados e cinco com dados reais
+novos. Testes cobrem join/unidades/funil, bins e delta negativo, empates/censura,
+quantis ausentes, h inclusivo, suporte/sem fallback, partições, bootstrap com
+multiplicidade e réplicas ausentes, fonte congelada e restauração segura de archive.
+
+Nova coleta autorizada: 20 adquiridos/19 elegíveis e 355.796 tentativas válidas;
+retomada offline zero chamadas e hash idêntico. Plano/seed anteriores à aquisição.
+Snapshot/modelos reais e backup novo verificados com hashes; relatórios antigos
+preservados. Figuras consomem os exports; SVG/PNG e HTML foram gerados. Backup
+inclui audit; 321 brutos e oito arquivos principais conferidos dentro do archive.
+Não interpretar fixture como evidência. Sem Android/Gradle, deploy ou retuning.
+[Comandos, hashes e limites](../study/evidence/2026-10-20-notebooks.json),
+[guia](../study/notebooks/README.md), [resultados](../study/results/2026-10-20-notebooks/REPORT.md).
+TESTE MANUAL OPCIONAL - NÃO EXECUTADO (D-014).

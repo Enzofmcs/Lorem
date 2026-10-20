@@ -391,3 +391,24 @@ congelado e seus bins de treino; não abre o teste ou ajusta parâmetros. Probab
 30/60/120 min, quantis p50/p75/p90, marcos parciais, domínio, suporte, hash e versões
 integram o JSON. Nenhum fallback global silencioso. Simulações são sintéticas e
 separadas da avaliação estatística.
+
+## Investigação em Jupyter (44–48)
+
+[Cinco notebooks e instruções](notebooks/README.md), ambiente fixado em
+`requirements-notebooks.lock`, plano descritivo `analysis-time-bands-v2` e
+[contrato/metodologia](../docs/REDIRECTION.md). Pacote 0.5.0. Execute a partir da raiz:
+
+```bash
+python study/scripts/run_notebooks.py --output work/notebooks-aggregate
+```
+
+O interpretador deve ser o do ambiente de notebooks documentado. Cada notebook
+usa kernel limpo; HTML com imagens embutidas, JSONs com proveniência e figuras
+SVG/PNG ficam na pasta nova. Run All é offline. Modos full/synthetic exigem
+caminhos explícitos e não substituem silenciosamente dados ausentes.
+
+O snapshot/backup de 18/10 não está nesta cópia nem nas fontes GitHub acessíveis.
+Os agregados reais permanecem íntegros; uma nova amostra real foi autorizada
+pelo usuário, com configuração `configs/notebooks-2026-10-20.json` e plano fixado
+antes da coleta. Ela é descritiva, identificada separadamente e não recupera o
+passado. O guia explica coleta, hashes, restauração, sensibilidades e limites.
