@@ -437,7 +437,8 @@ def export_table(report,path):
                            ci95_lower_minutes=ci[0] if ci else None,ci95_upper_minutes=ci[1] if ci else None,
                            missing_replicates=value.get("uncertainty",{}).get("missing_replicates"),
                            snapshot_sha256=report["snapshot_sha256"],plan_sha256=report["plan_sha256"],
-                           selection_sha256=report.get("selection_sha256"),artifact_sha256=value.get("artifact_sha256"),
+                           selection_sha256=report.get("selection_sha256"),
+                           artifact_sha256=value.get("artifact_sha256") or report.get("model_hashes",{}).get("aft" if method=="aft" else "baseline" if method in ("km_global","km_delta") else "observed"),
                            analysis_version=report["version"],model_version="aft-v1" if method=="aft" else "kaplan-meier-v1",
                            units="minutes",population="common model support" if common else "all eligible attempts in cell",
                            weights="one per eligible attempt; common rows shared by observed and model mixtures")

@@ -46,7 +46,11 @@ def coverage_report(snapshot_root,prepared_root,analysis):
                 raise StudyError("Delivery funnel does not reconcile")
             return result
         global_totals=totals()
-        by_group=[{"group_id":min(group),"contest_ids":group,**totals("group_id=?",[min(group)])} for group in prepared["groups"]]
+        # Reuse the contest index instead of scanning millions of rows per group.
+        # Distinct participants/problems are still computed over the whole group.
+        by_group=[{"group_id":min(group),"contest_ids":group,
+                   **totals("contest_id IN ("+",".join("?" for _ in group)+")",group)}
+                  for group in prepared["groups"]]
         by_contest=[]
         for part in prepared["partitions"]:
             cid=part["contest_id"]

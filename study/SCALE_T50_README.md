@@ -11,6 +11,8 @@ TCC ficam fora desta entrega. O contrato científico está em
 Baixe o código da PR ou faça checkout da branch da implementação. Os arquivos
 em [results/scale-t50-v1](results/scale-t50-v1) são resultados reais agregados;
 consulte o `REPORT.md` nessa pasta para quantidades efetivas, perdas e hashes.
+A [leitura dos resultados](results/scale-t50-v1/INTERPRETATION.md) compara
+regiões, sensibilidades e limites diretamente das tabelas reais.
 O alvo 400 não cabe no universo: a triagem de 525 candidatos encontrou **292**
 contests estruturalmente compatíveis, mantendo o corte e a exclusão integral de
 variantes/especiais. Selecionados, completos e elegíveis após joins são contagens

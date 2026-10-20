@@ -1,6 +1,6 @@
 # Ampliação do estudo: aproximadamente 400 contests e curvas t50
 
-**Estado: implementação 50–56 autorizada em 20/10/2026; execução real em andamento.**
+**Estado: histórias 50–56 implementadas e verificadas em 20/10/2026; 49/artigo preservados.**
 A base é a main `cc880ec`, com o estudo 44–48 integrado na PR #87.
 [Planejamento central #88](https://github.com/Enzofmcs/Lorem/issues/88); a demonstração 49
 ([#82](https://github.com/Enzofmcs/Lorem/issues/82)) permanece planejada.
@@ -30,10 +30,10 @@ Seguimento verificável e orçamento h são objetos diferentes. A referência de
 conhecido; quantil não alcançado no seguimento fica null com motivo. AC no limite
 é incluído. Censura não significa incapacidade permanente.
 
-A proposta a congelar na história 50 é oldRating em faixas de 400 em [0,4000)
+A grade congelada na história 50 é oldRating em faixas de 400 em [0,4000)
 e problema em faixas de 200 em [800,3600), bordas [a,b), com sensibilidades
 oldRating 200/400 e problema 100/200/400. Os valores finais, suporte e política de
-ICs devem ser registrados antes dos resultados. Dados fora da grade são contados,
+ICs foram registrados no plano antes da consulta nova e dos contrastes. Dados fora da grade são contados,
 não extrapolados ou descartados silenciosamente. Curvas não serão suavizadas ou
 tornadas monotônicas à força; lacunas sem suporte continuam visíveis.
 
@@ -60,8 +60,8 @@ previsões e intermediários descomprimidos podem ocupar dezenas de GB. Essas
 projeções não são medição nem promessa de custo da nova amostra.
 
 A história 50 congela um orçamento realista e a 51 executa sob limites de
-requisições, disco e RAM. O coletor usa teto de triagem 100 na configuração atual,
-incompatível com selecionar 400; isso precisa evoluir. Compressão/particionamento
+requisições, disco e RAM. O coletor anterior usava teto de triagem 100; a configuração de escala
+usa 5.000 candidatos, com limite e universo completo registrados. Compressão/particionamento
 deve preservar hashes dos bytes HTTP descomprimidos e leitura dos snapshots
 antigos. Paradas por falta de recursos/rede não viram contests completos.
 
@@ -157,8 +157,11 @@ e [operação Linux/Windows](../study/SCALE_T50_README.md). A consulta nova enco
 525 candidatos por metadados; 487 reconhecidos como rounds regulares; 162
 excluídos positivamente pelo catálogo por versões 1/2, dando teto preliminar 325.
 A triagem completa de standings chegou a **292 estruturalmente elegíveis**,
-congelados antes de adquirir/analisar os desfechos: déficit de **108** em relação
-a 400. As demais recusas e os hashes ficam no manifesto de triagem.
+selecionados somente por metadados/estrutura antes das novas chamadas de status
+e da análise ampliada: déficit de **108** em relação a 400. Standings contêm
+resultados, mas estes não entram no algoritmo de seleção. O cache histórico de
+20 contests já examinados foi importado com datas/hashes originais e também não
+decide a seleção. As demais recusas e os hashes ficam no manifesto de triagem.
 
 A grade final mantém oldRating 400 em [0,4000) × problema 200 em [800,3600).
 Pisos principais: 50 tentativas, 20 eventos e 5 grupos; sensibilidades
@@ -175,8 +178,12 @@ labels e audit 1:1 e grava SQLite transacional. O objetivo de memória é
 operacional e as medições por processo são publicadas; não há lista global com
 centenas de contests. O cache anterior mantém seus timestamps e proveniência.
 
-Resultados/backup/replay reais serão identificados em
+Resultados/backup/replay reais estão identificados em
 [results/scale-t50-v1/REPORT.md](../study/results/scale-t50-v1/REPORT.md) e na
-evidência da implementação, com aquisição parcial ou completa explicitada.
+[evidência da implementação](../study/evidence/2026-10-20-scale-t50.json):
+292 completos/278 elegíveis, 4.754.352 válidas, 99/140 t50 identificados e 78 ICs.
+Dois kernels limpos ampliados e reanálise restaurada com paridade científica;
+replay offline zero chamadas e backup/restauração verificados.
+[Interpretação das sensibilidades](../study/results/scale-t50-v1/INTERPRETATION.md).
 O pacote leve mostra resultados agregados, sem anunciar download do snapshot
 completo ou execução nova de bootstrap no modo agregado.

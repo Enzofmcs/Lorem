@@ -12,6 +12,7 @@ from lorem_study.io import StudyError, canonical, digest, put_bytes, raw_json, r
 from lorem_study.prepare import prepare
 from lorem_study.scale_collect import BoundedTransport, BudgetExceeded, freeze_scale_selection, freeze_universe, import_cache, replay_scale
 from lorem_study.scale_prepare import connect, file_sha, ingest_partition, prepare_scale, shared_groups, structure_origin_links
+from lorem_study.scale_delivery import coverage_report
 
 
 class ScalePipelineTests(unittest.TestCase):
@@ -23,6 +24,40 @@ class ScalePipelineTests(unittest.TestCase):
         self.config["max_screened_candidates"] = 5000
         self.limits = {"max_network_attempts":4,"max_raw_compressed_bytes":10**9,
                        "min_free_disk_bytes":0,"max_response_bytes":1000}
+
+    def test_group_coverage_counts_distinct_people_and_shared_problems_once(self):
+        prepared_root=self.root/'analysis';prepared_root.mkdir()
+        db=connect(prepared_root/'attempts.sqlite')
+        records=[('a',1,'p',1,'A',1),('b',1,'q',1,'B',0),('c',2,'p',1,'A',1)]
+        for sid,cid,person,origin,index,event in records:
+            db.execute('''INSERT INTO attempts(sample_id,contest_id,participant,problem_contest_id,
+              problem_index,old_rating,problem_rating,delta,quality,duration,event,group_id)
+              VALUES(?,?,?,?,?,1200,1600,400,'valid',60,?,1)''',(sid,cid,person,origin,index,event))
+        db.execute('CREATE INDEX idx_contest ON attempts(contest_id)')
+        db.commit();db.close()
+        snapshot={'data_kind':'synthetic','selection':{'contest_ids':[1,2],'shortfall':398},
+                  'coverage':{'complete':2},'config':{'target_contests':400},
+                  'contests':{'1':{'complete':True},'2':{'complete':True}}}
+        prepared={'data_kind':'synthetic','snapshot_sha256':digest(snapshot),'selection_sha256':'s',
+                  'database_sha256':file_sha(prepared_root/'attempts.sqlite'),'database_bytes':0,
+                  'groups':[[1,2]],'eligible_contest_ids':[1,2],'participants_repeated_across_groups':0,
+                  'maximum_worker_rss_bytes':None,'observed_attempts':3,'valid_events':2,'valid_censored':1,'excluded':0,
+                  'partitions':[{'contest_id':cid,'prepared':{'contests':[{'contest_id':cid}]},
+                                 'source_sha256':'x','peak_rss_bytes':None,'streams':{},'seconds':0} for cid in [1,2]]}
+        for name,value in [('snapshot',snapshot),('universe',{'metadata_eligible':2,'regular':2,'upper_bound_before_standings':2}),
+                           ('screening',{'decisions':[{'reason':None}]}),
+                           ('network-budget',{'first_start_utc':'2026-10-20T00:00:00Z','last_response_utc':'2026-10-20T00:00:00Z',
+                                              'attempts':0,'http_bytes':0,'minimum_start_gap_seconds':None})]:
+            write_json(self.root/f'{name}.json',value)
+        write_json(prepared_root/'manifest.json',prepared)
+        analysis={'data_kind':'synthetic','snapshot_sha256':digest(snapshot),'plan_sha256':'p',
+                  'rows':[{'observed_attempts':3}],'outside_grid_observed':0,'overlap_with_examined_models':{}}
+        report=coverage_report(self.root,prepared_root,analysis)
+        group=report['by_group'][0]
+        self.assertEqual((group['observed_attempts'],group['participants_valid_unique'],group['problems_valid_unique']),(3,2,2))
+        self.assertEqual(group['contests_with_observations'],2)
+        self.assertEqual(group['groups_with_observations'],1)
+        self.assertEqual(sum(c['participants_valid_unique'] for c in report['by_contest']),3)
 
     def test_compressed_legacy_parity_integrity_and_atomic_objects(self):
         body = canonical({"status":"OK","result":[1,2]})

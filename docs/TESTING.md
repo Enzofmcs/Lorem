@@ -580,3 +580,20 @@ joins em escala, agrupamento e não vazamento, primeira passagem de CDF e mistur
 versus média de medianas, domínio, bootstrap com multiplicidade/ausências e
 notebooks/exports em kernel limpo. Evidência real de quantidade/cobertura
 permanece obrigatória; fixtures não concluem a aquisição ou análise real.
+
+
+## Execução da escala 50–56, 20/10/2026
+
+Planejamento acima autorizado para implementação pela D-050. Verificação de
+níveis2/3: 144 testes Python sem falhas/ignorados; 17 do pipeline sem site-packages.
+Exports finais tiveram três testes direcionados adicionais. Coleta real de292
+completos/278 elegíveis; interrupção/retomada idempotente, replay offline zero
+chamadas/mesmo snapshot e backup/restauração com hashes/SQLite verificados.
+Dois kernels limpos ampliados, agregado e full no backup restaurado; paridade
+exata de todos os valores científicos, exceto tempo de execução. Navegador
+automatizado verifica painel, lacunas, tooltip, quatro downloads e iframe do
+notebook sem HTTP/CDN/erros. Linux executado; Windows documentado, sem alegar
+teste num Windows real. Gradle não se aplica a mudanças exclusivamente Python/docs.
+[Evidência](../study/evidence/2026-10-20-scale-t50.json),
+[guia](../study/SCALE_T50_README.md). Comparação descritiva, sem nova avaliação
+preditiva. **TESTE MANUAL OPCIONAL - NÃO EXECUTADO (D-014).**

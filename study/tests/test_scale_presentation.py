@@ -48,6 +48,12 @@ class ScalePresentationTests(unittest.TestCase):
         self.assertEqual(expected[0]['units'],'minutes')
         self.assertEqual(expected[0]['population'],'all eligible attempts in cell')
         self.assertEqual(expected[0]['model_version'],'kaplan-meier-v1')
+        report['model_hashes']={'aft':'e'*64,'baseline':'d'*64}
+        report['rows'][0]['predictions']['aft']={'t50_minutes':None,'reason':'no_common_support'}
+        export_table(report,self.output/'missing.csv')
+        with (self.output/'missing.csv').open() as source:
+            missing=next(r for r in csv.DictReader(source) if r['method']=='aft')
+        self.assertEqual(missing['artifact_sha256'],'e'*64)
         self.assertEqual(actual[0],float(expected[0]['t50_minutes']))
         self.assertTrue(np.isnan(actual[1]))
         self.assertEqual(expected[1]['t50_minutes'],'')
