@@ -6,6 +6,17 @@ Um **Ipsum** é a tentativa oficial e cronometrada de resolver um problema recom
 
 > O [`AGENTS.md`](AGENTS.md) é o guia operacional compacto. A fonte de verdade detalhada está dividida por assunto em [`docs/`](docs/README.md). Este README apresenta apenas a visão técnica de entrada.
 
+## Histórias 44–48: estudo em Jupyter
+
+Cinco notebooks implementados e executados com **355.796 tentativas válidas**
+em 19 contests elegíveis, de uma coleta nova autorizada em 20/10/2026.
+Auditoria, curvas por faixas x/y, mapas de calor, quartis/orçamento e bootstrap
+com ausências explícitas; agregados de 18/10 preservados. 114 testes Python
+passaram e 15 kernels limpos concluíram (cinco com dados reais). Sem mudança Android.
+
+[Notebooks e execução](study/notebooks/README.md) · [Resultados reais](study/results/2026-10-20-notebooks/REPORT.md) · [Evidência](study/evidence/2026-10-20-notebooks.json).
+A análise é descritiva; não há nova alegação preditiva ou ativação de pontos.
+
 ## Histórias 40–43
 
 Jornada Firebase recuperada: abas Início/Histórico/Estatísticas, treino e resultado
@@ -186,7 +197,7 @@ Consulte o [roadmap](docs/ROADMAP.md) e o [roteiro de demonstração](docs/DEMO.
 O planejamento de 18/10/2026 acrescenta **22–28 — Estudo quantitativo em Python**:
 coleta e preparo auditáveis, estimativa de tempo até AC, probabilidades para um
 orçamento explícito, avaliação e relatório reproduzível. São **24 horas estimadas**
-para uma primeira versão. As Histórias 22–28 estão implementadas; a suite atual tem 66 testes Python, incluindo o preparo da 30.
+para uma primeira versão. As Histórias 22–28 estão implementadas; o marco anterior registrou 66 testes Python, incluindo o preparo da 30 (o bloco Jupyter atual soma 114).
 A amostra tem 19 contests elegíveis e 274.073 tentativas válidas. A avaliação de
 35.367 tentativas em quatro contests reservados favoreceu a referência simples
 por delta em relação ao AFT: MAE 15,1 vs 15,9 min nos resolvidos, com denominadores

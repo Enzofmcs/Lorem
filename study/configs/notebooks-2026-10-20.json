@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "protocol_version": "sequential-v1",
+  "eligibility_version": "origin-20200701-v1",
+  "seed": 20261020,
+  "cutoff_utc": "2020-07-01T00:00:00Z",
+  "target_contests": 20,
+  "pilot_contests": 2,
+  "minimum_contests": 10,
+  "page_size": 10000,
+  "max_pages": 200,
+  "request_interval_seconds": 2.0,
+  "timeout_seconds": 30,
+  "max_retries": 3,
+  "pending_rechecks": 1,
+  "delta_bin_width": 400,
+  "bin_min_attempts": 50,
+  "bin_min_events": 20,
+  "budgets_minutes": [
+    30,
+    60,
+    120
+  ],
+  "shared_contest_groups": [],
+  "selection_policy": "regular-simple-v1",
+  "max_screened_candidates": 100
+}
