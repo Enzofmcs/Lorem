@@ -1,0 +1,10 @@
+{
+  "mode": "aggregate",
+  "clean_kernels": 1,
+  "network": "urllib HTTP disabled; no collection or fitting",
+  "html": "embedded figures and interactive iframe; no external JS/CDN dependencies",
+  "source_sha256": "898fd13687b7bd0611e85339bd56f6dfc0adc18bc1ec6d7c36be9a7d7ed9fa8d",
+  "executed_sha256": "1f56120357dac73293760a56a055e5b8e677fb0f8ad1ca6f1de7beb7e5cc7d8f",
+  "html_sha256": "113e7dec64fea5141778521de5c94599ca20f13cbb84b36985281a91f73b5015",
+  "executed_cells": 8
+}

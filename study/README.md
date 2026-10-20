@@ -1,5 +1,11 @@
 # Estudo Python do Lorem
 
+**Ampliação 50–56:** notebook 06 e painel offline com curvas dificuldade×t50 por
+oldRating, modelos congelados e incerteza. [Abrir/reproduzir](SCALE_T50_README.md).
+O relatório da nova execução distingue o alvo 400 do universo estrutural de 292;
+o artigo e a história 49 ficam fora desta entrega. Os marcos históricos abaixo
+preservam os números e conclusões das execuções anteriores.
+
 Implementacao das Historias 22-28, com preparo local da 30 e ferramenta pre-registrada da 31: coleta auditavel, tentativas sequenciais,
 particoes por contest, Kaplan-Meier/D-012, AFT censurado e avaliacao reservada.
 Amostra real: 19 contests elegiveis, 274.073 tentativas validas. Teste: quatro

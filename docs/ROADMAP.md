@@ -14,6 +14,8 @@
 
 **Próxima entrega demonstrável:** notebooks 00–04 com dados reais novos e comparação histórica preservada. A 49 permanece planejada, fora deste bloco; 31 retirada e 32 desabilitada. Snapshot de 18/10 não recuperado; usuário autorizou nova amostra, identificada separadamente (D-048).
 
+**Ampliação planejada:** histórias 50–56 criadas em [#88](https://github.com/Enzofmcs/Lorem/issues/88), com alvo de aproximadamente 400 contests e curvas t50/modelos por faixas de usuário. [Plano](SCALE_T50.md). Todos os critérios novos estão pendentes; nenhuma nova coleta/implementação iniciada. A 49 permanece planejada.
+
 **Configuração restante:** adicionar `app/google-services.json` localmente e recompilar. OAuth autorizado e Rules atualizadas confirmados pelo usuário em 20/10/2026; [confirmação do responsável](evidence/2026-10-20-firebase-oauth-rules-confirmation.json). Sem deploy, leitura remota ou login Google real pelo agente. [Operação e recuperação](FIREBASE_OPERATION.md). D-012 vigente; time-curve-v1 desabilitada.
 
 ## Como atualizar
@@ -126,6 +128,14 @@ As Historias 15-17 foram implementadas e verificadas em 2026-10-15 e as Historia
 - [Historia 46 - Notebook de tempos por rating do participante e do problema](#historia-46)
 - [Historia 47 - Notebook de quartis e orçamento de tempo com limiares versionados](#historia-47)
 - [Historia 48 - Notebook de estabilidade, incerteza e comparação com o estudo anterior](#historia-48)
+
+- [Historia 50 - Protocolo da amostra de aproximadamente 400 contests e contrato do tempo até 50% de AC](#historia-50)
+- [Historia 51 - Coleta escalável, retomável e auditável para aproximadamente 400 contests](#historia-51)
+- [Historia 52 - Preparo em escala e matriz de cobertura por faixas de rating do usuário e do problema](#historia-52)
+- [Historia 53 - Gráfico de t50 por dificuldade do problema com curvas para faixas de rating do usuário](#historia-53)
+- [Historia 54 - Sobrepor previsões dos modelos anteriores às curvas t50 por faixa de usuário](#historia-54)
+- [Historia 55 - Incerteza e estabilidade das curvas ampliadas e comparação honesta dos modelos](#historia-55)
+- [Historia 56 - Demonstração reproduzível e pacote offline do estudo ampliado com curvas t50 e modelos](#historia-56)
 
 ### Historia 00 - Estrutura basica
 
@@ -2597,6 +2607,215 @@ Conferência humana: TESTE MANUAL OPCIONAL - NÃO EXECUTADO (D-014).
 
 ---
 
+## Ampliação do estudo — histórias 50–56 (planejadas)
+
+Solicitação de 20/10/2026: aproximadamente 400 contests, eixo X por dificuldade
+do problema, eixo Y por t50 e curvas/sobreposições para várias faixas de usuário.
+[Planejamento central #88](https://github.com/Enzofmcs/Lorem/issues/88) e [contrato/escopo](SCALE_T50.md).
+
+**Estado:** somente planejamento; nenhuma coleta/implementação/avaliação nova
+iniciada. Base `cc880ec` (PR87 integrada). Histórias 44–48 e suas evidências
+preservadas; 49 continua planejada. Elo é analogia, não garantia de AC por prazo.
+O alvo depende do universo elegível; não relaxar regras silenciosamente.
+
+<a id="historia-50"></a>
+
+### Historia 50 - Protocolo da amostra de aproximadamente 400 contests e contrato do tempo até 50% de AC
+
+**GitHub:** [#89](https://github.com/Enzofmcs/Lorem/issues/89). **Status: IMPLEMENTADA E VERIFICADA (20/10/2026).** [Evidência](../study/evidence/2026-10-20-scale-t50.json)
+**Dependências:** 44–48 integradas; 49 independente.
+
+**História:** Como pesquisador, quero congelar seleção, faixas de rating e significado do tempo até 50% antes de ampliar a amostra e comparar modelos.
+
+**Escopo:** novo protocolo `scale-t50-v1`, derivado do estudo 44–48, e plano versionado anterior às aquisições e contrastes. A história 49 continua planejada; não é necessário concluir sua demonstração para iniciar este protocolo.
+
+#### Critérios de aceite
+
+- [x] Definir alvo de aproximadamente **400 contests completos**, selecionados deterministicamente por metadados/estrutura antes dos desfechos. Separar candidatos, estruturalmente elegíveis, selecionados, completos e elegíveis após joins; não substituir contests por desempenho/AC favorável.
+- [x] Verificar se o universo disponível desde 01/07/2020 comporta o alvo sob as regras atuais: CF FINISHED, oficiais individuais, oldRating positivo e origem verificável; exclusão integral de especiais/qualquer variante fácil/difícil. Se houver menos de 400, registrar o déficit e a decisão necessária, sem relaxar silenciosamente o protocolo.
+- [x] Definir `t50 = inf{t: F_AC(t | faixa_usuario, faixa_problema) >= 0.5}`, por KM com censura. Trata-se de mediana do tempo observado até AC, não de mediana apenas dos resolvidos. A analogia com Elo não prova que ratings iguais tenham 50% de chance de AC num prazo.
+- [x] Congelar proposta de grade principal: oldRating em faixas de 400 em [0,4000), problema em faixas de 200 em [800,3600), bordas [a,b). Sensibilidades: oldRating 200/400 e problema 100/200/400. Registrar valores finais, universo fora da grade e representação no eixo antes de examinar contrastes, sem escolher faixas por resultado favorável.
+- [x] Separar seguimento verificável usado para identificar t50 de orçamento operacional h (referência 120min). Preservar t50 conhecido >h; se a CDF não atingir 0,5 no seguimento, retornar null+motivo, nunca h/infinito. Fixar política para suporte, grupos, censura, ICs e réplicas indisponíveis; filtros de exibição não garantem precisão.
+- [x] Inventariar versões/fontes/hashes dos comparadores: AFT, KM global/por delta e D-012 dos estudos existentes. Identificar quais modelos completos estão disponíveis e quais só têm consultas retidas. Modelos de outros trabalhos externos exigem referência, fórmula/artefato e covariáveis verificáveis; não presumir sua disponibilidade.
+- [x] Estimar e registrar requisições, duração mínima pelo gate, disco bruto/comprimido, RAM e custos de preparo/bootstrap; definir limites e retomada antes da coleta grande. A projeção a partir de 20 contests é indicativa, não medição de 400.
+- [x] Congelar plano descritivo e regra de eventual validação independente: dados já explorados não viram teste novo; nenhuma nova alegação preditiva decorre apenas de aumentar N.
+
+**Entrega demonstrável:** plano/configuração com hash, universo viável e orçamento, mais exemplos de t50 identificado, ausente e acima de h.
+
+**Verificação prevista:** revisão documental e testes do contrato/bordas; cenários sintéticos identificados não comprovam viabilidade ou cobertura real.
+
+---
+
+<a id="historia-51"></a>
+
+### Historia 51 - Coleta escalável, retomável e auditável para aproximadamente 400 contests
+
+**GitHub:** [#90](https://github.com/Enzofmcs/Lorem/issues/90). **Status: IMPLEMENTADA E VERIFICADA (20/10/2026).** [Evidência](../study/evidence/2026-10-20-scale-t50.json)
+**Dependências:** [50](https://github.com/Enzofmcs/Lorem/issues/89).
+
+**História:** Como pesquisador, quero adquirir a amostra ampliada sem perder proveniência ou precisar reiniciar horas de download após uma interrupção.
+
+**Escopo:** evoluir o coletor existente para a seleção congelada da 50; nova execução/diretório, sem sobrescrever amostras anteriores.
+
+#### Critérios de aceite
+
+- [x] Consumir seleção/semente/plano da 50, com teto explícito de candidatos compatível com o alvo (o limite atual de triagem 100 não serve para selecionar 400). Congelar amostra antes de usar desfechos e registrar recusas estruturais.
+- [x] Coletar metadados, standings, ratingChanges e **todas** as páginas de status necessárias. Falha parcial, veredito pendente ou paginação truncada mantém contest incompleto; ausência de oldRating verificável é perda de elegibilidade, sem imputar rating atual/newRating.
+- [x] Manter cliente centralizado e gate global >=2s, Retry-After/backoff/limites de tentativas. Não paralelizar chamadas para contornar o gate. Medir chamadas/páginas/bytes/tempo reais e compará-los ao orçamento.
+- [x] Persistir checkpoints por etapa/contest/página, parada e retomada idempotentes, estados de falha e motivo. Uma falha de rede/quota/espaço não pode virar resposta vazia nem apagar bytes já adquiridos.
+- [x] Suportar armazenamento/RAM limitados: leitura em fluxo e compressão/particionamento justificados, preservando hash dos bytes HTTP descomprimidos e proveniência. Rejeitar caminho/capacidade insuficientes antes de consumir o orçamento; manter leitura dos snapshots JSON antigos.
+- [x] Reutilizar cache antigo somente com hashes, datas e proveniência explícitos no novo manifesto; não chamar resposta antiga de coleta atual. Catalogar contest/grupos e problemas por contestId+index, sem duplicidade da mesma tentativa.
+- [x] Publicar funil de aquisição, número final completo/elegível, manifesto de objetos e backup recuperável com checksum. Brutos com handles ficam fora do Git; documentar onde o backup realmente existe.
+- [x] Executar reabertura e replay offline da nova amostra com zero requisições, mesmo snapshot e integridade dos objetos. Se o alvo não for alcançável, declarar amostra parcial e causas; não alegar 400 coletados com fixture ou extrapolação.
+
+**Entrega demonstrável:** interromper/retomar uma execução longa e reconstruir o manifesto offline, com quantidade efetivamente adquirida comprovada.
+
+**Verificação prevista:** nível 3: API roteirizada (429/FAILED/página ausente/corrupção), retomada e compatibilidade legada; evidência real da aquisição somente na implementação.
+
+---
+
+<a id="historia-52"></a>
+
+### Historia 52 - Preparo em escala e matriz de cobertura por faixas de rating do usuário e do problema
+
+**GitHub:** [#91](https://github.com/Enzofmcs/Lorem/issues/91). **Status: IMPLEMENTADA E VERIFICADA (20/10/2026).** [Evidência](../study/evidence/2026-10-20-scale-t50.json)
+**Dependências:** [50](https://github.com/Enzofmcs/Lorem/issues/89), [51](https://github.com/Enzofmcs/Lorem/issues/90).
+
+**História:** Como pesquisador, quero saber quais regiões x/y têm observações suficientes e processar a amostra grande com os mesmos critérios científicos do estudo atual.
+
+#### Critérios de aceite
+
+- [x] Produzir features/labels/audit analíticos em fluxo/partições ou mecanismo em disco justificado; joins 1:1 por sample_id e hashes, sem carregar toda a amostra de 400 contests em listas simultâneas. Registrar RAM/disco/tempo e equivalência ao preparador atual numa amostra controlada.
+- [x] Preservar oldRating anterior, rating do problema observado na coleta, origem/data, oficiais individuais, exclusão integral de especiais/variantes e identidade contestId+index. Não alterar a população ou o tempo sequencial para obter mais linhas.
+- [x] Manter âncora sequencial, eventos/censuras e motivos de salto/inversão/intercalamento. Sem submissão não vira fracasso, sem AC em tentativa válida é censura; tempos desconhecidos continuam ausentes.
+- [x] Reconciliar totais de observadas/excluídas/eventos/censuras com manifesto, por contest, grupo e células da grade 50. Distinguir participantes/problemas/contests/grupos únicos; não somar distintos entre células como total de pessoas independentes.
+- [x] Expor matriz de suporte por x/y: tentativas, eventos, censuras, participantes, problemas, contests/grupos, em risco, seguimento e motivos de indisponibilidade. Faixas fora do domínio ou esparsas não recebem fallback global oculto.
+- [x] Construir grupos transitivos conhecidos de problemas compartilhados antes das partições/bootstrap; informar possíveis aliases não detectados e repetição de participantes entre grupos.
+- [x] Aplicar filtros/pisos e sensibilidades congelados na 50 e exportar tabelas reproduzíveis com versão, unidade, limites das faixas, hash de snapshot/plano e seleção. Não escolher células apenas pela aparência favorável.
+- [x] Identificar sobreposição com amostras e dados de treino/validação/teste anteriores, para que a comparação de modelos não seja apresentada como avaliação independente por acidente.
+
+**Entrega demonstrável:** matriz ampliada x/y com cobertura real e trilha até as observações elegíveis, incluindo células sem suporte.
+
+**Verificação prevista:** níveis 2/3: joins, bordas e delta negativo, contagens/distintos, agrupamento transitivo, streaming equivalente ao caminho atual, limites de recursos e falha parcial.
+
+---
+
+<a id="historia-53"></a>
+
+### Historia 53 - Gráfico de t50 por dificuldade do problema com curvas para faixas de rating do usuário
+
+**GitHub:** [#92](https://github.com/Enzofmcs/Lorem/issues/92). **Status: IMPLEMENTADA E VERIFICADA (20/10/2026).** [Evidência](../study/evidence/2026-10-20-scale-t50.json)
+**Dependências:** [50](https://github.com/Enzofmcs/Lorem/issues/89), [52](https://github.com/Enzofmcs/Lorem/issues/91).
+
+**História:** Como pesquisador, quero ver em um mesmo gráfico como o tempo até 50% de probabilidade de AC varia com a dificuldade para diferentes níveis de usuário.
+
+#### Contrato visual solicitado
+
+- **Eixo X:** faixa de rating do exercício (limites visíveis; centro pode servir como posição gráfica).
+- **Eixo Y:** primeiro tempo, em minutos, em que a CDF estimada de AC atinge pelo menos 50%.
+- **Curvas:** uma por faixa de oldRating do usuário, com cores consistentes.
+
+#### Critérios de aceite
+
+- [x] Calcular KM por célula x/y com todos os eventos e censuras elegíveis, com empates corretos. Extrair t50 por primeira passagem de F>=0,5, inclusive no limite exato; não usar percentil apenas dos AC nem duração D-012 como substituto.
+- [x] Renderizar o gráfico solicitado com diversas faixas de usuário selecionáveis, legenda legível e limites de bins explícitos. Grade, cores e escolhas iniciais de faixas são anteriores aos resultados; todos os estratos disponíveis permanecem acessíveis.
+- [x] Mostrar pontos/segmentos apenas onde há suporte e t50 identificado. Preservar buracos entre bins indisponíveis, com motivo; não ligar lacunas como se fossem observações, suavizar/monotonizar à força ou preencher por extrapolação.
+- [x] Diferenciar falta de suporte, seguimento insuficiente e quantil não alcançado. t50 conhecido acima de 120min permanece conhecido e visível; h é linha/referência operacional configurável, não teto inventado da distribuição.
+- [x] Exibir suporte e incerteza ao consultar um ponto (eventos, censuras, tentativas, participantes/problemas/grupos e seguimento). Integrar ICs da 55 quando existirem, distinguindo ausência de IC e ausência da estimativa.
+- [x] Disponibilizar tabela geradora CSV/JSON e SVG/PNG, com unidade, método, faixas, plano/snapshot e razões de ausência. O gráfico deve usar exatamente os valores da tabela exportada.
+- [x] Explicar que t50 é tempo de parede sequencial sob seleção/censura, não dedicação exclusiva/capacidade individual ou validação de Elo. Uma linha não representa todos os usuários de uma faixa da mesma maneira.
+
+**Entrega demonstrável:** várias curvas usuário×dificuldade no mesmo plano, incluindo caso com t50 ausente e outro acima do orçamento.
+
+**Verificação prevista:** níveis 2/3: exemplos calculáveis de KM/primeira passagem, empates, censura total, bins, unidades, lacunas e correspondência gráfico↔tabela.
+
+---
+
+<a id="historia-54"></a>
+
+### Historia 54 - Sobrepor previsões dos modelos anteriores às curvas t50 por faixa de usuário
+
+**GitHub:** [#93](https://github.com/Enzofmcs/Lorem/issues/93). **Status: IMPLEMENTADA E VERIFICADA (20/10/2026).** [Evidência](../study/evidence/2026-10-20-scale-t50.json)
+**Dependências:** [50](https://github.com/Enzofmcs/Lorem/issues/89), [52](https://github.com/Enzofmcs/Lorem/issues/91), [53](https://github.com/Enzofmcs/Lorem/issues/92).
+
+**História:** Como pesquisador, quero selecionar uma faixa de rating de usuário e ver, no mesmo gráfico de dificuldade×t50, os dados observados e as previsões dos modelos dos outros estudos.
+
+**Comparadores iniciais conhecidos:** AFT e KM global/por delta dos estudos existentes, conforme disponibilidade de artefatos completos. Outros trabalhos podem entrar mediante a fonte verificável inventariada na 50.
+
+#### Critérios de aceite
+
+- [x] Carregar versões/hashes e domínio dos modelos congelados; preservar resultados e escolhas antigas. A consulta parcial antiga 1200/1600 não pode gerar uma curva para todos os ratings. Artefato ausente ou covariável necessária desconhecida resulta em indisponibilidade explícita.
+- [x] Derivar t50 predito invertendo a **CDF de AC** de cada modelo no domínio/seguimento válido; não chamar valor esperado ou pontuação Elo de probabilidade de AC. Não completar quantis além do suporte sem rotular extrapolação, oculta por padrão.
+- [x] Para comparação por **faixas**, usar a mesma população/pesos e suporte entre observado e modelos: formar a mistura das CDFs nas covariáveis das tentativas elegíveis da célula e só então extrair t50. Não calcular a média das medianas individuais. Não ajustar modelos a esses desfechos para montar o gráfico.
+- [x] Oferecer consulta separada por rating fixo de usuário x0 e valores explícitos de rating do problema. Distinguir esse cenário pontual da mistura observada da faixa; não desenhar ambos como estimandos idênticos.
+- [x] Exibir no **mesmo gráfico** várias faixas de usuário e suas previsões: cor identifica faixa, estilo de linha identifica observado/modelo, com filtros para evitar legenda ilegível e destaque da faixa selecionada. Permitir comparar a mesma família de modelo em várias faixas e vários modelos numa faixa específica.
+- [x] Explicitar que KM global pode produzir curvas coincidentes para faixas diferentes e KM por delta perde níveis absolutos; não deslocar linhas artificialmente para aparentar diferenças.
+- [x] Tratar D-012 somente como referência operacional de duração, opcional e com legenda própria: não é mediana calibrada, não fornece CDF nem garantia de 50%. Uma curva Elo de probabilidade só é admissível com modelo de tempo verificável, não apenas a fórmula de expectativa de vitória.
+- [x] Documentar suporte comum/denominadores e cobertura de predição, incluindo entradas fora do domínio. Nenhum descarte/fallback silencioso para melhorar a comparação; se houver subconjunto comum, reestimar também o KM observado nesse mesmo subconjunto e identificá-lo.
+- [x] Exportar pontos/linhas com modelo/versão/hash, ratings/faixas, modo mistura/fixo, população/pesos e motivos de ausência. Fontes externas precisam de unidades, treinamento/protocolo e licença de uso identificados.
+
+**Entrega demonstrável:** selecionar, por exemplo, a faixa de usuário [1200,1600), comparar KM observado e modelos ao longo de dificuldades, e adicionar outra faixa no mesmo gráfico sem confundir as legendas.
+
+**Verificação prevista:** níveis 2/3: inversão de CDF, mistura versus média de medianas, domínio/ausências, bin de delta, identidade de amostra/pesos e paridade de previsões dos artefatos antigos; sem retuning no teste examinado.
+
+---
+
+<a id="historia-55"></a>
+
+### Historia 55 - Incerteza e estabilidade das curvas ampliadas e comparação honesta dos modelos
+
+**GitHub:** [#94](https://github.com/Enzofmcs/Lorem/issues/94). **Status: IMPLEMENTADA E VERIFICADA (20/10/2026).** [Evidência](../study/evidence/2026-10-20-scale-t50.json)
+**Dependências:** [50](https://github.com/Enzofmcs/Lorem/issues/89), [52](https://github.com/Enzofmcs/Lorem/issues/91), [53](https://github.com/Enzofmcs/Lorem/issues/92), [54](https://github.com/Enzofmcs/Lorem/issues/93).
+
+**História:** Como pesquisador, quero distinguir diferenças estáveis entre faixas/modelos de variação por amostra, censura ou poucos grupos.
+
+#### Critérios de aceite
+
+- [x] Reamostrar grupos completos de contests/problemas compartilhados com reposição e multiplicidade, sob plano/semente anteriores aos contrastes. Registrar número de grupos por ponto/faixa e efeito de usuários repetidos; muitas linhas não equivalem a observações independentes.
+- [x] Mostrar ICs de t50 quando identificáveis e preservar todas as réplicas sem quantil, com proporção de indisponibilidade e motivo. Manter a política conservadora da 48 como principal; eventual alternativa exige protocolo separado anterior às comparações. Não descartar réplicas ausentes para fabricar IC.
+- [x] Apresentar estabilidade por grupo, leave-one-group-out e sensibilidades de largura de faixas/piso de suporte previstos na 50. Contrastar janelas/estimandos existentes somente com rótulos explícitos; não escolher a janela/bin que mais favoreça um modelo.
+- [x] Comparar observado e modelos sobre suporte comum, distinguindo incerteza amostral com modelo fixo de incerteza de ajuste. Não interpretar a linha predita ou o intervalo P25–P75 como IC da estimativa.
+- [x] Marcar curvas no snapshot explorado como comparação descritiva. Os testes antigos de quatro grupos e quaisquer amostras usadas para desenvolver/selecionar modelos continuam examinados; sobreposição com a seleção ampliada não cria teste independente.
+- [x] Se houver nova alegação de qualidade preditiva, reservar novos grupos não usados em treino/validação/exploração **antes** de mostrar seus desfechos ou usá-los para escolher faixas; impedir compartilhamento conhecido de problemas entre partições e relatar repetição de usuários. Sem essa reserva, registrar avaliação preditiva nova não realizada e entregar a descrição.
+- [x] Caso uma avaliação independente tenha sido prevista, usar métricas adequadas à censura e suporte (não só erro entre resolvidos), denominadores e ICs por grupos, sem retuning do teste. Não exigir provar superioridade de modelo para concluir a análise exploratória.
+- [x] Publicar conclusões e limites vinculados às tabelas reais: seleção de prefixos, abandono informativo, domínio/células esparsas, rating do problema na coleta, aliases e grupos efetivos. Não inferir causalidade, eficácia pedagógica ou equivalência Rating Lorem↔Codeforces.
+
+**Entrega demonstrável:** gráfico com incerteza/ausências reais e explicação de quais diferenças resistem às sensibilidades, incluindo regiões onde não é possível concluir.
+
+**Verificação prevista:** testes numéricos de grupos/multiplicidade/semente/réplicas ausentes, não vazamento e suporte; execução reproduzível com dados reais sem substituir evidência por fixture.
+
+---
+
+<a id="historia-56"></a>
+
+### Historia 56 - Demonstração reproduzível e pacote offline do estudo ampliado com curvas t50 e modelos
+
+**GitHub:** [#95](https://github.com/Enzofmcs/Lorem/issues/95). **Status: IMPLEMENTADA E VERIFICADA (20/10/2026).** [Evidência](../study/evidence/2026-10-20-scale-t50.json)
+**Dependências:** [51](https://github.com/Enzofmcs/Lorem/issues/90), [52](https://github.com/Enzofmcs/Lorem/issues/91), [53](https://github.com/Enzofmcs/Lorem/issues/92), [54](https://github.com/Enzofmcs/Lorem/issues/93), [55](https://github.com/Enzofmcs/Lorem/issues/94).
+
+**História:** Como autor do TCC, quero abrir os resultados ampliados visualmente e testar os gráficos sem depender da interface do ambiente de nuvem ou refazer horas de coleta.
+
+**Relação com a 49:** a história 49 (#82) continua sendo a demonstração geral/método do estudo 44–48. Esta é a apresentação específica da amostra ampliada e gráfico t50/modelos; reutilizar componentes da 49 quando disponíveis, sem duplicar uma plataforma.
+
+#### Critérios de aceite
+
+- [x] Entregar notebook dedicado à escala ampliada (preservar 05_demonstracao.ipynb reservado à 49), com controles para várias faixas de usuário, faixas de problema, modelos, orçamento e suporte; destacar que o eixo Y é t50 e indicar dados/fonte em todas as telas.
+- [x] Manter o gráfico conjunto solicitado: X=faixa/rating de problema, Y=t50 em minutos, cores por faixa de usuário e estilos por observado/modelo, com legendas/seletores e opção de painéis auxiliares sem retirar o gráfico combinado.
+- [x] Publicar **pacote leve offline** com notebooks executados, HTML/figuras e tabelas/curvas agregadas/modelos distribuíveis necessários para mostrar os resultados novos. O modo agregado deve abrir os gráficos reais ampliados disponíveis, não oferecer somente painéis bloqueados quando já existem agregados suficientes.
+- [x] Separar modo de apresentação, reanálise completa e aquisição explícita. Run All padrão não faz rede/retreino; agregados não simulam microdados nem permitem afirmar que bootstrap/joins foram refeitos. Export HTML estático é identificado como tal quando controles exigirem kernel.
+- [x] Disponibilizar instruções Windows/Linux, dependências fixadas, checksums, origem/versões e execução em kernel limpo; incluir exemplo de uma faixa com t50 e outra sem suporte/quantil.
+- [x] Preservar backup completo comprimido com audit/proveniência/config/modelos/partições; validar restauração e hashes e informar caminho/canal real de obtenção. Brutos com handles não vão ao Git; download de código e pacote leve não é anunciado como download do snapshot completo.
+- [x] Permitir exportar CSV/JSON/PNG/SVG dos gráficos com contexto/faixas/modelos e motivos de ausência; conferir tabelas, figuras e texto. Relatório e roteiro mostram o número **efetivo** de contests/tentativas/grupos, não apenas o alvo 400.
+- [x] Atualizar roadmap, guia e evidências distinguindo software verificado, coleta real concluída ou parcial, análises executadas e avaliação preditiva não realizada. Registrar teste manual opcional sem bloquear critérios automatizados.
+
+**Entrega demonstrável:** baixar/abrir um pacote documentado, visualizar curvas de várias faixas e previsões dos modelos com dados reais ampliados offline, e localizar como reproduzir a análise completa.
+
+**Verificação prevista:** execução headless em kernel limpo nos modos disponíveis, checagem de links/hashes, inspeção dos exports e teste de restauração do backup; nenhum Gradle/Android por este bloco.
+
+---
+
+
+
 ## 10. Marcos demonstraveis
 
 - **A - Espinha funcional (00-07):** handle, recomendacao, Ipsum, submissao e resultado.
@@ -2610,3 +2829,24 @@ Conferência humana: TESTE MANUAL OPCIONAL - NÃO EXECUTADO (D-014).
 - **L - Prazo e adocao (37-38):** 37 integrada; 38 implementada e verificada. Publicar Rules 38 e garantir configuracao Android local para o projeto real.
 
 ---
+
+
+### Evidência executada do bloco 50–56 — 20/10/2026
+
+292 selecionados/completos de 525 candidatos, 278 elegíveis após joins;
+4.754.352 tentativas válidas. Déficit estrutural 108, sem relaxar filtros.
+99/140 células com t50 principal, 78 dessas com IC conservador e seis t50>120min.
+144 testes Python sem falhas/ignorados, 17 do pipeline também sem site-packages.
+Dois kernels limpos nos dados ampliados: agregado e reanálise do SQLite restaurado,
+com todos os valores científicos idênticos. Navegador automatizado verificou
+controles, lacunas, tooltip e quatro exports, sem HTTP/erros; HTML do notebook
+também funciona sem CDN/kernel. Replay offline zero chamadas/mesmo snapshot.
+Interrupção/retomada real e backup/restauração com todos os hashes verificados.
+
+[Relatório](../study/results/scale-t50-v1/REPORT.md),
+[leitura dos resultados/sensibilidades](../study/results/scale-t50-v1/INTERPRETATION.md),
+[evidência](../study/evidence/2026-10-20-scale-t50.json) e
+[guia Linux/Windows/backup](../study/SCALE_T50_README.md).
+Comparação descritiva; nova avaliação preditiva independente não realizada.
+49/artigo, Android/Firebase, D-012 e time-curve-v1 preservados.
+**TESTE MANUAL OPCIONAL - NÃO EXECUTADO (D-014).**

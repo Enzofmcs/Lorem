@@ -1,0 +1,28 @@
+{
+  "initial": {
+    "points": 140,
+    "known": 92,
+    "dots": 92,
+    "segments": 11
+  },
+  "gapCheck": {
+    "expected": 5,
+    "actual": 5
+  },
+  "downloads": [
+    "t50-selecao.csv",
+    "t50-selecao.json",
+    "t50-grafico.svg",
+    "t50-grafico.png"
+  ],
+  "noSupport": 0,
+  "fixed": {
+    "points": 42,
+    "known": 29,
+    "modes": [
+      "fixed_covariates"
+    ]
+  },
+  "http_requests": 0,
+  "page_errors": []
+}

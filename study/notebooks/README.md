@@ -1,3 +1,10 @@
+# Notebook 06: escala ampliada e curvas t50
+
+O novo [06_escala_t50.ipynb](06_escala_t50.ipynb) pertence às histórias 50–56.
+Use o [guia específico](../SCALE_T50_README.md) para o painel HTML, pacote leve,
+modo full, aquisição e backup. O notebook 05 segue reservado à história 49 e
+o artigo do TCC não é alterado. O guia histórico abaixo é dos notebooks 00–04.
+
 # Notebooks do estudo (44–48)
 
 Cinco notebooks orquestram módulos testados de `lorem_study`. A pergunta é a
