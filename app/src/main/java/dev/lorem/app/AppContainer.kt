@@ -44,7 +44,10 @@ class AppContainer(context: Context) {
             CloudDeadline(android.os.SystemClock::elapsedRealtime) {
                 android.provider.Settings.Global.getInt(appContext.contentResolver, android.provider.Settings.Global.BOOT_COUNT, -1)
             }, android.os.SystemClock::elapsedRealtime, cloudScheduler::schedule,
-            legacy = legacyMigration, pseudonyms = studyPseudonyms) }
+            legacy = legacyMigration, pseudonyms = studyPseudonyms,
+            scoringSelector = dev.lorem.app.data.cloud.TimeCurveCatalog(
+                appContext.assets.open("time-curves-v1.json").bufferedReader().use { it.readText() }
+            )::select) }
     }
     private val database = LoremDatabase.create(context)
     val loremRepository: LoremRepository = LocalLoremRepository(

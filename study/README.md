@@ -367,3 +367,27 @@ reproduz os arquivos; alterar dados, modelos ou plano congelados e recusado.
 Fixtures nunca aprovam transporte; limites numericos favoraveis em dados reais
 ainda exigem decisao explicita de dominio na 31. O gate do app permanece fechado
 e D-012 vigente. Historia 31 nao esta concluida; 32 continua bloqueada.
+
+
+## Curvas consultáveis e cenários de pontos (D-044)
+
+[Contrato](../docs/TIME_SCORING.md) e [relatório](results/time-scoring-v1/REPORT.md).
+A política fica desabilitada; exportar modelo não a ativa. Sem KM completo neste
+checkout, o artefato Android preserva somente a consulta retida 1200/1600 e sua
+indisponibilidade, sem generalizar uma consulta para todo o bin.
+
+Na raiz do repositório:
+
+```bash
+PYTHONPATH=study python3 -m lorem_study export-time-curves --work CAMINHO_ESTUDO --artifact /tmp/time-curves.json
+PYTHONPATH=study python3 -m lorem_study lookup-time-curves --artifact /tmp/time-curves.json --old-rating 1200 --problem-rating 1600
+PYTHONPATH=study python3 -m lorem_study export-time-curves --retained-demo study/results/2026-10-18/report/demo.json --artifact app/src/main/assets/time-curves-v1.json
+PYTHONPATH=study python3 study/scripts/simulate_time_scoring.py
+```
+
+Consulta retorna limites inteiros estritamente ordenados ou indisponibilidade com
+motivo. Escala aceita: CF anterior, nunca saldo Lorem. Exportador lê somente o KM
+congelado e seus bins de treino; não abre o teste ou ajusta parâmetros. Probabilidades
+30/60/120 min, quantis p50/p75/p90, marcos parciais, domínio, suporte, hash e versões
+integram o JSON. Nenhum fallback global silencioso. Simulações são sintéticas e
+separadas da avaliação estatística.

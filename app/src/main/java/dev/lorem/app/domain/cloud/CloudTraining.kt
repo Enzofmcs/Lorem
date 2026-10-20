@@ -1,6 +1,6 @@
 package dev.lorem.app.domain.cloud
 
-import dev.lorem.app.domain.calculateLoremRating
+import dev.lorem.app.domain.*
 import dev.lorem.app.domain.model.*
 import dev.lorem.app.domain.handles.HandleIdentity
 
@@ -93,6 +93,13 @@ fun finalizeCloudIpsum(attempt: CloudIpsum, verification: CloudVerification, fai
     val endedAt = (verification as? CloudVerification.Accepted)?.atMillis ?: requireNotNull(attempt.cutoffMillis)
     val calculation = calculateLoremRating(attempt.ipsum.initialLoremRating, attempt.ipsum.selectedRating,
         accepted, endedAt - attempt.ipsum.startedAtEpochMillis, attempt.ipsum.hintRevealedAtEpochMillis != null)
+    val snapshot = attempt.ipsum.scoringSnapshot
+    val gain = if (accepted && snapshot?.policyVersion == TIME_CURVE_POLICY) applyTimeScoring(
+        baseLoremGain(attempt.ipsum.initialLoremRating, attempt.ipsum.selectedRating),
+        endedAt - attempt.ipsum.startedAtEpochMillis, requireNotNull(snapshot.limits),
+        snapshot.bonusMultiplier, snapshot.reductionMultiplier,
+        attempt.ipsum.hintRevealedAtEpochMillis != null, snapshot.policyVersion) else null
+    val delta = gain?.gain ?: calculation.delta
     return attempt.ipsum.copy(
         endedAtEpochMillis = endedAt,
         status = if (accepted) IpsumStatus.COMPLETED else IpsumStatus.PENDING,
@@ -103,7 +110,8 @@ fun finalizeCloudIpsum(attempt: CloudIpsum, verification: CloudVerification, fai
             is CloudVerification.NoAccepted -> verification.errors
             else -> error("Awaiting verification")
         },
-        ratingDelta = calculation.delta, finalLoremRating = calculation.ratingAfter,
+        ratingDelta = delta, finalLoremRating = (attempt.ipsum.initialLoremRating + delta).coerceAtLeast(0),
+        timeGain = gain,
         expectedTimeMillis = calculation.expectedTimeMillis,
     )
 }

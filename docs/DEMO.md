@@ -172,3 +172,22 @@ sem exports, o relatorio registra n=0/insufficient_data e nao calcula metricas.
 
 Conferencia humana opcional; nao alegada como executada. Historia 31 retirada do
 escopo pelo usuario, 32 fora desta entrega; nao demonstrar previsoes estatisticas.
+
+## Pontuação experimental por curvas para o TCC (D-044)
+
+Apresentar [decisão](TIME_SCORING.md) e [relatório de cenários](../study/results/time-scoring-v1/REPORT.md).
+A política está desabilitada: não há alegação de progressão pedagógica validada.
+A consulta real CF 1200/problema 1600 tem p50 disponível, mas p75/p90 ausentes até
+120 min; mostrar a resposta explícita de indisponibilidade no CLI. O modelo KM
+completo não acompanha este checkout, e a consulta retida não representa todo bin.
+
+Para demonstrar as quatro faixas, usar exclusivamente os testes identificados como
+sintéticos: `TimeScoringTest`, `TimeCurveCatalogTest`, `CloudTrainingScreenTest` e o
+cenário SDK `SDK freezes curve snapshot restores zero gain and retries without
+changing progress`. Este último inicia, salva, restaura com outro seletor, conclui
+um AC com zero e sincroniza novamente: saldo 800, versão 1, snapshot original e
+explicação persistida. Não usar essas fixtures como resultados de treinamento real.
+Durante o ativo, não mostrar ratings, tags não reveladas, categoria ou pontuação.
+No resultado, explicar faixa, ganho base, ajuste temporal e desconto de dica.
+
+TESTE MANUAL OPCIONAL - NÃO EXECUTADO (D-014).

@@ -46,6 +46,8 @@ data class Ipsum(
     val initialCodeforcesRating: Int? = null,
     val initialCodeforcesRatingObservedAtEpochMillis: Long? = null,
     val studyRecordingVersion: String? = null,
+    val scoringSnapshot: dev.lorem.app.domain.ScoringSnapshot? = null,
+    val timeGain: dev.lorem.app.domain.TimeGain? = null,
 )
 
 data class IpsumResult(val ipsum: Ipsum, val errorVerdicts: List<String>)

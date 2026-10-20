@@ -3,6 +3,7 @@ package dev.lorem.app.data.cloud
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentSnapshot
 import dev.lorem.app.domain.IpsumRecommendation
+import dev.lorem.app.domain.ScoringSnapshot
 import dev.lorem.app.domain.cloud.*
 import dev.lorem.app.domain.model.*
 import java.util.Date
@@ -12,7 +13,7 @@ internal fun DocumentSnapshot.cloudHandle() = CloudHandle(id, getString("handle"
     getLong("loremRating")!!.toInt(), getLong("consolidatedRating")?.toInt(), getLong("progressVersion")!!,
     getLong("bindingVersion")!!)
 
-internal fun snapshotOf(recommendation: IpsumRecommendation, rating: Int, handle: String, cf: Int?, cfAt: Long?): Map<String, Any?> {
+internal fun snapshotOf(recommendation: IpsumRecommendation, rating: Int, handle: String, cf: Int?, cfAt: Long?, scoring: ScoringSnapshot? = null): Map<String, Any?> {
     val p = recommendation.problem
     return mapOf(
         "handle" to handle, "initialRating" to rating, "contestId" to p.id.contestId, "index" to p.id.index,
@@ -25,14 +26,14 @@ internal fun snapshotOf(recommendation: IpsumRecommendation, rating: Int, handle
         "factors" to recommendation.factors.tags.map { mapOf("tag" to it.tag, "exposure" to it.exposure,
             "attempts" to it.attempts, "accepted" to it.accepted, "hints" to it.hints) },
         "recentOverlap" to recommendation.factors.recentOverlap,
-    )
+    ) + (scoring?.let { mapOf("scoring" to it.toDocument()) } ?: emptyMap())
 }
 
 internal fun resultOf(ipsum: Ipsum): Map<String, Any?> = mapOf(
     "endedAt" to timestamp(ipsum.endedAtEpochMillis!!), "accepted" to (ipsum.status == IpsumStatus.COMPLETED),
     "errors" to ipsum.errorCount, "failure" to ipsum.failureReason?.name, "delta" to ipsum.ratingDelta,
     "finalRating" to ipsum.finalLoremRating, "expectedTime" to ipsum.expectedTimeMillis,
-)
+) + (ipsum.timeGain?.let { mapOf("timeGain" to it.toDocument()) } ?: emptyMap())
 
 internal fun DocumentSnapshot.cloudIpsum(): CloudIpsum {
     val s = get("snapshot") as Map<*, *>
@@ -72,6 +73,8 @@ internal fun DocumentSnapshot.cloudIpsum(): CloudIpsum {
             initialCodeforcesRating = (s["cfRating"] as? Number)?.toInt(),
             initialCodeforcesRatingObservedAtEpochMillis = (s["cfObservedAt"] as? Number)?.toLong(),
             studyRecordingVersion = CLOUD_RULE_VERSION,
+            scoringSnapshot = if (s.containsKey("scoring")) scoringSnapshot(s["scoring"] as Map<*, *>) else null,
+            timeGain = (result?.get("timeGain") as? Map<*, *>)?.let(::timeGain),
         ), getTimestamp("cutoffAt")?.toDate()?.time,
         getString("closeReason")?.let(CloudCloseReason::valueOf),
         getTimestamp("processedAt")?.toDate()?.time,

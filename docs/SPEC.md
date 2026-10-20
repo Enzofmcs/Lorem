@@ -255,6 +255,21 @@ ate decisao explicita posterior. O estudo/modelo nao exige backend, login ou
 nuvem; a conta e os dados oficiais do app passam a ser planejados em Firebase
 pelo bloco independente 33-38, sem habilitar previsoes da 32.
 
+### Evolução experimental por curvas (D-044)
+
+A [política de tempo](TIME_SCORING.md) define quatro faixas: antes de T1 bônus;
+[T1,T2) normal; [T2,T3) reduzido; T3 ou depois zero. Sem AC permanece uma regra
+separada D-012. O início persiste limites, versões, multiplicadores e motivo de
+fallback; avaliação utiliza exclusivamente esse snapshot. Históricos, repetição
+da sincronização e upsolve preservam a avaliação original. Durante o treino,
+ratings, tags, categoria e detalhes de pontuação continuam ocultos.
+
+p50/p75/p90 são candidatos experimentais; indisponibilidade não vira percentil
+estimado. CF anterior e Rating Lorem são escalas distintas. A implementação
+permanece **desativada**, com fallback D-012: ainda não há evidência para ativar
+pontuação baseada nas curvas. A decisão não declara concluída a avaliação empírica
+da antiga história 31 e não reutiliza o teste já examinado para ajustar modelos.
+
 ---
 
 ## Referencias metodologicas

@@ -42,10 +42,11 @@ async function ensureSelection(c) {
   if (!(await getDoc(ref)).exists()) await setDoc(ref, {schemaVersion: 1, handleKey: 'cf_tourist',
     bindingVersion: 1, selectionVersion: 1, selectedAt: serverTimestamp()});
 }
-async function fixture(age = 7201000, cutoff = null) {
+async function fixture(age = 7201000, cutoff = null, scoring = null) {
   const c = await account();
   const started = Date.now() - age;
   const data = {...attemptData(), startedAt: ms(started)};
+  if (scoring) data.snapshot.scoring = scoring;
   if (cutoff != null) Object.assign(data, {state: 'CLOSED_AWAITING_VERIFICATION', cutoffAt: ms(started + cutoff),
     closeReason: 'GIVE_UP', failure: 'LOGIC_NOT_FOUND'});
   await env.withSecurityRulesDisabled(async context => {
@@ -57,10 +58,11 @@ async function fixture(age = 7201000, cutoff = null) {
   });
   return {...c, started, data};
 }
-async function finish(c, {accepted = false, ended = c.started + 7200000, delta = accepted ? 24 : -20, id = 'one'} = {}) {
+async function finish(c, {accepted = false, ended = c.started + 7200000, delta = accepted ? 24 : -20, id = 'one', timeGain = null} = {}) {
   const old = (await getDoc(doc(c.db, `${path(c.uid)}/ipsums/${id}`))).data();
   const result = {endedAt: ms(ended), accepted, errors: 0, failure: accepted ? null : old.failure,
     delta, finalRating: Math.max(0, 800 + delta), expectedTime: 3600000};
+  if (timeGain) result.timeGain = timeGain;
   const batch = writeBatch(c.db);
   batch.update(doc(c.db, `${path(c.uid)}/ipsums/${id}`), {state: 'FINAL', result, processedAt: serverTimestamp()});
   batch.update(doc(c.db, path(c.uid)), {loremRating: result.finalRating, progressVersion: 1, consolidatedRating: null, lastIpsumId: id});
@@ -244,4 +246,68 @@ test('an atomic exclusion cannot be combined with a new attempt on the excluded 
   batch.set(doc(c.db, `${path(c.uid)}/usedProblems/2000_A`), {ipsumId: 'one'});
   batch.set(doc(c.db, lockPath(c.uid)), {handleKey: 'cf_tourist', ipsumId: 'one', checkedAt: serverTimestamp()});
   await assertFails(batch.commit());
+});
+
+
+const scoring = () => ({policyVersion: 'time-curve-v1', limits: {t1: 1800000, t2: 3600000, t3: 7200000},
+  bonusMultiplier: 1.25, reductionMultiplier: 0.5, modelVersion: 'synthetic-test-only', artifactSha256: 'a'.repeat(64),
+  ratingSource: 'codeforces_prior', inputRating: 3500, unavailableReason: null});
+const gainDetails = (band, factor, timed) => ({policyVersion: 'time-curve-v1', band, baseGain: 40,
+  multiplier: factor, timedGain: timed, hintDeduction: 0, gain: timed});
+
+test('new starts persist fallback or ordered curve policy and reject malformed scale bounds or version', async () => {
+  for (const policy of [scoring(), {...scoring(), policyVersion: 'D-012', limits: null, unavailableReason: 'activation_disabled'}]) {
+    const c = await account();
+    await setDoc(doc(c.db, path(c.uid)), handleData());
+    await assertSucceeds(start(c, 'cf_tourist', 'one', 2000, x => ({...x, snapshot: {...x.snapshot, cfObservedAt: Date.now() - 1000, scoring: policy}})));
+    await assertFails(updateDoc(doc(c.db, `${path(c.uid)}/ipsums/one`), {'snapshot.scoring': {...policy, limits: {t1: 1, t2: 2, t3: 3}}}));
+  }
+  for (const policy of [{...scoring(), ratingSource: 'lorem'}, {...scoring(), inputRating: 800},
+    {...scoring(), policyVersion: 'future'}, {...scoring(), limits: {t1: 1, t2: 1, t3: 2}},
+    {...scoring(), limits: {t1: 1, t2: 2, t3: 7200001}}, {...scoring(), bonusMultiplier: 99}]) {
+    const c = await account();
+    await setDoc(doc(c.db, path(c.uid)), handleData());
+    await assertFails(start(c, 'cf_tourist', 'one', 2000, x => ({...x, snapshot: {...x.snapshot, cfObservedAt: Date.now() - 1000, scoring: policy}})));
+  }
+});
+
+test('curve accepts bonus 50 and zero at T3 while legacy and fallback still reject zero', async () => {
+  for (const [elapsed, details] of [[1799999, gainDetails('BONUS', 1.25, 50)],
+    [1800000, gainDetails('NORMAL', 1, 40)], [3600000, gainDetails('REDUCED', 0.5, 20)],
+    [7200000, gainDetails('ZERO', 0, 0)]]) {
+    const c = await fixture(7201000, null, scoring());
+    await assertFails(finish(c, {accepted: true, ended: c.started + elapsed, delta: details.gain}));
+    await assertSucceeds(finish(c, {accepted: true, ended: c.started + elapsed, delta: details.gain, timeGain: details}));
+    await assertFails(finish(c, {accepted: true, ended: c.started + elapsed, delta: details.gain, timeGain: details}));
+  }
+  for (const policy of [null, {...scoring(), policyVersion: 'D-012', limits: null, unavailableReason: 'activation_disabled'}]) {
+    const c = await fixture(7201000, null, policy);
+    await assertFails(finish(c, {accepted: true, delta: 0}));
+    await assertFails(finish(c, {accepted: true, delta: 0, timeGain: gainDetails('ZERO', 0, 0)}));
+  }
+});
+
+test('curve rejects inconsistent breakdown and retains failure and upsolve unchanged', async () => {
+  const c = await fixture(7201000, null, scoring());
+  await assertFails(finish(c, {accepted: true, delta: 20, timeGain: gainDetails('REDUCED', 0.5, 20)})); // actually T3
+  const ref = doc(c.db, `${path(c.uid)}/ipsums/one`);
+  await updateDoc(ref, {state: 'CLOSED_AWAITING_VERIFICATION', cutoffAt: ms(c.started + 7200000), closeReason: 'TIME_LIMIT_EXCEEDED', failure: 'TIME_EXPIRED'});
+  await assertSucceeds(finish(c));
+  const original = (await getDoc(ref)).data().result;
+  await assertSucceeds(updateDoc(ref, {solvedOutsideAt: ms(Date.now() - 1)}));
+  assert.deepEqual((await getDoc(ref)).data().result, original);
+});
+
+
+test('curve bands use the same epoch milliseconds as Android with a submillisecond server start', async () => {
+  for (const [elapsed, details] of [[1800000, gainDetails('NORMAL', 1, 40)],
+    [3600000, gainDetails('REDUCED', 0.5, 20)], [7200000, gainDetails('ZERO', 0, 0)]]) {
+    const c = await fixture(7201000, null, scoring());
+    const original = ms(c.started);
+    await env.withSecurityRulesDisabled(async context => {
+      await updateDoc(doc(context.firestore(), `${path(c.uid)}/ipsums/one`), {
+        startedAt: new Timestamp(original.seconds, original.nanoseconds + 500000)});
+    });
+    await assertSucceeds(finish(c, {accepted: true, ended: c.started + elapsed, delta: details.gain, timeGain: details}));
+  }
 });

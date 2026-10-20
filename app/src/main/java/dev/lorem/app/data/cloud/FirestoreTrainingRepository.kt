@@ -27,6 +27,9 @@ class FirestoreTrainingRepository(
     private val recommender: RecommendIpsum = RecommendIpsum { kotlin.random.Random.nextInt(it) },
     private val legacy: dev.lorem.app.domain.rollout.LegacyMigration? = null,
     private val pseudonyms: dev.lorem.app.data.rollout.StudyPseudonyms? = null,
+    private val scoringSelector: (Int?, Int) -> ScoringSnapshot = { cfRating, _ ->
+        ScoringSnapshot(LEGACY_SCORING_POLICY, null, modelVersion = null, artifactSha256 = null,
+            inputRating = cfRating, unavailableReason = "artifact_not_configured") },
 ) : CloudTrainingRepository {
     private val verificationMutex = Mutex() // UI and worker share this API/persistence operation.
     private data class HistoryKey(val uid: String, val handle: String, val binding: Long, val version: Long)
@@ -147,7 +150,8 @@ class FirestoreTrainingRepository(
             ?: error("Não foi possível atualizar o perfil Codeforces.")
         val observed = official.ratingObservedAtEpochMillis?.takeIf { it > 0 &&
             deadline.now(uid)?.let { now -> it <= now } == true && official.rating != null }
-        val snap = snapshotOf(recommendation, profile.rating, profile.handle, official.rating.takeIf { observed != null }, observed)
+        val snap = snapshotOf(recommendation, profile.rating, profile.handle, official.rating.takeIf { observed != null }, observed,
+            scoringSelector(official.rating.takeIf { observed != null }, recommendation.problem.rating!!))
         val marker = handle(uid, key).collection("usedProblems").document("${recommendation.problem.id.contestId}_${recommendation.problem.id.index}")
         db.runTransaction { tx ->
             checkUid(uid)

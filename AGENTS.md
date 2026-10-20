@@ -52,6 +52,19 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
+- **Evolução após 38 — D-044/história 39:** política experimental de pontos por
+  curva implementada no cloud, com função pura, snapshot imutável, ganho zero,
+  decomposição no resultado e exportação. [Contrato](docs/TIME_SCORING.md),
+  [cenários](study/results/time-scoring-v1/REPORT.md). Ativação desabilitada: CF
+  anterior não equivale a Lorem 800, e a consulta 1200/1600 não identifica p75/p90
+  em 120min. Artefato real incluído é parcial; modelo KM completo ausente deste
+  checkout. Exportador suporta bins do modelo completo sem ler o teste. Fallback
+  D-012 é persistido ao iniciar. A nova solicitação autoriza o software da 39,
+  sem reabrir a avaliação empírica retirada da 31. Publicação das novas Rules ainda
+  necessária; não executar deploy automaticamente. Verificação: 321 debug/228
+  release, 15 SDK reais, 33 Auth/Rules e 91 Python sem falhas/ignorados; lint sem
+  erros e APK. [Evidência](docs/evidence/2026-10-19-time-scoring-39.json).
+
 - **Bloco Firebase Spark:** 33/34 fechadas com confirmacao de Google unico pelo usuario; 35-37 integradas na PR 69. Historia 38 implementada e verificada: arquivo local Room 14, reconciliacao de ativo, exclusoes entre clientes e export v2; Firebase por padrao. JSON Android ausente neste checkout; sem OAuth real. Evidencia da configuracao/escopo: docs/evidence/2026-10-19-firebase-google-scope-confirmation.json. Novas Rules 38 precisam de publicacao.
 - **Integracao PR 69 (D-041):** historia 35 da main preservada (D-040), treino 36-37 adaptado aos contratos existentes; current existe somente durante um ativo e clock separado confirma prazo. Verificados 27 Auth/Rules, 300 debug executados/1 smoke opt-in separado, 216 release e 13 SDK reais em emuladores; lint sem erros e APK. Evidencia da combinacao em docs/evidence/2026-10-19-firebase-merge-69.json; registros historicos 35 e 35-37 preservados.
 - **Marco 35-37 anterior a integracao:** 20 testes Rules/Auth, 278 debug (277 executados/1 smoke opt-in aprovado separadamente), 200 release; nove testes com SDK Kotlin real em emuladores, incluindo cache offline/precisao do prazo. Lint sem erros (58 avisos) e APK preview. JSON ignorado ausente neste checkout; entrada bloqueada sem configuracao, conforme smoke. Evidencia: docs/evidence/2026-10-19-firebase-35-37.json. TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014).
@@ -60,8 +73,8 @@ backend ou abstracao sem necessidade concreta.
 - **Historico preservado:** evidencias anteriores em docs/evidence/2026-10-19-firebase-33-34.json e docs/evidence/2026-10-19-firebase-android-config.json descrevem Functions/configuracao inicial, nao a arquitetura Spark. D-039 substitui compute de D-033/D-037/D-038; nam5/preview/isolamento preservados.
 - **Contrato do novo bloco:** [Firebase, prazo e migracao](docs/FIREBASE.md). Requisitos novos substituem a exclusao anterior de login/Firebase e o rating inicial D-009 somente prospectivamente (D-033 a D-039).
 
-- **Foco:** entrega final 33-38 implementada/verificada. Historia 31 retirada do escopo pelo usuario (D-042); 32 fica fora desta entrega por dependencia, sem previsoes. Historias 00-30 e evidencias anteriores preservadas.
-- **Ultima historia verificada:** Historia 38, 310 debug/223 release sem falhas/ignorados, 14 SDK reais em emuladores, 29 Auth/Rules, 85 Python; lint sem erros e APK. Evidencia em docs/evidence/2026-10-19-android-38.json. Marco 30 de 2026-10-18 preservado: 232 debug/170 release e 66 Python, exportacao local/contrato Android-Python e snapshots anteriores.
+- **Foco atual:** evolução 39 (D-044) implementada/verificada com ativação desabilitada. **Marco anterior:** entrega final 33-38 implementada/verificada. Historia 31 retirada do escopo pelo usuario (D-042); 32 fica fora desta entrega por dependencia, sem previsoes. Historias 00-30 e evidencias anteriores preservadas.
+- **Última história verificada:** 39; evidência acima. **Marco anterior, preservado:** História 38, 310 debug/223 release sem falhas/ignorados, 14 SDK reais em emuladores, 29 Auth/Rules, 85 Python; lint sem erros e APK. Evidencia em docs/evidence/2026-10-19-android-38.json. Marco 30 de 2026-10-18 preservado: 232 debug/170 release e 66 Python, exportacao local/contrato Android-Python e snapshots anteriores.
 - **Primeiro item funcional pendente:** nenhum no escopo ativo apos a 38; entrega em PR. A 31 nao e mais trabalho pendente do produto; foi retirada do escopo por solicitacao do usuario. A 32 nao sera implementada nesta entrega.
 - **Proxima entrega demonstravel:** jornada integrada 38, arquivo anterior somente leitura, saldo cloud separado, prazo original e exclusoes restauradas em outro cliente.
 - **Configuracao real restante:** restaurar google-services.json local neste checkout e publicar as Rules 38; usuario ja confirmou Google unico e publicacao 35-37. Teste manual continua opcional (D-014).

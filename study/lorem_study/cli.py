@@ -43,7 +43,7 @@ def work_lock(root):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Lorem quantitative study; synthetic data are not empirical results")
-    parser.add_argument("command", choices=("fixture", "collect", "prepare", "split", "train-baseline", "predict", "train", "evaluate", "report", "prepare-ipsums", "evaluate-ipsums"))
+    parser.add_argument("command", choices=("fixture", "collect", "prepare", "split", "train-baseline", "predict", "train", "evaluate", "report", "prepare-ipsums", "evaluate-ipsums", "export-time-curves", "lookup-time-curves"))
     parser.add_argument("--work", type=Path, default=Path("work/default"))
     parser.add_argument("--config", type=Path)
     parser.add_argument("--pilot", action="store_true", help="Freeze a two-contest real pilot")
@@ -55,6 +55,8 @@ def main(argv=None):
     parser.add_argument("--model", choices=("baseline", "aft"), default="baseline")
     parser.add_argument("--inputs", type=Path, nargs="*", default=[], help="Explicit local Ipsum exports; no upload")
     parser.add_argument("--source-work", type=Path, help="Frozen contest models/evaluation used by evaluate-ipsums")
+    parser.add_argument("--artifact", type=Path, help="Time curve output/input JSON")
+    parser.add_argument("--retained-demo", type=Path, help="Export only the exact retained query")
     args = parser.parse_args(argv)
     try:
         if args.command == "evaluate":
@@ -67,7 +69,17 @@ def main(argv=None):
                 from .aft import predict_aft, train_aft
             except ImportError as error:
                 raise StudyError("AFT requires optional dependencies: pip install -r requirements-model.lock") from error
-        if args.command == "fixture":
+        if args.command in ("export-time-curves", "lookup-time-curves"):
+            from .time_curves import export_curves, retained_demo, lookup
+            if args.artifact is None:
+                raise StudyError("Time curves require --artifact")
+            if args.command == "export-time-curves":
+                result = (retained_demo(read_json(args.retained_demo)) if args.retained_demo else
+                          export_curves(read_json(args.work / "baseline" / "model.json")))
+                write_json(args.artifact, result)
+            else:
+                result = lookup(read_json(args.artifact), args.old_rating, args.problem_rating)
+        elif args.command == "fixture":
             result = create_fixture(args.work, load_config(args.config), args.contests)
         elif args.command == "predict":
             if args.old_rating is None or args.problem_rating is None:
