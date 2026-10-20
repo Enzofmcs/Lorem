@@ -537,3 +537,7 @@ Modelo, avaliação reservada e relatório científico anteriores permanecem int
 332 debug/237 release sem falhas ou ignorados, 15 SDK reais em emuladores, 34 Auth/Rules; lint sem erros (58 avisos) e APK. [Comandos, hashes e limites](evidence/2026-10-20-cloud-40-43.json). Testes de navegação e callbacks Compose, filtros/rolagem por contexto, estados de relógio/prazo, preparação paginada/incremental, budgets e WorkManager. SDK real cobre fallback persistido, timeout, retry e upsolve em lote sem reavaliação. Rules38 exatas recusam o cliente atual; Rules atuais o aceitam. Transporte CF controlado mede 5→2 chamadas em início quente, com 7 na carga fria; não é latência em aparelho.
 
 Nenhum estudo Python modificado; nenhuma recoleta/ativação experimental, OAuth real, deploy ou leitura remota. Configuração ausente identificada pelo checker. TESTE MANUAL OPCIONAL - NÃO EXECUTADO (D-014).
+
+## Confirmação operacional após PR84, 20/10/2026
+
+Atualização somente documental: [confirmação do responsável](evidence/2026-10-20-firebase-oauth-rules-confirmation.json). Usuário confirmou OAuth autorizado e Rules atualizadas, e adicionará o JSON localmente. Evidência anterior de testes/estado local preservada. Verificados JSON, SHA-256 de referência local, diff e ausência de mudanças no runtime; sem novo Gradle ou emuladores. Sem deploy/readback/login real pelo agente. TESTE MANUAL OPCIONAL - NÃO EXECUTADO (D-014).

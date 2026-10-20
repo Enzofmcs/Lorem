@@ -212,5 +212,8 @@ sem limpar armazenamento. Exports cloud sao opcionais, locais e nao usam UID/e-m
 
 O cliente atual inclui `snapshot.scoring` também no fallback D-012: Rules38 não
 aceitam esse início. Consulte a [matriz, sequência de publicação e recuperação](FIREBASE_OPERATION.md)
-e a [jornada cloud/preparação](CLOUD_EXPERIENCE.md). A confirmação antiga 35–37 não
-comprova publicação das Rules atuais. Nenhum deploy automático nesta entrega.
+e a [jornada cloud/preparação](CLOUD_EXPERIENCE.md). Em 20/10/2026, o usuário confirmou
+OAuth autorizado e Rules atualizadas: [confirmação do responsável](evidence/2026-10-20-firebase-oauth-rules-confirmation.json).
+Resta adicionar `app/google-services.json` local e recompilar; o agente não executou
+deploy, leitura administrativa remota ou login Google real. A confirmação anterior
+35–37 permanece histórica.

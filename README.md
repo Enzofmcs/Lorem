@@ -17,8 +17,9 @@ AC posterior automático em lotes limitados, sem alterar a avaliação original.
 [Paridade e custo de rede](docs/CLOUD_EXPERIENCE.md) ·
 [Compatibilidade e operação Firebase](docs/FIREBASE_OPERATION.md) ·
 [Evidência](docs/evidence/2026-10-20-cloud-40-43.json).
-JSON/OAuth e publicação real das Rules atuais continuam pendentes; nenhum deploy
-nesta entrega. D-012 permanece vigente, time-curve-v1 desabilitada.
+OAuth autorizado e Rules atualizadas foram confirmados pelo usuário em 20/10/2026.
+Resta adicionar `app/google-services.json` localmente e recompilar.
+[Registro da confirmação](docs/evidence/2026-10-20-firebase-oauth-rules-confirmation.json); nenhum deploy ou login real pelo agente. D-012 permanece vigente, time-curve-v1 desabilitada.
 
 ## Estado atual
 

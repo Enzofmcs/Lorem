@@ -12,7 +12,7 @@
 
 **Próxima entrega demonstrável:** Home → preparação → Ipsum → resultado persistido; histórico/estatísticas durante ativo, tema/handles em Configurações e arquivo local separado. 44–49 pertencem ao planejamento #72, fora desta implementação. A 31 permanece retirada e 32 desabilitada.
 
-**Pendência operacional externa:** JSON/OAuth Android ausente neste checkout; confirmação histórica cobre Rules35–37, não 38/39. Nenhum deploy, login Google real ou leitura remota nesta sessão. [Sequência concreta de configuração/publicação/recuperação](FIREBASE_OPERATION.md). Não reduzir Rules nem apagar dados. D-012 vigente, time-curve-v1 desabilitada, inicial 800/prazo/exclusões/arquivo preservados.
+**Configuração restante:** adicionar `app/google-services.json` localmente e recompilar. OAuth autorizado e Rules atualizadas confirmados pelo usuário em 20/10/2026; [confirmação do responsável](evidence/2026-10-20-firebase-oauth-rules-confirmation.json). Sem deploy, leitura remota ou login Google real pelo agente. [Operação e recuperação](FIREBASE_OPERATION.md). D-012 vigente; time-curve-v1 desabilitada.
 
 ## Como atualizar
 
@@ -2329,7 +2329,7 @@ TESTE MANUAL OPCIONAL - NÃO EXECUTADO (D-014).
 
 ## Recuperação da experiência Firebase — 40–43
 
-332 debug/237 release sem falhas ou ignorados, 15 SDK reais em emuladores, 34 Auth/Rules; lint sem erros (58 avisos) e APK. [Matriz de paridade e budgets](CLOUD_EXPERIENCE.md); [operação e pendências remotas](FIREBASE_OPERATION.md). Publicação/configuração reais não comprovadas. TESTE MANUAL OPCIONAL - NÃO EXECUTADO (D-014).
+332 debug/237 release sem falhas ou ignorados, 15 SDK reais em emuladores, 34 Auth/Rules; lint sem erros (58 avisos) e APK. [Matriz de paridade e budgets](CLOUD_EXPERIENCE.md); [operação e pendências remotas](FIREBASE_OPERATION.md). OAuth e atualização das Rules confirmados pelo responsável; JSON local ainda será adicionado. [confirmação do responsável](evidence/2026-10-20-firebase-oauth-rules-confirmation.json). Sem leitura remota ou login real pelo agente. TESTE MANUAL OPCIONAL - NÃO EXECUTADO (D-014).
 
 <a id="historia-40"></a>
 

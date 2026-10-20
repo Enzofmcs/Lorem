@@ -2,7 +2,7 @@
 
 Requisitos: [história 40/#73](https://github.com/Enzofmcs/Lorem/issues/73).
 Evidência local: [2026-10-20-cloud-40-43.json](evidence/2026-10-20-cloud-40-43.json).
-Este registro não atesta publicação, OAuth real ou leitura administrativa remota.
+O responsável confirmou em 20/10/2026 OAuth autorizado e Rules atualizadas: [confirmação do responsável](evidence/2026-10-20-firebase-oauth-rules-confirmation.json). O agente não executou deploy, leitura administrativa remota ou login Google real.
 
 ## Matriz de compatibilidade
 
@@ -22,15 +22,15 @@ D-012 permanece a política vigente; o saldo inicial de um novo vínculo é 800.
 
 - **Código local:** Rules atuais testadas nos emuladores Auth/Firestore. SHA-256,
   base Git, contagens e APK registrados no JSON de evidência.
-- **Confirmação do responsável:** confirmação histórica das Rules35–37 em
-  `2026-10-19-firebase-rules-35-37-publication.json`. Não cobre Rules38/39.
-- **Projeto real:** nenhuma publicação ou leitura remota das Rules atuais nesta
-  sessão; nenhuma autenticação Google real foi executada.
-- **Configuração Android:** `app/google-services.json` ausente neste checkout.
+- **Confirmação do responsável:** em 20/10/2026, o usuário informou OAuth já autorizado e Rules do Firebase já alteradas. [confirmação do responsável](evidence/2026-10-20-firebase-oauth-rules-confirmation.json). A confirmação anterior 35–37 permanece histórica. Hash e projeto publicados não foram informados nesta atualização.
+- **Observação do agente:** nenhum deploy, leitura remota das Rules ou login Google real executado pelo agente. A confirmação do usuário é o registro disponível do estado remoto.
+- **Configuração Android:** o usuário adicionará `app/google-services.json` localmente; o arquivo permanece ausente neste checkout do agente.
   O build sem esse arquivo é reproduzível e apresenta configuração ausente;
   compilar com sucesso não comprova que o login esteja operacional.
 
-## Sequência preparada para o responsável
+## Próximo passo e roteiro de referência
+
+OAuth e atualização das Rules já foram confirmados pelo responsável; não há solicitação de novo deploy. Resta adicionar o JSON local e recompilar. Os passos de publicação abaixo ficam como referência para futuras atualizações.
 
 1. Conferir o projeto Firebase já escolhido, aplicativo `dev.lorem.app` e região
    existente. Não criar outro projeto nem alterar região/dados para recuperar.
@@ -42,7 +42,7 @@ D-012 permanece a política vigente; o saldo inicial de um novo vínculo é 800.
    arquivo inteiro. Publicar **explicitamente pelo responsável** com a seleção do
    projeto real conferida, por exemplo
    `firebase deploy --only firestore:rules --project <id-confirmado>`.
-   Este comando é um roteiro: não foi executado por esta tarefa.
+   Este comando é referência para atualizações futuras; a atualização atual foi confirmada pelo usuário. O agente não o executou.
 4. Registrar separadamente commit/hash publicado, projeto, horário e confirmação
    do responsável; se houver leitura administrativa, registrar sua origem e o
    hash observado sem trocar confirmação por readback inexistente.

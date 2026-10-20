@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "date_client": "2026-10-20",
+  "kind": "responsible_user_confirmation",
+  "source": "User message in this conversation after PR84 implementation",
+  "statement_pt": "vou adicionar o arquivo localmente, agora o OAuth já está autorizado. O firebase também teve as regras alteradas já",
+  "confirmed_by_user": {
+    "google_oauth_authorized": true,
+    "firebase_rules_updated": true
+  },
+  "android_json": {
+    "user_action": "User will add app/google-services.json locally",
+    "present_in_agent_checkout": false,
+    "version_control": "Ignored; do not commit the local file"
+  },
+  "local_reference": {
+    "implementation_commit": "dab51ca966b15a862503b3375ab6a9debfa6342e",
+    "rules_file": "firebase/firestore.rules",
+    "rules_sha256": "9733bef61f1033f0acec79448fb19e8488bf375c96f3564758fe4190f6c5ee95",
+    "scope": "Local reference only; published hash was not supplied or observed"
+  },
+  "agent_observation": {
+    "deployment_performed": false,
+    "remote_rules_readback_performed": false,
+    "real_google_login_performed": false
+  },
+  "published_rules_hash": null,
+  "published_project_id": null,
+  "remaining_configuration": [
+    "Add app/google-services.json locally, validate configuration and rebuild the APK"
+  ],
+  "optional_manual_check": "Google login and training flow on configured APK not performed by agent; optional under D-014",
+  "previous_evidence": "docs/evidence/2026-10-20-cloud-40-43.json remains an immutable historical local verification snapshot"
+}
