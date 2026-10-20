@@ -489,3 +489,45 @@ foi retirada do escopo pelo usuario e nenhum resultado empirico e fabricado.
 No marco executar Rules/SDK, test lint assembleDebug e smoke padrao, registrar
 contagens/hashes em evidence/2026-10-19-android-38.json. Sem OAuth/deploy reais.
 TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014).
+
+## Política experimental por curvas (D-044 / história 39)
+
+Nível 4 durante implementação, Nível 5 no marco: pontuação, snapshots, Rules e
+idempotência. Curvas sintéticas isoladas dos dados reais. O artefato real parcial
+1200/1600 retorna indisponibilidade sem inventar p75/p90. Testes exercitam domínio,
+escala CF versus Lorem, bins/limites, censura/suporte, três fronteiras antes/exato/
+depois, zero, dica, arredondamento e versões. Paridade Python/Kotlin de 80 casos;
+120 trajetórias e nove combinações de sensibilidade não são validação empírica.
+
+Comandos direcionados:
+
+```bash
+cd study
+python3 -m unittest discover -s tests -q
+```
+
+Na raiz, com emuladores demo Auth/Firestore para os testes SDK:
+
+```bash
+npm --prefix firebase ci
+npm --prefix firebase test
+LOREM_FIREBASE_EMULATORS=true FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 ./gradlew :app:testDebugUnitTest --tests 'dev.lorem.app.domain.TimeScoringTest' --tests 'dev.lorem.app.domain.cloud.*' --tests 'dev.lorem.app.data.cloud.TimeCurveCatalogTest' --tests 'dev.lorem.app.data.auth.FirestoreAccountBootstrapEmulatorTest' --tests 'dev.lorem.app.ui.CloudTrainingScreenTest'
+```
+
+O SDK real restaura tentativa em repositório novo com outro seletor, preserva o
+snapshot original, aplica AC com ganho zero e repete a sincronização sem reaplicar
+pontos ou versão. Export confirma escala de entrada 3500 versus saldo 800, snapshot
+e decomposição. Rules preservam clientes anteriores e exigem decomposição coerente
+para AC com nova política, inclusive até 50 com bônus e zero em T3. UI não expõe
+política/ganho durante ativo. Falha sem AC e upsolve conservam a regra original.
+
+Ambiente cloud: Gradle requer acesso de rede local para o daemon; cache npm e
+Firebase Emulator configurados em diretórios graváveis, usando `--cache`,
+`XDG_CONFIG_HOME` e `FIREBASE_EMULATORS_PATH`. Nenhum pacote/SDK/cache é versionado.
+Novas Rules ainda precisam de publicação; não houve deploy, OAuth ou ativação real.
+TESTE MANUAL OPCIONAL - NÃO EXECUTADO (D-014).
+
+Evidência final da 39: [2026-10-19-time-scoring-39.json](evidence/2026-10-19-time-scoring-39.json).
+321 debug e 228 release sem falhas/ignorados; 33 Auth/Rules, 15 SDK reais após a
+correção de precisão, 91 Python. Lint sem erros/58 avisos; APK debug gerado.
+Modelo, avaliação reservada e relatório científico anteriores permanecem intactos.

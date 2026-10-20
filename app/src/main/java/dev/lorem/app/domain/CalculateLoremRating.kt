@@ -30,7 +30,7 @@ fun calculateLoremRating(
     val expectedMillis = (expectedMinutes * 60_000).roundToInt().toLong()
     val expectation = 1.0 / (1.0 + 10.0.pow((problemRating - ratingBefore) / 400.0))
     val delta = if (accepted) {
-        val baseGain = (8.0 + 32.0 * (1.0 - expectation)).roundToInt()
+        val baseGain = baseLoremGain(ratingBefore, problemRating)
         val timeFactor = when {
             elapsedMillis <= expectedMillis -> 1.0
             elapsedMillis >= expectedMillis * 2 -> 0.5

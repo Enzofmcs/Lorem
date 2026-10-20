@@ -258,3 +258,20 @@ Firebase passa a entrada padrao. Sem JSON, mostrar configuracao ausente; sem red
 restauracao da sessao exige verificacao e treino novo continua bloqueado. Arquivo
 local congelado e consultavel offline. Override false e somente desenvolvimento
 antes da migracao; nao reabilita escrita em arquivo ja congelado.
+
+## Evolução após 38: snapshots de pontuação (D-044)
+
+[Contrato completo](TIME_SCORING.md). `snapshot.scoring` é aditivo e imutável:
+versão aplicável, limites opcionais, multiplicadores, modelo/hash, escala e rating
+CF de entrada e motivo de fallback. Sem campo em tentativas antigas: D-012 original.
+Novos inícios sempre registram uma decisão, inclusive D-012 por indisponibilidade.
+Avaliação não consulta o catálogo de curvas de novo. `result.timeGain` registra a
+decomposição apenas para AC com `time-curve-v1`; permite delta 0..50. Sem AC continua
+D-012; transação de resultado/saldo/versão/lock e upsolve permanecem as mesmas.
+
+As Rules novas preservam o contrato anterior e exigem decomposição coerente nas
+novas faixas. A pontuação usa timestamps em milissegundos como o domínio; prazo e
+verificação preservam Timestamp completo. Sem publicação dessas Rules, novos
+inícios do cliente com `scoring` serão recusados. Nenhum deploy foi executado.
+Política experimental desabilitada independentemente do modelo; saldo de vínculo
+800 não substitui CF anterior. Arquivo Room legado não recebe esses campos novos.

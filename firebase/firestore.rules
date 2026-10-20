@@ -23,16 +23,56 @@ service cloud.firestore {
       return selection.handleKey == key && selection.bindingVersion == binding
         && getAfter(path).data == selection;
     }
+    function validScoring(s) {
+      let p = s.scoring;
+      let b = p.limits;
+      return p is map && p.keys().hasAll(['policyVersion', 'limits', 'bonusMultiplier', 'reductionMultiplier',
+          'modelVersion', 'artifactSha256', 'ratingSource', 'inputRating', 'unavailableReason'])
+        && p.keys().hasOnly(['policyVersion', 'limits', 'bonusMultiplier', 'reductionMultiplier',
+          'modelVersion', 'artifactSha256', 'ratingSource', 'inputRating', 'unavailableReason'])
+        && p.ratingSource == 'codeforces_prior' && p.inputRating == s.cfRating
+        && p.bonusMultiplier is number && p.bonusMultiplier >= 1 && p.bonusMultiplier <= 1.25
+        && p.reductionMultiplier is number && p.reductionMultiplier >= 0 && p.reductionMultiplier <= 1
+        && ((p.policyVersion == 'D-012' && b == null && p.unavailableReason is string && p.unavailableReason.size() > 0)
+          || (p.policyVersion == 'time-curve-v1' && p.unavailableReason == null
+            && p.inputRating is int && p.inputRating > 0 && s.cfObservedAt is int && s.cfObservedAt <= request.time.toMillis()
+            && p.modelVersion is string && p.modelVersion.size() > 0 && p.artifactSha256 is string && p.artifactSha256.size() == 64
+            && b is map && b.keys().hasAll(['t1', 't2', 't3']) && b.keys().hasOnly(['t1', 't2', 't3'])
+            && b.t1 is int && b.t2 is int && b.t3 is int && b.t1 > 0 && b.t1 < b.t2 && b.t2 < b.t3 && b.t3 <= 7200000));
+    }
+    function curveAccepted(d) {
+      return d.result.accepted && d.snapshot.get('scoring', {}).get('policyVersion', '') == 'time-curve-v1';
+    }
+    function validTimeGain(d) {
+      let p = d.snapshot.scoring;
+      let g = d.result.timeGain;
+      // Match the domain's epoch-millisecond inputs. Absolute expiry keeps full Timestamp precision.
+      let elapsed = d.result.endedAt.toMillis() - d.startedAt.toMillis();
+      let bonus = elapsed < p.limits.t1;
+      let normal = elapsed < p.limits.t2;
+      let reduced = elapsed < p.limits.t3;
+      let factor = bonus ? p.bonusMultiplier : (normal ? 1 : (reduced ? p.reductionMultiplier : 0));
+      let hint = int(g.timedGain * 0.25 + 0.5);
+      let deduction = hint < 2 ? 2 : hint;
+      return g is map && g.keys().hasAll(['policyVersion', 'band', 'baseGain', 'multiplier', 'timedGain', 'hintDeduction', 'gain'])
+        && g.keys().hasOnly(['policyVersion', 'band', 'baseGain', 'multiplier', 'timedGain', 'hintDeduction', 'gain'])
+        && g.policyVersion == p.policyVersion && g.baseGain is int && g.baseGain >= 8 && g.baseGain <= 40
+        && g.band == (bonus ? 'BONUS' : (normal ? 'NORMAL' : (reduced ? 'REDUCED' : 'ZERO')))
+        && g.multiplier == factor && g.timedGain is int && g.timedGain == int(g.baseGain * factor + 0.5)
+        && g.hintDeduction is int && g.hintDeduction == (d.hintAt == null ? 0 : (deduction > g.timedGain ? g.timedGain : deduction))
+        && g.gain == g.timedGain - g.hintDeduction && g.gain == d.result.delta;
+    }
     function finalResult(d) {
       let r = d.result;
       return r is map && r.keys().hasAll(['endedAt', 'accepted', 'errors', 'failure', 'delta', 'finalRating', 'expectedTime'])
-        && r.keys().hasOnly(['endedAt', 'accepted', 'errors', 'failure', 'delta', 'finalRating', 'expectedTime'])
+        && r.keys().hasOnly(['endedAt', 'accepted', 'errors', 'failure', 'delta', 'finalRating', 'expectedTime', 'timeGain'])
+        && (curveAccepted(d) ? validTimeGain(d) : !('timeGain' in r))
         && r.endedAt is timestamp && r.endedAt >= d.startedAt && r.endedAt <= boundary(d)
         && r.endedAt <= request.time && r.accepted is bool && r.errors is int && r.errors >= 0
-        && r.delta is int && r.delta >= -32 && r.delta <= 40 && r.delta != 0
+        && r.delta is int && r.delta >= -32 && r.delta <= (curveAccepted(d) ? 50 : 40)
         && r.finalRating is int && r.finalRating == (d.snapshot.initialRating + r.delta >= 0 ? d.snapshot.initialRating + r.delta : 0)
         && r.expectedTime is int && r.expectedTime >= 1800000 && r.expectedTime <= 7200000
-        && ((r.accepted && r.delta > 0 && r.failure == null)
+        && ((r.accepted && (curveAccepted(d) ? r.delta >= 0 : r.delta > 0) && r.failure == null)
           || (!r.accepted && r.delta < 0 && d.cutoffAt != null && r.endedAt == d.cutoffAt && r.failure == d.failure));
     }
 
@@ -127,7 +167,8 @@ service cloud.firestore {
                 'cfRating', 'cfObservedAt', 'factors', 'recentOverlap'])
               && s.keys().hasOnly(['handle', 'initialRating', 'contestId', 'index', 'name', 'rating', 'tags', 'originAt',
                 'originVerifiedAt', 'originSource', 'originVersion', 'category', 'desiredMin', 'desiredMax', 'fallback',
-                'cfRating', 'cfObservedAt', 'factors', 'recentOverlap'])
+                'cfRating', 'cfObservedAt', 'factors', 'recentOverlap', 'scoring'])
+              && (!('scoring' in s) || validScoring(s))
               && s.handle == h.handle && s.contestId is int && s.contestId > 0 && s.index is string
               && s.index.matches('[A-Za-z0-9]+') && s.name is string && s.rating is int && s.rating >= 800
               && s.tags is list && s.factors is list && s.originAt is int && s.originAt >= 1593561600000

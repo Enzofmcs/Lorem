@@ -10,6 +10,8 @@ Abra somente o documento necessario para a tarefa:
 - [`DEMO.md`](DEMO.md): roteiro do fluxo completo, reproducao automatizada e limites da avaliacao do TCC.
 - [`QUANTITATIVE.md`](QUANTITATIVE.md): protocolo planejado da extensao Python (22-28, ~24 h), corte no app e validacao com Ipsums (29-32). Estudo 22-28 e bases 29-30 verificados; amostra real de 19 contests, avaliacao de quatro contests reservados e [relatorio](../study/results/2026-10-18/report/REPORT.md). KM por delta superou AFT nesta amostra; transporte para Ipsums pendente. [Comandos Python](../study/README.md).
 
+- [`TIME_SCORING.md`](TIME_SCORING.md): política experimental por curvas, fallback e snapshots (D-044), com [relatório de cenários](../study/results/time-scoring-v1/REPORT.md); ativação desabilitada.
+
 - [`SYNC.md`](SYNC.md): automacao do Codeforces (Historias 15-17 implementadas e verificadas).
 - [`DESIGN.md`](DESIGN.md): direcao visual e criterios de interface para Historias 18-21.
 

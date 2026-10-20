@@ -49,7 +49,7 @@ import dev.lorem.app.data.local.LoremDatabase
 import androidx.room.Room
 import dev.lorem.app.data.cloud.FirestoreTrainingRepository
 import dev.lorem.app.domain.cloud.*
-import dev.lorem.app.domain.RecommendIpsum
+import dev.lorem.app.domain.*
 import dev.lorem.app.domain.model.*
 import dev.lorem.app.domain.repository.*
 import java.time.Instant
@@ -68,10 +68,11 @@ class FirestoreAccountBootstrapEmulatorTest {
     private val cacheDatabases = mutableListOf<LoremDatabase>()
     private var submitted = emptyList<CodeforcesSubmission>()
     private var cfRating: Int? = 3500
+    private var cfObservationAgeMillis = 0L
     private var cfUnavailable = false
     private var cfComplete = true
     private val cf = object : CodeforcesRepository {
-        override suspend fun user(handle: String) = UserLookupResult.Success(CodeforcesUser("Tourist", "Tourist", cfRating, System.currentTimeMillis()))
+        override suspend fun user(handle: String) = UserLookupResult.Success(CodeforcesUser("Tourist", "Tourist", cfRating, System.currentTimeMillis() - cfObservationAgeMillis))
         override suspend fun submissionHistory(handle: String): SubmissionHistoryResult = if (cfUnavailable)
             SubmissionHistoryResult.NetworkFailure else SubmissionHistoryResult.Success(submitted, verificationComplete = cfComplete)
         override suspend fun problems() = ProblemCatalogResult.Success((1L..4L).map {
@@ -80,13 +81,15 @@ class FirestoreAccountBootstrapEmulatorTest {
         })
     }
     private val scheduled = mutableListOf<CloudIpsum>()
-    private fun repository(legacy: LegacyMigration? = null): FirestoreTrainingRepository {
+    private fun repository(legacy: LegacyMigration? = null, scoring: ((Int?, Int) -> ScoringSnapshot)? = null): FirestoreTrainingRepository {
         val cache = Room.inMemoryDatabaseBuilder(ApplicationProvider.getApplicationContext(), LoremDatabase::class.java).build()
         cacheDatabases.add(cache)
         return FirestoreTrainingRepository(db, { auth.currentUser?.uid }, cf,
             AccountHandlesRepository(FirestoreHandlesStore(auth, db), cf, RoomHandlesCache(cache.accountHandlesDao())),
             CloudDeadline(android.os.SystemClock::elapsedRealtime) { 1 }, android.os.SystemClock::elapsedRealtime,
-            { _, attempt, _ -> synchronized(scheduled) { scheduled.add(attempt) } }, RecommendIpsum { 0 }, legacy, exportIds)
+            { _, attempt, _ -> synchronized(scheduled) { scheduled.add(attempt) } }, RecommendIpsum { 0 }, legacy, exportIds,
+            scoringSelector = scoring ?: { cfRating, _ -> ScoringSnapshot(LEGACY_SCORING_POLICY, null,
+                modelVersion = null, artifactSha256 = null, inputRating = cfRating, unavailableReason = "artifact_not_configured") })
     }
 
     @Before fun connectOnlyToDemoEmulators() {
@@ -184,6 +187,42 @@ class FirestoreAccountBootstrapEmulatorTest {
         assertEquals(824, restored.handles.single().rating)
         assertEquals(CloudIpsumState.FINAL, restored.attempts.single().state)
         assertEquals(824, repository.addHandle(uid, "Tourist").rating)
+    }
+
+    @Test(timeout = 90_000) fun `SDK freezes curve snapshot restores zero gain and retries without changing progress`() = runBlocking {
+        val uid = signInGoogle()
+        FirestoreAccountBootstrap(auth, db).ensureAccount(uid)
+        cfObservationAgeMillis = 1000 // Prior verified observation; Robolectric monotonic clock is controlled.
+        val training = repository(scoring = { rating, _ -> ScoringSnapshot(TIME_CURVE_POLICY, TimeLimits(1, 2, 3),
+            modelVersion = "synthetic-sdk-v1", artifactSha256 = "a".repeat(64), inputRating = requireNotNull(rating),
+            unavailableReason = null) })
+        training.addHandle(uid, "tourist")
+        training.selectHandle(uid, "cf_tourist")
+        val active = training.start(uid, "cf_tourist", "curve-zero")
+        val saved = requireNotNull(active.ipsum.scoringSnapshot)
+        assertEquals(800, active.ipsum.initialLoremRating)
+        assertEquals(3500, saved.inputRating)
+        val acceptedAt = (active.ipsum.startedAtEpochMillis / 1000 + 1) * 1000
+        kotlinx.coroutines.delay((acceptedAt - System.currentTimeMillis()).coerceAtLeast(0) + 30)
+        submitted = listOf(CodeforcesSubmission(777, active.ipsum.problem.id, "OK", Instant.ofEpochMilli(acceptedAt)))
+        // A fresh repository has a different current selector; evaluation must still use persisted limits.
+        val restored = repository()
+        assertTrue(restored.reconcile(uid, active))
+        assertTrue(restored.reconcile(uid, active))
+        val result = restored.load(uid, "cf_tourist")
+        assertNull(result.active)
+        assertEquals(800, result.handles.single().rating)
+        assertEquals(1L, result.handles.single().version)
+        val final = result.attempts.single().ipsum
+        assertEquals(saved, final.scoringSnapshot)
+        assertEquals(IpsumStatus.COMPLETED, final.status)
+        assertEquals(0, final.ratingDelta)
+        assertEquals(TimeBand.ZERO, final.timeGain?.band)
+        val exported = JSONObject(restored.exportStudy(uid, "cf_tourist").toStudyJson("test"))
+            .getJSONArray("attempts").getJSONObject(0)
+        assertEquals(TIME_CURVE_POLICY, exported.getString("rating_rule_version"))
+        assertEquals(0, exported.getJSONObject("time_scoring_result").getInt("gain"))
+        assertEquals(3500, exported.getJSONObject("time_scoring_snapshot").getInt("input_rating"))
     }
 
     @Test(timeout = 90_000) fun `production SDK persists hint manual close and no floor then isolates stale uid`() = runBlocking {

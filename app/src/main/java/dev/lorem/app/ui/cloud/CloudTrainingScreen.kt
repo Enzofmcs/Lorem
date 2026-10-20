@@ -14,6 +14,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.lorem.app.domain.buildIpsumStatistics
+import dev.lorem.app.domain.scoringExplanation
 import dev.lorem.app.domain.cloud.*
 import dev.lorem.app.domain.model.*
 import kotlinx.coroutines.delay
@@ -126,6 +127,7 @@ fun CloudTrainingScreen(
                         Text("${formatDuration(i.totalTimeMillis() ?: 0)} · ${i.errorCount} erros · dica: ${if (i.hintRevealedAtEpochMillis != null) "sim" else "não"}")
                         i.failureReason?.let { Text(it.label) }
                         Text("Rating ${i.initialLoremRating} → ${i.finalLoremRating} (${i.ratingDelta})")
+                        Text(scoringExplanation(i.scoringSnapshot, i.timeGain, i.status == IpsumStatus.COMPLETED))
                         Text(i.problem.tags.sorted().joinToString())
                         if (i.status == IpsumStatus.PENDING) TextButton(onClick = { onUpsolve(attempt) }, enabled = !state.busy) {
                             Text("Verificar AC posterior")

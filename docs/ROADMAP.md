@@ -2309,6 +2309,35 @@ Conferencias humanas opcionais (D-014); os testes automatizados exigidos sao obr
 
 **Evidencia automatizada da 38:** [2026-10-19-android-38.json](evidence/2026-10-19-android-38.json): 310 debug/223 release sem falhas ou ignorados, 14 SDK reais nos emuladores, 29 Auth/Rules e 85 Python; lint sem erros e APK padrao. Migracao/concorrencia/read-only, jornada com arquivo real de teste e cliente sem arquivo, isolamento, export e UI verificados. Google unico confirmado pelo usuario; publicar Rules 38 e restaurar JSON local neste checkout antes de usar o projeto real. TESTE MANUAL OPCIONAL - NAO EXECUTADO (D-014).
 
+### História 39 — Política experimental de pontos por curva de tempo (D-044)
+
+Nova evolução solicitada após a 38. Contrato: [TIME_SCORING.md](TIME_SCORING.md).
+Desenvolver software não declara concluída a avaliação empírica retirada da 31.
+
+- [x] Documentar T1/T2/T3, investigar p50/p75/p90, teto 2h e indisponibilidade.
+- [x] Exportar/consultar regiões KM sem treino ou leitura do teste; manter escala CF
+  anterior separada de Lorem 800, suporte, marcos parciais, probabilidades e versões.
+  Artefato real incluído é parcial: consulta exata 1200/1600, sem p75/p90 até 120min;
+  modelo KM completo ausente do checkout. Nenhum limite artificial foi preenchido.
+- [x] Função pura de pontos com ganho zero, fronteiras antes/exato/depois, dica,
+  multiplicadores e versão; penalidade sem AC permanece separada.
+- [x] Persistir seleção/fallback no início cloud e decomposição no resultado; SDK
+  real restaura snapshot em instância nova, permite AC com delta zero e aplica uma
+  única versão de progresso em retry; upsolve/arquivo legado preservados.
+- [x] Registrar 120 trajetórias e nove combinações de sensibilidade sintéticas,
+  separadas de qualidade preditiva, com decisão de ativação **desabilitada**.
+- [x] Exibir faixa, base, ajuste temporal e dica somente após encerramento; export
+  inclui metadados para TCC, sem reavaliar dados antigos.
+- [x] Fechar regressão completa, lint e APK: 321 debug/228 release sem falhas ou
+  ignorados; 15 testes SDK reais contra Rules finais, 33 Auth/Rules e 91 Python;
+  lint sem erros (58 avisos). [Evidência](evidence/2026-10-19-time-scoring-39.json).
+
+**Entrega:** caminho experimental integrado com D-012 como fallback persistido.
+**Ativação:** não autorizada pela evidência disponível; decisão negativa documentada,
+sem apresentar simulações como validação empírica. Novas Rules precisam de publicação
+antes de usar este cliente com o projeto real. Nenhum deploy foi executado.
+TESTE MANUAL OPCIONAL - NÃO EXECUTADO (D-014).
+
 ## 10. Marcos demonstraveis
 
 - **A - Espinha funcional (00-07):** handle, recomendacao, Ipsum, submissao e resultado.

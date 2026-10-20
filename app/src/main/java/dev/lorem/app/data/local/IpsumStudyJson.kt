@@ -35,11 +35,22 @@ fun IpsumStudyExport.toStudyJson(applicationVersion: String?): String {
             "cf_rating_source" to "codeforces:user.info".takeIf { ipsum.initialCodeforcesRating != null },
             "lorem_rating_before" to ipsum.initialLoremRating,
             "recording_version" to ipsum.studyRecordingVersion,
-            "rating_rule_version" to "D-012".takeIf { ipsum.studyRecordingVersion in setOf("ipsum-study-v1", "spark-2h-v1") },
+            "rating_rule_version" to (ipsum.scoringSnapshot?.policyVersion ?: "D-012").takeIf { ipsum.studyRecordingVersion in setOf("ipsum-study-v1", "spark-2h-v1") },
             "eligibility_version" to origin?.eligibilityVersion,
             "origin_started_at_epoch_ms" to origin?.startedAtEpochMillis,
             "origin_source" to origin?.source,
             "origin_verified_at_epoch_ms" to origin?.verifiedAtEpochMillis,
+            "time_scoring_snapshot" to ipsum.scoringSnapshot?.let { snapshot -> JSONObject().apply {
+                put("policy_version", snapshot.policyVersion).put("model_version", snapshot.modelVersion ?: JSONObject.NULL)
+                put("artifact_sha256", snapshot.artifactSha256 ?: JSONObject.NULL).put("rating_source", snapshot.ratingSource)
+                put("input_rating", snapshot.inputRating ?: JSONObject.NULL).put("fallback_reason", snapshot.unavailableReason ?: JSONObject.NULL)
+                put("bonus_multiplier", snapshot.bonusMultiplier).put("reduction_multiplier", snapshot.reductionMultiplier)
+                put("limits_ms", snapshot.limits?.let { JSONArray(listOf(it.t1Millis, it.t2Millis, it.t3Millis)) } ?: JSONObject.NULL)
+            } },
+            "time_scoring_result" to ipsum.timeGain?.let { gain -> JSONObject().apply {
+                put("band", gain.band.name).put("base_gain", gain.baseGain).put("multiplier", gain.multiplier)
+                put("timed_gain", gain.timedGain).put("hint_deduction", gain.hintDeduction).put("gain", gain.gain)
+            } },
             "interruptions" to null,
             "wall_clock_only" to true,
         )))

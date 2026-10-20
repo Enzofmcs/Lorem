@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "date_client": "2026-10-19",
+  "task": "39 / D-044 time-curve-v1",
+  "activation": "disabled",
+  "scope": "Software implementation, partial retained real query, synthetic policy simulation; no transport validation or deployment",
+  "commands": {
+    "android_full": "LOREM_FIREBASE_EMULATORS=true FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 ./gradlew test lint assembleDebug --max-workers=2 --console=plain",
+    "rules": "firebase emulators:exec --project demo-lorem-local --only auth,firestore \"node --test firebase/test/*.test.cjs\" --config firebase.json",
+    "sdk_after_precision_fix": "./gradlew :app:testDebugUnitTest --tests dev.lorem.app.data.auth.FirestoreAccountBootstrapEmulatorTest --tests dev.lorem.app.data.handles.FirestoreHandlesEmulatorTest --max-workers=2 --console=plain (same emulator variables)",
+    "python": "cd study && python3 -m unittest discover -s tests -q",
+    "simulation": "PYTHONPATH=study python3 study/scripts/simulate_time_scoring.py"
+  },
+  "android": {
+    "debug": {
+      "tests": 321,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "release": {
+      "tests": 228,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "sdk_final_rules": {
+      "tests": 15,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "lint_errors": 0,
+    "lint_warnings": 58,
+    "apk_sha256": "5e04631be6a5dfbd3c7660f0451c1694dc144ea57bef5642d1e33e5dc4793962",
+    "apk_bytes": 18663246
+  },
+  "rules": {
+    "tests": 33,
+    "failures": 0,
+    "skipped": 0,
+    "sha256": "9733bef61f1033f0acec79448fb19e8488bf375c96f3564758fe4190f6c5ee95"
+  },
+  "python": {
+    "tests": 91,
+    "failures": 0,
+    "skipped": 0
+  },
+  "curves": {
+    "artifact_sha256_file_bytes": "18fde3de01d3a3a4e36b9b35cd543beee3c16b1db3a507b4d4b77b74323cea9f",
+    "artifact_sha256_canonical": "1a72190eb8fd91d20a142638df5ecd7ecddeb10664b547c2e09a694d04fd7508",
+    "model_version": "kaplan-meier-v1",
+    "policy_version": "time-curve-v1",
+    "rating_source": "codeforces_prior",
+    "source_model_sha256": "7549c4e98d2e2ea50ef4c7a3d61db490f7914d181d55968858040692cd666f6a",
+    "full_model_in_checkout": false,
+    "included_scope": "Exact retained 1200/1600 query only",
+    "query_1200_1600": {
+      "available": false,
+      "reason": "quantile_not_identified",
+      "t1_ms": 5488000,
+      "t2_ms": null,
+      "t3_ms": null
+    }
+  },
+  "simulation": {
+    "data_kind": "synthetic",
+    "trajectories": 120,
+    "parity_cases": 80,
+    "sensitivity_combinations": 9,
+    "scenarios_sha256": "9200ceb5f192c549df48bd860be7e06293886aac68b54995cc1e3ced32451b71",
+    "report": "study/results/time-scoring-v1/REPORT.md"
+  },
+  "checks": [
+    "T1/T2/T3 before/exact/after; hints, zero and rounding",
+    "Frozen snapshot restored with a new selector; zero AC applies one progress version after retries",
+    "Legacy and fallback keep D-012; failure separate; upsolve preserves result",
+    "CF 3500 input differs from Lorem 800; missing ratings never substituted",
+    "Rules use epoch milliseconds for scoring, full precision for absolute expiry; submillisecond test passed",
+    "Prior scientific evaluation and model code unchanged; no held-out tuning"
+  ],
+  "manual": "TESTE MANUAL OPCIONAL - NÃO EXECUTADO (D-014)",
+  "pending_external": [
+    "Publish new Rules before distributing this client",
+    "Complete frozen KM artifact needed to export additional real regions"
+  ],
+  "empirical_limits": [
+    "No new real Ipsum cohort",
+    "Predictive transport and pedagogical progression not demonstrated",
+    "No OAuth, Firebase production write or activation performed"
+  ]
+}
