@@ -96,6 +96,23 @@ adb logcat -v time -s LoremAuth
 | account_bootstrap_succeeded → session_ready → ui_auth_state:signed_in | Sessão confirmada e exibida pela interface |
 | session_failed:NETWORK | Falha de rede ou limite de espera; repetir após recuperar conectividade |
 
+Após a PR85, o usuário passou a ver “A entrada foi interrompida pelo Google”.
+Isso localiza a falha antes da troca Firebase, mas não comprova cancelamento manual.
+O diagnóstico adicional preserva somente códigos numéricos do SDK:
+
+| Detalhe de credential_provider_* | Interpretação |
+| --- | --- |
+| origin:activity_result:result:0 | A Activity retornou RESULT_CANCELED; não comprova que o usuário apertou cancelar |
+| origin:google_api:status:16 | Google retornou cancelamento via API; verificar detail_code e logs do provedor |
+| origin:google_api:status:10 | Erro de configuração do cliente; conferir pacote, certificado do APK instalado e cliente Web conforme FIREBASE_SETUP.md |
+| detail_code:NUMERO | Código adicional do provedor, quando presente no formato reconhecido |
+| origin:unknown | SDK não expôs um código no formato reconhecido; nenhuma mensagem bruta é registrada |
+
+Não há retentativa automática que reabra o seletor após cancelamento. Se o provedor
+retornar apenas RESULT_CANCELED, complementar o Logcat com os tags do SDK
+`CredentialManager`, `GetSignInIntent` e `HiddenActivity`, revisando dados pessoais
+antes de compartilhar. [Verificação do diagnóstico](evidence/2026-10-20-google-provider-diagnostic.json).
+
 Os logs registram nomes de etapas e códigos, sem tokens, UID, e-mail ou mensagens
 brutas de exceções. A causa do retorno do provedor no aparelho não foi observada
 neste ambiente; a configuração OAuth/Rules confirmada pelo usuário permanece

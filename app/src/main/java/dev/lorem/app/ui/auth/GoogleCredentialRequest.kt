@@ -32,18 +32,36 @@ class GoogleCredentialRequest(context: Context, private val webClientId: String)
             val credential = manager.getCredential(activityContext, request).credential
             return googleIdToken(credential)
         } catch (error: GetCredentialCancellationException) {
-            authLog("credential_provider_cancelled:${error.javaClass.simpleName}")
+            authLog("credential_provider_cancelled:${googleProviderDiagnostic(error)}")
             throw GoogleSignInCancelled()
         } catch (error: NoCredentialException) {
-            authLog("credential_provider_empty:${error.javaClass.simpleName}")
+            authLog("credential_provider_empty:${googleProviderDiagnostic(error)}")
             throw GoogleCredentialUnavailable()
         } catch (error: GetCredentialException) {
-            authLog("credential_provider_failed:${error.javaClass.simpleName}")
+            authLog("credential_provider_failed:${googleProviderDiagnostic(error)}")
             throw GoogleCredentialUnavailable()
         }
     }
 
     suspend fun clearState() = manager.clearCredentialState(ClearCredentialStateRequest())
+}
+
+/** AndroidX may copy an ApiException message without preserving its cause/status object.
+ * Keep only bounded numeric SDK codes; never log the remainder of that message.
+ * RESULT_CANCELED describes an Activity result, not proof the user pressed cancel.
+ */
+internal fun googleProviderDiagnostic(error: GetCredentialException): String {
+    val message = error.message.orEmpty().take(512)
+    val codes = Regex("^(-?[0-9]{1,6}):(?: \\[([0-9]{1,6})\\])?").find(message)
+    val detail = when {
+        codes != null -> buildString {
+            append("origin:google_api:status:${codes.groupValues[1]}")
+            codes.groupValues[2].takeIf { it.isNotEmpty() }?.let { append(":detail_code:$it") }
+        }
+        message == "activity is cancelled by the user." -> "origin:activity_result:result:0"
+        else -> "origin:unknown"
+    }
+    return "${error.javaClass.simpleName}:$detail"
 }
 
 internal fun googleIdToken(credential: Credential): String {
