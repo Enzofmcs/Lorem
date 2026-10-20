@@ -46,4 +46,18 @@ class CloudIpsumSchedulerTest {
         assertNotEquals(first.id, repaired.id)
         assertEquals(IPSUM_LIMIT_MILLIS - 60_000, repaired.initialDelayMillis)
     }
+    @Test fun `pending maintenance is unique constrained periodic and canceled with account`() {
+        val scheduler = CloudIpsumScheduler(context)
+        val manager = WorkManager.getInstance(context)
+        scheduler.maintenance("A")
+        val first = manager.getWorkInfosForUniqueWork("firebase-ipsum:pending:A").get().single()
+        scheduler.maintenance("A")
+        assertEquals(first.id, manager.getWorkInfosForUniqueWork("firebase-ipsum:pending:A").get().single().id)
+        assertEquals(NetworkType.CONNECTED, first.constraints.requiredNetworkType)
+        assertEquals(900_000L, first.periodicityInfo!!.repeatIntervalMillis)
+        scheduler.cancel("A")
+        manager.cancelAllWorkByTag("firebase-ipsum:A").result.get()
+        assertEquals(WorkInfo.State.CANCELLED, manager.getWorkInfosForUniqueWork("firebase-ipsum:pending:A").get().single().state)
+    }
+
 }

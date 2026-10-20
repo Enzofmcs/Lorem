@@ -31,13 +31,14 @@ fun HistoryScreen(
     onUpdatePending: () -> Unit = {},
     onNavigateHome: () -> Unit = {},
     ownerHandle: String? = null,
+    onOpenResult: ((Ipsum) -> Unit)? = null,
 ) {
     // Reset filters and scroll on account changes, while tab navigation saves them.
     key(ownerHandle?.trim()?.lowercase(Locale.ROOT)) {
         val owned = if (ownerHandle == null) ipsums else ipsums.filter {
             it.ownerHandle.trim().equals(ownerHandle.trim(), ignoreCase = true)
         }
-        HistoryContent(owned, onOpenProblem, updateState, onUpdatePending, onNavigateHome)
+        HistoryContent(owned, onOpenProblem, updateState, onUpdatePending, onNavigateHome, onOpenResult)
     }
 }
 
@@ -49,6 +50,7 @@ private fun HistoryContent(
     updateState: PendingUpdateUiState,
     onUpdatePending: () -> Unit,
     onNavigateHome: () -> Unit,
+    onOpenResult: ((Ipsum) -> Unit)?,
 ) {
     val uriHandler = LocalUriHandler.current
     val openProblem = onOpenProblem ?: uriHandler::openUri
@@ -143,7 +145,7 @@ private fun HistoryContent(
             if (history.isEmpty()) LoremEmptyState("Seu histórico começa no primeiro Ipsum.", "Conclua um treino para ver sua tentativa aqui. Seus dados salvos ficam disponíveis offline.")
             else LoremEmptyState("Nenhum resultado para estes filtros.", "Altere a situação ou use Limpar filtros para voltar a AC no Ipsum, sem restrição de rating ou tag.")
         }
-        items(visible, key = { "attempt-${it.ipsum.id}" }) { item -> HistoryItem(item, openProblem) }
+        items(visible, key = { "attempt-${it.ipsum.id}" }) { item -> HistoryItem(item, openProblem, onOpenResult) }
     }
 }
 
@@ -154,7 +156,7 @@ internal fun historySituationLabel(situation: IpsumHistorySituation): String = w
 }
 
 @Composable
-private fun HistoryItem(item: IpsumHistoryItem, onOpenProblem: (String) -> Unit) {
+private fun HistoryItem(item: IpsumHistoryItem, onOpenProblem: (String) -> Unit, onOpenResult: ((Ipsum) -> Unit)?) {
     val ipsum = item.ipsum
     Card(Modifier.fillMaxWidth().testTag("history-${ipsum.problem.id.contestId}-${ipsum.problem.id.index}")) {
         Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -179,6 +181,7 @@ private fun HistoryItem(item: IpsumHistoryItem, onOpenProblem: (String) -> Unit)
             }
             Text("Rating: ${ipsum.selectedRating}")
             Text("Tags: ${ipsum.problem.tags.sorted().joinToString().ifEmpty { "nenhuma" }}")
+            onOpenResult?.let { open -> TextButton(onClick = { open(ipsum) }) { Text("Ver resultado") } }
             OutlinedButton(onClick = { onOpenProblem(ipsum.problemUrl()) }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text("Abrir no Codeforces") }
         }
     }

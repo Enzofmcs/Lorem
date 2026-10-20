@@ -531,3 +531,9 @@ Evidência final da 39: [2026-10-19-time-scoring-39.json](evidence/2026-10-19-ti
 321 debug e 228 release sem falhas/ignorados; 33 Auth/Rules, 15 SDK reais após a
 correção de precisão, 91 Python. Lint sem erros/58 avisos; APK debug gerado.
 Modelo, avaliação reservada e relatório científico anteriores permanecem intactos.
+
+## Histórias 40–43, 20/10/2026
+
+332 debug/237 release sem falhas ou ignorados, 15 SDK reais em emuladores, 34 Auth/Rules; lint sem erros (58 avisos) e APK. [Comandos, hashes e limites](evidence/2026-10-20-cloud-40-43.json). Testes de navegação e callbacks Compose, filtros/rolagem por contexto, estados de relógio/prazo, preparação paginada/incremental, budgets e WorkManager. SDK real cobre fallback persistido, timeout, retry e upsolve em lote sem reavaliação. Rules38 exatas recusam o cliente atual; Rules atuais o aceitam. Transporte CF controlado mede 5→2 chamadas em início quente, com 7 na carga fria; não é latência em aparelho.
+
+Nenhum estudo Python modificado; nenhuma recoleta/ativação experimental, OAuth real, deploy ou leitura remota. Configuração ausente identificada pelo checker. TESTE MANUAL OPCIONAL - NÃO EXECUTADO (D-014).

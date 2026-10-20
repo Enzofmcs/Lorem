@@ -191,3 +191,19 @@ Durante o ativo, não mostrar ratings, tags não reveladas, categoria ou pontua�
 No resultado, explicar faixa, ganho base, ajuste temporal e desconto de dica.
 
 TESTE MANUAL OPCIONAL - NÃO EXECUTADO (D-014).
+
+## Demonstração cloud 40–43
+
+Pré-requisitos e estado remoto: [FIREBASE_OPERATION.md](FIREBASE_OPERATION.md).
+Na conta configurada, abrir Configurações e selecionar handle; voltar ao Início,
+iniciar com progresso por etapa, consultar o problema e confirmar dica/motivo.
+Recriar a tela durante o treino recupera o mesmo ativo e seu prazo. Encerrar leva
+ao resultado persistido; voltar ao Início e abrir o último resultado. Durante
+um ativo, voltar ao Início permite consultar histórico/estatísticas de tentativas
+encerradas sem exibir o problema ativo nessas listas. Filtrar pendências/AC posterior,
+abrir resultado/Codeforces e conferir gráfico/frações. Em Configurações, mudar tema
+e consultar separadamente o arquivo local; trocar handle continua bloqueado no ativo.
+Pendências são verificadas automaticamente em lotes; para demonstração controlada,
+“Atualizar agora” antecipa uma execução. Offline/fechado aguardando verificação
+preserva o ativo e nunca concede outras duas horas. Não alegar OAuth/deploy real a
+partir de fixtures dos emuladores. TESTE MANUAL OPCIONAL - NÃO EXECUTADO (D-014).

@@ -21,3 +21,6 @@ firebase/functions/lib/
 .firebaserc
 app/google-services.json
 firebase-projects.local.json
+
+# Local task scratch, logs and dependency bootstrap
+work/

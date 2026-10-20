@@ -30,10 +30,15 @@ class FirestoreTrainingRepository(
     private val scoringSelector: (Int?, Int) -> ScoringSnapshot = { cfRating, _ ->
         ScoringSnapshot(LEGACY_SCORING_POLICY, null, modelVersion = null, artifactSha256 = null,
             inputRating = cfRating, unavailableReason = "artifact_not_configured") },
+    private val scheduleMaintenance: (String) -> Unit = {},
 ) : CloudTrainingRepository {
+    private val preparation = CloudPreparation(cf, elapsedMillis)
+    private val pendingChecked = mutableMapOf<String, Long>()
+    private val pendingCursor = mutableMapOf<String, Int>()
     private val verificationMutex = Mutex() // UI and worker share this API/persistence operation.
     private data class HistoryKey(val uid: String, val handle: String, val binding: Long, val version: Long)
-    private val historyCache = java.util.concurrent.ConcurrentHashMap<HistoryKey, List<CloudIpsum>>()
+    private data class CachedHistory(val rows: List<CloudIpsum>, val at: Long)
+    private val historyCache = java.util.concurrent.ConcurrentHashMap<HistoryKey, CachedHistory>()
     private fun user(uid: String) = db.collection("users").document(uid)
     private fun handles(uid: String) = user(uid).collection("handles")
     private fun handle(uid: String, key: String) = handles(uid).document(key)
@@ -95,21 +100,25 @@ class FirestoreTrainingRepository(
         val key = activeKey ?: selectedKey
         val profile = allHandles.firstOrNull { it.key == key }
         val link = profile?.let { HistoryKey(uid, it.key, it.bindingVersion, it.version) }
-        val previous = link?.let { historyCache[it] }
+        val previous = link?.let { historyCache[it] }?.takeIf { elapsedMillis() - it.at in 0 until 60_000 }?.rows
         val closed = if (key == null) emptyList() else previous ?: attempts(uid, key).get(source).await().documents
             .map { it.cloudIpsum() }.sortedByDescending { it.ipsum.startedAtEpochMillis }
         // Closed history is immutable except upsolve; don't reread every historical document on each poll.
         if (link != null && online) {
             historyCache.keys.removeAll { it.uid != uid || (it.handle == key && it.version != link.version) }
-            historyCache[link] = closed.filter { it.state == CloudIpsumState.FINAL }
+            if (previous == null) historyCache[link] = CachedHistory(closed.filter { it.state == CloudIpsumState.FINAL }, elapsedMillis())
         }
         val visible = (closed.filter { it.id != active?.id } + listOfNotNull(active)).sortedByDescending { it.ipsum.startedAtEpochMillis }
         checkUid(uid)
+        if (online) scheduleMaintenance(uid)
         if (online && active != null) schedule(uid, active, requireNotNull(deadline.now(uid)))
         return CloudSnapshot(allHandles, active, visible, online)
     }
 
-    override suspend fun start(uid: String, key: String, commandId: String): CloudIpsum = verificationMutex.withLock {
+    override suspend fun start(uid: String, key: String, commandId: String): CloudIpsum = startPrepared(uid, key, commandId) {}
+
+    override suspend fun startPrepared(uid: String, key: String, commandId: String,
+        progress: (CloudPreparationProgress) -> Unit): CloudIpsum = verificationMutex.withLock {
         checkUid(uid)
         require(commandId.matches(Regex("[a-zA-Z0-9-]{1,80}")))
         val ref = attempts(uid, key).document(commandId)
@@ -138,16 +147,15 @@ class FirestoreTrainingRepository(
         val exclusions = exclusionsRef.get(Source.SERVER).await().documents.map {
             ProblemId(requireNotNull(it.getLong("contestId")), requireNotNull(it.getString("index")))
         }.toSet()
-        val history = (cf.submissionHistory(profile.handle) as? SubmissionHistoryResult.Success)?.takeIf { it.verificationComplete }?.submissions
-            ?: error("Atualize o histórico completo do Codeforces antes de iniciar.")
-        val catalog = (cf.problems() as? ProblemCatalogResult.Success)?.problems
-            ?: error("Não foi possível preparar o catálogo verificado. Tente novamente.")
+        val prepared = preparation.prepare("$uid:$key:${profile.bindingVersion}", profile.handle, { checkUid(uid) }, progress)
+        val history = prepared.history
+        val catalog = prepared.catalog
         checkUid(uid)
         val prior = attempts(uid, key).get(Source.SERVER).await().documents.map { it.cloudIpsum() }
         val recommendation = recommender.recommend(profile.rating, catalog.filter { it.id !in exclusions }, buildProblemHistory(history), prior.map { it.ipsum }, profile.handle)
             ?: error("Nenhum problema inédito disponível nesta faixa.")
-        val official = (cf.user(profile.handle) as? UserLookupResult.Success)?.user
-            ?: error("Não foi possível atualizar o perfil Codeforces.")
+        val official = prepared.user
+        progress(CloudPreparationProgress(CloudPreparationStage.SAVING, "Salvando o snapshot e o prazo no servidor…"))
         val observed = official.ratingObservedAtEpochMillis?.takeIf { it > 0 &&
             deadline.now(uid)?.let { now -> it <= now } == true && official.rating != null }
         val snap = snapshotOf(recommendation, profile.rating, profile.handle, official.rating.takeIf { observed != null }, observed,
@@ -284,18 +292,56 @@ class FirestoreTrainingRepository(
         true
     }
 
+    override suspend fun refreshPending(uid: String, key: String, force: Boolean): Int = verificationMutex.withLock {
+        checkUid(uid)
+        val cooldownKey = "$uid:$key"
+        if (!force && pendingChecked[cooldownKey]?.let { elapsedMillis() - it in 0 until 900_000 } == true) return@withLock 0
+        val snapshot = load(uid, key)
+        if (!snapshot.online || selectedHandle(uid) != key) return@withLock 0
+        val profile = snapshot.handles.firstOrNull { it.key == key } ?: return@withLock 0
+        val context = "$uid:$key:${profile.bindingVersion}"
+        pendingChecked[cooldownKey] = elapsedMillis()
+        val pending = snapshot.attempts.filter { it.handleKey == key && it.bindingVersion == profile.bindingVersion &&
+            it.state == CloudIpsumState.FINAL && it.ipsum.status == IpsumStatus.PENDING }.sortedBy { it.id }
+        if (pending.isEmpty()) return@withLock 0
+        val offset = (pendingCursor[context] ?: 0) % pending.size
+        val batch = (pending.drop(offset) + pending.take(offset)).take(20)
+        // Failure also backs off; manual retry can override.
+        val rows = preparation.window(profile.handle, batch.minOf { it.boundaryMillis }, context) { checkUid(uid) }
+            ?: error("Pendências aguardam histórico completo; nova tentativa agendada, ou atualize manualmente.")
+        if (selectedHandle(uid) != key) return@withLock 0
+        pendingCursor[context] = (offset + batch.size) % pending.size
+        var moved = 0
+        for (attempt in batch) {
+            checkUid(uid)
+            if (applyUpsolve(uid, attempt, rows)) moved++
+        }
+        moved
+    }
+
     private suspend fun updateUpsolve(uid: String, attempt: CloudIpsum) {
         val submissions = (cf.submissionHistorySince(attempt.ipsum.ownerHandle, attempt.boundaryMillis)
             as? SubmissionHistoryResult.Success)?.takeIf { it.verificationComplete }?.submissions ?: return
+        applyUpsolve(uid, attempt, submissions)
+    }
+
+    private suspend fun applyUpsolve(uid: String, attempt: CloudIpsum, submissions: List<CodeforcesSubmission>): Boolean {
         val accepted = submissions.filter { it.problemId == attempt.ipsum.problem.id && it.verdict == "OK" &&
-            it.createdAt.toEpochMilli() > attempt.boundaryMillis }.minByOrNull { it.createdAt } ?: return
+            it.createdAt.toEpochMilli() > attempt.boundaryMillis }.minByOrNull { it.createdAt } ?: return false
         val ref = attempts(uid, attempt.handleKey).document(attempt.id)
-        db.runTransaction { tx ->
+        val changed = db.runTransaction { tx ->
             checkUid(uid)
             val latest = tx.get(ref).cloudIpsum()
-            if (latest.ipsum.status == IpsumStatus.PENDING) tx.update(ref, "solvedOutsideAt", timestamp(accepted.createdAt.toEpochMilli()))
+            val selected = tx.get(selection(uid))
+            if (selected.getString("handleKey") != attempt.handleKey ||
+                selected.getLong("bindingVersion") != attempt.bindingVersion) return@runTransaction false
+            if (latest.ipsum.status == IpsumStatus.PENDING && latest.bindingVersion == attempt.bindingVersion) {
+                tx.update(ref, "solvedOutsideAt", timestamp(accepted.createdAt.toEpochMilli()))
+                true
+            } else false
         }.await()
         checkUid(uid)
         historyCache.keys.removeAll { it.uid == uid && it.handle == attempt.handleKey }
+        return changed
     }
 }

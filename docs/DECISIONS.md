@@ -244,3 +244,9 @@ Guia: [FIREBASE_SETUP.md](FIREBASE_SETUP.md). Evidencia: [33/34](evidence/2026-1
 | ID | Data | Decisão | Motivo | Escopo |
 | --- | --- | --- | --- | --- |
 | D-044 | 2026-10-19 | Implementar política experimental time-curve-v1: T1=p50, T2=p75, T3=min(p90,2h), somente com quantis identificados, suporte e ordem estrita. Marco ausente/colisão/escala incompatível usa D-012 integral, com motivo salvo no início. Modelo recebe CF anterior; saldo Lorem 800 nunca substitui esse valor. Bônus 1,25 e redução 0,5 são candidatos, dica não torna AC negativo e ganho zero é permitido em T3. Snapshot imutável e decomposição persistida no cloud; arquivo legado intacto. | Nova solicitação autoriza desenvolver o caminho de software antes excluído da 32, sem reabrir a 31 ou declarar transporte validado. Exemplo real 1200/1600 não identifica p75/p90 até 120 min. Manter ativação independente desabilitada; simulações não validam progressão pedagógica e teste examinado não serve para ajuste. | [Contrato e limites](TIME_SCORING.md), [cenários](../study/results/time-scoring-v1/REPORT.md), história 39 |
+
+### Recuperação cloud solicitada em 20/10/2026
+
+| ID | Data | Decisão | Motivo | Escopo |
+| --- | --- | --- | --- | --- |
+| D-046 | 2026-10-20 | Recuperar navegação, treino/resultado, filtros, gráficos, tema e atualização de pendências sobre Firestore, usando as telas 18–21. Conferir cliente/Rules38/39; preservar Google/Spark, uid/handle, 800, prazo, exclusões e arquivo legado. Preparação exige cobertura verificada; cache incompleto não libera treino. | Implementação autorizada das issues73–76, conforme planejamento #72; integridade sozinha não demonstra paridade de recursos. | 40–43; sem rollback de dados, deploy ou ativação experimental. [Paridade](CLOUD_EXPERIENCE.md), [operação](FIREBASE_OPERATION.md). D-045/estudo44–49 continuam no planejamento separado. |

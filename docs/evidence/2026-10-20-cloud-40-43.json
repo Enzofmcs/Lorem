@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "date_client": "2026-10-20",
+  "task": "Histórias 40–43 / issues 73–76",
+  "base_commit": "73c322af1b7eca111d41d255b23d138a19c4e554",
+  "commands": {
+    "emulators": "firebase/node_modules/.bin/firebase emulators:start --project demo-lorem-local --only auth,firestore --config firebase.json",
+    "android": "LOREM_FIREBASE_EMULATORS=true FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 ./gradlew test lint assembleDebug --max-workers=2 --console=plain",
+    "rules": "FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 node --test firebase/test/*.test.cjs",
+    "config": "npm --prefix firebase run check-config (configuration absent, expected exit 1)"
+  },
+  "android": {
+    "debug": {
+      "tests": 332,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "release": {
+      "tests": 237,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "sdk_emulators": [
+      {
+        "class": "dev.lorem.app.data.auth.FirestoreAccountBootstrapEmulatorTest",
+        "tests": 12,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "class": "dev.lorem.app.data.handles.FirestoreHandlesEmulatorTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    ],
+    "lint": {
+      "Error": 0,
+      "Fatal": 0,
+      "Warning": 58
+    },
+    "apk_sha256": "726b99c274d7975614e195d858e23ce1bfd6444b6b135a3caeda31c5e243ad7b",
+    "apk_bytes": 18712398
+  },
+  "rules": {
+    "tests": 34,
+    "failures": 0,
+    "skipped": 0,
+    "current_sha256": "9733bef61f1033f0acec79448fb19e8488bf375c96f3564758fe4190f6c5ee95",
+    "rules38_fixture_sha256": "e086d074dcf50f4ae1391357267a3c466208c611c7cad7ffb9c9dd6af77a4b5a",
+    "rules38_commit": "26f58f0",
+    "compatibility": "Same current D-012 snapshot.scoring accepted by current Rules and denied by exact Rules38 fixture, separate demo projects"
+  },
+  "operation": {
+    "android_json_present": false,
+    "deployment_performed": false,
+    "real_google_login_performed": false,
+    "remote_rules_readback_performed": false,
+    "responsible_confirmation": "Historical Rules35–37 only; no new confirmation for 38/39",
+    "runbook": "docs/FIREBASE_OPERATION.md",
+    "time_curve_activation": "disabled",
+    "rating_policy": "D-012"
+  },
+  "controlled_network": {
+    "data_kind": "synthetic transport, production CF parser and shared gate",
+    "device_latency_measured": false,
+    "simulated_gate_cold_elapsed_millis": 14000,
+    "simulated_gate_warm_elapsed_millis": 4000,
+    "baseline_first_start_requests": 5,
+    "baseline_second_start_requests": 5,
+    "new_first_start_requests": 7,
+    "new_second_start_requests": 2,
+    "first_start_extra_work": "overlapping history pages and top revalidation",
+    "warm_requests": [
+      "user.status",
+      "user.info"
+    ],
+    "minimum_gate_millis": 2000,
+    "production_history_page_size": 1000,
+    "preparation_page_budget": 8,
+    "pending_page_budget_per_run": 4,
+    "pending_batch_limit": 20,
+    "automatic_pending_cooldown_millis": 900000,
+    "catalog_history_cache_max_age_millis": 86400000,
+    "firestore_history_cache_max_age_millis": 60000
+  },
+  "checks": [
+    "Compose: Home start, confirmed hint, selected close reason, persisted result and latest result",
+    "Navigation restoration, active timeout vs untrusted clock vs CLOSED_AWAITING_VERIFICATION",
+    "History and statistics remain available while active; no active metadata in closed adapters",
+    "Filters and scroll survive tabs; reset across uid/handle/binding; locked handle and theme controls",
+    "Incremental coverage, stale/incomplete history denied, failed pages and budget resume, delayed session response discarded",
+    "Bounded pending window resumes across executions; SDK automatic upsolve preserves every original evaluation field",
+    "Unique periodic account work with network constraint, session gate and active priority",
+    "Regression includes existing exclusions/origin/one-active/deadline/snapshot/idempotence tests"
+  ],
+  "manual": "TESTE MANUAL OPCIONAL - NÃO EXECUTADO (D-014)",
+  "pending_external": [
+    "Restore Android JSON/OAuth/certificate configuration",
+    "Responsible publishes current Rules and records evidence; no remote operation claimed"
+  ],
+  "scientific_scope": "No study change, collection, empirical validation or experimental activation"
+}
