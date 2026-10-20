@@ -32,7 +32,8 @@ def http_transport(url, timeout):
 
 class ApiClient:
     def __init__(self, root, config, *, offline=False, transport=http_transport,
-                 monotonic=time.monotonic, sleep=time.sleep, now=utc_now, data_kind="real"):
+                 monotonic=time.monotonic, sleep=time.sleep, now=utc_now, data_kind="real",
+                 compress_raw=False):
         self.root, self.config, self.offline = Path(root), config, offline
         self.transport, self.clock, self.sleep, self.now = transport, monotonic, sleep, now
         self.last_request = None
@@ -40,6 +41,7 @@ class ApiClient:
         self.index = read_json(self.index_path) if self.index_path.exists() else {}
         self.network_requests = 0
         self.data_kind = data_kind
+        self.compress_raw = compress_raw
 
     def request(self, method, params=None, *, refresh=False):
         if method not in METHODS:
@@ -67,7 +69,7 @@ class ApiClient:
             except (OSError, urllib.error.URLError) as error:
                 failure = f"Network failure: {error}"
             else:
-                sha = put_bytes(self.root, body)
+                sha = put_bytes(self.root, body, compress=self.compress_raw)
                 ref = {"method": method, "params": params, "url": url,
                        "collected_at_utc": self.now(), "sha256": sha, "http_status": status,
                        "data_kind": self.data_kind}

@@ -265,3 +265,10 @@ Guia: [FIREBASE_SETUP.md](FIREBASE_SETUP.md). Evidencia: [33/34](evidence/2026-1
 | ID | Data | Decisão | Motivo | Escopo |
 | --- | --- | --- | --- | --- |
 | D-049 | 2026-10-20 | Criar histórias 50–56 para alvo de aproximadamente 400 contests e gráfico X=faixa de rating do problema/Y=t50, com curvas por oldRating e previsões dos modelos disponíveis no mesmo gráfico. t50 é primeira passagem da CDF de AC por 0,5 com censura, não garantia decorrente de igualdade Elo. A 50 deve congelar universo viável, grade, suporte, custos e comparabilidade antes de aquisições/contrastes; filtros atuais não são relaxados para atingir 400. | Usuário pediu “Crie essas histórias”, ampliando escala e visualização; isso autoriza o planejamento, não iniciar coleta/retreino nesta tarefa. | [Central #88](https://github.com/Enzofmcs/Lorem/issues/88), histórias50–56/89–95, [plano](SCALE_T50.md). 49 permanece planejada; preservar amostras anteriores, Android, D-012 e time-curve-v1 desabilitada. |
+
+
+### Execução da ampliação 50–56, autorizada em 20/10/2026
+
+| ID | Data | Decisão | Motivo | Escopo |
+| --- | --- | --- | --- | --- |
+| D-050 | 2026-10-20 | A nova solicitação autoriza implementar 50–56 e exclui a 49/alterações ao artigo do TCC, substituindo a restrição de planejamento da D-049. Congelar scale-t50-v1 antes da aquisição; preservar CF oficial individual, oldRating positivo anterior, origem >=01/07/2020 e exclusão integral de especiais/variantes. O universo novo tem 292 contests estruturais: coletar o universo compatível e registrar déficit 108, sem relaxar filtros ou alegar 400. | Transformar o planejamento em estudo reproduzível na escala efetivamente disponível. Brutos comprimidos com hash HTTP original, preparo por contest/SQLite, comparação de CDFs de modelos congelados no suporte comum e IC conservador por grupos. Ausência do snapshot de 18/10 não bloqueia os agregados/modelos novos verificáveis. | 50–56; [contrato](SCALE_T50.md), [plano](../study/configs/scale-t50-plan-v1.json), [operação](../study/SCALE_T50_README.md). Sem retuning, validação preditiva nova, transporte para Ipsums, alteração Android/D-012/time-curve-v1 ou artigo. |

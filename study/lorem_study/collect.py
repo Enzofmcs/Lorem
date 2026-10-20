@@ -92,6 +92,15 @@ def freeze_snapshot(root, manifest):
     return sha
 
 
+def acquisition_coverage(manifest):
+    selected=len(manifest["selection"]["contest_ids"])
+    complete=sum(bool(e.get("complete")) for e in manifest["contests"].values())
+    minimum=complete>=manifest["config"]["minimum_contests"]
+    return {"selected":selected,"complete":complete,"incomplete":selected-complete,
+            "minimum_complete_count_met":minimum,
+            "status":"requires_preparation" if minimum else "pilot_only"}
+
+
 def collect(root, config, *, pilot=False, offline=False, client=None):
     root = Path(root)
     client = client or ApiClient(root, config, offline=offline)
@@ -158,12 +167,12 @@ def collect(root, config, *, pilot=False, offline=False, client=None):
                 entry["error"] = "Unresolved official verdicts; contest not usable"
         except StudyError as error:
             entry["error"] = str(error)
+            if getattr(error, "stop_collection", False):
+                manifest["coverage"] = {**acquisition_coverage(manifest), "stop_reason": str(error)}
+                freeze_snapshot(root, manifest)
+                raise
         freeze_snapshot(root, manifest)
-    complete = sum(bool(e["complete"]) for e in manifest["contests"].values())
-    manifest["coverage"] = {"selected": len(selection["contest_ids"]), "complete": complete,
-                            "incomplete": len(selection["contest_ids"]) - complete,
-                            "minimum_complete_count_met": complete >= config["minimum_contests"],
-                            "status": "requires_preparation" if complete >= config["minimum_contests"] else "pilot_only"}
+    manifest["coverage"] = acquisition_coverage(manifest)
     snapshot_sha = freeze_snapshot(root, manifest)
     return {"snapshot_sha256": snapshot_sha, "data_kind": manifest["data_kind"],
             "api_calls_this_run": client.network_requests,

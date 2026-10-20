@@ -2622,7 +2622,7 @@ O alvo depende do universo elegível; não relaxar regras silenciosamente.
 
 ### Historia 50 - Protocolo da amostra de aproximadamente 400 contests e contrato do tempo até 50% de AC
 
-**GitHub:** [#89](https://github.com/Enzofmcs/Lorem/issues/89). **Status: PLANEJADA.**
+**GitHub:** [#89](https://github.com/Enzofmcs/Lorem/issues/89). **Status: EM IMPLEMENTAÇÃO (D-050; critérios ainda sem aceite final).**
 **Dependências:** 44–48 integradas; 49 independente.
 
 **História:** Como pesquisador, quero congelar seleção, faixas de rating e significado do tempo até 50% antes de ampliar a amostra e comparar modelos.
@@ -2650,7 +2650,7 @@ O alvo depende do universo elegível; não relaxar regras silenciosamente.
 
 ### Historia 51 - Coleta escalável, retomável e auditável para aproximadamente 400 contests
 
-**GitHub:** [#90](https://github.com/Enzofmcs/Lorem/issues/90). **Status: PLANEJADA.**
+**GitHub:** [#90](https://github.com/Enzofmcs/Lorem/issues/90). **Status: EM IMPLEMENTAÇÃO (D-050; critérios ainda sem aceite final).**
 **Dependências:** [50](https://github.com/Enzofmcs/Lorem/issues/89).
 
 **História:** Como pesquisador, quero adquirir a amostra ampliada sem perder proveniência ou precisar reiniciar horas de download após uma interrupção.
@@ -2678,7 +2678,7 @@ O alvo depende do universo elegível; não relaxar regras silenciosamente.
 
 ### Historia 52 - Preparo em escala e matriz de cobertura por faixas de rating do usuário e do problema
 
-**GitHub:** [#91](https://github.com/Enzofmcs/Lorem/issues/91). **Status: PLANEJADA.**
+**GitHub:** [#91](https://github.com/Enzofmcs/Lorem/issues/91). **Status: EM IMPLEMENTAÇÃO (D-050; critérios ainda sem aceite final).**
 **Dependências:** [50](https://github.com/Enzofmcs/Lorem/issues/89), [51](https://github.com/Enzofmcs/Lorem/issues/90).
 
 **História:** Como pesquisador, quero saber quais regiões x/y têm observações suficientes e processar a amostra grande com os mesmos critérios científicos do estudo atual.
@@ -2704,7 +2704,7 @@ O alvo depende do universo elegível; não relaxar regras silenciosamente.
 
 ### Historia 53 - Gráfico de t50 por dificuldade do problema com curvas para faixas de rating do usuário
 
-**GitHub:** [#92](https://github.com/Enzofmcs/Lorem/issues/92). **Status: PLANEJADA.**
+**GitHub:** [#92](https://github.com/Enzofmcs/Lorem/issues/92). **Status: EM IMPLEMENTAÇÃO (D-050; critérios ainda sem aceite final).**
 **Dependências:** [50](https://github.com/Enzofmcs/Lorem/issues/89), [52](https://github.com/Enzofmcs/Lorem/issues/91).
 
 **História:** Como pesquisador, quero ver em um mesmo gráfico como o tempo até 50% de probabilidade de AC varia com a dificuldade para diferentes níveis de usuário.
@@ -2735,7 +2735,7 @@ O alvo depende do universo elegível; não relaxar regras silenciosamente.
 
 ### Historia 54 - Sobrepor previsões dos modelos anteriores às curvas t50 por faixa de usuário
 
-**GitHub:** [#93](https://github.com/Enzofmcs/Lorem/issues/93). **Status: PLANEJADA.**
+**GitHub:** [#93](https://github.com/Enzofmcs/Lorem/issues/93). **Status: EM IMPLEMENTAÇÃO (D-050; critérios ainda sem aceite final).**
 **Dependências:** [50](https://github.com/Enzofmcs/Lorem/issues/89), [52](https://github.com/Enzofmcs/Lorem/issues/91), [53](https://github.com/Enzofmcs/Lorem/issues/92).
 
 **História:** Como pesquisador, quero selecionar uma faixa de rating de usuário e ver, no mesmo gráfico de dificuldade×t50, os dados observados e as previsões dos modelos dos outros estudos.
@@ -2764,7 +2764,7 @@ O alvo depende do universo elegível; não relaxar regras silenciosamente.
 
 ### Historia 55 - Incerteza e estabilidade das curvas ampliadas e comparação honesta dos modelos
 
-**GitHub:** [#94](https://github.com/Enzofmcs/Lorem/issues/94). **Status: PLANEJADA.**
+**GitHub:** [#94](https://github.com/Enzofmcs/Lorem/issues/94). **Status: EM IMPLEMENTAÇÃO (D-050; critérios ainda sem aceite final).**
 **Dependências:** [50](https://github.com/Enzofmcs/Lorem/issues/89), [52](https://github.com/Enzofmcs/Lorem/issues/91), [53](https://github.com/Enzofmcs/Lorem/issues/92), [54](https://github.com/Enzofmcs/Lorem/issues/93).
 
 **História:** Como pesquisador, quero distinguir diferenças estáveis entre faixas/modelos de variação por amostra, censura ou poucos grupos.
@@ -2790,7 +2790,7 @@ O alvo depende do universo elegível; não relaxar regras silenciosamente.
 
 ### Historia 56 - Demonstração reproduzível e pacote offline do estudo ampliado com curvas t50 e modelos
 
-**GitHub:** [#95](https://github.com/Enzofmcs/Lorem/issues/95). **Status: PLANEJADA.**
+**GitHub:** [#95](https://github.com/Enzofmcs/Lorem/issues/95). **Status: EM IMPLEMENTAÇÃO (D-050; critérios ainda sem aceite final).**
 **Dependências:** [51](https://github.com/Enzofmcs/Lorem/issues/90), [52](https://github.com/Enzofmcs/Lorem/issues/91), [53](https://github.com/Enzofmcs/Lorem/issues/92), [54](https://github.com/Enzofmcs/Lorem/issues/93), [55](https://github.com/Enzofmcs/Lorem/issues/94).
 
 **História:** Como autor do TCC, quero abrir os resultados ampliados visualmente e testar os gráficos sem depender da interface do ambiente de nuvem ou refazer horas de coleta.

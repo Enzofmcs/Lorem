@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lorem-study"
-version = "0.5.0"
+version = "0.6.0"
 description = "Reproducible Codeforces study and offline Jupyter survival analysis"
 requires-python = ">=3.11,<3.14"
 dependencies = []

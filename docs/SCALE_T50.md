@@ -1,14 +1,16 @@
 # Ampliação do estudo: aproximadamente 400 contests e curvas t50
 
-**Estado: planejamento solicitado em 20/10/2026, sem implementação/coleta nova.**
+**Estado: implementação 50–56 autorizada em 20/10/2026; execução real em andamento.**
 A base é a main `cc880ec`, com o estudo 44–48 integrado na PR #87.
 [Planejamento central #88](https://github.com/Enzofmcs/Lorem/issues/88); a demonstração 49
 ([#82](https://github.com/Enzofmcs/Lorem/issues/82)) permanece planejada.
 
 O objetivo é comparar faixas de rating numa amostra maior e visualizar no mesmo
 gráfico os tempos até 50% de probabilidade de AC observados e preditos pelos
-modelos disponíveis. A tarefa atual cria as histórias; não autoriza apresentar
-400 contests como adquiridos ou novos resultados como comprovados.
+modelos disponíveis. A solicitação seguinte autorizou implementar as histórias 50–56, excluindo a 49
+e qualquer alteração ao artigo do TCC. O plano versionado foi congelado antes
+da consulta nova ao universo; resultados somente são comprovados pelas evidências
+da execução, sem chamar o alvo 400 de amostra adquirida.
 
 ## Gráfico e significado do eixo Y
 
@@ -122,8 +124,8 @@ Comparação entre épocas/correção temporal continua fora do escopo.
 | 56 | [#95](https://github.com/Enzofmcs/Lorem/issues/95) | Demonstração reproduzível e pacote offline do estudo ampliado com curvas t50 e modelos |
 
 Fluxo principal: **50 → 51 → 52 → 53 → 54 → 55 → 56**. O roadmap e as issues
-registram pré-requisitos específicos. As sete estão **planejadas**, com todos
-os critérios de implementação em aberto. Não renumerar nem concluir a 49 por
+registram pré-requisitos específicos. As sete foram autorizadas para implementação; a conclusão
+de cada critério depende das verificações e da execução real registradas. Não renumerar nem concluir a 49 por
 este bloco; sua demonstração geral pode fornecer componentes reutilizáveis.
 
 O pacote leve da 56 contém notebooks executados/HTML, figuras, tabelas/curvas
@@ -141,8 +143,40 @@ joins/agrupamentos, inversão de CDF/misturas, domínio, bootstrap e execução 
 dos notebooks precedem qualquer marcação de aceite. Figuras usam exatamente
 as tabelas exportadas, com unidades, fontes, versões, faixas e ausências.
 
-Esta alteração de planejamento exige somente revisão documental, links e
-consistência entre roadmap/issues; não exige Gradle, download de 400 contests ou
-retreino. Android/Firebase, D-012, snapshots anteriores e time-curve-v1 desabilitada
+A implementação aplica testes Python de níveis 2/3, kernels limpos, navegador
+automatizado, replay offline e restauração, com evidência real separada das fixtures.
+Não exige Gradle ou retreino. Android/Firebase, D-012, snapshots anteriores e time-curve-v1 desabilitada
 permanecem preservados. Sem coorte Ipsum obrigatória nem reabertura da 31.
 Conferência humana é opcional (D-014); evidência científica/automatizada não é.
+
+## Plano congelado e viabilidade observada em 20/10/2026
+
+[Configuração](../study/configs/scale-t50-v1.json),
+[plano com timestamp/hashes/modelos/orçamento](../study/configs/scale-t50-plan-v1.json)
+e [operação Linux/Windows](../study/SCALE_T50_README.md). A consulta nova encontrou
+525 candidatos por metadados; 487 reconhecidos como rounds regulares; 162
+excluídos positivamente pelo catálogo por versões 1/2, dando teto preliminar 325.
+A triagem completa de standings chegou a **292 estruturalmente elegíveis**,
+congelados antes de adquirir/analisar os desfechos: déficit de **108** em relação
+a 400. As demais recusas e os hashes ficam no manifesto de triagem.
+
+A grade final mantém oldRating 400 em [0,4000) × problema 200 em [800,3600).
+Pisos principais: 50 tentativas, 20 eventos e 5 grupos; sensibilidades
+25/10/3 e 100/40/10. Bootstrap: 200 réplicas, seed 2026102055, IC95 somente
+quando todas identificam t50. O universo de reamostragem contém os grupos
+conhecidos de contests completos, inclusive grupos sem linhas elegíveis em
+algumas regiões; os grupos efetivos são contados por célula, sem bootstrap local
+que ignore grupos vazios. Grupos externos de origem podem formar pontes
+transitivas; pessoas repetidas não são consideradas independentes.
+
+Os brutos são `.json.gz`, com hash dos bytes HTTP descomprimidos; preparo
+por contest em processos separados reutiliza `prepare.py`, junta features,
+labels e audit 1:1 e grava SQLite transacional. O objetivo de memória é
+operacional e as medições por processo são publicadas; não há lista global com
+centenas de contests. O cache anterior mantém seus timestamps e proveniência.
+
+Resultados/backup/replay reais serão identificados em
+[results/scale-t50-v1/REPORT.md](../study/results/scale-t50-v1/REPORT.md) e na
+evidência da implementação, com aquisição parcial ou completa explicitada.
+O pacote leve mostra resultados agregados, sem anunciar download do snapshot
+completo ou execução nova de bootstrap no modo agregado.
