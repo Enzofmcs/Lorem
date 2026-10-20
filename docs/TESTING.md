@@ -564,3 +564,19 @@ Não interpretar fixture como evidência. Sem Android/Gradle, deploy ou retuning
 [Comandos, hashes e limites](../study/evidence/2026-10-20-notebooks.json),
 [guia](../study/notebooks/README.md), [resultados](../study/results/2026-10-20-notebooks/REPORT.md).
 TESTE MANUAL OPCIONAL - NÃO EXECUTADO (D-014).
+
+
+## Planejamento de escala e t50 (50–56), 20/10/2026
+
+Alteração somente documental: [plano](SCALE_T50.md), roadmap e issues88–95.
+Verificar links, numeração/dependências, todos os critérios novos pendentes,
+contrato t50/CDF versus orçamento/Elo, suporte/ausências e consistência entre as
+issues e a documentação. Não executar aquisição de 400, retreino, testes Python
+ou Gradle para comprovar uma edição de planejamento.
+
+Na implementação futura, as próprias histórias definem os níveis 2/3:
+limites de memória/disco, API roteirizada e retomada, compatibilidade de snapshots,
+joins em escala, agrupamento e não vazamento, primeira passagem de CDF e mistura
+versus média de medianas, domínio, bootstrap com multiplicidade/ausências e
+notebooks/exports em kernel limpo. Evidência real de quantidade/cobertura
+permanece obrigatória; fixtures não concluem a aquisição ou análise real.
