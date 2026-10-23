@@ -1,6 +1,6 @@
 package dev.lorem.app.domain.cloud
 
-import dev.lorem.app.domain.calculateLoremRating
+import dev.lorem.app.domain.*
 import dev.lorem.app.domain.model.*
 import dev.lorem.app.domain.sync.*
 import java.time.Instant
@@ -16,6 +16,19 @@ class CloudTrainingTest {
         cutoff, if (cutoff == start + IPSUM_LIMIT_MILLIS) CloudCloseReason.TIME_LIMIT_EXCEEDED else CloudCloseReason.GIVE_UP)
     private fun submission(id: Long, time: Long, verdict: String?) = CodeforcesSubmission(id, ProblemId(2000, "A"), verdict, Instant.ofEpochMilli(time))
 
+    @Test fun `experimental attempt cannot finalize without its frozen model and original attempts need no new model`() {
+        val a = attempt()
+        val trial = a.copy(ipsum = a.ipsum.copy(virtualDuelSnapshot = VirtualDuelSnapshot(800*DUEL_SCALE,800,0)))
+        assertThrows(IllegalArgumentException::class.java) { finalizeCloudIpsum(trial, CloudVerification.NoAccepted(0),null) }
+        val curve = DuelCurve(listOf(1000),listOf(500000))
+        val result = finalizeCloudIpsum(trial,CloudVerification.NoAccepted(0),null) { snapshot, elapsed, ac ->
+            calculateVirtualDuel(snapshot,curve,elapsed,ac)
+        }
+        assertEquals(-8000000L,result.virtualDuelResult!!.deltaMicros)
+        assertNull(finalizeCloudIpsum(a,CloudVerification.NoAccepted(0),null).virtualDuelResult)
+        val hinted=trial.copy(ipsum=trial.ipsum.copy(hintRevealedAtEpochMillis=start+1000))
+        assertThrows(IllegalStateException::class.java) { finalizeCloudIpsum(hinted,CloudVerification.NoAccepted(0),null) { snapshot,elapsed,ac -> calculateVirtualDuel(snapshot,curve,elapsed,ac) } }
+    }
     @Test fun `canonical handles and caches separate uids versions and case`() {
         assertEquals("cf_tourist", cloudHandleKey("  ToUrIsT "))
         for (bad in listOf("../x", "x/y", "bad handle", "", "a".repeat(65))) {

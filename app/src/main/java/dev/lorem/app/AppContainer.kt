@@ -44,6 +44,9 @@ class AppContainer(context: Context) {
             CloudDeadline(android.os.SystemClock::elapsedRealtime) {
                 android.provider.Settings.Global.getInt(appContext.contentResolver, android.provider.Settings.Global.BOOT_COUNT, -1)
             }, android.os.SystemClock::elapsedRealtime, cloudScheduler::schedule,
+            duelCatalog = dev.lorem.app.data.cloud.VirtualDuelCatalog(
+                appContext.assets.open("virtual-duel-v1.json").bufferedReader().use { it.readText() }),
+            duelEnabled = BuildConfig.VIRTUAL_DUEL_ENABLED,
             scheduleMaintenance = cloudScheduler::maintenance,
             legacy = legacyMigration, pseudonyms = studyPseudonyms,
             scoringSelector = dev.lorem.app.data.cloud.TimeCurveCatalog(

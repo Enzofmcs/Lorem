@@ -1,0 +1,12 @@
+{
+  "data_kind": "emulator-test-with-real-frozen-model",
+  "artifact_sha256": "69954b61bc111b2b2b1c33efef7e66978a74a378244ef0f41f834f9d6a8daea3",
+  "rating_micros": 800000000,
+  "difficulty": 800,
+  "elapsed_ms": 571,
+  "k": 32,
+  "accepted": true,
+  "delta_micros": 16000000,
+  "after_micros": 816000000,
+  "restored_next_input_micros": 816000000
+}

@@ -110,7 +110,7 @@ private fun ActiveIpsumContent(
     }
     if (ipsum.hintRevealedAtEpochMillis == null) {
         Text("O rating, as tags e a categoria ficam ocultos durante o Ipsum.", style = MaterialTheme.typography.bodySmall)
-        OutlinedButton(onClick = { dialog = IpsumDialog.RevealHint }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+        if (ipsum.virtualDuelSnapshot == null) OutlinedButton(onClick = { dialog = IpsumDialog.RevealHint }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
             Text("Revelar tópicos")
         }
     } else {

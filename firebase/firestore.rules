@@ -23,6 +23,41 @@ service cloud.firestore {
       return selection.handleKey == key && selection.bindingVersion == binding
         && getAfter(path).data == selection;
     }
+    function hasDuel(d) { return 'virtualDuel' in d.snapshot; }
+    function validDuelStart(s, h) {
+      let p = s.virtualDuel;
+      let delta = s.rating * 1000000 - p.ratingMicros;
+      return p is map && p.keys().hasAll(['policy', 'model', 'sha256', 'ratingMicros', 'difficulty', 'curveMin', 'k', 'horizonMillis', 'assistance'])
+        && p.keys().hasOnly(['policy', 'model', 'sha256', 'ratingMicros', 'difficulty', 'curveMin', 'k', 'horizonMillis', 'assistance'])
+        && p.policy == 'virtual-duel-v1' && p.model == 'km-delta-isotonic-20261020-v1'
+        && p.sha256 == '69954b61bc111b2b2b1c33efef7e66978a74a378244ef0f41f834f9d6a8daea3'
+        && p.ratingMicros is int && p.ratingMicros == h.get('duelRatingMicros', 800000000)
+        && p.ratingMicros >= 21000000 && p.ratingMicros <= 3857000000
+        && p.difficulty == s.rating && p.difficulty >= 800 && p.difficulty <= 3500
+        && p.curveMin in [-1200, -800, -400, 0, 400, 800, 1200]
+        && delta >= p.curveMin * 1000000 && delta < (p.curveMin + 400) * 1000000
+        && p.k in [32, 64] && p.horizonMillis == 7200000 && p.assistance == 'unassisted';
+    }
+    function validDuelResult(d) {
+      let p = d.snapshot.virtualDuel;
+      let r = d.result.virtualDuel;
+      let horizon = {"-1200": 998444, "-800": 988329, "-400": 911503, "0": 729676, "400": 611844, "800": 566236, "1200": 566236}[string(p.curveMin)];
+      let delta = d.result.accepted ? (p.k / 2) * (1000000 - r.cdfLeft - r.cdfAt) : -(p.k / 2) * horizon;
+      return d.hintAt == null && r is map
+        && r.keys().hasAll(['beforeMicros', 'deltaMicros', 'afterMicros', 'cdfLeft', 'cdfAt', 'cdfHorizon'])
+        && r.keys().hasOnly(['beforeMicros', 'deltaMicros', 'afterMicros', 'cdfLeft', 'cdfAt', 'cdfHorizon'])
+        && r.beforeMicros == p.ratingMicros && r.beforeMicros is int && r.deltaMicros is int && r.afterMicros is int
+        && r.cdfLeft is int && r.cdfAt is int && r.cdfHorizon == horizon
+        && r.cdfLeft >= 0 && r.cdfLeft <= r.cdfAt && r.cdfAt <= horizon
+        && (d.result.endedAt.toMillis() - d.startedAt.toMillis() < 7200000 || r.cdfAt == horizon)
+        && r.deltaMicros == delta && r.afterMicros == r.beforeMicros + r.deltaMicros;
+    }
+    function duelProgress(n, old, a) {
+      return hasDuel(a)
+        ? ('duelRatingMicros' in n && n.duelRatingMicros == a.result.virtualDuel.afterMicros
+          && a.snapshot.virtualDuel.ratingMicros == old.get('duelRatingMicros', 800000000))
+        : n.get('duelRatingMicros', null) == old.get('duelRatingMicros', null);
+    }
     function validScoring(s) {
       let p = s.scoring;
       let b = p.limits;
@@ -65,7 +100,8 @@ service cloud.firestore {
     function finalResult(d) {
       let r = d.result;
       return r is map && r.keys().hasAll(['endedAt', 'accepted', 'errors', 'failure', 'delta', 'finalRating', 'expectedTime'])
-        && r.keys().hasOnly(['endedAt', 'accepted', 'errors', 'failure', 'delta', 'finalRating', 'expectedTime', 'timeGain'])
+        && r.keys().hasOnly(['endedAt', 'accepted', 'errors', 'failure', 'delta', 'finalRating', 'expectedTime', 'timeGain', 'virtualDuel'])
+        && (hasDuel(d) ? validDuelResult(d) : !('virtualDuel' in r))
         && (curveAccepted(d) ? validTimeGain(d) : !('timeGain' in r))
         && r.endedAt is timestamp && r.endedAt >= d.startedAt && r.endedAt <= boundary(d)
         && r.endedAt <= request.time && r.accepted is bool && r.errors is int && r.errors >= 0
@@ -109,7 +145,8 @@ service cloud.firestore {
           let old = resource.data;
           let a = getAfter(ap(uid, handleKey, n.lastIpsumId)).data;
           let before = get(ap(uid, handleKey, n.lastIpsumId)).data;
-          return n.diff(old).affectedKeys().hasOnly(['loremRating', 'progressVersion', 'consolidatedRating', 'lastIpsumId'])
+          return n.diff(old).affectedKeys().hasOnly(['loremRating', 'progressVersion', 'consolidatedRating', 'lastIpsumId', 'duelRatingMicros'])
+            && duelProgress(n, old, a)
             && n.progressVersion == old.progressVersion + 1 && n.progressVersion is int && n.loremRating is int && n.loremRating >= 0
             && (n.consolidatedRating == null || (n.consolidatedRating is int && n.consolidatedRating >= 800
               && (old.consolidatedRating == null || n.consolidatedRating >= old.consolidatedRating)))
@@ -167,7 +204,8 @@ service cloud.firestore {
                 'cfRating', 'cfObservedAt', 'factors', 'recentOverlap'])
               && s.keys().hasOnly(['handle', 'initialRating', 'contestId', 'index', 'name', 'rating', 'tags', 'originAt',
                 'originVerifiedAt', 'originSource', 'originVersion', 'category', 'desiredMin', 'desiredMax', 'fallback',
-                'cfRating', 'cfObservedAt', 'factors', 'recentOverlap', 'scoring'])
+                'cfRating', 'cfObservedAt', 'factors', 'recentOverlap', 'scoring', 'virtualDuel'])
+              && (!hasDuel(n) || validDuelStart(s, h))
               && (!('scoring' in s) || validScoring(s))
               && s.handle == h.handle && s.contestId is int && s.contestId > 0 && s.index is string
               && s.index.matches('[A-Za-z0-9]+') && s.name is string && s.rating is int && s.rating >= 800
@@ -185,7 +223,7 @@ service cloud.firestore {
             let old = resource.data;
             let changed = n.diff(old).affectedKeys();
             return (old.state == 'ACTIVE' && n.state == 'ACTIVE'
-                && changed.hasOnly(['hintAt']) && old.hintAt == null && n.hintAt == request.time
+                && !hasDuel(old) && changed.hasOnly(['hintAt']) && old.hintAt == null && n.hintAt == request.time
                 && request.time < expiry(old) && locked(uid, handleKey, ipsumId))
               || (old.state == 'ACTIVE' && n.state == 'CLOSED_AWAITING_VERIFICATION'
                 && changed.hasOnly(['state', 'cutoffAt', 'closeReason', 'failure']) && locked(uid, handleKey, ipsumId)
@@ -200,7 +238,8 @@ service cloud.firestore {
                 && getAfter(hp(uid, handleKey)).data.progressVersion == old.version + 1
                 && getAfter(hp(uid, handleKey)).data.bindingVersion == old.bindingVersion
                 && getAfter(hp(uid, handleKey)).data.loremRating == n.result.finalRating
-                && getAfter(hp(uid, handleKey)).data.lastIpsumId == ipsumId && unlocked(uid))
+                && getAfter(hp(uid, handleKey)).data.lastIpsumId == ipsumId
+                && duelProgress(getAfter(hp(uid, handleKey)).data, get(hp(uid, handleKey)).data, n) && unlocked(uid))
               || (old.state == 'FINAL' && old.result.accepted == false && old.solvedOutsideAt == null
                 && changed.hasOnly(['solvedOutsideAt']) && n.solvedOutsideAt is timestamp
                 && n.solvedOutsideAt > boundary(old) && n.solvedOutsideAt <= request.time);

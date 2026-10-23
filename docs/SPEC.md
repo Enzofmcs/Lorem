@@ -296,3 +296,14 @@ Ativo anterior usa inicio original e prazo absoluto de 2h, ou primeira fronteira
 manual; API incompleta/TESTING impede resultado definitivo e novo treino. Apenas
 problemas excluidos sao sincronizados como IDs publicos por uid+handle. Arquivo
 congelado e somente leitura; saldo cloud novo e 800, saldo existente nao reseta.
+
+## Duelo virtual experimental (história 57)
+
+O preview opt-in adiciona um saldo independente ao resultado cloud, começando em
+800 provisórios. H=120 minutos e K32 são congelados; modalidade sem dicas. AC usa
+meio crédito de empate na CDF de tempo, e não resolver/desistir usa F(H) original.
+Pode haver perda com AC lento. O saldo usa milionésimos, sem piso ou conversão
+do saldo D-012; só o próprio saldo experimental alimenta a próxima expectativa.
+Sem modelo/domínio, recusar o início experimental antes do lock. Sem verificação
+completa da API, aguardar; upsolve não reavalia. D-012 continua padrão.
+[Contrato e limites científicos/operacionais](VIRTUAL_DUEL.md).

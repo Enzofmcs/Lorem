@@ -132,6 +132,11 @@ fun CloudTrainingApp(uid: String, state: CloudTrainingUiState, now: Long?,
                             Text("Selecione ou adicione seu handle para começar.")
                             Button(onClick = { tab(LoremDestination.Configuration) }) { Text("Configurar handle") }
                         } else Column {
+                            if (dev.lorem.app.BuildConfig.VIRTUAL_DUEL_ENABLED) Text(
+                                "Modo experimental sem dicas · saldo independente: " +
+                                    java.lang.String.format(java.util.Locale.forLanguageTag("pt-BR"), "%.6f",
+                                        (profile?.duelRatingMicros ?: 800 * DUEL_SCALE).toDouble() / DUEL_SCALE) +
+                                    ". Começa em 800 provisórios; desistir conta como não resolver até 120 min.", Modifier.padding(16.dp))
                             state.preparation?.let { Text("${it.stage.label}: ${it.detail}", Modifier.padding(16.dp)) }
                             HomeScreen(localProfile, catalogReady = false, requiresLocalPreparation = false,
                                 onNavigate = { route ->

@@ -58,14 +58,15 @@ async function fixture(age = 7201000, cutoff = null, scoring = null) {
   });
   return {...c, started, data};
 }
-async function finish(c, {accepted = false, ended = c.started + 7200000, delta = accepted ? 24 : -20, id = 'one', timeGain = null} = {}) {
+async function finish(c, {accepted = false, ended = c.started + 7200000, delta = accepted ? 24 : -20, id = 'one', timeGain = null, duel = null} = {}) {
   const old = (await getDoc(doc(c.db, `${path(c.uid)}/ipsums/${id}`))).data();
   const result = {endedAt: ms(ended), accepted, errors: 0, failure: accepted ? null : old.failure,
     delta, finalRating: Math.max(0, 800 + delta), expectedTime: 3600000};
   if (timeGain) result.timeGain = timeGain;
+  if (duel) result.virtualDuel = duel;
   const batch = writeBatch(c.db);
   batch.update(doc(c.db, `${path(c.uid)}/ipsums/${id}`), {state: 'FINAL', result, processedAt: serverTimestamp()});
-  batch.update(doc(c.db, path(c.uid)), {loremRating: result.finalRating, progressVersion: 1, consolidatedRating: null, lastIpsumId: id});
+  batch.update(doc(c.db, path(c.uid)), {loremRating: result.finalRating, progressVersion: 1, consolidatedRating: null, lastIpsumId: id, ...(duel ? {duelRatingMicros: duel.afterMicros} : {})});
   batch.delete(doc(c.db, lockPath(c.uid)));
   return batch.commit();
 }
@@ -310,4 +311,56 @@ test('curve bands use the same epoch milliseconds as Android with a submilliseco
     });
     await assertSucceeds(finish(c, {accepted: true, ended: c.started + elapsed, delta: details.gain, timeGain: details}));
   }
+});
+
+const duelArtifact = JSON.parse(readFileSync(resolve(__dirname, '../../app/src/main/assets/virtual-duel-v1.json')));
+const duelHorizon = duelArtifact.curves.find(c => c.delta_min === 0).cdf_ppm.at(-1);
+const duelSnapshot = () => ({policy: 'virtual-duel-v1', model: 'km-delta-isotonic-20261020-v1',
+  sha256: '69954b61bc111b2b2b1c33efef7e66978a74a378244ef0f41f834f9d6a8daea3',
+  ratingMicros: 800000000, difficulty: 800, curveMin: 0, k: 32, horizonMillis: 7200000, assistance: 'unassisted'});
+async function duelFixture() {
+  const c = await fixture(5000, 3000);
+  await env.withSecurityRulesDisabled(async context => {
+    await updateDoc(doc(context.firestore(), `${path(c.uid)}/ipsums/one`), {'snapshot.virtualDuel': duelSnapshot()});
+  });
+  return c;
+}
+function duelFailure() {
+  const deltaMicros = -16 * duelHorizon;
+  return {beforeMicros: 800000000, deltaMicros, afterMicros: 800000000 + deltaMicros,
+    cdfLeft: 0, cdfAt: 0, cdfHorizon: duelHorizon};
+}
+test('experimental start pins model own prior domain support deadline K and no hint', async () => {
+  const c = await account();
+  await setDoc(doc(c.db, path(c.uid)), handleData());
+  for (const patch of [{ratingMicros: 3500000000}, {sha256: 'a'.repeat(64)}, {model: 'future-v2'},
+    {difficulty: 1600}, {curveMin: 400}, {k: 10}, {horizonMillis: 7200001}, {assistance: 'hinted'}, {extra: true}]) {
+    await assertFails(start(c, 'cf_tourist', 'trial', 2000, x => ({...x, snapshot: {...x.snapshot, virtualDuel: {...duelSnapshot(), ...patch}}})));
+  }
+  await assertSucceeds(start(c, 'cf_tourist', 'trial', 2000, x => ({...x, snapshot: {...x.snapshot, virtualDuel: duelSnapshot()}})));
+  await assertFails(updateDoc(doc(c.db, `${path(c.uid)}/ipsums/trial`), {hintAt: serverTimestamp()}));
+  await assertFails(updateDoc(doc(c.db, `${path(c.uid)}/ipsums/trial`), {'snapshot.virtualDuel.k': 64}));
+});
+test('experimental failure is atomic fractional horizon based once and old clients cannot omit its result', async () => {
+  const c = await duelFixture();
+  await assertFails(finish(c, {ended: c.started+3000}));
+  const r = duelFailure();
+  for (const patch of [{cdfHorizon: 0}, {cdfAt: duelHorizon+1}, {cdfLeft: -1}, {deltaMicros: -1},
+    {beforeMicros: 800}, {afterMicros: 800000000}, {extra: true}]) {
+    await assertFails(finish(c, {ended: c.started+3000, duel: {...r,...patch}}));
+  }
+  await assertSucceeds(finish(c, {ended: c.started+3000, duel: r}));
+  assert.equal((await getDoc(doc(c.db,path(c.uid)))).data().duelRatingMicros,r.afterMicros);
+  await assertFails(finish(c, {ended: c.started+3000,duel:r}));
+  await assertFails(updateDoc(doc(c.db,path(c.uid)),{duelRatingMicros:800000000}));
+});
+test('late AC may decrease the independent rating while legacy result remains intact', async () => {
+  const c = await fixture();
+  await env.withSecurityRulesDisabled(async context => {
+    await updateDoc(doc(context.firestore(),`${path(c.uid)}/ipsums/one`),{'snapshot.virtualDuel':duelSnapshot()});
+  });
+  const deltaMicros=16*(1000000-2*duelHorizon);
+  await assertSucceeds(finish(c,{accepted:true,duel:{beforeMicros:800000000,deltaMicros,
+    afterMicros:800000000+deltaMicros,cdfLeft:duelHorizon,cdfAt:duelHorizon,cdfHorizon:duelHorizon}}));
+  assert.ok(deltaMicros<0);
 });

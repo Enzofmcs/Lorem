@@ -51,6 +51,13 @@ fun IpsumStudyExport.toStudyJson(applicationVersion: String?): String {
                 put("band", gain.band.name).put("base_gain", gain.baseGain).put("multiplier", gain.multiplier)
                 put("timed_gain", gain.timedGain).put("hint_deduction", gain.hintDeduction).put("gain", gain.gain)
             } },
+            "virtual_duel_snapshot" to ipsum.virtualDuelSnapshot?.let { d -> json(mapOf(
+                "policy" to d.policy, "model" to d.model, "sha256" to d.sha256, "rating_micros" to d.ratingMicros,
+                "difficulty" to d.difficulty, "curve_min" to d.curveMin, "k" to d.k,
+                "horizon_ms" to d.horizonMillis, "assistance" to d.assistance)) },
+            "virtual_duel_result" to ipsum.virtualDuelResult?.let { r -> json(mapOf(
+                "before_micros" to r.beforeMicros, "delta_micros" to r.deltaMicros, "after_micros" to r.afterMicros,
+                "cdf_left_ppm" to r.cdfLeft, "cdf_at_ppm" to r.cdfAt, "cdf_horizon_ppm" to r.cdfHorizon)) },
             "interruptions" to null,
             "wall_clock_only" to true,
         )))

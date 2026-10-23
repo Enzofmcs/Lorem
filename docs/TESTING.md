@@ -597,3 +597,31 @@ teste num Windows real. Gradle não se aplica a mudanças exclusivamente Python/
 [Evidência](../study/evidence/2026-10-20-scale-t50.json),
 [guia](../study/SCALE_T50_README.md). Comparação descritiva, sem nova avaliação
 preditiva. **TESTE MANUAL OPCIONAL - NÃO EXECUTADO (D-014).**
+
+## História 57 — duelo virtual, 23/10/2026
+
+Nível 4 no desenvolvimento, Nível 5 no marco. 354 debug/249 release, sem falhas ou
+ignorados, incluindo 19 testes SDK reais contra Auth/Firestore Emulator. 37 testes
+Auth/Rules e 150 Python. Lint sem erros (58 avisos existentes), APK padrão e
+preview opt-in. [Evidência e comandos exatos](evidence/2026-10-23-virtual-duel-57.json).
+
+144 fixtures do artefato real verificam paridade Python/Kotlin, tempos antes/exato/
+depois dos degraus, AC em H, censura/suporte, unidades inválidas e motivos de
+indisponibilidade. Soma ponderada das massas dá esperança exatamente zero para
+cada curva/K; a hipótese projetada tem CDF monótona no tempo/dificuldade. Casos
+sintéticos F=0/1, empates e entradas inválidas ficam isolados de alegações empíricas.
+
+SDK demonstra AC, encerramento cedo com H original, expiração, verificação
+incompleta/TESTING, offline, restauração, próximo input do saldo experimental,
+exportação, upsolve sem reavaliação e preservação de tentativa antiga/padrão.
+Concorrência entre repositórios revelou recusa de write obsoleto após FINAL:
+recuperação agora exige confirmar a mesma tentativa imutável no servidor; não
+transforma uma recusa não confirmada em sucesso. Rules cobrem snapshots forjados,
+cliente antigo sem resultado experimental, mudanças de saldo fora da transação,
+modelo incompatível, dica e repetição. Compose cobre sigilo e ausência de dica.
+
+Os testes usam transporte CF controlado e `demo-lorem-local`. Não são dados de
+usuários nem login Google/deploy real. O caso SDK salvo em
+`study/results/virtual-duel-v1/sdk-demo.json` é reproduzido exatamente em Python.
+Detalhes científicos, simulações e reversão prospectiva em [VIRTUAL_DUEL.md](VIRTUAL_DUEL.md).
+**TESTE MANUAL OPCIONAL - NÃO EXECUTADO (D-014).**
