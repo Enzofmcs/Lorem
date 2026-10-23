@@ -133,12 +133,10 @@ fun CloudTrainingApp(uid: String, state: CloudTrainingUiState, now: Long?,
                             Button(onClick = { tab(LoremDestination.Configuration) }) { Text("Configurar handle") }
                         } else Column {
                             if (dev.lorem.app.BuildConfig.VIRTUAL_DUEL_ENABLED) Text(
-                                "Modo experimental sem dicas · saldo independente: " +
-                                    java.lang.String.format(java.util.Locale.forLanguageTag("pt-BR"), "%.6f",
-                                        (profile?.duelRatingMicros ?: 800 * DUEL_SCALE).toDouble() / DUEL_SCALE) +
-                                    ". Começa em 800 provisórios; desistir conta como não resolver até 120 min.", Modifier.padding(16.dp))
+                                "Treino com Rating Dolor · sem dicas · desistir conta como não resolver até 120 min.", Modifier.padding(16.dp))
                             state.preparation?.let { Text("${it.stage.label}: ${it.detail}", Modifier.padding(16.dp)) }
                             HomeScreen(localProfile, catalogReady = false, requiresLocalPreparation = false,
+                                showDolorRating = true, dolorRatingMicros = profile?.duelRatingMicros,
                                 onNavigate = { route ->
                                     if (route == LoremDestination.Ipsum.route) { requested = active?.id; nav.navigate(route) }
                                     else if (route.startsWith("${LoremDestination.Result.route}/")) {
@@ -169,7 +167,8 @@ fun CloudTrainingApp(uid: String, state: CloudTrainingUiState, now: Long?,
                     }
                     composable(LoremDestination.Statistics.route) {
                         val stats = localProfile?.let { buildIpsumStatistics(it, ipsums, ipsums.map { i -> i.problem }) }
-                        StatisticsScreen(stats?.let { StatisticsUiState.Ready(it) } ?: StatisticsUiState.NoProfile, ::home, consolidation)
+                        StatisticsScreen(stats?.let { StatisticsUiState.Ready(it) } ?: StatisticsUiState.NoProfile, ::home, consolidation,
+                            showDolorRating = true, dolorRatingMicros = profile?.duelRatingMicros)
                     }
                     composable(LoremDestination.Configuration.route) {
                         CloudSettings(state, onAdd, onSelect, onStart, onRefresh, onPending, theme, onThemeChange, settingsContent)

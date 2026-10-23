@@ -38,7 +38,7 @@ class HistoryScreenTest {
         composeRule.onNodeWithTag("tag-dp").performScrollTo().performClick()
         composeRule.onAllNodesWithText("Other problem").assertCountEquals(0)
         listOf(
-            "Selected problem", "Problema: 100A", "Rating: 1400", "Tags: dp, graphs",
+            "Selected problem", "Problema: 100A", "Rating do problema: 1400", "Tags: dp, graphs",
             "Tempo: 00:01:00", "Dica utilizada: sim", "Erros: 3", "Data do Ipsum:",
             "Avaliação original: AC no Ipsum", "Variação do Rating Lorem: +18",
         ).forEach { see(it, substring = true) }
@@ -106,7 +106,7 @@ class HistoryScreenTest {
             .performScrollTo().performClick()
         see("AC posterior:", substring = true)
         see("Avaliação original: encerrado sem AC")
-        see("O AC posterior não altera o rating nem a taxa original de AC.")
+        see("O AC posterior não altera os ratings nem a taxa original de AC.")
     }
 
     @Test fun `empty history differs from filtered results and active attempts never leak`() {

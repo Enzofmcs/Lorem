@@ -6,6 +6,8 @@
 
 ## Estado atual
 
+**UI dos ratings (23/10/2026, D-052):** Rating Lorem e Rating Dolor destacados separadamente no início, resultado, histórico e estatísticas cloud. 39 testes direcionados passaram; inclui troca de conta, ausência/zero, frações, dados antigos, sigilo do ativo e renders claro/escuro em 320 dp/fonte 200% e paisagem. [Evidência](evidence/2026-10-23-ratings-lorem-dolor-ui.json). Cálculos, persistência e ativação preservados.
+
 **História 57 (23/10/2026):** duelo virtual experimental implementado e verificado. A 49 continua de lado por solicitação do usuário. [Contrato e preview](VIRTUAL_DUEL.md); [critérios](#historia-57). Os registros de planejamento abaixo são históricos.
 
 **Correção após 40–43:** entrada Google sem retorno visual corrigida nos caminhos reproduzidos; continuidade explícita da sessão, feedback e logs `LoremAuth`. 343 debug/245 release sem falhas ou ignorados, 16 SDK reais incluídos, 43 direcionados de autenticação e 14 rechecados após reforçar a asserção de uid; lint sem erros (58 avisos) e APK. [Evidência](evidence/2026-10-20-google-login-fix.json). Sem reprodução do seletor Google real no aparelho.

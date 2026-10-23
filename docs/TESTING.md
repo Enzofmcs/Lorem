@@ -625,3 +625,16 @@ usuários nem login Google/deploy real. O caso SDK salvo em
 `study/results/virtual-duel-v1/sdk-demo.json` é reproduzido exatamente em Python.
 Detalhes científicos, simulações e reversão prospectiva em [VIRTUAL_DUEL.md](VIRTUAL_DUEL.md).
 **TESTE MANUAL OPCIONAL - NÃO EXECUTADO (D-014).**
+
+## Apresentação Lorem/Dolor, 23/10/2026
+
+D-052 muda somente a apresentação. Compilação debug e 39 testes direcionados
+Compose/Robolectric, sem falhas/ignorados: HomeScreen, HomeConfigurationLayout,
+IpsumResultScreen, HistoryScreen, StatisticsScreen, HistoryStatisticsLayout e
+CloudTrainingScreen. Verificados saldo Dolor salvo com flag padrão, frações
+exatas, sinais opostos Lorem/Dolor, zero versus ausência, troca de conta/handle,
+resultado antigo sem empréstimo do saldo atual e sigilo durante o ativo.
+Renders automatizados em claro/escuro, telefone padrão, 320 dp/fonte 200% e
+paisagem, com asserções de ausência de corte no texto. [Evidência](evidence/2026-10-23-ratings-lorem-dolor-ui.json).
+Cálculo/Rules/persistência não foram alterados; não repetir regressão de pontuação
+para a mudança de nomes e cards. TESTE MANUAL OPCIONAL - NÃO EXECUTADO (D-014).

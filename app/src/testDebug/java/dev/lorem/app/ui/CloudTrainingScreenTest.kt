@@ -28,13 +28,60 @@ class CloudTrainingScreenTest {
     private fun final(status: IpsumStatus = IpsumStatus.COMPLETED) = active.copy(state = CloudIpsumState.FINAL,
         ipsum = active.ipsum.copy(status = status, endedAtEpochMillis = 61000, ratingDelta = 24, finalLoremRating = 947,
             solvedOutsideAtEpochMillis = if (status == IpsumStatus.SOLVED_OUTSIDE) 62000 else null))
-    private fun state(attempt: CloudIpsum? = active, history: List<CloudIpsum> = emptyList()) = CloudTrainingUiState(CloudSnapshot(
-        listOf(CloudHandle("cf_tourist", "Tourist", 923, null, 0)), attempt, history + listOfNotNull(attempt), true), "cf_tourist")
+    private fun state(attempt: CloudIpsum? = active, history: List<CloudIpsum> = emptyList(), dolor: Long? = null) = CloudTrainingUiState(CloudSnapshot(
+        listOf(CloudHandle("cf_tourist", "Tourist", 923, null, 0, duelRatingMicros = dolor)), attempt, history + listOfNotNull(attempt), true), "cf_tourist")
+    @Test fun `home and statistics show persisted Dolor fractions independent of activation and clear account values`() {
+        val uid = mutableStateOf("A")
+        val screen = mutableStateOf(state(null, dolor = 1456123456))
+        compose.setContent { LoremTheme { CloudTrainingApp(uid.value, screen.value, 1000, {}, {}, {}, {}, {}, {}, {}) } }
+        compose.onNodeWithTag("rating-dolor").performScrollTo().assertTextContains("1456,123456")
+        compose.onNodeWithText("Rating Lorem").assertExists()
+        compose.onNodeWithTag("tab-statistics").performClick()
+        compose.onNodeWithTag("statistics-list").performScrollToNode(hasTestTag("rating-dolor"))
+        compose.onNodeWithTag("rating-dolor").assertTextContains("1456,123456")
+        compose.onNodeWithText("Rating Lorem atual: 923").assertExists()
+        compose.runOnIdle { uid.value = "B"; screen.value = state(null) }
+        compose.onNodeWithTag("rating-dolor").performScrollTo().assertTextContains("Ainda sem avaliação Dolor.")
+        compose.onNodeWithText("1456,123456", useUnmergedTree = true).assertDoesNotExist()
+        compose.runOnIdle { screen.value = state(null, dolor = 0) }
+        compose.onNodeWithTag("rating-dolor").assertTextContains("0")
+        compose.runOnIdle {
+            screen.value = screen.value.copy(selectedKey = "cf_petr", snapshot = screen.value.snapshot!!.copy(
+                handles = listOf(CloudHandle("cf_petr", "Petr", 1600, null, 0, duelRatingMicros = 1742000000))))
+        }
+        compose.onNodeWithTag("rating-dolor").performScrollTo().assertTextContains("1742")
+        compose.onNodeWithText("1600").assertExists()
+    }
+
+    @Test fun `result and history keep opposite Lorem and Dolor deltas distinct without rounding fractions`() {
+        val saved = VirtualDuelResult(800000000, -16, 799999984, 500000, 500001, 800000)
+        val result = final().let { it.copy(ipsum = it.ipsum.copy(studyRecordingVersion = CLOUD_RULE_VERSION, virtualDuelResult = saved)) }
+        compose.setContent { LoremTheme { CloudTrainingApp("A", state(null, listOf(result), dolor = 799999984), 1000, {}, {}, {}, {}, {}, {}, {}) } }
+        compose.onNodeWithText("Ver último resultado").performScrollTo().performClick()
+        compose.onNodeWithText("Variação: +24 pontos").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithTag("rating-dolor").performScrollTo().assertTextContains("Agora: 799,999984")
+        compose.onNodeWithTag("rating-dolor").assertTextContains("Variação Dolor: −0,000016 pontos")
+        compose.onNodeWithText("Voltar ao início").performScrollTo().performClick()
+        compose.onNodeWithTag("tab-history").performClick()
+        compose.onNodeWithTag("history-list").performScrollToNode(hasText("Variação do Rating Dolor: −0,000016"))
+        compose.onNodeWithText("Variação do Rating Lorem: +24").assertExists()
+        compose.onNodeWithText("Rating Dolor: 799,999984").assertExists()
+    }
+
+    @Test fun `old cloud result does not borrow the current Dolor balance`() {
+        val old = final().let { it.copy(ipsum = it.ipsum.copy(studyRecordingVersion = CLOUD_RULE_VERSION)) }
+        compose.setContent { LoremTheme { CloudTrainingApp("A", state(null, listOf(old), dolor = 1500000000), 1000, {}, {}, {}, {}, {}, {}, {}) } }
+        compose.onNodeWithText("Ver último resultado").performScrollTo().performClick()
+        compose.onNodeWithTag("rating-dolor").performScrollTo().assertTextContains("Sem avaliação Dolor neste Ipsum.")
+        compose.onNodeWithText("1500", useUnmergedTree = true).assertDoesNotExist()
+        compose.onNodeWithText("Variação: +24 pontos").assertExists()
+    }
+
     @Test fun `experimental active hides hint and all scoring metadata in semantics`() {
         val trial = active.copy(ipsum = active.ipsum.copy(virtualDuelSnapshot = VirtualDuelSnapshot(800*DUEL_SCALE,1200,400)))
         compose.setContent { LoremTheme { CloudTrainingApp("A", state(trial), 1000, {}, {}, {}, {}, {}, {}, {}) } }
         compose.onNodeWithText("Revelar tópicos").assertDoesNotExist()
-        for (secret in listOf("1200", "math", "virtual-duel", "800", "Rating experimental")) {
+        for (secret in listOf("1200", "math", "virtual-duel", "800", "Rating Dolor")) {
             compose.onNodeWithText(secret,substring=true,useUnmergedTree=true).assertDoesNotExist()
         }
     }

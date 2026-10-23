@@ -1,5 +1,11 @@
 # História 57 — duelo virtual experimental
 
+**Nome na interface: Rating Dolor.** O rating anterior continua **Rating Lorem**.
+Ambos aparecem separados no início, resultado, histórico e estatísticas cloud.
+O saldo Dolor salvo aparece mesmo com novos duelos desabilitados; ausência de
+avaliação é indicada explicitamente, sem inventar saldo ou reutilizar o atual
+em resultados antigos. Campos persistidos e identificadores técnicos mantidos.
+
 A implementação acrescenta uma trajetória separada `virtual-duel-v1` aos treinos
 cloud, com cálculo Python/Kotlin, modelo completo versionado e atualização atômica
 no Firestore. A história 49 permanece fora desta entrega. D-012 continua sendo o
