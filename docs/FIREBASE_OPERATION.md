@@ -117,3 +117,12 @@ Os logs registram nomes de etapas e códigos, sem tokens, UID, e-mail ou mensage
 brutas de exceções. A causa do retorno do provedor no aparelho não foi observada
 neste ambiente; a configuração OAuth/Rules confirmada pelo usuário permanece
 registrada. Nenhum deploy nem modificação de OAuth/Rules integra esta correção.
+
+## Preview da história 57
+
+[Operação e compatibilidade do duelo virtual](VIRTUAL_DUEL.md). Novas Rules
+precisam ser publicadas em ambiente de teste antes de distribuir o APK com
+`-Plorem.virtualDuelEnabled=true`. Padrão false, sem alteração de projeto remoto
+nesta entrega. Manter modelo/Rules compatíveis ao desligar novos inícios; duelo
+ativo deve finalizar com seu snapshot. Não restaurar Rules antigas sobre tentativas
+novas. Saldo D-012 e saldo experimental separados, sem migração ou reavaliação.

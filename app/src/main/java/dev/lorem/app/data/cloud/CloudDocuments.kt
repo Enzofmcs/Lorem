@@ -11,9 +11,9 @@ import java.util.Date
 internal fun timestamp(millis: Long) = Timestamp(Date(millis))
 internal fun DocumentSnapshot.cloudHandle() = CloudHandle(id, getString("handle")!!,
     getLong("loremRating")!!.toInt(), getLong("consolidatedRating")?.toInt(), getLong("progressVersion")!!,
-    getLong("bindingVersion")!!)
+    getLong("bindingVersion")!!, getLong("duelRatingMicros"))
 
-internal fun snapshotOf(recommendation: IpsumRecommendation, rating: Int, handle: String, cf: Int?, cfAt: Long?, scoring: ScoringSnapshot? = null): Map<String, Any?> {
+internal fun snapshotOf(recommendation: IpsumRecommendation, rating: Int, handle: String, cf: Int?, cfAt: Long?, scoring: ScoringSnapshot? = null, duel: dev.lorem.app.domain.VirtualDuelSnapshot? = null): Map<String, Any?> {
     val p = recommendation.problem
     return mapOf(
         "handle" to handle, "initialRating" to rating, "contestId" to p.id.contestId, "index" to p.id.index,
@@ -26,14 +26,14 @@ internal fun snapshotOf(recommendation: IpsumRecommendation, rating: Int, handle
         "factors" to recommendation.factors.tags.map { mapOf("tag" to it.tag, "exposure" to it.exposure,
             "attempts" to it.attempts, "accepted" to it.accepted, "hints" to it.hints) },
         "recentOverlap" to recommendation.factors.recentOverlap,
-    ) + (scoring?.let { mapOf("scoring" to it.toDocument()) } ?: emptyMap())
+    ) + (scoring?.let { mapOf("scoring" to it.toDocument()) } ?: emptyMap()) + (duel?.let { mapOf("virtualDuel" to it.toDocument()) } ?: emptyMap())
 }
 
 internal fun resultOf(ipsum: Ipsum): Map<String, Any?> = mapOf(
     "endedAt" to timestamp(ipsum.endedAtEpochMillis!!), "accepted" to (ipsum.status == IpsumStatus.COMPLETED),
     "errors" to ipsum.errorCount, "failure" to ipsum.failureReason?.name, "delta" to ipsum.ratingDelta,
     "finalRating" to ipsum.finalLoremRating, "expectedTime" to ipsum.expectedTimeMillis,
-) + (ipsum.timeGain?.let { mapOf("timeGain" to it.toDocument()) } ?: emptyMap())
+) + (ipsum.virtualDuelResult?.let { mapOf("virtualDuel" to it.toDocument()) } ?: emptyMap()) + (ipsum.timeGain?.let { mapOf("timeGain" to it.toDocument()) } ?: emptyMap())
 
 internal fun DocumentSnapshot.cloudIpsum(): CloudIpsum {
     val s = get("snapshot") as Map<*, *>
@@ -74,6 +74,8 @@ internal fun DocumentSnapshot.cloudIpsum(): CloudIpsum {
             initialCodeforcesRatingObservedAtEpochMillis = (s["cfObservedAt"] as? Number)?.toLong(),
             studyRecordingVersion = CLOUD_RULE_VERSION,
             scoringSnapshot = if (s.containsKey("scoring")) scoringSnapshot(s["scoring"] as Map<*, *>) else null,
+            virtualDuelSnapshot = (s["virtualDuel"] as? Map<*, *>)?.let(::virtualDuelSnapshot),
+            virtualDuelResult = (result?.get("virtualDuel") as? Map<*, *>)?.let(::virtualDuelResult),
             timeGain = (result?.get("timeGain") as? Map<*, *>)?.let(::timeGain),
         ), getTimestamp("cutoffAt")?.toDate()?.time,
         getString("closeReason")?.let(CloudCloseReason::valueOf),

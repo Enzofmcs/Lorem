@@ -13,6 +13,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import dev.lorem.app.domain.model.*
 import dev.lorem.app.domain.scoringExplanation
+import dev.lorem.app.domain.explanation
 import dev.lorem.app.ui.IpsumResultUiState
 import dev.lorem.app.ui.components.*
 import kotlin.math.absoluteValue
@@ -118,6 +119,7 @@ private fun RatingExplanation(ipsum: Ipsum) {
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("Entenda a variação", style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
+            ipsum.virtualDuelResult?.let { Text(it.explanation()) }
             if (ipsum.scoringSnapshot != null) {
                 Text(scoringExplanation(ipsum.scoringSnapshot, ipsum.timeGain, ipsum.status == IpsumStatus.COMPLETED))
                 return@Column

@@ -17,6 +17,7 @@ data class CloudHandle(
     val consolidatedRating: Int?,
     val version: Long,
     val bindingVersion: Long = 1,
+    val duelRatingMicros: Long? = null,
 )
 
 enum class CloudIpsumState { ACTIVE, CLOSED_AWAITING_VERIFICATION, FINAL }
@@ -87,7 +88,8 @@ fun verifyCloudWindow(attempt: CloudIpsum, submissions: List<CodeforcesSubmissio
     return CloudVerification.NoAccepted(errors)
 }
 
-fun finalizeCloudIpsum(attempt: CloudIpsum, verification: CloudVerification, failure: IpsumFailureReason?): Ipsum {
+fun finalizeCloudIpsum(attempt: CloudIpsum, verification: CloudVerification, failure: IpsumFailureReason?,
+    duelEvaluator: ((VirtualDuelSnapshot, Long, Boolean) -> VirtualDuelResult)? = null): Ipsum {
     require(verification != CloudVerification.Awaiting)
     val accepted = verification is CloudVerification.Accepted
     val endedAt = (verification as? CloudVerification.Accepted)?.atMillis ?: requireNotNull(attempt.cutoffMillis)
@@ -112,6 +114,11 @@ fun finalizeCloudIpsum(attempt: CloudIpsum, verification: CloudVerification, fai
         },
         ratingDelta = delta, finalLoremRating = (attempt.ipsum.initialLoremRating + delta).coerceAtLeast(0),
         timeGain = gain,
+        virtualDuelResult = attempt.ipsum.virtualDuelSnapshot?.let { snapshot ->
+            check(attempt.ipsum.hintRevealedAtEpochMillis == null) { "Tentativa experimental incompatível com dica." }
+            requireNotNull(duelEvaluator) { "Modelo experimental indisponível; avaliação adiada." }(snapshot,
+                endedAt - attempt.ipsum.startedAtEpochMillis, accepted)
+        },
         expectedTimeMillis = calculation.expectedTimeMillis,
     )
 }

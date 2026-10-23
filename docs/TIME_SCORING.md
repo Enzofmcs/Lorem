@@ -1,5 +1,8 @@
 # Política de pontos por curva de tempo — decisão v1
 
+A história 57 acrescenta a política separada [virtual-duel-v1](VIRTUAL_DUEL.md).
+Este documento preserva o contrato histórico da 39/D-044; não define a nova regra.
+
 ## Decisão anterior à implementação
 
 T1 é a referência do par de ratings; T2 inicia a resolução lenta; T3 encerra

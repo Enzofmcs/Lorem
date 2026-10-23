@@ -19,3 +19,5 @@ O guia obrigatorio e compacto de cada sessao permanece em [`../AGENTS.md`](../AG
 
 - [Protocolo local de Ipsums](../study/IPSUM_PROTOCOL.md): exportacao e preparo da 30; coorte real ausente, 31/32 bloqueadas.
 - [Pre-registro de transporte Ipsum](../study/TRANSPORT_PROTOCOL.md): ferramenta/limiares da 31, modelos congelados e teste por participante; conclusao empirica pendente.
+
+- [Duelo virtual experimental — história 57](VIRTUAL_DUEL.md): cálculo, referência, persistência e preview.

@@ -6,6 +6,8 @@
 
 ## Estado atual
 
+**História 57 (23/10/2026):** duelo virtual experimental implementado e verificado. A 49 continua de lado por solicitação do usuário. [Contrato e preview](VIRTUAL_DUEL.md); [critérios](#historia-57). Os registros de planejamento abaixo são históricos.
+
 **Correção após 40–43:** entrada Google sem retorno visual corrigida nos caminhos reproduzidos; continuidade explícita da sessão, feedback e logs `LoremAuth`. 343 debug/245 release sem falhas ou ignorados, 16 SDK reais incluídos, 43 direcionados de autenticação e 14 rechecados após reforçar a asserção de uid; lint sem erros (58 avisos) e APK. [Evidência](evidence/2026-10-20-google-login-fix.json). Sem reprodução do seletor Google real no aparelho.
 
 **Foco atual:** histórias 44–48 implementadas e verificadas com nova coleta real: cinco notebooks, auditoria, curvas x/y, quartis/orçamento e estabilidade. 20 contests adquiridos/19 elegíveis, 355.796 tentativas válidas. [Relatório](../study/results/2026-10-20-notebooks/REPORT.md), [evidência](../study/evidence/2026-10-20-notebooks.json). 40–43 e suas evidências permanecem preservadas.
@@ -80,6 +82,8 @@ da 20. [SYNC.md](SYNC.md) e [DESIGN.md](DESIGN.md) detalham os planos.
 As Historias 15-17 foram implementadas e verificadas em 2026-10-15 e as Historias 18-21 em 2026-10-16; o bloco planejado esta concluido.
 
 ## Sumario rapido
+
+- [História 57 — Rating experimental por duelo virtual](#historia-57)
 
 - [Historia 00 - Estrutura basica](#historia-00---estrutura-basica)
 - [Historia 01 - Vincular o handle do Codeforces](#historia-01---vincular-o-handle-do-codeforces)
@@ -2815,6 +2819,37 @@ O alvo depende do universo elegível; não relaxar regras silenciosamente.
 ---
 
 
+
+<a id="historia-57"></a>
+
+### História 57 — Rating experimental por duelo virtual
+
+**GitHub:** [#98](https://github.com/Enzofmcs/Lorem/issues/98).
+**Status:** IMPLEMENTADA E VERIFICADA (23/10/2026).
+**Escopo:** cálculo, simulador, modelo e integração experimental Android/Firestore; história 49 excluída. D-051 registra escolhas provisórias, sem adoção geral ou deploy.
+
+- [x] Versionar CDFs completas reais com origem/hash, domínio, suporte e indisponibilidade antes do início; distinguir amostra antiga, ampliada, AFT e KM.
+- [x] Diagnosticar cruzamentos/saltos e comparar modelo por delta com AFT suave. Hipótese isotônica explicitamente nova, sem reescrever fontes descritivas ou alegar superioridade.
+- [x] Funções puras Python/Kotlin para AC, empates e sem AC; milhão de unidades por ponto/probabilidade, sem descarte repetido de frações.
+- [x] Simulações com seed, inícios 800/1400/2000, K32/64, escolha adaptativa, habilidade fixa e tempos +25%; comparação D-012 e limitações separadas de avaliação independente.
+- [x] Verificar esperança zero sob o próprio modelo antes de limites; analisar arredondamento, piso, desistências, seleção e mudança de contexto.
+- [x] Trajetória independente em 800 provisórios, sem conversão/importação CF. Expectativa/recomendação seguintes usam a própria trajetória. D-012 permanece padrão.
+- [x] Snapshot imutável de política, hash/modelo, R, D, K, H e auxílio; identidade uid/handle, vínculo, tentativa e versão protegidos pelo contrato externo.
+- [x] Resultado, saldo experimental, saldo padrão, versão e lock atualizados atomicamente; repetição/concorrência e reinício não reaplicam pontos.
+- [x] Persistir/restaurar/exportar decomposição; apresentar rating anterior/novo, delta, tempo e caráter experimental. Metadados de pontuação e tags continuam ocultos no ativo.
+- [x] Modalidade sem dicas escolhida antes do início. Sem suporte/modelo, recusar início; sem API completa/veredito final, aguardar sem derrota por erro de rede.
+- [x] Preservar AC no prazo, timestamp real, sincronização tardia sem extensão, exclusões e upsolve sem reavaliação. Desistência usa H original.
+- [x] SDK real em emuladores demonstra iniciar → AC/expirar/desistir → persistir → reabrir → próxima expectativa; caso persistido reproduzido exatamente em Python. Exercitar offline, tentativa antiga e modelo ausente/incompatível.
+- [x] Rules testam esquema, prior/binding, hash, atomicidade e cliente antigo; documentar confiança residual no cliente Spark e recuperação de disputa entre transações.
+- [x] Documentar preview opt-in, reversão prospectiva, retenção de modelos/Rules, decisões provisórias e limites para o TCC.
+- [x] Encerrar regressão de marco: Python, Rules/Auth, SDK Android, test debug/release, lint e APK; registrar contagens/hashes reais.
+
+354 testes debug/249 release, 150 Python, 37 Auth/Rules, sem falhas/ignorados; 19 SDK Android reais em emuladores entre as suítes. Lint sem erros (58 avisos), APK padrão e preview experimental. [Evidência](evidence/2026-10-23-virtual-duel-57.json).
+
+[Contrato](VIRTUAL_DUEL.md), [relatório](../study/results/virtual-duel-v1/REPORT.md), [cenários/paridade](../study/results/virtual-duel-v1/scenarios.json), [demonstração SDK](../study/results/virtual-duel-v1/sdk-demo.json).
+**TESTE MANUAL OPCIONAL - NÃO EXECUTADO (D-014).** Adoção padrão e publicação remota não integram esta implementação.
+
+---
 
 ## 10. Marcos demonstraveis
 

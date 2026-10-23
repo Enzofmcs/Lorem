@@ -30,6 +30,14 @@ class CloudTrainingScreenTest {
             solvedOutsideAtEpochMillis = if (status == IpsumStatus.SOLVED_OUTSIDE) 62000 else null))
     private fun state(attempt: CloudIpsum? = active, history: List<CloudIpsum> = emptyList()) = CloudTrainingUiState(CloudSnapshot(
         listOf(CloudHandle("cf_tourist", "Tourist", 923, null, 0)), attempt, history + listOfNotNull(attempt), true), "cf_tourist")
+    @Test fun `experimental active hides hint and all scoring metadata in semantics`() {
+        val trial = active.copy(ipsum = active.ipsum.copy(virtualDuelSnapshot = VirtualDuelSnapshot(800*DUEL_SCALE,1200,400)))
+        compose.setContent { LoremTheme { CloudTrainingApp("A", state(trial), 1000, {}, {}, {}, {}, {}, {}, {}) } }
+        compose.onNodeWithText("Revelar tópicos").assertDoesNotExist()
+        for (secret in listOf("1200", "math", "virtual-duel", "800", "Rating experimental")) {
+            compose.onNodeWithText(secret,substring=true,useUnmergedTree=true).assertDoesNotExist()
+        }
+    }
     @Test fun `active resumes after recreation hides metadata and closes into saved result then last result`() {
         val restoration = StateRestorationTester(compose)
         val state = mutableStateOf(state())

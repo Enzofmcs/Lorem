@@ -1,0 +1,21 @@
+{
+  "artifact_sha256": "69954b61bc111b2b2b1c33efef7e66978a74a378244ef0f41f834f9d6a8daea3",
+  "source_sha256": "36449eaba32cfeb41a34143b635f42ac3e22c004451c31344d02c58e7226370d",
+  "raw_bin_order_violations": 4514,
+  "max_projection_probability_change": 0.04040457203996162,
+  "bins": [
+    -1200,
+    -800,
+    -400,
+    0,
+    400,
+    800,
+    1200
+  ],
+  "excluded_bins": [
+    -1600,
+    -2000,
+    -2400
+  ],
+  "note": "Projection is a new hypothesis; flat within bins, jumps at boundaries. No claim of superiority or CF/Lorem equivalence."
+}

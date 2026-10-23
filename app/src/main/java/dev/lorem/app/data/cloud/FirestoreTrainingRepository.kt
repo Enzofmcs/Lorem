@@ -31,6 +31,8 @@ class FirestoreTrainingRepository(
         ScoringSnapshot(LEGACY_SCORING_POLICY, null, modelVersion = null, artifactSha256 = null,
             inputRating = cfRating, unavailableReason = "artifact_not_configured") },
     private val scheduleMaintenance: (String) -> Unit = {},
+    private val duelCatalog: VirtualDuelCatalog? = null,
+    private val duelEnabled: Boolean = false,
 ) : CloudTrainingRepository {
     private val preparation = CloudPreparation(cf, elapsedMillis)
     private val pendingChecked = mutableMapOf<String, Long>()
@@ -152,14 +154,17 @@ class FirestoreTrainingRepository(
         val catalog = prepared.catalog
         checkUid(uid)
         val prior = attempts(uid, key).get(Source.SERVER).await().documents.map { it.cloudIpsum() }
-        val recommendation = recommender.recommend(profile.rating, catalog.filter { it.id !in exclusions }, buildProblemHistory(history), prior.map { it.ipsum }, profile.handle)
+        val recommendationRating = if (duelEnabled) ((profile.duelRatingMicros ?: 800 * DUEL_SCALE) / DUEL_SCALE).toInt() else profile.rating
+        val recommendation = recommender.recommend(recommendationRating, catalog.filter { it.id !in exclusions }, buildProblemHistory(history), prior.map { it.ipsum }, profile.handle)
             ?: error("Nenhum problema inédito disponível nesta faixa.")
         val official = prepared.user
         progress(CloudPreparationProgress(CloudPreparationStage.SAVING, "Salvando o snapshot e o prazo no servidor…"))
         val observed = official.ratingObservedAtEpochMillis?.takeIf { it > 0 &&
             deadline.now(uid)?.let { now -> it <= now } == true && official.rating != null }
         val snap = snapshotOf(recommendation, profile.rating, profile.handle, official.rating.takeIf { observed != null }, observed,
-            scoringSelector(official.rating.takeIf { observed != null }, recommendation.problem.rating!!))
+            scoringSelector(official.rating.takeIf { observed != null }, recommendation.problem.rating!!),
+            if (duelEnabled) requireNotNull(duelCatalog).select(profile.duelRatingMicros ?: 800 * DUEL_SCALE,
+                recommendation.problem.rating!!) else null)
         val marker = handle(uid, key).collection("usedProblems").document("${recommendation.problem.id.contestId}_${recommendation.problem.id.index}")
         db.runTransaction { tx ->
             checkUid(uid)
@@ -211,6 +216,7 @@ class FirestoreTrainingRepository(
         db.runTransaction { tx ->
             checkUid(uid)
             val latest = tx.get(ref).cloudIpsum()
+            check(latest.ipsum.virtualDuelSnapshot == null) { "Este treino experimental é sem dicas. A modalidade é fixada antes do início." }
             check(latest.state == CloudIpsumState.ACTIVE)
             if (latest.ipsum.hintRevealedAtEpochMillis == null) tx.update(ref, "hintAt", FieldValue.serverTimestamp())
         }.await()
@@ -262,32 +268,47 @@ class FirestoreTrainingRepository(
         if (verification is CloudVerification.NoAccepted && current.state == CloudIpsumState.ACTIVE) return@withLock false
         val history = attempts(uid, current.handleKey).get(Source.SERVER).await().documents.map { it.cloudIpsum() }
         val expected = current
-        db.runTransaction { tx ->
+        try {
+            db.runTransaction { tx ->
+                checkUid(uid)
+                val latestDoc = tx.get(ref)
+                val latest = latestDoc.cloudIpsum()
+                val profileRef = handle(uid, latest.handleKey)
+                val profile = tx.get(profileRef).cloudHandle()
+                val lock = tx.get(runtime(uid))
+                if (latest.state != CloudIpsumState.FINAL) {
+                    // Another device may have revealed a hint or closed an earlier boundary while CF was loading.
+                    check(latest == expected) { "O treino mudou durante a verificação. Tente novamente." }
+                    check(lock.getString("ipsumId") == latest.id && lock.getString("handleKey") == latest.handleKey)
+                    check(profile.version == latest.version && profile.bindingVersion == latest.bindingVersion &&
+                        profile.rating == latest.ipsum.initialLoremRating)
+                    val failure = latestDoc.getString("failure")?.let(IpsumFailureReason::valueOf)
+                    val final = finalizeCloudIpsum(latest, verification, failure, duelCatalog?.let { catalog -> catalog::evaluate })
+                    val consolidated = calculateConsolidatedRating(history.filter { it.id != latest.id }.map { it.ipsum } + final,
+                        profile.consolidatedRating, final.ownerHandle, final.finalLoremRating!!).consolidatedRating
+                    // Preserve Firestore's full timestamp precision for a manual/timeout boundary.
+                    val result = if (verification is CloudVerification.NoAccepted)
+                        resultOf(final) + ("endedAt" to latestDoc.getTimestamp("cutoffAt")) else resultOf(final)
+                    tx.update(ref, mapOf("state" to "FINAL", "result" to result, "processedAt" to FieldValue.serverTimestamp()))
+                    tx.update(profileRef, mapOf("loremRating" to final.finalLoremRating, "progressVersion" to profile.version + 1,
+                        "consolidatedRating" to consolidated, "lastIpsumId" to latest.id) +
+                        (final.virtualDuelResult?.let { mapOf("duelRatingMicros" to it.afterMicros) } ?: emptyMap()))
+                    tx.delete(runtime(uid))
+                }
+            }.await()
+        } catch (e: com.google.firebase.firestore.FirebaseFirestoreException) {
+            if (e.code !in setOf(com.google.firebase.firestore.FirebaseFirestoreException.Code.PERMISSION_DENIED,
+                    com.google.firebase.firestore.FirebaseFirestoreException.Code.ABORTED)) throw e
+            // Another device can win before Rules evaluate this stale write, causing a denial
+            // instead of a transaction retry. Confirm the immutable final attempt on the server.
             checkUid(uid)
-            val latestDoc = tx.get(ref)
-            val latest = latestDoc.cloudIpsum()
-            val profileRef = handle(uid, latest.handleKey)
-            val profile = tx.get(profileRef).cloudHandle()
-            val lock = tx.get(runtime(uid))
-            if (latest.state != CloudIpsumState.FINAL) {
-                // Another device may have revealed a hint or closed an earlier boundary while CF was loading.
-                check(latest == expected) { "O treino mudou durante a verificação. Tente novamente." }
-                check(lock.getString("ipsumId") == latest.id && lock.getString("handleKey") == latest.handleKey)
-                check(profile.version == latest.version && profile.bindingVersion == latest.bindingVersion &&
-                    profile.rating == latest.ipsum.initialLoremRating)
-                val failure = latestDoc.getString("failure")?.let(IpsumFailureReason::valueOf)
-                val final = finalizeCloudIpsum(latest, verification, failure)
-                val consolidated = calculateConsolidatedRating(history.filter { it.id != latest.id }.map { it.ipsum } + final,
-                    profile.consolidatedRating, final.ownerHandle, final.finalLoremRating!!).consolidatedRating
-                // Preserve Firestore's full timestamp precision for a manual/timeout boundary.
-                val result = if (verification is CloudVerification.NoAccepted)
-                    resultOf(final) + ("endedAt" to latestDoc.getTimestamp("cutoffAt")) else resultOf(final)
-                tx.update(ref, mapOf("state" to "FINAL", "result" to result, "processedAt" to FieldValue.serverTimestamp()))
-                tx.update(profileRef, mapOf("loremRating" to final.finalLoremRating, "progressVersion" to profile.version + 1,
-                    "consolidatedRating" to consolidated, "lastIpsumId" to latest.id))
-                tx.delete(runtime(uid))
-            }
-        }.await()
+            val saved = ref.get(Source.SERVER).await().cloudIpsum()
+            checkUid(uid)
+            if (saved.state != CloudIpsumState.FINAL || saved.version != expected.version ||
+                saved.bindingVersion != expected.bindingVersion ||
+                saved.ipsum.scoringSnapshot != expected.ipsum.scoringSnapshot ||
+                saved.ipsum.virtualDuelSnapshot != expected.ipsum.virtualDuelSnapshot) throw e
+        }
         checkUid(uid)
         true
     }

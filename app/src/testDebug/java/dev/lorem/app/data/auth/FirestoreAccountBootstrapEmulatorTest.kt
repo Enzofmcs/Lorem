@@ -84,15 +84,105 @@ class FirestoreAccountBootstrapEmulatorTest {
         })
     }
     private val scheduled = mutableListOf<CloudIpsum>()
-    private fun repository(legacy: LegacyMigration? = null, scoring: ((Int?, Int) -> ScoringSnapshot)? = null): FirestoreTrainingRepository {
+    private fun repository(legacy: LegacyMigration? = null, scoring: ((Int?, Int) -> ScoringSnapshot)? = null, duel: Boolean = false): FirestoreTrainingRepository {
         val cache = Room.inMemoryDatabaseBuilder(ApplicationProvider.getApplicationContext(), LoremDatabase::class.java).build()
         cacheDatabases.add(cache)
         return FirestoreTrainingRepository(db, { auth.currentUser?.uid }, cf,
             AccountHandlesRepository(FirestoreHandlesStore(auth, db), cf, RoomHandlesCache(cache.accountHandlesDao())),
             CloudDeadline(android.os.SystemClock::elapsedRealtime) { 1 }, android.os.SystemClock::elapsedRealtime,
             { _, attempt, _ -> synchronized(scheduled) { scheduled.add(attempt) } }, RecommendIpsum { 0 }, legacy, exportIds,
+            duelCatalog = duelCatalog(), duelEnabled = duel,
             scoringSelector = scoring ?: { cfRating, _ -> ScoringSnapshot(LEGACY_SCORING_POLICY, null,
                 modelVersion = null, artifactSha256 = null, inputRating = cfRating, unavailableReason = "artifact_not_configured") })
+    }
+
+    private fun duelCatalog() = dev.lorem.app.data.cloud.VirtualDuelCatalog(
+        ApplicationProvider.getApplicationContext<Application>().assets.open("virtual-duel-v1.json")
+            .bufferedReader().use { it.readText() })
+
+    @Test(timeout = 90_000) fun `SDK experimental AC persists once across restart concurrent retry and next attempt uses own balance`() = runBlocking {
+        val uid = signInGoogle()
+        FirestoreAccountBootstrap(auth, db).ensureAccount(uid)
+        cfObservationAgeMillis = 1000
+        val first = repository(duel = true)
+        first.addHandle(uid, "tourist"); first.selectHandle(uid, "cf_tourist")
+        val active = first.start(uid, "cf_tourist", "duel-first")
+        val frozen = requireNotNull(active.ipsum.virtualDuelSnapshot)
+        assertEquals(800 * DUEL_SCALE, frozen.ratingMicros)
+        assertEquals(3500, active.ipsum.initialCodeforcesRating) // CF is not the experimental input.
+        try { first.hint(uid, active); fail("Unassisted") } catch (_: IllegalStateException) {}
+        val at = (active.ipsum.startedAtEpochMillis / 1000 + 1) * 1000
+        kotlinx.coroutines.delay((at - System.currentTimeMillis()).coerceAtLeast(0) + 30)
+        submitted = listOf(CodeforcesSubmission(700, active.ipsum.problem.id, "OK", Instant.ofEpochMilli(at)))
+        val restored = repository() // Starting disabled; saved attempts still evaluate with their frozen model.
+        listOf(restored, first).map { repo -> async { repo.reconcile(uid, active) } }.awaitAll()
+        val state = restored.load(uid, "cf_tourist")
+        val result = requireNotNull(state.attempts.single().ipsum.virtualDuelResult)
+        assertEquals(duelCatalog().evaluate(frozen, at-active.ipsum.startedAtEpochMillis, true), result)
+        assertEquals(result.afterMicros, state.handles.single().duelRatingMicros)
+        assertEquals(824, state.handles.single().rating)
+        assertEquals(1L, state.handles.single().version)
+        assertTrue(restored.reconcile(uid, active))
+        val row = JSONObject(restored.exportStudy(uid, "cf_tourist").toStudyJson("test"))
+            .getJSONArray("attempts").getJSONObject(0)
+        assertEquals(result.afterMicros, row.getJSONObject("virtual_duel_result").getLong("after_micros"))
+        val next = repository(duel=true).start(uid, "cf_tourist", "duel-next")
+        assertEquals(result.afterMicros, next.ipsum.virtualDuelSnapshot!!.ratingMicros)
+        assertNotEquals(next.ipsum.initialLoremRating.toLong()*DUEL_SCALE, next.ipsum.virtualDuelSnapshot!!.ratingMicros)
+        File("/tmp/lorem-duel-sdk-demo.json").writeText(JSONObject().apply {
+            put("data_kind", "emulator-test-with-real-frozen-model")
+            put("artifact_sha256", frozen.sha256).put("rating_micros", frozen.ratingMicros)
+            put("difficulty", frozen.difficulty).put("elapsed_ms", at-active.ipsum.startedAtEpochMillis)
+            put("k", frozen.k).put("accepted",true).put("delta_micros",result.deltaMicros)
+            put("after_micros",result.afterMicros).put("restored_next_input_micros",next.ipsum.virtualDuelSnapshot!!.ratingMicros)
+        }.toString(2))
+    }
+
+    @Test(timeout = 90_000) fun `SDK experimental timeout waits for complete API and upsolve never rewrites the trajectory`() = runBlocking {
+        val uid = signInGoogle()
+        FirestoreAccountBootstrap(auth, db).ensureAccount(uid)
+        val repo = repository(duel=true)
+        repo.addHandle(uid,"tourist"); repo.selectHandle(uid,"cf_tourist")
+        val started = repo.start(uid,"cf_tourist","duel-timeout")
+        seedExpiredStartOnlyInEmulator(uid,started.id)
+        val expired=repo.load(uid).active!!
+        cfUnavailable=true
+        assertFalse(repo.reconcile(uid,expired))
+        assertNull(repo.load(uid).handles.single().duelRatingMicros)
+        cfUnavailable=false; cfComplete=false
+        assertFalse(repo.reconcile(uid,expired))
+        cfComplete=true
+        submitted=listOf(CodeforcesSubmission(701,expired.ipsum.problem.id,"TESTING",Instant.ofEpochMilli(expired.expiresAtMillis/1000*1000)))
+        assertFalse(repo.reconcile(uid,expired))
+        submitted=emptyList()
+        assertTrue(repo.reconcile(uid,expired))
+        val state=repo.load(uid,"cf_tourist")
+        val final=state.attempts.single().ipsum
+        val saved=requireNotNull(final.virtualDuelResult)
+        assertEquals(duelCatalog().evaluate(requireNotNull(final.virtualDuelSnapshot),IPSUM_LIMIT_MILLIS,false),saved)
+        submitted=listOf(CodeforcesSubmission(702,expired.ipsum.problem.id,"OK",Instant.ofEpochMilli((expired.expiresAtMillis/1000+1)*1000)))
+        assertEquals(1,repo.refreshPending(uid,"cf_tourist",true))
+        assertEquals(saved,repo.load(uid,"cf_tourist").attempts.single().ipsum.virtualDuelResult)
+        assertEquals(saved.afterMicros,repo.load(uid,"cf_tourist").handles.single().duelRatingMicros)
+    }
+
+    @Test(timeout = 90_000) fun `SDK experimental early surrender uses original horizon and normal starts preserve the experimental balance`() = runBlocking {
+        val uid=signInGoogle()
+        FirestoreAccountBootstrap(auth,db).ensureAccount(uid)
+        val repo=repository(duel=true)
+        repo.addHandle(uid,"tourist");repo.selectHandle(uid,"cf_tourist")
+        val active=repo.start(uid,"cf_tourist","duel-giveup")
+        repo.close(uid,active,IpsumFailureReason.LOGIC_NOT_FOUND)
+        val state=repo.load(uid,"cf_tourist")
+        val final=state.attempts.single().ipsum
+        assertTrue(final.totalTimeMillis()!! < IPSUM_LIMIT_MILLIS)
+        val expected=duelCatalog().evaluate(active.ipsum.virtualDuelSnapshot!!,IPSUM_LIMIT_MILLIS,false)
+        assertEquals(expected.deltaMicros,final.virtualDuelResult!!.deltaMicros)
+        val regular=repository()
+        val next=regular.start(uid,"cf_tourist","normal-after-duel")
+        assertNull(next.ipsum.virtualDuelSnapshot)
+        regular.close(uid,next,IpsumFailureReason.CONTENT_UNKNOWN)
+        assertEquals(final.virtualDuelResult!!.afterMicros,regular.load(uid,"cf_tourist").handles.single().duelRatingMicros)
     }
 
     @Before fun connectOnlyToDemoEmulators() {
@@ -252,7 +342,7 @@ class FirestoreAccountBootstrapEmulatorTest {
     @Test(timeout = 90_000) fun `production timeout waits on failure testing and incomplete window then accepts deadline AC once`() = runBlocking {
         val uid = signInGoogle()
         FirestoreAccountBootstrap(auth, db).ensureAccount(uid)
-        val repository = repository()
+        val repository = repository(duel=true)
         repository.addHandle(uid, "tourist")
         repository.selectHandle(uid, "cf_tourist")
         val active = repository.start(uid, "cf_tourist", "timeout-ac")
@@ -280,6 +370,8 @@ class FirestoreAccountBootstrapEmulatorTest {
         assertEquals(812, state.handles.single().rating)
         assertEquals(1L, state.handles.single().version)
         assertEquals(IpsumStatus.COMPLETED, state.attempts.single().ipsum.status)
+        assertTrue(state.attempts.single().ipsum.virtualDuelResult!!.deltaMicros < 0)
+        assertEquals(state.attempts.single().ipsum.virtualDuelResult!!.afterMicros,state.handles.single().duelRatingMicros)
     }
 
     @Test(timeout = 90_000) fun `production noAC timeout preserves submillisecond boundary and upsolve never reapplies rating`() = runBlocking {
@@ -323,10 +415,11 @@ class FirestoreAccountBootstrapEmulatorTest {
     @Test(timeout = 90_000) fun `production offline cache preserves active but cannot confirm new commands`() = runBlocking {
         val uid = signInGoogle()
         FirestoreAccountBootstrap(auth, db).ensureAccount(uid)
-        val repository = repository()
+        val repository = repository(duel=true)
         repository.addHandle(uid, "tourist")
         repository.selectHandle(uid, "cf_tourist")
         val active = repository.start(uid, "cf_tourist", "online")
+        assertNotNull(active.ipsum.virtualDuelSnapshot)
         val online = repository.load(uid, "cf_tourist")
         db.disableNetwork().await()
         try {
