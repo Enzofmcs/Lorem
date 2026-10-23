@@ -307,3 +307,8 @@ do saldo D-012; só o próprio saldo experimental alimenta a próxima expectativ
 Sem modelo/domínio, recusar o início experimental antes do lock. Sem verificação
 completa da API, aguardar; upsolve não reavalia. D-012 continua padrão.
 [Contrato e limites científicos/operacionais](VIRTUAL_DUEL.md).
+
+Nomes de apresentação (D-052): **Rating Lorem** identifica o saldo anterior;
+**Rating Dolor** identifica o saldo experimental do duelo virtual. Na UI cloud,
+distinguir os saldos e suas variações, inclusive zero, ausência de avaliação e
+valores fracionários. Exibir apenas resultados persistidos para cada tentativa.

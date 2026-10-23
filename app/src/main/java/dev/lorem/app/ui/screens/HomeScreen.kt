@@ -33,6 +33,8 @@ fun HomeScreen(
     dataSourceNotice: String? = null,
     requiresLocalPreparation: Boolean = true,
     startEnabled: Boolean = true,
+    showDolorRating: Boolean = false,
+    dolorRatingMicros: Long? = null,
 ) {
     var showConsolidation by rememberSaveable(profile.handle) { mutableStateOf(false) }
     val blockedReason = when {
@@ -54,6 +56,7 @@ fun HomeScreen(
         }
         LoremMetricCard("Rating Lorem", profile.loremRating.toString(),
             supportingText = "Rating oficial Codeforces: ${profile.officialRating ?: "não disponível"} · referência do perfil")
+        if (showDolorRating) DolorRatingCard(dolorRatingMicros)
         LoremPrimaryAction(
             label = if (hasActiveIpsum) "Continuar Ipsum" else "Iniciar Ipsum",
             onClick = { if (hasActiveIpsum) onNavigate(LoremDestination.Ipsum.route) else onStartIpsum() },

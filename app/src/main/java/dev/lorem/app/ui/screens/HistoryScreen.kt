@@ -175,11 +175,18 @@ private fun HistoryItem(item: IpsumHistoryItem, onOpenProblem: (String) -> Unit,
             Text("Avaliação original: ${if (item.situation == IpsumHistorySituation.SOLVED_IN_IPSUM) "AC no Ipsum" else "encerrado sem AC"}")
             Text("Encerramento: ${ipsum.endedAtEpochMillis?.let(::formatHistoryDate) ?: "indisponível"}")
             Text("Variação do Rating Lorem: ${ipsum.ratingDelta?.let { if (it >= 0) "+$it" else it.toString() } ?: "indisponível"}")
+            ipsum.virtualDuelResult?.let { dolor ->
+                Text("Rating Dolor: ${dev.lorem.app.ui.components.formatDolorRating(dolor.afterMicros)}", style = MaterialTheme.typography.titleMedium)
+                Text("Variação do Rating Dolor: ${dev.lorem.app.ui.components.formatDolorRating(dolor.deltaMicros, signed = true)}")
+            }
+            if (ipsum.studyRecordingVersion == "spark-2h-v1" && ipsum.virtualDuelResult == null) {
+                Text("Sem avaliação Dolor neste Ipsum.", style = MaterialTheme.typography.bodySmall)
+            }
             if (item.situation == IpsumHistorySituation.SOLVED_OUTSIDE_IPSUM) {
                 Text("AC posterior: ${formatHistoryDate(requireNotNull(ipsum.solvedOutsideAtEpochMillis))}")
-                Text("O AC posterior não altera o rating nem a taxa original de AC.", style = MaterialTheme.typography.bodySmall)
+                Text("O AC posterior não altera os ratings nem a taxa original de AC.", style = MaterialTheme.typography.bodySmall)
             }
-            Text("Rating: ${ipsum.selectedRating}")
+            Text("Rating do problema: ${ipsum.selectedRating}")
             Text("Tags: ${ipsum.problem.tags.sorted().joinToString().ifEmpty { "nenhuma" }}")
             onOpenResult?.let { open -> TextButton(onClick = { open(ipsum) }) { Text("Ver resultado") } }
             OutlinedButton(onClick = { onOpenProblem(ipsum.problemUrl()) }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text("Abrir no Codeforces") }

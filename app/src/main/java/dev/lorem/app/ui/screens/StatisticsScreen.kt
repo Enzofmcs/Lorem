@@ -45,7 +45,8 @@ private enum class StatisticsSection(val label: String) {
 }
 
 @Composable
-fun StatisticsScreen(state: StatisticsUiState, onNavigateHome: () -> Unit = {}, consolidation: ConsolidationProgress? = null) {
+fun StatisticsScreen(state: StatisticsUiState, onNavigateHome: () -> Unit = {}, consolidation: ConsolidationProgress? = null,
+    showDolorRating: Boolean = false, dolorRatingMicros: Long? = null) {
     val padding = PaddingValues(0.dp)
     when (state) {
         StatisticsUiState.Loading -> Column(Modifier.padding(padding).padding(16.dp)) {
@@ -57,14 +58,15 @@ fun StatisticsScreen(state: StatisticsUiState, onNavigateHome: () -> Unit = {}, 
             TextButton(onClick = onNavigateHome, modifier = Modifier.heightIn(min = 48.dp)) { Text("Voltar ao Início") }
         }
         is StatisticsUiState.Ready -> key(state.statistics.ownerHandle.trim().lowercase(Locale.ROOT)) {
-            StatisticsContent(state.statistics, padding, onNavigateHome, consolidation)
+            StatisticsContent(state.statistics, padding, onNavigateHome, consolidation, showDolorRating, dolorRatingMicros)
         }
     }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun StatisticsContent(stats: IpsumStatistics, padding: PaddingValues, onNavigateHome: () -> Unit, consolidation: ConsolidationProgress?) {
+private fun StatisticsContent(stats: IpsumStatistics, padding: PaddingValues, onNavigateHome: () -> Unit, consolidation: ConsolidationProgress?,
+    showDolorRating: Boolean, dolorRatingMicros: Long?) {
     var sectionName by rememberSaveable(stats.ownerHandle) { mutableStateOf(StatisticsSection.SUMMARY.name) }
     val section = StatisticsSection.valueOf(sectionName)
     LazyColumn(
@@ -83,6 +85,7 @@ private fun StatisticsContent(stats: IpsumStatistics, padding: PaddingValues, on
                         Text("Acompanhe seus resultados e consulte as avaliações salvas abaixo.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
+                if (showDolorRating) dev.lorem.app.ui.components.DolorRatingCard(dolorRatingMicros)
                 TextButton(onClick = onNavigateHome, modifier = Modifier.heightIn(min = 48.dp)) { Text("Voltar ao Início") }
             }
         }

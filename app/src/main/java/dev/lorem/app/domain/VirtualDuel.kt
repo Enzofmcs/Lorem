@@ -72,6 +72,6 @@ fun calculateVirtualDuel(snapshot: VirtualDuelSnapshot, curve: DuelCurve, elapse
 }
 
 fun VirtualDuelResult.explanation(): String = java.lang.String.format(java.util.Locale.forLanguageTag("pt-BR"),
-    "Rating experimental: %.6f → %.6f (%+.6f). Duelo virtual; referência de tempo congelada no início. " +
+    "Rating Dolor: %.6f → %.6f (%+.6f). Duelo virtual; referência de tempo congelada no início. " +
         "Escala provisória independente; sem equivalência validada com Codeforces. Prazo de 120 min, sem dicas.",
     beforeMicros.toDouble() / DUEL_SCALE, afterMicros.toDouble() / DUEL_SCALE, deltaMicros.toDouble() / DUEL_SCALE)

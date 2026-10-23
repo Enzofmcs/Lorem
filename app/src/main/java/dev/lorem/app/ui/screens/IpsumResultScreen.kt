@@ -42,9 +42,13 @@ fun IpsumResultScreen(state: IpsumResultUiState, onClose: () -> Unit) {
                     Text("Problema ${ipsum.problem.id}", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     ipsum.solvedOutsideAtEpochMillis?.let {
                         LoremSyncStatus("Resolvido depois do Ipsum", LoremTone.SUCCESS,
-                            "AC posterior: ${formatSyncTime(it)}. A tentativa original terminou sem AC; seu rating foi preservado.")
+                            "AC posterior: ${formatSyncTime(it)}. A tentativa original terminou sem AC; os ratings foram preservados.")
                     }
                     RatingSummary(ipsum)
+                    if (ipsum.studyRecordingVersion == "spark-2h-v1" || ipsum.virtualDuelResult != null) {
+                        DolorRatingCard(ipsum.virtualDuelResult?.afterMicros, result = ipsum.virtualDuelResult,
+                            emptyMessage = "Sem avaliação Dolor neste Ipsum.")
+                    }
                     Card(Modifier.fillMaxWidth()) {
                         Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text("Seu treino", style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
@@ -81,7 +85,7 @@ private fun RatingSummary(ipsum: Ipsum) {
             if (delta != null && after != null) {
                 Text("${ipsum.initialLoremRating} → $after", style = MaterialTheme.typography.displaySmall,
                     modifier = Modifier.semantics {
-                        contentDescription = "Rating anterior ${ipsum.initialLoremRating}, rating após o Ipsum $after"
+                        contentDescription = "Rating Lorem anterior ${ipsum.initialLoremRating}, Rating Lorem após o Ipsum $after"
                     })
                 Text("Variação: ${if (delta >= 0) "+" else "−"}${delta.toLong().absoluteValue} pontos",
                     style = MaterialTheme.typography.titleMedium,

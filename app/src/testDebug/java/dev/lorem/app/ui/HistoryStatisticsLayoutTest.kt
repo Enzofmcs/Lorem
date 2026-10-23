@@ -55,7 +55,7 @@ class HistoryStatisticsLayoutTest {
                 LoremTheme(darkTheme = dark.value) {
                     LoremScaffold(if (statistics.value) LoremDestination.Statistics else LoremDestination.History,
                         true, false, {}, {}, {}) {
-                        if (statistics.value) StatisticsScreen(StatisticsUiState.Ready(stats))
+                        if (statistics.value) StatisticsScreen(StatisticsUiState.Ready(stats), showDolorRating = true, dolorRatingMicros = 1199996784)
                         else HistoryScreen(attempts, updateState = PendingUpdateUiState.Error("Sem conexão. Os dados salvos continuam disponíveis offline."))
                     }
                 }
@@ -76,12 +76,16 @@ class HistoryStatisticsLayoutTest {
             history("Avaliação original: encerrado sem AC")
             completeText()
             screenshot("history-upsolve-$suffix-$theme")
-            history("O AC posterior não altera o rating nem a taxa original de AC.")
+            history("O AC posterior não altera os ratings nem a taxa original de AC.")
             completeText()
             history("Abrir no Codeforces")
             compose.onNodeWithText("Abrir no Codeforces").assertHeightIsAtLeast(48.dp)
             completeText()
             compose.runOnIdle { statistics.value = true }
+            compose.onNodeWithTag("statistics-list").performScrollToNode(hasTestTag("rating-dolor"))
+            compose.onNodeWithTag("rating-dolor").assertTextContains("1199,996784")
+            completeText()
+            screenshot("statistics-dolor-$suffix-$theme")
             seeStats("Taxa de AC no Ipsum: 50,0% (2/4)")
             screenshot("statistics-summary-$suffix-$theme")
             completeText()
