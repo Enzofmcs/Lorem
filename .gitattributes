@@ -1,2 +1,3 @@
 # The bundled Dolor model is checked against a versioned SHA-256.
 app/src/main/assets/virtual-duel-v1.json text eol=lf
+tools/ipsum-mock/Carregar-Ipsums.cmd text eol=crlf

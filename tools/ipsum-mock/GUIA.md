@@ -14,8 +14,14 @@ Os lotes gravados nesse modo ficam em `loremMockImports/{uid}/batches/{ID do lot
 ## Mostrar os dados nas telas normais do Lorem
 
 1. No **Lorem**, entre com a conta Google de teste e selecione um handle cadastrado sem histórico. Encerre qualquer Ipsum ativo dessa conta.
-2. No **Firebase Console → Authentication → Usuários**, copie o **UID** da conta de teste. Em **Configurações do projeto**, copie o **ID do projeto**.
-3. Abra o **Cloud Shell** do Google Cloud com uma conta que pode ler e gravar no Firestore do projeto. Rode:
+2. No Windows com **Node.js 24**, abra [`Carregar-Ipsums.cmd`](Carregar-Ipsums.cmd) com dois cliques. O atalho usa o projeto dos arquivos `google-services.json`. No primeiro uso, faça login no navegador com a conta que administra esse projeto.
+3. Informe o e-mail da **conta de teste** que gravou o lote. Aguarde **Carga concluída** e abra **Histórico** ou **Estatísticas** no Lorem normal.
+
+O atalho usa o handle selecionado e pede o ID do lote se a conta tiver mais de um. Pelo terminal, rode `npm --prefix firebase ci` e use `npm --prefix firebase run seed-normal-history` na raiz. Esse comando aceita `--email`, `--uid`, `--batch`, `--handle` e `--reauth` depois de `--`.
+
+### Carga pelo Cloud Shell
+
+No **Firebase Console**, copie o **ID do projeto** e o **UID** da conta de teste em **Authentication → Usuários**. Abra o **Cloud Shell** do Google Cloud com uma conta que pode ler e gravar no Firestore do projeto. Rode:
 
    ```bash
    curl -fsSLo seed-normal-history.mjs https://raw.githubusercontent.com/Enzofmcs/Lorem/refs/heads/codex/importador-ipsums/tools/ipsum-mock/seed-normal-history.mjs

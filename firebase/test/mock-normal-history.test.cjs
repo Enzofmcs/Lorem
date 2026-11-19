@@ -100,3 +100,11 @@ test('an active account or a handle with existing training history blocks the lo
   await assert.rejects(seedNormalHistory({project, uid, batch, handle: 'Other', apply: true}), /já tem histórico/);
   assert.equal((await getDocs(collection(google(uid), `${other}/ipsums`))).size, 1);
 });
+
+test('a second imported batch requires an explicit selection before any writes', async () => {
+  const nextBatch = 'mock-' + 'e'.repeat(64);
+  const db = google(uid);
+  await setDoc(doc(db, `loremMockImports/${uid}/batches/${nextBatch}`), {mockDatasetId: nextBatch, mockIpsumCount: count});
+  await assert.rejects(seedNormalHistory({project, uid, apply: true}), {code: 'MULTIPLE_MOCK_BATCHES'});
+  assert.equal((await getDocs(collection(db, `${handle}/ipsums`))).size, count);
+});

@@ -2,6 +2,7 @@ import {execFileSync} from 'node:child_process';
 import {pathToFileURL} from 'node:url';
 import {parseArgs} from 'node:util';
 
+export const MULTIPLE_MOCK_BATCHES = 'MULTIPLE_MOCK_BATCHES';
 const count = 200;
 const batchPattern = /^mock-[a-f0-9]{64}$/;
 const handlePattern = /^[A-Za-z0-9_.-]{1,64}$/;
@@ -27,7 +28,7 @@ function check(condition, message) {
   if (!condition) throw new Error(message);
 }
 
-function firestore(project, emulatorHost) {
+function firestore(project, emulatorHost, remoteRequest) {
   check(/^[a-z][a-z0-9-]{4,29}$/.test(project ?? ''), 'Informe o ID do projeto Firebase em --project.');
   if (emulatorHost) {
     check(project.startsWith('demo-') && /^(localhost|127\.0\.0\.1):[0-9]+$/.test(emulatorHost),
@@ -35,10 +36,12 @@ function firestore(project, emulatorHost) {
   }
   const database = `projects/${project}/databases/(default)/documents`;
   const origin = emulatorHost ? `http://${emulatorHost}` : 'https://firestore.googleapis.com';
-  const token = emulatorHost ? 'owner' : execFileSync('gcloud', ['auth', 'print-access-token', '--quiet'],
-    {encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit']}).trim();
+  const token = emulatorHost ? 'owner' : remoteRequest ? null :
+    execFileSync('gcloud', ['auth', 'print-access-token', '--quiet'],
+      {encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit']}).trim();
 
   async function request(path, body) {
+    if (!emulatorHost && remoteRequest) return remoteRequest(`/v1/${database}${path}`, body);
     const response = await fetch(`${origin}/v1/${database}${path}`, {
       method: 'POST',
       headers: {'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json'},
@@ -126,11 +129,11 @@ function readRows(docs, batchId) {
 }
 
 export async function seedNormalHistory({project, uid, batch, handle, apply = false},
-    emulatorHost = process.env.FIRESTORE_EMULATOR_HOST) {
+    emulatorHost = process.env.FIRESTORE_EMULATOR_HOST, remoteRequest) {
   check(/^[A-Za-z0-9_-]{1,128}$/.test(uid ?? ''), 'Informe o UID da conta Google de teste em --uid.');
   check(!batch || batchPattern.test(batch), 'Em --batch, informe o ID completo que começa por mock-.');
   check(!handle || handlePattern.test(handle), 'Em --handle, informe o handle Codeforces já cadastrado.');
-  const db = firestore(project, emulatorHost);
+  const db = firestore(project, emulatorHost, remoteRequest);
   const user = `users/${uid}`;
   const sourceParent = `loremMockImports/${uid}`;
   const {transaction} = await db.request(':beginTransaction', {});
@@ -145,7 +148,11 @@ export async function seedNormalHistory({project, uid, batch, handle, apply = fa
     if (!batch) {
       const batches = await db.list(sourceParent, 'batches', 2, transaction);
       check(batches.length !== 0, 'Nenhum lote do Lorem Mock foi encontrado neste projeto para o UID informado.');
-      check(batches.length === 1, 'Essa conta tem mais de um lote. Informe --batch com o ID exibido no Lorem Mock.');
+      if (batches.length > 1) {
+        const error = new Error('Essa conta tem mais de um lote. Informe --batch com o ID exibido no Lorem Mock.');
+        error.code = MULTIPLE_MOCK_BATCHES;
+        throw error;
+      }
       batch = batches[0].name.split('/').at(-1);
       check(batchPattern.test(batch), 'O ID do lote salvo está inválido.');
     }
