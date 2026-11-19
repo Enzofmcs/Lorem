@@ -1,4 +1,4 @@
-# História 57 — duelo virtual experimental
+# Rating Dolor e duelo virtual
 
 **Nome na interface: Rating Dolor.** O rating anterior continua **Rating Lorem**.
 Ambos aparecem separados no início, resultado, histórico e estatísticas cloud.
@@ -6,31 +6,32 @@ O saldo Dolor salvo aparece mesmo com novos duelos desabilitados; ausência de
 avaliação é indicada explicitamente, sem inventar saldo ou reutilizar o atual
 em resultados antigos. Campos persistidos e identificadores técnicos mantidos.
 
-A implementação acrescenta uma trajetória separada `virtual-duel-v1` aos treinos
-cloud, com cálculo Python/Kotlin, modelo completo versionado e atualização atômica
-no Firestore. A história 49 permanece fora desta entrega. D-012 continua sendo o
-rating padrão; o resultado experimental não é somado ao saldo D-012.
+A política `virtual-duel-v1` entrou como preview na história 57. A história 59
+ativa o Dolor no início padrão de novos Ipsums cloud. O Dolor guia a recomendação
+e a referência do duelo. O resultado aplica Dolor e Lorem (D-012) em saldos
+independentes na mesma transação Firestore.
 
 ## Contrato e escolhas do protótipo
 
-- Inicialização provisória em **800**, sem importar CF ou converter o saldo legado.
+- Inicialização em **800** para um vínculo sem saldo Dolor.
   O CF anterior continua metadado. As simulações com inícios 800/1400/2000 comparam
   inicialização distante/próxima da habilidade do gerador; não justificam usar CF
-  como prior real. A adoção geral/inicialização definitiva segue não decidida.
-- **K=32** fixo no cliente experimental. Cálculo, snapshot, Rules e simulações
+  como prior real.
+- **K=32** fixo nos novos Ipsums. Cálculo, snapshot, Rules e simulações
   também suportam K=64. Não existe fase provisória com término escolhido depois
   do resultado. Não se demonstrou K ótimo.
 - **H=120 minutos**, absoluto e congelado. AC exatamente no limite conta;
   sincronização tardia não aumenta o prazo. Desistência usa a penalidade de não
   resolver até H, mesmo se ocorrer cedo; a razão fica separada do rating.
-- Modalidade **sem dicas**, definida pelo início experimental. O botão de revelar
-  tags é omitido e Repository/Rules recusam a dica. A compilação padrão mantém a
-  prática com dicas/D-012. Não é possível retirar do rating um duelo em andamento.
+- A tela Início informa a modalidade **sem dicas** antes do novo Ipsum. O snapshot
+  fixa essa modalidade. A tela ativa omite a ação de dica e Repository/Rules
+  aplicam a regra da tentativa gravada. As tentativas antigas com dicas seguem
+  o contrato gravado no início.
 - Rating e probabilidades em **milionésimos inteiros**, sem arredondamento de saldo
   a cada tentativa e sem piso/clamp. A interface usa seis casas. Ao sair do domínio
-  do modelo, novo início experimental fica indisponível antes de criar tentativa,
-  marker ou lock; nunca troca de regra depois de observar o resultado.
-- Recomendação experimental e expectativa seguinte usam o saldo que o próprio duelo
+  do modelo, a tela Início informa a indisponibilidade antes de criar tentativa,
+  marcador de uso ou lock.
+- A recomendação e a expectativa seguinte usam o saldo que o próprio duelo
   atualiza. A recomendação reutiliza a normalização em centenas e o mínimo de
   dificuldade 800 do produto; isso não é piso aplicado ao saldo experimental.
 
@@ -90,12 +91,12 @@ mantém `duelRatingMicros`. Resultado, dois saldos, progressVersion e liberaçã
 lock são uma única transação. UI/exportação leem o resultado salvo; upsolve não
 reavalia nada. Erro/rede/TESTING/histórico incompleto adiam a avaliação.
 
-Tentativas antigas continuam sem os campos novos e não são recalculadas. Um
-cliente padrão novo consegue finalizar duelo existente mesmo com novos inícios
-desabilitados: o catálogo congelado continua incluído. Cliente antigo não pode
+As tentativas anteriores ao duelo conservam os resultados originais. Um
+cliente com novos duelos desabilitados consegue finalizar duelo existente
+usando o catálogo congelado. Cliente antigo não pode
 omitir a decomposição experimental na finalização; as Rules recusam, mantendo
-lock/saldo para recuperação por cliente compatível. Novos treinos padrão preservam
-`duelRatingMicros` sem alterá-lo. Um modelo futuro exige manter versões antigas
+lock/saldo para recuperação por cliente compatível. Com a flag desabilitada,
+novos Ipsums usam somente Lorem e mantêm o saldo Dolor gravado. Um modelo futuro exige manter versões antigas
 para tentativas existentes; substituir arquivo e reutilizar hash é recusado.
 
 Rules validam identidade, vínculo, prior, bin, versão/hash, H/K, ausência de dica,
@@ -115,22 +116,19 @@ python3 study/scripts/simulate_virtual_duel.py
 PYTHONPATH=study python3 -m unittest discover -s study/tests -q
 ```
 
-Para preview experimental, **depois de preparar as Rules em ambiente de teste**:
+Para testar o fluxo padrão com as Rules compatíveis em ambiente de teste:
 
 ```bash
-./gradlew assembleDebug -Plorem.virtualDuelEnabled=true
+./gradlew assembleDebug
 ```
 
-A flag é false por padrão. O início informa modalidade sem dicas e saldo separado;
-resultado mostra saldo anterior/novo, delta e tempo. O APK exige configuração
+O resultado mostra saldos anterior e novo, variação e tempo. O APK exige configuração
 Firebase/OAuth local, como o produto atual; SDK de integração usa exclusivamente
 Auth/Firestore em `demo-lorem-local`, nunca o projeto real.
 
-Para desativar novos duelos, distribuir a compilação padrão (flag false),
-**mantendo catálogo e Rules compatíveis**. Finalizar tentativas existentes com seus
-snapshots; não apagar campos, reduzir Rules ao esquema antigo, migrar saldos ou
-reescrever resultados. Publicação real das Rules e adoção padrão não foram
-executadas por esta implementação. Sem migração automática, XP ou história 49.
+Para desativar novos duelos, compilar com `-Plorem.virtualDuelEnabled=false`.
+Manter o catálogo e as Rules compatíveis para finalizar tentativas existentes com
+seus snapshots.
 
 ## Evidências
 

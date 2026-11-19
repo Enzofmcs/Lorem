@@ -2,8 +2,10 @@ package dev.lorem.app.domain
 
 const val VIRTUAL_DUEL_POLICY = "virtual-duel-v1"
 const val DUEL_SCALE = 1_000_000L
+const val INITIAL_DOLOR_MICROS = 800 * DUEL_SCALE
 const val DUEL_MODEL = "km-delta-isotonic-20261020-v1"
 const val DUEL_SHA = "69954b61bc111b2b2b1c33efef7e66978a74a378244ef0f41f834f9d6a8daea3"
+internal val DUEL_RATING_DOMAIN = 21 * DUEL_SCALE..3857 * DUEL_SCALE
 
 /** Separate provisional scale; neither a conversion nor equivalence with Codeforces. */
 data class VirtualDuelSnapshot(
@@ -21,7 +23,7 @@ data class VirtualDuelSnapshot(
         require(policy == VIRTUAL_DUEL_POLICY && model == DUEL_MODEL && sha256 == DUEL_SHA)
         require(k == 32 || k == 64)
         require(horizonMillis == TIME_SCORING_CAP_MS && assistance == "unassisted")
-        require(ratingMicros in 21 * DUEL_SCALE..3857 * DUEL_SCALE && difficulty in 800..3500)
+        require(ratingMicros in DUEL_RATING_DOMAIN && difficulty in 800..3500)
         require(curveMin in -1200..1200 && curveMin % 400 == 0)
         require(difficulty * DUEL_SCALE - ratingMicros in curveMin * DUEL_SCALE until (curveMin + 400) * DUEL_SCALE)
     }

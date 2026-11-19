@@ -8,6 +8,10 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -116,66 +120,78 @@ fun CloudTrainingApp(uid: String, state: CloudTrainingUiState, now: Long?,
             canGoBack = destination in listOf(LoremDestination.Configuration, LoremDestination.Ipsum, LoremDestination.Result),
             onBack = { if (!nav.popBackStack()) home() }, onSettings = { tab(LoremDestination.Configuration) }, onTab = ::tab) {
             Column(Modifier.fillMaxSize().testTag("cloud-training")) {
-                if (state.busy) LinearProgressIndicator(Modifier.fillMaxWidth())
-                state.error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(12.dp)) }
-                if (state.snapshot?.online == false) Text("Offline · dados salvos neste aparelho; conecte-se para confirmar o progresso.", Modifier.padding(12.dp))
+                if (state.busy && !state.starting) LinearProgressIndicator(Modifier.fillMaxWidth())
+                if (state.snapshot?.online == false) Text("Offline · exibindo dados salvos.", Modifier.padding(12.dp))
                 if (state.snapshot == null) {
-                    Column(Modifier.padding(24.dp)) {
-                        Text(if (state.error == null) "Carregando progresso da conta…" else "O progresso não pôde ser confirmado.")
-                        TextButton(onClick = onRefresh, enabled = !state.busy) { Text("Tentar novamente") }
+                    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        if (state.error == null) Text("Carregando progresso…")
+                        else CloudLoadError(state.error, state.busy, onRefresh)
                         // Account recovery remains reachable during a configuration or permission failure.
                         settingsContent()
                     }
-                } else NavHost(nav, startDestination = LoremDestination.Home.route, modifier = Modifier.weight(1f)) {
-                    composable(LoremDestination.Home.route) {
-                        if (localProfile == null) Column(Modifier.padding(24.dp)) {
-                            Text("Selecione ou adicione seu handle para começar.")
-                            Button(onClick = { tab(LoremDestination.Configuration) }) { Text("Configurar handle") }
-                        } else Column {
-                            if (dev.lorem.app.BuildConfig.VIRTUAL_DUEL_ENABLED) Text(
-                                "Treino com Rating Dolor · sem dicas · desistir conta como não resolver até 120 min.", Modifier.padding(16.dp))
-                            state.preparation?.let { Text("${it.stage.label}: ${it.detail}", Modifier.padding(16.dp)) }
-                            HomeScreen(localProfile, catalogReady = false, requiresLocalPreparation = false,
-                                showDolorRating = true, dolorRatingMicros = profile?.duelRatingMicros,
-                                onNavigate = { route ->
-                                    if (route == LoremDestination.Ipsum.route) { requested = active?.id; nav.navigate(route) }
-                                    else if (route.startsWith("${LoremDestination.Result.route}/")) {
-                                        closed.firstOrNull { it.ipsum.id == route.substringAfterLast('/').toLongOrNull() }?.let {
-                                            nav.navigate("${LoremDestination.Result.route}/${it.id}")
-                                        }
-                                    } else nav.navigate(route)
-                                }, hasActiveIpsum = active != null,
-                                latestFinishedIpsumId = closed.maxByOrNull { it.ipsum.endedAtEpochMillis ?: 0 }?.ipsum?.id,
-                                finishedIpsumCount = closed.size, acceptedIpsumCount = ipsums.count { it.status == IpsumStatus.COMPLETED },
-                                startIpsumState = if (state.busy) StartIpsumUiState.Loading else state.error?.let { StartIpsumUiState.Error(it) } ?: StartIpsumUiState.Idle,
-                                onStartIpsum = onStart, startEnabled = state.snapshot.online && !state.busy, consolidation = consolidation,
-                                dataSourceNotice = "O início verifica histórico, catálogo e perfil antes de escolher um problema. Prazo máximo: 2h.")
+                } else {
+                    if (destination != LoremDestination.Ipsum) {
+                        state.error?.let { CloudLoadError(it, state.busy, onRefresh, Modifier.padding(horizontal = 24.dp)) }
+                    }
+                    NavHost(nav, startDestination = LoremDestination.Home.route, modifier = Modifier.weight(1f)) {
+                        composable(LoremDestination.Home.route) {
+                            if (localProfile == null) Column(Modifier.padding(24.dp)) {
+                                Text("Selecione ou adicione seu handle para começar.")
+                                Button(onClick = { tab(LoremDestination.Configuration) }) { Text("Configurar handle") }
+                            } else {
+                                HomeScreen(localProfile, catalogReady = false, requiresLocalPreparation = false,
+                                    showDolorRating = true, dolorRatingMicros = profile?.duelRatingMicros,
+                                    onNavigate = { route ->
+                                        if (route == LoremDestination.Ipsum.route) { requested = active?.id; nav.navigate(route) }
+                                        else if (route.startsWith("${LoremDestination.Result.route}/")) {
+                                            closed.firstOrNull { it.ipsum.id == route.substringAfterLast('/').toLongOrNull() }?.let {
+                                                nav.navigate("${LoremDestination.Result.route}/${it.id}")
+                                            }
+                                        } else nav.navigate(route)
+                                    }, hasActiveIpsum = active != null,
+                                    latestFinishedIpsumId = closed.maxByOrNull { it.ipsum.endedAtEpochMillis ?: 0 }?.ipsum?.id,
+                                    finishedIpsumCount = closed.size, acceptedIpsumCount = ipsums.count { it.status == IpsumStatus.COMPLETED },
+                                    startIpsumState = if (state.starting) StartIpsumUiState.Loading else state.startError?.let { StartIpsumUiState.Error(it) } ?: StartIpsumUiState.Idle,
+                                    onStartIpsum = onStart, startEnabled = state.snapshot.online && !state.busy, consolidation = consolidation,
+                                    startProgress = state.preparation?.detail,
+                                    startNotice = if (active == null && dev.lorem.app.BuildConfig.VIRTUAL_DUEL_ENABLED)
+                                        "Treino sem dicas. O resultado atualiza os ratings Lorem e Dolor." else null)
+                            }
                         }
-                    }
-                    composable(LoremDestination.Ipsum.route) {
-                        CloudTrainingScreen(state, now, onHint, onClose, onRefresh) { home() }
-                    }
-                    composable("${LoremDestination.Result.route}/{id}") { back ->
-                        val result = closed.firstOrNull { it.id == back.arguments?.getString("id") }
-                        IpsumResultScreen(result?.let { IpsumResultUiState.Ready(IpsumResult(it.ipsum, emptyList(), false)) }
-                            ?: IpsumResultUiState.Error("Resultado não disponível neste contexto."), ::home)
-                    }
-                    composable(LoremDestination.History.route) {
-                        HistoryScreen(ipsums, updateState = state.pendingUpdate, onUpdatePending = onPending,
-                            onNavigateHome = ::home, ownerHandle = profile?.handle,
-                            onOpenResult = { i -> closed.firstOrNull { it.ipsum.id == i.id }?.let { nav.navigate("${LoremDestination.Result.route}/${it.id}") } })
-                    }
-                    composable(LoremDestination.Statistics.route) {
-                        val stats = localProfile?.let { buildIpsumStatistics(it, ipsums, ipsums.map { i -> i.problem }) }
-                        StatisticsScreen(stats?.let { StatisticsUiState.Ready(it) } ?: StatisticsUiState.NoProfile, ::home, consolidation,
-                            showDolorRating = true, dolorRatingMicros = profile?.duelRatingMicros)
-                    }
-                    composable(LoremDestination.Configuration.route) {
-                        CloudSettings(state, onAdd, onSelect, onStart, onRefresh, onPending, theme, onThemeChange, settingsContent)
+                        composable(LoremDestination.Ipsum.route) {
+                            CloudTrainingScreen(state, now, onHint, onClose, onRefresh) { home() }
+                        }
+                        composable("${LoremDestination.Result.route}/{id}") { back ->
+                            val result = closed.firstOrNull { it.id == back.arguments?.getString("id") }
+                            IpsumResultScreen(result?.let { IpsumResultUiState.Ready(IpsumResult(it.ipsum, emptyList(), false)) }
+                                ?: IpsumResultUiState.Error("Resultado não disponível neste contexto."), ::home)
+                        }
+                        composable(LoremDestination.History.route) {
+                            HistoryScreen(ipsums, updateState = state.pendingUpdate, onUpdatePending = onPending, compact = true,
+                                onNavigateHome = ::home, ownerHandle = profile?.handle,
+                                onOpenResult = { i -> closed.firstOrNull { it.ipsum.id == i.id }?.let { nav.navigate("${LoremDestination.Result.route}/${it.id}") } })
+                        }
+                        composable(LoremDestination.Statistics.route) {
+                            val stats = localProfile?.let { buildIpsumStatistics(it, ipsums, ipsums.map { i -> i.problem }) }
+                            StatisticsScreen(stats?.let { StatisticsUiState.Ready(it) } ?: StatisticsUiState.NoProfile, ::home, consolidation,
+                                showDolorRating = true, dolorRatingMicros = profile?.duelRatingMicros, ratingHistory = ipsums)
+                        }
+                        composable(LoremDestination.Configuration.route) {
+                            CloudSettings(state, onAdd, onSelect, onRefresh, theme, onThemeChange, settingsContent)
+                        }
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun CloudLoadError(message: String, busy: Boolean, retry: () -> Unit, modifier: Modifier = Modifier) {
+    Column(modifier.semantics { liveRegion = LiveRegionMode.Polite }) {
+        Text(message, color = MaterialTheme.colorScheme.error)
+        TextButton(onClick = retry, enabled = !busy) { Text("Tentar novamente") }
     }
 }
 
@@ -190,51 +206,53 @@ fun CloudTrainingScreen(state: CloudTrainingUiState, now: Long?, onHint: () -> U
     if (canTrain) {
         IpsumScreen(active!!.ipsum, onNavigateHome = onHome, onRevealHint = onHint,
             onVerifySubmissions = onRefresh,
-            submissionCheckState = if (state.busy) SubmissionCheckUiState.Loading else SubmissionCheckUiState.Idle,
+            submissionCheckState = if (state.busy) SubmissionCheckUiState.Loading
+                else state.error?.let { SubmissionCheckUiState.Error(it) } ?: SubmissionCheckUiState.Idle,
             onEndWithoutAc = { it?.let(onClose) }, nowMillis = { requireNotNull(now) },
-            dataSourceNotice = "Prazo absoluto de 2h · o processamento pode aguardar conexão.")
-    } else Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            dataSourceNotice = "Limite de 2h.")
+    } else Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(when {
             active == null -> "Confirmando o treino salvo…"
             active.state == CloudIpsumState.CLOSED_AWAITING_VERIFICATION -> "Treino fechado · aguardando verificação"
             now == null -> "Confirmando prazo do Ipsum salvo…"
             else -> "Prazo atingido · aguardando verificação"
         })
-        Text(if (now == null) "Conecte-se para confirmar o relógio e as submissões." else "A verificação preserva o prazo original e pode aguardar rede ou sessão.")
-        TextButton(onClick = onRefresh, enabled = !state.busy) { Text("Atualizar progresso") }
+        if (now == null) Text("Conecte-se para confirmar o prazo e as submissões.")
+        if (state.error != null) CloudLoadError(state.error, state.busy, onRefresh)
+        else TextButton(onClick = onRefresh, enabled = !state.busy) { Text("Atualizar progresso") }
         TextButton(onClick = onHome) { Text("Voltar ao início") }
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun CloudSettings(state: CloudTrainingUiState, onAdd: (String) -> Unit, onSelect: (String) -> Unit,
-    onStart: () -> Unit, onRefresh: () -> Unit, onPending: () -> Unit, theme: ThemePreference, onThemeChange: (ThemePreference) -> Unit,
+    onRefresh: () -> Unit, theme: ThemePreference, onThemeChange: (ThemePreference) -> Unit,
     settingsContent: @Composable () -> Unit,
 ) {
     var input by rememberSaveable { mutableStateOf("") }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("Seus handles", style = MaterialTheme.typography.headlineSmall)
+        Text("Handles Codeforces", style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
         if (state.snapshot?.active != null) Text("Conclua o Ipsum ativo antes de trocar de handle.")
         state.snapshot?.handles?.forEach { handle ->
             OutlinedButton(onClick = { onSelect(handle.key) }, enabled = !state.busy && state.snapshot.active == null) {
                 Text(handle.handle + if (handle.key == state.selectedKey) " · selecionado" else "")
             }
         }
-        OutlinedTextField(input, { input = it }, label = { Text("Handle Codeforces") }, singleLine = true, enabled = !state.busy && state.snapshot?.active == null)
+        OutlinedTextField(input, { input = it }, label = { Text("Novo handle") }, singleLine = true, enabled = !state.busy && state.snapshot?.active == null)
         Button(onClick = { onAdd(input) }, enabled = input.isNotBlank() && !state.busy && state.snapshot?.active == null) { Text("Adicionar handle") }
-        Text("Aparência", style = MaterialTheme.typography.titleLarge)
-        ThemePreference.entries.forEach { preference ->
-            FilterChip(selected = theme == preference, onClick = { onThemeChange(preference) },
-                label = { Text(when (preference) { ThemePreference.SYSTEM -> "Sistema"; ThemePreference.LIGHT -> "Claro"; ThemePreference.DARK -> "Escuro" }) })
+        HorizontalDivider()
+        Text("Aparência", style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            ThemePreference.entries.forEach { preference ->
+                FilterChip(selected = theme == preference, onClick = { onThemeChange(preference) },
+                    label = { Text(when (preference) { ThemePreference.SYSTEM -> "Sistema"; ThemePreference.LIGHT -> "Claro"; ThemePreference.DARK -> "Escuro" }) })
+            }
         }
-        Text("Preparação e atualização", style = MaterialTheme.typography.titleLarge)
-        state.preparation?.let { Text("${it.stage.label}: ${it.detail}") }
-        Text("Histórico incompleto não autoriza treino. Tente iniciar novamente para retomar uma preparação interrompida.")
-        if (state.preparation != null && state.snapshot?.active == null) {
-            Button(onClick = onStart, enabled = !state.busy && state.snapshot?.online == true) { Text("Retomar preparação e iniciar Ipsum") }
-        }
+        HorizontalDivider()
+        Text("Sincronização", style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
         TextButton(onClick = onRefresh, enabled = !state.busy) { Text("Atualizar progresso") }
-        TextButton(onClick = onPending, enabled = !state.busy) { Text("Atualizar pendências") }
+        HorizontalDivider()
         settingsContent()
     }
 }

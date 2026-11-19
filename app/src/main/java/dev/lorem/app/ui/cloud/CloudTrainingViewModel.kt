@@ -18,6 +18,8 @@ data class CloudTrainingUiState(
     val error: String? = null,
     val preparation: CloudPreparationProgress? = null,
     val pendingUpdate: dev.lorem.app.ui.PendingUpdateUiState = dev.lorem.app.ui.PendingUpdateUiState.Idle,
+    val starting: Boolean = false,
+    val startError: String? = null,
 )
 
 class CloudTrainingViewModel(private val uid: String, private val repository: CloudTrainingRepository,
@@ -28,15 +30,20 @@ class CloudTrainingViewModel(private val uid: String, private val repository: Cl
     private var pendingStart: Pair<String, String>? = null
     init { refresh() }
 
-    private fun action(block: suspend () -> Unit) {
+    private fun action(starting: Boolean = false, block: suspend () -> Unit) {
         if (mutableState.value.busy) return
-        mutableState.value = mutableState.value.copy(busy = true, error = null)
+        val current = mutableState.value
+        mutableState.value = current.copy(busy = true, error = null, starting = starting,
+            startError = current.startError.takeUnless { starting },
+            preparation = current.preparation.takeUnless { starting })
         viewModelScope.launch {
             try { block() }
             catch (e: Exception) {
                 if (e is CancellationException) throw e
-                mutableState.value = mutableState.value.copy(error = e.message ?: "Não foi possível atualizar. Tente novamente.")
-            } finally { mutableState.value = mutableState.value.copy(busy = false) }
+                val message = e.message ?: "Não foi possível atualizar. Tente novamente."
+                mutableState.value = if (starting) mutableState.value.copy(startError = message)
+                    else mutableState.value.copy(error = message)
+            } finally { mutableState.value = mutableState.value.copy(busy = false, starting = false) }
         }
     }
     private suspend fun reload() {
@@ -44,7 +51,14 @@ class CloudTrainingViewModel(private val uid: String, private val repository: Cl
         val snapshot = repository.load(uid, selected)
         val key = snapshot.active?.handleKey ?: selected?.takeIf { k -> snapshot.handles.any { it.key == k } }
         val resolved = if (snapshot.active == null && key != selected) repository.load(uid, key) else snapshot
-        mutableState.value = mutableState.value.copy(snapshot = resolved, selectedKey = key)
+        val command = pendingStart
+        val confirmed = command != null && command.first == key &&
+            (resolved.active?.id == command.second || resolved.attempts.any { it.id == command.second })
+        if (confirmed) pendingStart = null
+        val current = mutableState.value
+        mutableState.value = current.copy(snapshot = resolved, selectedKey = key,
+            startError = current.startError.takeUnless { confirmed },
+            preparation = current.preparation.takeUnless { confirmed })
     }
     fun refresh() = action {
         reload()
@@ -57,7 +71,7 @@ class CloudTrainingViewModel(private val uid: String, private val repository: Cl
         pendingStart = null
         // Clear the previous handle before a possibly slow/offline load of the new context.
         mutableState.value = mutableState.value.copy(snapshot = null, selectedKey = key, preparation = null,
-            pendingUpdate = dev.lorem.app.ui.PendingUpdateUiState.Idle)
+            pendingUpdate = dev.lorem.app.ui.PendingUpdateUiState.Idle, startError = null)
         reload()
     }
     fun add(handle: String) = action {
@@ -68,7 +82,7 @@ class CloudTrainingViewModel(private val uid: String, private val repository: Cl
         check(mutableState.value.snapshot?.active == null) { "Conclua o treino antes de trocar de handle." }
         changeSelection(key)
     }
-    fun start() = action {
+    fun start() = action(starting = true) {
         val key = requireNotNull(mutableState.value.selectedKey)
         val command = pendingStart?.takeIf { it.first == key }?.second ?: UUID.randomUUID().toString().also {
             pendingStart = key to it
@@ -76,9 +90,9 @@ class CloudTrainingViewModel(private val uid: String, private val repository: Cl
         repository.startPrepared(uid, key, command) { progress ->
             mutableState.value = mutableState.value.copy(preparation = progress)
         }
+        reload()
         pendingStart = null
         mutableState.value = mutableState.value.copy(preparation = null)
-        reload()
     }
     fun hint() = action { repository.hint(uid, requireNotNull(mutableState.value.snapshot?.active)); reload() }
     fun close(reason: IpsumFailureReason) = action {

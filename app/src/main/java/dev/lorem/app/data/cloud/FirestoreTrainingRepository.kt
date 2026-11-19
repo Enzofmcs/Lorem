@@ -32,7 +32,7 @@ class FirestoreTrainingRepository(
             inputRating = cfRating, unavailableReason = "artifact_not_configured") },
     private val scheduleMaintenance: (String) -> Unit = {},
     private val duelCatalog: VirtualDuelCatalog? = null,
-    private val duelEnabled: Boolean = false,
+    private val duelEnabled: Boolean,
 ) : CloudTrainingRepository {
     private val preparation = CloudPreparation(cf, elapsedMillis)
     private val pendingChecked = mutableMapOf<String, Long>()
@@ -136,6 +136,8 @@ class FirestoreTrainingRepository(
         check(before.online) { "Conecte-se para iniciar um novo Ipsum." }
         check(before.active == null) { "Já existe um Ipsum ativo nesta conta." }
         val profile = before.handles.firstOrNull { it.key == key } ?: error("Selecione um handle válido.")
+        val dolor = if (duelEnabled) profile.duelRatingMicros ?: INITIAL_DOLOR_MICROS else null
+        if (dolor != null) check(dolor in DUEL_RATING_DOMAIN) { "Avaliação Dolor indisponível para este rating." }
         check(legacy?.reconcile()?.ready != false) { "Conclua a verificação do Ipsum anterior no arquivo local." }
         val exclusionsRef = handle(uid, key).collection("exclusions")
         val localExclusions = legacy?.exclusions(profile.handle).orEmpty()
@@ -154,17 +156,16 @@ class FirestoreTrainingRepository(
         val catalog = prepared.catalog
         checkUid(uid)
         val prior = attempts(uid, key).get(Source.SERVER).await().documents.map { it.cloudIpsum() }
-        val recommendationRating = if (duelEnabled) ((profile.duelRatingMicros ?: 800 * DUEL_SCALE) / DUEL_SCALE).toInt() else profile.rating
+        val recommendationRating = dolor?.let { (it / DUEL_SCALE).toInt() } ?: profile.rating
         val recommendation = recommender.recommend(recommendationRating, catalog.filter { it.id !in exclusions }, buildProblemHistory(history), prior.map { it.ipsum }, profile.handle)
             ?: error("Nenhum problema inédito disponível nesta faixa.")
         val official = prepared.user
-        progress(CloudPreparationProgress(CloudPreparationStage.SAVING, "Salvando o snapshot e o prazo no servidor…"))
+        val duel = dolor?.let { requireNotNull(duelCatalog).select(it, requireNotNull(recommendation.problem.rating)) }
+        progress(CloudPreparationProgress(CloudPreparationStage.SAVING, "Salvando o Ipsum…"))
         val observed = official.ratingObservedAtEpochMillis?.takeIf { it > 0 &&
             deadline.now(uid)?.let { now -> it <= now } == true && official.rating != null }
         val snap = snapshotOf(recommendation, profile.rating, profile.handle, official.rating.takeIf { observed != null }, observed,
-            scoringSelector(official.rating.takeIf { observed != null }, recommendation.problem.rating!!),
-            if (duelEnabled) requireNotNull(duelCatalog).select(profile.duelRatingMicros ?: 800 * DUEL_SCALE,
-                recommendation.problem.rating!!) else null)
+            scoringSelector(official.rating.takeIf { observed != null }, recommendation.problem.rating!!), duel)
         val marker = handle(uid, key).collection("usedProblems").document("${recommendation.problem.id.contestId}_${recommendation.problem.id.index}")
         db.runTransaction { tx ->
             checkUid(uid)
@@ -216,7 +217,7 @@ class FirestoreTrainingRepository(
         db.runTransaction { tx ->
             checkUid(uid)
             val latest = tx.get(ref).cloudIpsum()
-            check(latest.ipsum.virtualDuelSnapshot == null) { "Este treino experimental é sem dicas. A modalidade é fixada antes do início." }
+            check(latest.ipsum.virtualDuelSnapshot == null) { "Este Ipsum foi iniciado na modalidade sem dicas." }
             check(latest.state == CloudIpsumState.ACTIVE)
             if (latest.ipsum.hintRevealedAtEpochMillis == null) tx.update(ref, "hintAt", FieldValue.serverTimestamp())
         }.await()

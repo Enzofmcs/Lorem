@@ -81,13 +81,12 @@ private fun ActiveIpsumContent(
     Text(ipsum.problem.name, style = MaterialTheme.typography.headlineMedium, modifier = Modifier.semantics { heading() })
     Text("Problema ${ipsum.problem.id}", color = MaterialTheme.colorScheme.onSurfaceVariant)
     ElapsedTimeCard(ipsum.id, ipsum.startedAtEpochMillis, nowMillis)
-    Text("O tempo segue contando ao sair da tela.", style = MaterialTheme.typography.bodySmall)
     LoremPrimaryAction("Abrir no Codeforces", { uriHandler.openUri(ipsum.problemUrl()) })
 
     val synchronization = trackingState?.takeIf { it.activeIpsumId == ipsum.id }?.synchronization
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("Acompanhando submissões automaticamente", style = MaterialTheme.typography.titleMedium,
+            Text("Submissões", style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.semantics { heading() })
             Text("Erros definitivos: ${ipsum.errorCount}")
             val status = when {
@@ -95,7 +94,7 @@ private fun ActiveIpsumContent(
                 synchronization?.failureKind == SyncFailureKind.NETWORK -> "Sem conexão · seu treino continua salvo."
                 synchronization?.failureKind == SyncFailureKind.RATE_LIMIT -> "Aguardando o Codeforces permitir nova consulta."
                 synchronization?.failure != null -> "Não foi possível consultar. Tentaremos novamente."
-                else -> "A consulta é retomada automaticamente ao voltar para esta tela."
+                else -> "Consulta automática ativa."
             }
             Text(status, style = MaterialTheme.typography.bodySmall)
             Text("Última consulta concluída: ${synchronization?.lastSuccessEpochMillis?.let(::formatSyncTime) ?: "nenhuma ainda"}",
@@ -108,15 +107,12 @@ private fun ActiveIpsumContent(
             }
         }
     }
-    if (ipsum.hintRevealedAtEpochMillis == null) {
-        Text("O rating, as tags e a categoria ficam ocultos durante o Ipsum.", style = MaterialTheme.typography.bodySmall)
-        if (ipsum.virtualDuelSnapshot == null) OutlinedButton(onClick = { dialog = IpsumDialog.RevealHint }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+    if (ipsum.virtualDuelSnapshot == null) {
+        if (ipsum.hintRevealedAtEpochMillis == null) OutlinedButton(onClick = { dialog = IpsumDialog.RevealHint }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
             Text("Revelar tópicos")
+        } else {
+            Text("Tópicos: ${ipsum.problem.tags.sorted().joinToString()}")
         }
-    } else {
-        LoremBadge("Dica registrada", LoremTone.ATTENTION)
-        Text("Tópicos: ${ipsum.problem.tags.sorted().joinToString()}")
-        Text("O rating e a categoria continuam ocultos durante o Ipsum.", style = MaterialTheme.typography.bodySmall)
     }
     TextButton(onClick = { dialog = IpsumDialog.EndWithoutAc }, modifier = Modifier.heightIn(min = 48.dp),
         colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)) { Text("Encerrar sem AC") }

@@ -181,6 +181,7 @@ class CompleteAppJourneyTest {
         await { (vm.ipsumResultState.value as? IpsumResultUiState.Ready)?.result?.ipsum?.id == first.id }
         awaitDisplayed("Resultado do Ipsum")
         compose.onNodeWithText("Resultado do Ipsum").assertIsDisplayed()
+        click("Ver detalhes do Ipsum")
         compose.onNodeWithText("Por que este problema?").performScrollTo().assertIsDisplayed()
         click("Voltar ao início")
         now += 10_000

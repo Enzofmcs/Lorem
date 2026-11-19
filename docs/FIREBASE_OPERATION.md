@@ -118,11 +118,10 @@ brutas de exceções. A causa do retorno do provedor no aparelho não foi observ
 neste ambiente; a configuração OAuth/Rules confirmada pelo usuário permanece
 registrada. Nenhum deploy nem modificação de OAuth/Rules integra esta correção.
 
-## Preview da história 57
+## Rating Dolor no fluxo padrão
 
-[Operação e compatibilidade do duelo virtual](VIRTUAL_DUEL.md). Novas Rules
-precisam ser publicadas em ambiente de teste antes de distribuir o APK com
-`-Plorem.virtualDuelEnabled=true`. Padrão false, sem alteração de projeto remoto
-nesta entrega. Manter modelo/Rules compatíveis ao desligar novos inícios; duelo
-ativo deve finalizar com seu snapshot. Não restaurar Rules antigas sobre tentativas
-novas. Saldo D-012 e saldo experimental separados, sem migração ou reavaliação.
+O APK padrão usa as Rules compatíveis com o duelo virtual, introduzidas na
+história 57. Verifique a versão das Rules no projeto de destino antes de
+distribuir. Para suspender novos duelos, compile com
+`-Plorem.virtualDuelEnabled=false` e mantenha o catálogo e as Rules para finalizar
+as tentativas já iniciadas. [Operação e compatibilidade do duelo virtual](VIRTUAL_DUEL.md)

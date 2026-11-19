@@ -297,18 +297,21 @@ manual; API incompleta/TESTING impede resultado definitivo e novo treino. Apenas
 problemas excluidos sao sincronizados como IDs publicos por uid+handle. Arquivo
 congelado e somente leitura; saldo cloud novo e 800, saldo existente nao reseta.
 
-## Duelo virtual experimental (história 57)
+## Rating Dolor e duelo virtual (histórias 57, 59 e 60)
 
-O preview opt-in adiciona um saldo independente ao resultado cloud, começando em
-800 provisórios. H=120 minutos e K32 são congelados; modalidade sem dicas. AC usa
+Novos Ipsums cloud usam Dolor na recomendação e na referência do duelo por
+padrão, a partir do saldo do handle ou de 800 no primeiro duelo. H=120 minutos e
+K32 são congelados. A tela Início informa a modalidade sem dicas. AC usa
 meio crédito de empate na CDF de tempo, e não resolver/desistir usa F(H) original.
-Pode haver perda com AC lento. O saldo usa milionésimos, sem piso ou conversão
-do saldo D-012; só o próprio saldo experimental alimenta a próxima expectativa.
-Sem modelo/domínio, recusar o início experimental antes do lock. Sem verificação
-completa da API, aguardar; upsolve não reavalia. D-012 continua padrão.
+Pode haver perda com AC lento. O saldo Dolor usa milionésimos e fica separado do
+Lorem (D-012). Atualizar os dois saldos e liberar a tentativa na mesma transação.
+Se o modelo estiver indisponível, informar antes de criar a tentativa. Em caso
+de verificação incompleta, manter a avaliação pendente. O upsolve conserva a
+avaliação original.
 [Contrato e limites científicos/operacionais](VIRTUAL_DUEL.md).
 
 Nomes de apresentação (D-052): **Rating Lorem** identifica o saldo anterior;
-**Rating Dolor** identifica o saldo experimental do duelo virtual. Na UI cloud,
+**Rating Dolor** identifica o saldo do duelo virtual. Na UI cloud,
 distinguir os saldos e suas variações, inclusive zero, ausência de avaliação e
-valores fracionários. Exibir apenas resultados persistidos para cada tentativa.
+valores fracionários. O gráfico usa os resultados finalizados do handle em uma
+escala comum de pontos, ordenados pelo encerramento do Ipsum.

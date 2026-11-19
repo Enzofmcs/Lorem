@@ -85,6 +85,7 @@ As Historias 15-17 foram implementadas e verificadas em 2026-10-15 e as Historia
 
 ## Sumario rapido
 
+- [Histórias 58–60 — Interface, fluxo padrão do Dolor e comparação](#historias-5860)
 - [História 57 — Rating experimental por duelo virtual](#historia-57)
 
 - [Historia 00 - Estrutura basica](#historia-00---estrutura-basica)
@@ -2850,6 +2851,37 @@ O alvo depende do universo elegível; não relaxar regras silenciosamente.
 
 [Contrato](VIRTUAL_DUEL.md), [relatório](../study/results/virtual-duel-v1/REPORT.md), [cenários/paridade](../study/results/virtual-duel-v1/scenarios.json), [demonstração SDK](../study/results/virtual-duel-v1/sdk-demo.json).
 **TESTE MANUAL OPCIONAL - NÃO EXECUTADO (D-014).** Adoção padrão e publicação remota não integram esta implementação.
+
+<a id="historias-5860"></a>
+### Histórias 58–60 — Interface, fluxo padrão do Dolor e comparação
+
+**58 — [Simplificar a interface](https://github.com/Enzofmcs/Lorem/issues/101)**
+
+- [x] Ações de iniciar, retomar e repetir a preparação no Início, com etapa e ratings identificados.
+- [x] Problema, cronômetro e Codeforces em destaque, com encerramento secundário e regra de dicas por tentativa.
+- [x] Desfecho, tempo e variações no Resultado, com tags e explicações em detalhes expansíveis.
+- [x] Histórico com filtros aplicados junto aos resultados, Estatísticas com comparação e Configurações com conta, handles e aparência agrupados.
+- [x] Capturas do fluxo anterior e atualizado em 320 dp, temas claro e escuro e fonte 100%/200%. Testes cobrem erro recuperável, resultado antigo e ações pelas semânticas do Compose.
+- [ ] Conferência de TalkBack em dispositivo (manual, D-014).
+
+**59 — [Aplicar Dolor no fluxo padrão](https://github.com/Enzofmcs/Lorem/issues/102)**
+
+- [x] Recomendação e referência pelo Dolor persistido do handle, com 800 como valor inicial e política, modelo e dificuldade gravados no snapshot.
+- [x] Avaliação de AC, expiração e desistência, com atualização única dos dois saldos junto ao resultado e à liberação do ativo.
+- [x] Exibição de anterior, novo e variação com sinal, inclusive zero, a partir do resultado gravado.
+- [x] A próxima recomendação acompanha a mudança de faixa do Dolor, demonstrada em teste de SDK em que o Lorem fica na faixa anterior.
+- [x] Tentativas antigas seguem seus snapshots. Rede ou veredito pendente adiam o cálculo. Modelo fora do domínio é informado antes da criação.
+- [x] Aviso de modalidade sem dicas antes de começar, com visibilidade regida pelo snapshot ativo.
+
+**60 — [Comparar as trajetórias](https://github.com/Enzofmcs/Lorem/issues/103)**
+
+- [x] Gráfico com eixos comuns, valores em pontos, ordem de encerramento e legenda com marcadores distintos.
+- [x] Seleção de Ipsum com data, problema, saldos e variações disponíveis.
+- [x] Dados finalizados do handle selecionado, com atualização da seleção na troca de handle.
+- [x] Lacunas de avaliações Dolor, estado sem avaliação e marcador para um único ponto.
+- [x] Testes com histórico misto, deltas opostos, precisão fracionária e tela de 320 dp nos dois temas.
+
+[Capturas e verificação](evidence/2026-11-19-historias-58-60/README.md).
 
 ---
 

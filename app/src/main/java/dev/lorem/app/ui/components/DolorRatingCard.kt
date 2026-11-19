@@ -25,19 +25,16 @@ fun DolorRatingCard(ratingMicros: Long?, modifier: Modifier = Modifier, result: 
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
         Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("Rating Dolor", style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
-            Text("Experimental · Duelo virtual", style = MaterialTheme.typography.bodySmall)
             if (result != null) {
-                Text("Antes: ${formatDolorRating(result.beforeMicros)}", style = MaterialTheme.typography.titleMedium)
-                Text("Agora: ${formatDolorRating(result.afterMicros)}", style = MaterialTheme.typography.headlineSmall)
                 Text("Variação Dolor: ${formatDolorRating(result.deltaMicros, signed = true)} pontos",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = if (result.deltaMicros >= 0) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.error)
+                    style = MaterialTheme.typography.headlineSmall)
+                Text("Antes: ${formatDolorRating(result.beforeMicros)}")
+                Text("Agora: ${formatDolorRating(result.afterMicros)}")
             } else if (ratingMicros != null) {
                 Text(formatDolorRating(ratingMicros), style = MaterialTheme.typography.headlineSmall)
             } else {
                 Text(emptyMessage, style = MaterialTheme.typography.bodyLarge)
             }
-            Text("Saldo independente do Rating Lorem.", style = MaterialTheme.typography.bodySmall)
         }
     }
 }

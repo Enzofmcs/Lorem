@@ -115,8 +115,8 @@ fun finalizeCloudIpsum(attempt: CloudIpsum, verification: CloudVerification, fai
         ratingDelta = delta, finalLoremRating = (attempt.ipsum.initialLoremRating + delta).coerceAtLeast(0),
         timeGain = gain,
         virtualDuelResult = attempt.ipsum.virtualDuelSnapshot?.let { snapshot ->
-            check(attempt.ipsum.hintRevealedAtEpochMillis == null) { "Tentativa experimental incompatível com dica." }
-            requireNotNull(duelEvaluator) { "Modelo experimental indisponível; avaliação adiada." }(snapshot,
+            check(attempt.ipsum.hintRevealedAtEpochMillis == null) { "Este Ipsum foi iniciado na modalidade sem dicas." }
+            requireNotNull(duelEvaluator) { "Modelo Dolor indisponível. A avaliação fica pendente." }(snapshot,
                 endedAt - attempt.ipsum.startedAtEpochMillis, accepted)
         },
         expectedTimeMillis = calculation.expectedTimeMillis,

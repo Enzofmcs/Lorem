@@ -33,6 +33,7 @@ import dev.lorem.app.domain.AttemptStatistics
 import dev.lorem.app.domain.ConsolidationProgress
 import dev.lorem.app.domain.IpsumStatistics
 import dev.lorem.app.domain.TagStatistics
+import dev.lorem.app.domain.model.Ipsum
 import dev.lorem.app.ui.StatisticsUiState
 import dev.lorem.app.ui.components.LoremEmptyState
 import java.time.Instant
@@ -46,7 +47,7 @@ private enum class StatisticsSection(val label: String) {
 
 @Composable
 fun StatisticsScreen(state: StatisticsUiState, onNavigateHome: () -> Unit = {}, consolidation: ConsolidationProgress? = null,
-    showDolorRating: Boolean = false, dolorRatingMicros: Long? = null) {
+    showDolorRating: Boolean = false, dolorRatingMicros: Long? = null, ratingHistory: List<Ipsum>? = null) {
     val padding = PaddingValues(0.dp)
     when (state) {
         StatisticsUiState.Loading -> Column(Modifier.padding(padding).padding(16.dp)) {
@@ -58,7 +59,7 @@ fun StatisticsScreen(state: StatisticsUiState, onNavigateHome: () -> Unit = {}, 
             TextButton(onClick = onNavigateHome, modifier = Modifier.heightIn(min = 48.dp)) { Text("Voltar ao Início") }
         }
         is StatisticsUiState.Ready -> key(state.statistics.ownerHandle.trim().lowercase(Locale.ROOT)) {
-            StatisticsContent(state.statistics, padding, onNavigateHome, consolidation, showDolorRating, dolorRatingMicros)
+            StatisticsContent(state.statistics, padding, onNavigateHome, consolidation, showDolorRating, dolorRatingMicros, ratingHistory)
         }
     }
 }
@@ -66,7 +67,7 @@ fun StatisticsScreen(state: StatisticsUiState, onNavigateHome: () -> Unit = {}, 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun StatisticsContent(stats: IpsumStatistics, padding: PaddingValues, onNavigateHome: () -> Unit, consolidation: ConsolidationProgress?,
-    showDolorRating: Boolean, dolorRatingMicros: Long?) {
+    showDolorRating: Boolean, dolorRatingMicros: Long?, ratingHistory: List<Ipsum>?) {
     var sectionName by rememberSaveable(stats.ownerHandle) { mutableStateOf(StatisticsSection.SUMMARY.name) }
     val section = StatisticsSection.valueOf(sectionName)
     LazyColumn(
@@ -77,16 +78,15 @@ private fun StatisticsContent(stats: IpsumStatistics, padding: PaddingValues, on
         item(key = "header") {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text("Estatísticas", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.semantics { heading() })
-                Text("Seu progresso · @${stats.ownerHandle}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("@${stats.ownerHandle}", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
                     Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text("Rating Lorem atual: ${stats.currentRating}", style = MaterialTheme.typography.headlineSmall,
                             modifier = Modifier.testTag("statistics-current-rating"))
-                        Text("Acompanhe seus resultados e consulte as avaliações salvas abaixo.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
                 if (showDolorRating) dev.lorem.app.ui.components.DolorRatingCard(dolorRatingMicros)
-                TextButton(onClick = onNavigateHome, modifier = Modifier.heightIn(min = 48.dp)) { Text("Voltar ao Início") }
+                if (ratingHistory == null) TextButton(onClick = onNavigateHome, modifier = Modifier.heightIn(min = 48.dp)) { Text("Voltar ao Início") }
             }
         }
         item(key = "sections") {
@@ -101,29 +101,32 @@ private fun StatisticsContent(stats: IpsumStatistics, padding: PaddingValues, on
                 }
             }
         }
-        item {
+        if (ratingHistory == null) item {
             Text("Somente Ipsums encerrados. AC posterior não conta como AC no Ipsum.")
             if (stats.overall.total == 0) Text("Nenhum Ipsum encerrado. Conclua um treino para ver seu desempenho.")
         }
         when (section) {
             StatisticsSection.SUMMARY -> {
+                if (ratingHistory != null) item(key = "rating-comparison") { RatingComparison(ratingHistory) }
                 if (consolidation != null) item { ConsolidationCard(consolidation) }
                 item { AttemptCard("Seu desempenho", stats.overall, "statistics-overall") }
-                item {
-                    Text("Evolução do Rating Lorem", style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
-                    Text("Valores salvos, em ordem de encerramento. Cada ponto representa uma avaliação; os valores completos estão abaixo.")
-                    if (stats.ratingEvolution.isEmpty()) Text("Sem avaliações de rating registradas.")
-                    if (stats.unratedAttempts > 0) {
-                        Text("${stats.unratedAttempts} encerramento(s) sem avaliação completa; não entram na evolução.")
+                if (ratingHistory == null) {
+                    item {
+                        Text("Evolução do Rating Lorem", style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
+                        Text("Valores salvos, em ordem de encerramento. Cada ponto representa uma avaliação; os valores completos estão abaixo.")
+                        if (stats.ratingEvolution.isEmpty()) Text("Sem avaliações de rating registradas.")
+                        if (stats.unratedAttempts > 0) {
+                            Text("${stats.unratedAttempts} encerramento(s) sem avaliação completa; não entram na evolução.")
+                        }
                     }
-                }
-                if (stats.ratingEvolution.isNotEmpty()) item { RatingEvolutionChart(stats.ratingEvolution) }
-                items(stats.ratingEvolution, key = { "evolution-${it.ipsumId}" }) { point ->
-                    Card(Modifier.fillMaxWidth().testTag("statistics-evolution-${point.ipsumId}")) {
-                        Column(Modifier.padding(16.dp)) {
-                            Text("Ipsum #${point.ipsumId} • ${formatStatisticsDate(point.endedAtEpochMillis)}")
-                            val delta = if (point.delta >= 0) "+${point.delta}" else point.delta.toString()
-                            Text("${point.before} → ${point.after} ($delta)")
+                    if (stats.ratingEvolution.isNotEmpty()) item { RatingEvolutionChart(stats.ratingEvolution) }
+                    items(stats.ratingEvolution, key = { "evolution-${it.ipsumId}" }) { point ->
+                        Card(Modifier.fillMaxWidth().testTag("statistics-evolution-${point.ipsumId}")) {
+                            Column(Modifier.padding(16.dp)) {
+                                Text("Ipsum #${point.ipsumId} • ${formatStatisticsDate(point.endedAtEpochMillis)}")
+                                val delta = if (point.delta >= 0) "+${point.delta}" else point.delta.toString()
+                                Text("${point.before} → ${point.after} ($delta)")
+                            }
                         }
                     }
                 }

@@ -7,7 +7,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import dev.lorem.app.domain.ConsolidationProgress
@@ -35,6 +37,8 @@ fun HomeScreen(
     startEnabled: Boolean = true,
     showDolorRating: Boolean = false,
     dolorRatingMicros: Long? = null,
+    startNotice: String? = null,
+    startProgress: String? = null,
 ) {
     var showConsolidation by rememberSaveable(profile.handle) { mutableStateOf(false) }
     val blockedReason = when {
@@ -49,16 +53,16 @@ fun HomeScreen(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text("Olá, ${profile.displayName}", style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.semantics { heading() })
-            Text("@${profile.handle}", color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-        LoremMetricCard("Rating Lorem", profile.loremRating.toString(),
-            supportingText = "Rating oficial Codeforces: ${profile.officialRating ?: "não disponível"} · referência do perfil")
-        if (showDolorRating) DolorRatingCard(dolorRatingMicros)
+        Text(if (requiresLocalPreparation) "Olá, ${profile.displayName}" else "@${profile.handle}",
+            style = MaterialTheme.typography.headlineMedium, modifier = Modifier.semantics { heading() })
+        if (requiresLocalPreparation) Text("@${profile.handle}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        if (!hasActiveIpsum) startNotice?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
         LoremPrimaryAction(
-            label = if (hasActiveIpsum) "Continuar Ipsum" else "Iniciar Ipsum",
+            label = when {
+                hasActiveIpsum -> if (requiresLocalPreparation) "Continuar Ipsum" else "Retomar Ipsum"
+                startIpsumState is StartIpsumUiState.Error && !requiresLocalPreparation -> "Tentar novamente"
+                else -> "Iniciar Ipsum"
+            },
             onClick = { if (hasActiveIpsum) onNavigate(LoremDestination.Ipsum.route) else onStartIpsum() },
             enabled = blockedReason == null && (hasActiveIpsum || startEnabled),
             busy = !hasActiveIpsum && startIpsumState == StartIpsumUiState.Loading,
@@ -68,11 +72,17 @@ fun HomeScreen(
         } else {
             blockedReason?.let { Text(it) }
             when (startIpsumState) {
-                StartIpsumUiState.Loading -> Text("Escolhendo e salvando um problema…")
-                is StartIpsumUiState.Error -> LoremErrorState(startIpsumState.message)
+                StartIpsumUiState.Loading -> Text(startProgress ?: "Escolhendo e salvando um problema…",
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
+                is StartIpsumUiState.Error -> Box(Modifier.semantics { liveRegion = LiveRegionMode.Polite }) {
+                    LoremErrorState(startIpsumState.message)
+                }
                 else -> Unit
             }
         }
+        LoremMetricCard("Rating Lorem", profile.loremRating.toString(),
+            supportingText = if (requiresLocalPreparation) "Rating oficial Codeforces: ${profile.officialRating ?: "não disponível"} · referência do perfil" else null)
+        if (showDolorRating) DolorRatingCard(dolorRatingMicros)
         preparation?.let { PreparationSummary(it) }
         if (blockedReason != null) {
             TextButton(onClick = { onNavigate(LoremDestination.Configuration.route) }) { Text("Ver preparação") }
@@ -83,7 +93,7 @@ fun HomeScreen(
                 Text("Seus treinos", style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
                 if (finishedIpsumCount == 0) {
                     Text("Seu primeiro Ipsum começa aqui.")
-                    Text("Ao encerrar um treino, você verá seu resumo e resultado.", style = MaterialTheme.typography.bodySmall)
+                    if (requiresLocalPreparation) Text("Ao encerrar um treino, você verá seu resumo e resultado.", style = MaterialTheme.typography.bodySmall)
                 } else {
                     Text("Ipsums encerrados: $finishedIpsumCount")
                     Text("AC durante o Ipsum: $acceptedIpsumCount de $finishedIpsumCount")
