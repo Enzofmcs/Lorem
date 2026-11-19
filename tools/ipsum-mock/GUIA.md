@@ -11,9 +11,20 @@ O **Lorem Mock** é um APK para Android 8 ou superior, com pacote `dev.lorem.app
 
 Os lotes gravados nesse modo ficam em `loremMockImports/{uid}/batches/{ID do lote}/handles/cf_mock_excel/ipsums`. O acesso exige a conta Google proprietária do lote. O modo Firebase usa internet.
 
-## Consultar no Lorem debug
+## Mostrar os dados nas telas normais do Lorem
 
-No **Lorem Mock**, copie o **ID do lote gravado** na aba **Importar**. No app **Lorem** da variante `debug`, entre com a mesma conta Google no mesmo projeto Firebase, abra **Histórico → Abrir lote importado**, cole o ID e toque em **Abrir lote**. O lote aparece como **Histórico simulado · @mock_excel**, com histórico e estatísticas de leitura.
+1. No **Lorem**, entre com a conta Google de teste e selecione um handle cadastrado sem histórico. Encerre qualquer Ipsum ativo dessa conta.
+2. No **Firebase Console → Authentication → Usuários**, copie o **UID** da conta de teste. Em **Configurações do projeto**, copie o **ID do projeto**.
+3. Abra o **Cloud Shell** do Google Cloud com uma conta que pode ler e gravar no Firestore do projeto. Rode:
+
+   ```bash
+   curl -fsSLo seed-normal-history.mjs https://raw.githubusercontent.com/Enzofmcs/Lorem/refs/heads/codex/importador-ipsums/tools/ipsum-mock/seed-normal-history.mjs
+   node seed-normal-history.mjs --project ID_DO_PROJETO --uid UID_DE_TESTE --apply
+   ```
+
+O comando usa o handle selecionado no Lorem e localiza o lote já gravado. Com vários lotes, passe `--batch ID_DO_LOTE`. Para indicar outro handle cadastrado, use `--handle NOME`. Para conferir o projeto, o handle e o rating antes de gravar, execute o comando sem `--apply`.
+
+A carga copia os 200 Ipsums e seus marcadores para `users/{uid}/handles/{handleKey}` em uma única transação e atualiza o progresso do handle. Depois de receber **Carga concluída**, volte ao **Lorem**, abra **Histórico** ou **Estatísticas** e confira os resultados. Para repetir a demonstração com o mesmo lote, o comando reconhece a carga existente. As Rules publicadas do Lorem permitem a leitura normal desse histórico.
 
 ## 1. Prepare o Excel
 

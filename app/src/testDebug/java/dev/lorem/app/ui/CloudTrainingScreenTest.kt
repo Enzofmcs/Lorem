@@ -4,8 +4,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.junit4.StateRestorationTester
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import dev.lorem.app.domain.cloud.*
 import dev.lorem.app.domain.*
 import dev.lorem.app.domain.model.*
@@ -32,24 +30,6 @@ class CloudTrainingScreenTest {
             solvedOutsideAtEpochMillis = if (status == IpsumStatus.SOLVED_OUTSIDE) 62000 else null))
     private fun state(attempt: CloudIpsum? = active, history: List<CloudIpsum> = emptyList(), dolor: Long? = null) = CloudTrainingUiState(CloudSnapshot(
         listOf(CloudHandle("cf_tourist", "Tourist", 923, null, 0, duelRatingMicros = dolor)), attempt, history + listOfNotNull(attempt), true), "cf_tourist")
-
-    @Test fun `history can open an imported batch and return to the selected handle`() {
-        compose.setContent {
-            LoremTheme {
-                CloudTrainingApp("A", state(null, listOf(final())), 1000, {}, {}, {}, {}, {}, {}, {},
-                    mockHistoryContent = { onBack ->
-                        TextButton(onClick = onBack) { Text("Voltar ao histórico") }
-                    })
-            }
-        }
-        compose.onNodeWithTag("tab-history").performClick()
-        compose.onNodeWithText("Abrir lote importado").performClick()
-        compose.onNodeWithTag("history-list").assertDoesNotExist()
-        compose.onNodeWithText("Voltar ao histórico").performClick()
-        compose.onNodeWithTag("history-list").assertExists()
-        compose.onNodeWithText("Abrir lote importado").assertIsDisplayed()
-    }
-
     @Test fun `home and statistics show persisted Dolor fractions independent of activation and clear account values`() {
         val uid = mutableStateOf("A")
         val screen = mutableStateOf(state(null, dolor = 1456123456))

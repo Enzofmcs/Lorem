@@ -1,6 +1,5 @@
 package dev.lorem.app.ui.cloud
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -46,7 +45,6 @@ internal fun CloudTrainingUiState.closedAttempts(): List<CloudIpsum> {
 @Composable
 fun CloudTrainingDestination(uid: String, repository: CloudTrainingRepository,
     theme: ThemePreference = ThemePreference.SYSTEM, onThemeChange: (ThemePreference) -> Unit = {},
-    mockHistoryContent: (@Composable (onBack: () -> Unit) -> Unit)? = null,
     settingsContent: @Composable () -> Unit = {},
 ) {
     val model: CloudTrainingViewModel = viewModel(key = "cloud:$uid", factory = CloudTrainingViewModel.factory(uid, repository))
@@ -69,7 +67,7 @@ fun CloudTrainingDestination(uid: String, repository: CloudTrainingRepository,
     val expired = active != null && now?.let { it >= active.expiresAtMillis } == true
     LaunchedEffect(active?.id, expired) { if (expired) model.refresh() }
     CloudTrainingApp(uid, state, now, model::add, model::select, model::start, model::hint, model::close,
-        model::refresh, { model.updatePending(true) }, theme, onThemeChange, mockHistoryContent) {
+        model::refresh, { model.updatePending(true) }, theme, onThemeChange) {
         settingsContent()
         state.selectedKey?.takeIf { state.snapshot?.active == null }?.let { selected ->
             dev.lorem.app.ui.components.IpsumStudyExportAction(
@@ -84,7 +82,6 @@ fun CloudTrainingApp(uid: String, state: CloudTrainingUiState, now: Long?,
     onAdd: (String) -> Unit, onSelect: (String) -> Unit, onStart: () -> Unit, onHint: () -> Unit,
     onClose: (IpsumFailureReason) -> Unit, onRefresh: () -> Unit, onPending: () -> Unit,
     theme: ThemePreference = ThemePreference.SYSTEM, onThemeChange: (ThemePreference) -> Unit = {},
-    mockHistoryContent: (@Composable (onBack: () -> Unit) -> Unit)? = null,
     settingsContent: @Composable () -> Unit = {},
 ) {
     val profile = state.snapshot?.handles?.firstOrNull { it.key == state.selectedKey }
@@ -171,22 +168,9 @@ fun CloudTrainingApp(uid: String, state: CloudTrainingUiState, now: Long?,
                                 ?: IpsumResultUiState.Error("Resultado não disponível neste contexto."), ::home)
                         }
                         composable(LoremDestination.History.route) {
-                            var showMockHistory by rememberSaveable { mutableStateOf(false) }
-                            if (showMockHistory && mockHistoryContent != null) {
-                                BackHandler { showMockHistory = false }
-                                mockHistoryContent { showMockHistory = false }
-                            } else {
-                                Column(Modifier.fillMaxSize()) {
-                                    if (mockHistoryContent != null) {
-                                        TextButton(onClick = { showMockHistory = true }, modifier = Modifier.padding(horizontal = 24.dp)) {
-                                            Text("Abrir lote importado")
-                                        }
-                                    }
-                                    HistoryScreen(ipsums, updateState = state.pendingUpdate, onUpdatePending = onPending, compact = true,
-                                        onNavigateHome = ::home, ownerHandle = profile?.handle,
-                                        onOpenResult = { i -> closed.firstOrNull { it.ipsum.id == i.id }?.let { nav.navigate("${LoremDestination.Result.route}/${it.id}") } })
-                                }
-                            }
+                            HistoryScreen(ipsums, updateState = state.pendingUpdate, onUpdatePending = onPending, compact = true,
+                                onNavigateHome = ::home, ownerHandle = profile?.handle,
+                                onOpenResult = { i -> closed.firstOrNull { it.ipsum.id == i.id }?.let { nav.navigate("${LoremDestination.Result.route}/${it.id}") } })
                         }
                         composable(LoremDestination.Statistics.route) {
                             val stats = localProfile?.let { buildIpsumStatistics(it, ipsums, ipsums.map { i -> i.problem }) }

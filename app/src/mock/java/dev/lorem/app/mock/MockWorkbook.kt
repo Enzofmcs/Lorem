@@ -1,6 +1,5 @@
 package dev.lorem.app.mock
 
-import dev.lorem.app.data.cloud.MOCK_COUNT
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserFactory
 import java.io.ByteArrayInputStream
@@ -17,6 +16,9 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.Locale
 import java.util.zip.ZipInputStream
+
+internal const val MOCK_COUNT = 200
+internal const val MOCK_HANDLE = "mock_excel"
 
 internal enum class MockOutcome { AC, PENDENTE, UPSOLVE }
 

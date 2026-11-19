@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.Button
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -44,11 +45,9 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
 import dev.lorem.app.BuildConfig
-import dev.lorem.app.data.cloud.MOCK_ID
-import dev.lorem.app.data.cloud.SavedMockHistory
+import dev.lorem.app.domain.buildIpsumHistory
 import dev.lorem.app.domain.buildIpsumStatistics
 import dev.lorem.app.ui.StatisticsUiState
-import dev.lorem.app.ui.cloud.MockBatchHistory
 import dev.lorem.app.ui.screens.StatisticsScreen
 import dev.lorem.app.ui.theme.LoremTheme
 import kotlinx.coroutines.CancellationException
@@ -211,7 +210,7 @@ internal fun MockImportApp(model: MockImportViewModel, target: String, onSignOut
                 }
             }
             when (currentTab) {
-                1 -> if (saved != null) MockBatchHistory(saved)
+                1 -> if (saved != null) MockHistory(saved)
                 2 -> if (saved != null) {
                     StatisticsScreen(StatisticsUiState.Ready(buildIpsumStatistics(saved.profile, saved.ipsums)),
                         onNavigateHome = { tab = 0 })
@@ -279,6 +278,22 @@ private fun ImportPanel(
         }
         if (onSignOut != null) item {
             OutlinedButton(onClick = onSignOut, enabled = !state.busy) { Text("Sair da conta Google") }
+        }
+    }
+}
+
+@Composable
+private fun MockHistory(saved: SavedMockHistory) {
+    val history = buildIpsumHistory(saved.ipsums)
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(24.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        item { Text("Histórico · ${history.size} Ipsums", style = MaterialTheme.typography.headlineSmall) }
+        items(history, key = { it.ipsum.id }) { item ->
+            val ipsum = item.ipsum
+            Text("${ipsum.problem.id.contestId}${ipsum.problem.id.index} · ${ipsum.problem.name}",
+                style = MaterialTheme.typography.titleMedium)
+            Text("${item.situation.label} · Rating ${ipsum.selectedRating}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            HorizontalDivider(Modifier.padding(top = 10.dp))
         }
     }
 }

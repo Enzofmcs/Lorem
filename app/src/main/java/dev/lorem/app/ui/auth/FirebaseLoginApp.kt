@@ -17,11 +17,8 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import dev.lorem.app.BuildConfig
 import dev.lorem.app.data.auth.FirebaseAuthentication
 import dev.lorem.app.data.auth.authLog
-import dev.lorem.app.data.cloud.MockBatchReader
-import dev.lorem.app.data.cloud.mockBatchesForUser
 import dev.lorem.app.domain.auth.AuthenticationFailure
 import dev.lorem.app.domain.auth.AuthenticationState
 import dev.lorem.app.domain.auth.GoogleAccount
@@ -30,7 +27,6 @@ import dev.lorem.app.domain.repository.AppearanceRepository
 import dev.lorem.app.ui.theme.LoremTheme
 import dev.lorem.app.domain.cloud.CloudTrainingRepository
 import dev.lorem.app.ui.cloud.CloudTrainingDestination
-import dev.lorem.app.ui.cloud.MockBatchScreen
 import dev.lorem.app.domain.handles.HandlesRepository
 import dev.lorem.app.ui.handles.AccountHandlesDestination
 import kotlinx.coroutines.launch
@@ -72,17 +68,11 @@ fun FirebaseLoginApp(authentication: FirebaseAuthentication, appearance: Appeara
             onSignOut = { model.signOut { credentials?.clearState() } },
             deviceContent = { migration?.let { dev.lorem.app.ui.rollout.LegacyArchiveDestination(it) } },
             signedInContent = { account ->
-                val firestore = authentication.firestore
-                val mockReader = if (BuildConfig.BUILD_TYPE == "debug" && firestore != null) {
-                    remember(firestore, account.uid) { MockBatchReader(mockBatchesForUser(firestore, account.uid)) }
-                } else null
-                val mockHistoryContent: (@Composable (onBack: () -> Unit) -> Unit)? =
-                    if (mockReader == null) null else { onBack -> MockBatchScreen(mockReader, onBack) }
                 if (training != null) CloudTrainingDestination(account.uid, training, theme,
                     onThemeChange = { preference -> appearanceScope.launch {
                         try { appearance.setThemePreference(preference); appearanceError = null }
                         catch (e: Exception) { if (e is CancellationException) throw e; appearanceError = "Não foi possível salvar o tema. Tente novamente." }
-                    } }, mockHistoryContent = mockHistoryContent, settingsContent = {
+                    } }, settingsContent = {
                         Text("Conta Google", style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
                         Text(account.displayName ?: account.email ?: "Sua conta")
                         OutlinedButton(onClick = { model.signOut { credentials?.clearState() } }, modifier = Modifier.testTag("google-sign-out")) {
