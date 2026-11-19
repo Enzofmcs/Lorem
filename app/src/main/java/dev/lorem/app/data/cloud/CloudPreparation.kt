@@ -29,18 +29,18 @@ class CloudPreparation(private val cf: CodeforcesRepository,
         var pages = 0; var catalogs = 0; var profiles = 0; var done = false
         val incremental = complete[context]?.let { now() - it.at in 0..CACHE_MILLIS } == true
         try {
-            progress(CloudPreparationProgress(CloudPreparationStage.HISTORY, "Verificando cobertura e novas submissões…"))
+            progress(CloudPreparationProgress(CloudPreparationStage.HISTORY, "Verificando submissões…"))
             val history = history(context, handle, validate) { kotlin.check(pages < pageBudget) { "Limite de páginas atingido. Tente novamente para continuar." }; pages++; progress(CloudPreparationProgress(
-                CloudPreparationStage.HISTORY, "Página $pages de até $pageBudget nesta etapa")) }
+                CloudPreparationStage.HISTORY, "Verificando submissões · página $pages")) }
             validate()
-            progress(CloudPreparationProgress(CloudPreparationStage.CATALOG, "Conferindo catálogo com origem verificável…"))
+            progress(CloudPreparationProgress(CloudPreparationStage.CATALOG, "Conferindo catálogo…"))
             val problems = catalog?.takeIf { now() - it.first in 0..CACHE_MILLIS }?.second ?: run {
                 catalogs++
                 val result = (cf.problems() as? ProblemCatalogResult.Success)?.problems
                     ?: error("Falha no catálogo. Tente novamente nesta etapa.")
                 validate(); catalog = now() to result; result
             }
-            progress(CloudPreparationProgress(CloudPreparationStage.PROFILE, "Atualizando rating oficial de referência…"))
+            progress(CloudPreparationProgress(CloudPreparationStage.PROFILE, "Verificando perfil…"))
             profiles++
             val user = (cf.user(handle) as? UserLookupResult.Success)?.user
                 ?: error("Falha no perfil Codeforces. Tente novamente nesta etapa.")

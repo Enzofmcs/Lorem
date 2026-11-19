@@ -73,7 +73,7 @@ fun FirebaseLoginApp(authentication: FirebaseAuthentication, appearance: Appeara
                         try { appearance.setThemePreference(preference); appearanceError = null }
                         catch (e: Exception) { if (e is CancellationException) throw e; appearanceError = "Não foi possível salvar o tema. Tente novamente." }
                     } }, settingsContent = {
-                        Text("Conta Google conectada", style = MaterialTheme.typography.titleLarge)
+                        Text("Conta Google", style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
                         Text(account.displayName ?: account.email ?: "Sua conta")
                         OutlinedButton(onClick = { model.signOut { credentials?.clearState() } }, modifier = Modifier.testTag("google-sign-out")) {
                             Text("Sair ou trocar de conta")

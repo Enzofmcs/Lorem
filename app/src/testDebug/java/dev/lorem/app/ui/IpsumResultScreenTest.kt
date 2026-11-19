@@ -50,6 +50,8 @@ class IpsumResultScreenTest {
             }
         }
 
+        composeRule.onNodeWithText("Tópicos: dp, graphs").assertDoesNotExist()
+        composeRule.onNodeWithText("Ver detalhes do Ipsum").performScrollTo().performClick()
         listOf(
             "Rating do problema: 1500", "Categoria: Desafio", "Tópicos: dp, graphs",
             "Tempo total: 01:01:01", "Dica usada: sim", "Erros definitivos: 2",
@@ -99,6 +101,7 @@ class IpsumResultScreenTest {
             }
         }
 
+        composeRule.onNodeWithText("Ver detalhes do Ipsum").performScrollTo().performClick()
         listOf(
             "Encerrado sem AC",
             "Tempo total: 00:01:00",
@@ -126,6 +129,7 @@ class IpsumResultScreenTest {
         composeRule.onNodeWithText("AC posterior:", substring = true).performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("1200 → 1180").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Variação: −20 pontos").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Ver detalhes do Ipsum").performScrollTo().performClick()
         composeRule.onNodeWithText("Sem AC, a tentativa aplica a perda completa; desistir cedo não reduz essa perda.").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Abrir no Codeforces").performScrollTo().performClick()
         assertEquals("https://codeforces.com/contest/100/problem/50", opened)

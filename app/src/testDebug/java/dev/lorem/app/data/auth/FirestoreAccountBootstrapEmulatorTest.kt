@@ -74,26 +74,78 @@ class FirestoreAccountBootstrapEmulatorTest {
     private var cfObservationAgeMillis = 0L
     private var cfUnavailable = false
     private var cfComplete = true
+    private var problemRatings = listOf(800, 800, 800, 800)
     private val cf = object : CodeforcesRepository {
         override suspend fun user(handle: String) = UserLookupResult.Success(CodeforcesUser("Tourist", "Tourist", cfRating, System.currentTimeMillis() - cfObservationAgeMillis))
         override suspend fun submissionHistory(handle: String): SubmissionHistoryResult = if (cfUnavailable)
             SubmissionHistoryResult.NetworkFailure else SubmissionHistoryResult.Success(submitted, verificationComplete = cfComplete)
-        override suspend fun problems() = ProblemCatalogResult.Success((1L..4L).map {
-            CodeforcesProblem(ProblemId(2000 + it, "A"), "Problem $it", 800, setOf("math"),
-                VerifiedProblemOrigin(2000 + it, VerifiedProblemOrigin.CUTOFF_EPOCH_MILLIS, System.currentTimeMillis()))
+        override suspend fun problems() = ProblemCatalogResult.Success(problemRatings.mapIndexed { index, rating ->
+            val contestId = 2001L + index
+            CodeforcesProblem(ProblemId(contestId, "A"), "Problem ${index + 1}", rating, setOf("math"),
+                VerifiedProblemOrigin(contestId, VerifiedProblemOrigin.CUTOFF_EPOCH_MILLIS, System.currentTimeMillis()))
         })
     }
     private val scheduled = mutableListOf<CloudIpsum>()
-    private fun repository(legacy: LegacyMigration? = null, scoring: ((Int?, Int) -> ScoringSnapshot)? = null, duel: Boolean = false): FirestoreTrainingRepository {
+    private fun repository(legacy: LegacyMigration? = null, scoring: ((Int?, Int) -> ScoringSnapshot)? = null,
+        duel: Boolean = false, category: IpsumCategory = IpsumCategory.FLUENCY): FirestoreTrainingRepository {
         val cache = Room.inMemoryDatabaseBuilder(ApplicationProvider.getApplicationContext(), LoremDatabase::class.java).build()
         cacheDatabases.add(cache)
         return FirestoreTrainingRepository(db, { auth.currentUser?.uid }, cf,
             AccountHandlesRepository(FirestoreHandlesStore(auth, db), cf, RoomHandlesCache(cache.accountHandlesDao())),
             CloudDeadline(android.os.SystemClock::elapsedRealtime) { 1 }, android.os.SystemClock::elapsedRealtime,
-            { _, attempt, _ -> synchronized(scheduled) { scheduled.add(attempt) } }, RecommendIpsum { 0 }, legacy, exportIds,
+            { _, attempt, _ -> synchronized(scheduled) { scheduled.add(attempt) } },
+            RecommendIpsum { category.ordinal.coerceAtMost(it - 1) }, legacy, exportIds,
             duelCatalog = duelCatalog(), duelEnabled = duel,
             scoringSelector = scoring ?: { cfRating, _ -> ScoringSnapshot(LEGACY_SCORING_POLICY, null,
                 modelVersion = null, artifactSha256 = null, inputRating = cfRating, unavailableReason = "artifact_not_configured") })
+    }
+
+    @Test(timeout = 90_000) fun `Dolor crossing 850 changes the next recommendation while Lorem stays in its previous band`() = runBlocking {
+        val uid = signInGoogle()
+        FirestoreAccountBootstrap(auth, db).ensureAccount(uid)
+        problemRatings = listOf(800, 800, 900, 900)
+        val repo = repository(duel = true, category = IpsumCategory.CURRENT_LEVEL)
+        repo.addHandle(uid, "tourist")
+        repo.selectHandle(uid, "cf_tourist")
+        seedFieldOnlyInEmulator("users/$uid/handles/cf_tourist", "duelRatingMicros",
+            JSONObject().put("integerValue", (845 * DUEL_SCALE).toString()))
+        val first = repo.start(uid, "cf_tourist", "cross-band-first")
+        assertEquals(800, first.ipsum.selectedRating)
+        assertEquals(800, first.ipsum.initialLoremRating)
+        assertEquals(845 * DUEL_SCALE, first.ipsum.virtualDuelSnapshot!!.ratingMicros)
+        val acAt = first.firstEligibleSubmissionMillis
+        kotlinx.coroutines.delay((acAt - System.currentTimeMillis()).coerceAtLeast(0) + 30)
+        submitted = listOf(CodeforcesSubmission(703, first.ipsum.problem.id, "OK", Instant.ofEpochMilli(acAt)))
+        assertTrue(repo.reconcile(uid, first))
+        val finalized = repo.load(uid, "cf_tourist").attempts.single().ipsum
+        val dolor = requireNotNull(finalized.virtualDuelResult)
+        assertTrue(dolor.afterMicros >= 850 * DUEL_SCALE)
+        assertTrue(finalized.finalLoremRating!! < 850)
+        val next = repo.start(uid, "cf_tourist", "cross-band-next")
+        assertEquals(900, next.ipsum.desiredRatingMin)
+        assertEquals(900, next.ipsum.selectedRating)
+        assertEquals(duelCatalog().select(dolor.afterMicros, 900), next.ipsum.virtualDuelSnapshot)
+    }
+
+    @Test(timeout = 90_000) fun `out of model support leaves no attempt lock or used problem`() = runBlocking {
+        val uid = signInGoogle()
+        FirestoreAccountBootstrap(auth, db).ensureAccount(uid)
+        problemRatings = listOf(3500)
+        val repo = repository(duel = true)
+        repo.addHandle(uid, "tourist")
+        repo.selectHandle(uid, "cf_tourist")
+        val path = "users/$uid/handles/cf_tourist"
+        seedFieldOnlyInEmulator(path, "duelRatingMicros", JSONObject().put("integerValue", (3858 * DUEL_SCALE).toString()))
+        try {
+            repo.start(uid, "cf_tourist", "unsupported")
+            fail("Rating outside model domain")
+        } catch (expected: IllegalStateException) {
+            assertTrue(expected.message!!.contains("Avaliação Dolor indisponível"))
+        }
+        val state = repo.load(uid, "cf_tourist")
+        assertNull(state.active)
+        assertTrue(state.attempts.isEmpty())
+        assertTrue(db.document(path).collection("usedProblems").get(Source.SERVER).await().isEmpty)
     }
 
     private fun duelCatalog() = dev.lorem.app.data.cloud.VirtualDuelCatalog(
@@ -565,19 +617,23 @@ class FirestoreAccountBootstrapEmulatorTest {
 
     /** Synthetic clock fixture via the local emulator's rules-disabled test token, never a production endpoint. */
     private fun seedExpiredStartOnlyInEmulator(uid: String, id: String) {
+        val instant = Instant.ofEpochSecond(System.currentTimeMillis() / 1000 - 7203, 123_000)
+        seedFieldOnlyInEmulator("users/$uid/handles/cf_tourist/ipsums/$id", "startedAt",
+            JSONObject().put("timestampValue", instant.toString()))
+    }
+
+    private fun seedFieldOnlyInEmulator(path: String, field: String, value: JSONObject) {
         check(System.getenv("LOREM_FIREBASE_EMULATORS") == "true")
         val host = loopback("FIRESTORE_EMULATOR_HOST")
-        val instant = Instant.ofEpochSecond(System.currentTimeMillis() / 1000 - 7203, 123_000)
-        val name = "projects/demo-lorem-local/databases/(default)/documents/users/$uid/handles/cf_tourist/ipsums/$id"
+        val name = "projects/demo-lorem-local/databases/(default)/documents/$path"
         val url = java.net.URL("http://${host.first}:${host.second}/v1/projects/demo-lorem-local/databases/(default)/documents:commit")
         val connection = url.openConnection() as java.net.HttpURLConnection
         connection.requestMethod = "POST"
         connection.setRequestProperty("Authorization", "Bearer owner")
         connection.setRequestProperty("Content-Type", "application/json")
         connection.doOutput = true
-        val update = JSONObject().put("name", name).put("fields", JSONObject().put("startedAt",
-            JSONObject().put("timestampValue", instant.toString())))
-        val write = JSONObject().put("update", update).put("updateMask", JSONObject().put("fieldPaths", org.json.JSONArray().put("startedAt")))
+        val update = JSONObject().put("name", name).put("fields", JSONObject().put(field, value))
+        val write = JSONObject().put("update", update).put("updateMask", JSONObject().put("fieldPaths", org.json.JSONArray().put(field)))
         connection.outputStream.use { it.write(JSONObject().put("writes", org.json.JSONArray().put(write)).toString().toByteArray()) }
         try { assertEquals(200, connection.responseCode) } finally { connection.disconnect() }
     }

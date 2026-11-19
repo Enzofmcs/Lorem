@@ -5,15 +5,21 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import dev.lorem.app.domain.model.*
 import dev.lorem.app.domain.scoringExplanation
 import dev.lorem.app.domain.explanation
+import dev.lorem.app.domain.cloud.CLOUD_RULE_VERSION
 import dev.lorem.app.ui.IpsumResultUiState
 import dev.lorem.app.ui.components.*
 import kotlin.math.absoluteValue
@@ -36,36 +42,46 @@ fun IpsumResultScreen(state: IpsumResultUiState, onClose: () -> Unit) {
                 if (ipsum.status == IpsumStatus.ACTIVE) {
                     LoremErrorState("Este Ipsum ainda está ativo. O resultado estará disponível ao encerrar.")
                 } else {
+                    var detailsExpanded by rememberSaveable(ipsum.id) { mutableStateOf(false) }
                     LoremBadge(if (ipsum.status == IpsumStatus.COMPLETED) "AC no Ipsum" else "Encerrado sem AC",
                         if (ipsum.status == IpsumStatus.COMPLETED) LoremTone.SUCCESS else LoremTone.ATTENTION)
                     Text(ipsum.problem.name, style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
-                    Text("Problema ${ipsum.problem.id}", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    ipsum.solvedOutsideAtEpochMillis?.let {
-                        LoremSyncStatus("Resolvido depois do Ipsum", LoremTone.SUCCESS,
-                            "AC posterior: ${formatSyncTime(it)}. A tentativa original terminou sem AC; os ratings foram preservados.")
-                    }
+                    Text(ipsum.totalTimeMillis()?.let { "Tempo total: ${formatElapsed(it)}" } ?: "Tempo total indisponível")
                     RatingSummary(ipsum)
-                    if (ipsum.studyRecordingVersion == "spark-2h-v1" || ipsum.virtualDuelResult != null) {
+                    if (ipsum.studyRecordingVersion == CLOUD_RULE_VERSION || ipsum.virtualDuelResult != null) {
                         DolorRatingCard(ipsum.virtualDuelResult?.afterMicros, result = ipsum.virtualDuelResult,
                             emptyMessage = "Sem avaliação Dolor neste Ipsum.")
                     }
-                    Card(Modifier.fillMaxWidth()) {
-                        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text("Seu treino", style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
-                            Text(ipsum.totalTimeMillis()?.let { "Tempo total: ${formatElapsed(it)}" } ?: "Tempo total indisponível")
-                            Text("Dica usada: ${if (ipsum.hintRevealedAtEpochMillis != null) "sim" else "não"}")
-                            Text("Erros definitivos: ${ipsum.errorCount}")
-                            val errors = result.errorVerdicts.groupingBy { it }.eachCount().entries
-                                .joinToString { "${it.key} (${it.value})" }.ifEmpty { "nenhum" }
-                            Text(if (result.errorVerdictsAvailable) "Tipos de erro: $errors" else "Tipos de erro: não registrados neste snapshot", style = MaterialTheme.typography.bodySmall)
-                            ipsum.failureReason?.let { Text("Motivo: ${it.label}") }
-                        }
+                    ipsum.solvedOutsideAtEpochMillis?.let {
+                        LoremSyncStatus("Resolvido depois do Ipsum", LoremTone.SUCCESS,
+                            "AC posterior: ${formatSyncTime(it)}. Os ratings foram preservados.")
                     }
                     LoremPrimaryAction("Voltar ao início", onClose)
                     OutlinedButton(onClick = { uriHandler.openUri(ipsum.problemUrl()) },
                         modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text("Abrir no Codeforces") }
-                    ProblemDetails(ipsum)
-                    RatingExplanation(ipsum)
+                    TextButton(onClick = { detailsExpanded = !detailsExpanded },
+                        modifier = Modifier.heightIn(min = 48.dp).semantics {
+                            stateDescription = if (detailsExpanded) "Expandido" else "Recolhido"
+                        }) {
+                        Text(if (detailsExpanded) "Ocultar detalhes do Ipsum" else "Ver detalhes do Ipsum")
+                    }
+                    if (detailsExpanded) {
+                        Card(Modifier.fillMaxWidth()) {
+                            Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text("Seu treino", style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
+                                Text("Dica usada: ${if (ipsum.hintRevealedAtEpochMillis != null) "sim" else "não"}")
+                                Text("Erros definitivos: ${ipsum.errorCount}")
+                                if (result.errorVerdictsAvailable) {
+                                    val errors = result.errorVerdicts.groupingBy { it }.eachCount().entries
+                                        .joinToString { "${it.key} (${it.value})" }.ifEmpty { "nenhum" }
+                                    Text("Tipos de erro: $errors")
+                                }
+                                ipsum.failureReason?.let { Text("Motivo: ${it.label}") }
+                            }
+                        }
+                        ProblemDetails(ipsum)
+                        RatingExplanation(ipsum)
+                    }
                 }
             }
         }
@@ -83,16 +99,16 @@ private fun RatingSummary(ipsum: Ipsum) {
             val delta = ipsum.ratingDelta
             val after = ipsum.finalLoremRating
             if (delta != null && after != null) {
-                Text("${ipsum.initialLoremRating} → $after", style = MaterialTheme.typography.displaySmall,
+                Text("Variação: ${if (delta >= 0) "+" else "−"}${delta.toLong().absoluteValue} pontos",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = if (delta >= 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error)
+                Text("${ipsum.initialLoremRating} → $after", style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.semantics {
                         contentDescription = "Rating Lorem anterior ${ipsum.initialLoremRating}, Rating Lorem após o Ipsum $after"
                     })
-                Text("Variação: ${if (delta >= 0) "+" else "−"}${delta.toLong().absoluteValue} pontos",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = if (delta >= 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error)
             } else {
                 Text("Rating anterior: ${ipsum.initialLoremRating}")
-                Text("Este resultado antigo não possui cálculo de rating salvo.")
+                Text("Sem avaliação Lorem neste Ipsum.")
             }
         }
     }
@@ -103,6 +119,7 @@ private fun ProblemDetails(ipsum: Ipsum) {
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("Sobre o problema", style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
+            Text("Problema ${ipsum.problem.id}")
             Text("Rating do problema: ${ipsum.selectedRating}")
             Text("Categoria: ${categoryLabel(ipsum.category.name)}")
             Text("Tópicos: ${ipsum.problem.tags.sorted().joinToString()}")

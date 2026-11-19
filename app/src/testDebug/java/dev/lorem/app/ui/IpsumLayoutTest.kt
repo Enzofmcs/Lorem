@@ -131,8 +131,10 @@ class IpsumLayoutTest {
                 assertCompleteText()
                 compose.onNodeWithText("Voltar ao início").performScrollTo().assertHeightIsAtLeast(48.dp).performClick()
                 compose.onNodeWithText("Abrir no Codeforces").performScrollTo().assertHeightIsAtLeast(48.dp)
+                compose.onNodeWithText("Ver detalhes do Ipsum").performScrollTo().performClick()
                 compose.onNodeWithText("Tópicos:", substring = true).performScrollTo().assertIsDisplayed()
                 assertCompleteText()
+                compose.onNodeWithText("Ocultar detalhes do Ipsum").performScrollTo().performClick()
             }
         }
         assertEquals(2, reveals)

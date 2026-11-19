@@ -77,6 +77,54 @@ class CloudTrainingScreenTest {
         compose.onNodeWithText("Variação: +24 pontos").assertExists()
     }
 
+    @Test fun `ratings chart uses saved values in completion order and resets selection across handles`() {
+        val old = final().let { it.copy(id = "old", ipsum = it.ipsum.copy(problem = it.ipsum.problem.copy(name = "Sem Dolor"))) }
+        val scored = final().let { it.copy(id = "scored", ipsum = it.ipsum.copy(id = 2, endedAtEpochMillis = 121000,
+            problem = it.ipsum.problem.copy(name = "Variações opostas"),
+            virtualDuelResult = VirtualDuelResult(800000000, -16, 799999984, 500000, 500001, 800000))) }
+        val latest = final().let { it.copy(id = "latest", ipsum = it.ipsum.copy(id = 3, endedAtEpochMillis = 181000,
+            problem = it.ipsum.problem.copy(name = "Dolor sem mudança"),
+            virtualDuelResult = VirtualDuelResult(799999984, 0, 799999984, 500000, 500000, 800000))) }
+        val screen = mutableStateOf(state(null, listOf(latest, old, scored), dolor = 1900000000))
+        compose.setContent { LoremTheme { CloudTrainingApp("A", screen.value, 1000, {}, {}, {}, {}, {}, {}, {}) } }
+        compose.onNodeWithTag("tab-statistics").performClick()
+        val list = compose.onNodeWithTag("statistics-list")
+        list.performScrollToNode(hasText("Rating Dolor: 799,999984 (+0)"))
+        compose.onNodeWithText("Rating Dolor: 799,999984 (+0)").assertExists()
+        list.performScrollToNode(hasText("Ipsum anterior"))
+        compose.onNodeWithText("Ipsum anterior").performClick()
+        compose.onNodeWithText("Rating Lorem: 947 (+24)").assertExists()
+        compose.onNodeWithText("Rating Dolor: 799,999984 (−0,000016)").assertExists()
+        compose.onNodeWithText("Ipsum anterior").performClick()
+        compose.onNodeWithText("Rating Dolor: sem avaliação").assertExists()
+        compose.onNodeWithText("Ipsum anterior").assertIsNotEnabled()
+        compose.runOnIdle {
+            val other = old.copy(handleKey = "cf_petr", ipsum = old.ipsum.copy(ownerHandle = "Petr",
+                finalLoremRating = 1531, problem = old.ipsum.problem.copy(name = "Outro handle")))
+            screen.value = CloudTrainingUiState(
+                CloudSnapshot(listOf(CloudHandle("cf_petr", "Petr", 1531, null, 0)), null, listOf(old, other), true), "cf_petr")
+        }
+        compose.onNodeWithTag("tab-statistics").performClick()
+        list.performScrollToNode(hasText("Rating Lorem: 1531 (+24)"))
+        compose.onNodeWithText("Rating Lorem: 1531 (+24)").assertExists()
+        compose.onNodeWithText("Ainda sem avaliações Dolor no histórico.").assertExists()
+        compose.onNodeWithText("Ipsum anterior").assertDoesNotExist()
+    }
+
+    @Test fun `home shows preparation stage and lets the same start action retry`() {
+        val progress = CloudPreparationProgress(CloudPreparationStage.CATALOG, "Conferindo catálogo…")
+        val screen = mutableStateOf(state(null).copy(preparation = progress, busy = true, starting = true))
+        var starts = 0
+        compose.setContent { LoremTheme { CloudTrainingApp("A", screen.value, 1000, {}, {}, { starts++ }, {}, {}, {}, {}) } }
+        compose.onNodeWithText(progress.detail).assertIsDisplayed()
+        compose.onNodeWithText("Iniciar Ipsum").assertIsNotEnabled()
+        compose.runOnIdle { screen.value = screen.value.copy(busy = false, starting = false, startError = "Falha no catálogo.") }
+        compose.onNodeWithText("Falha no catálogo.").assertIsDisplayed()
+        compose.onNodeWithText(progress.detail).assertDoesNotExist()
+        compose.onNodeWithText("Tentar novamente").assertIsDisplayed().performClick()
+        assertEquals(1, starts)
+    }
+
     @Test fun `experimental active hides hint and all scoring metadata in semantics`() {
         val trial = active.copy(ipsum = active.ipsum.copy(virtualDuelSnapshot = VirtualDuelSnapshot(800*DUEL_SCALE,1200,400)))
         compose.setContent { LoremTheme { CloudTrainingApp("A", state(trial), 1000, {}, {}, {}, {}, {}, {}, {}) } }
@@ -158,7 +206,7 @@ class CloudTrainingScreenTest {
         compose.onNodeWithText("Revelar tópicos").assertDoesNotExist()
         compose.onNodeWithText("Abrir no Codeforces").assertDoesNotExist()
         compose.onNodeWithText("Voltar ao início").performClick()
-        compose.onNodeWithText("Continuar Ipsum").assertExists()
+        compose.onNodeWithText("Retomar Ipsum").assertExists()
     }
     @Test fun `closed and elapsed deadline keep distinct status without training controls`() {
         val state = mutableStateOf(state(active.copy(state = CloudIpsumState.CLOSED_AWAITING_VERIFICATION)))

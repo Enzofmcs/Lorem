@@ -32,13 +32,14 @@ fun HistoryScreen(
     onNavigateHome: () -> Unit = {},
     ownerHandle: String? = null,
     onOpenResult: ((Ipsum) -> Unit)? = null,
+    compact: Boolean = false,
 ) {
     // Reset filters and scroll on account changes, while tab navigation saves them.
     key(ownerHandle?.trim()?.lowercase(Locale.ROOT)) {
         val owned = if (ownerHandle == null) ipsums else ipsums.filter {
             it.ownerHandle.trim().equals(ownerHandle.trim(), ignoreCase = true)
         }
-        HistoryContent(owned, onOpenProblem, updateState, onUpdatePending, onNavigateHome, onOpenResult)
+        HistoryContent(owned, onOpenProblem, updateState, onUpdatePending, onNavigateHome, onOpenResult, compact)
     }
 }
 
@@ -51,6 +52,7 @@ private fun HistoryContent(
     onUpdatePending: () -> Unit,
     onNavigateHome: () -> Unit,
     onOpenResult: ((Ipsum) -> Unit)?,
+    compact: Boolean,
 ) {
     val uriHandler = LocalUriHandler.current
     val openProblem = onOpenProblem ?: uriHandler::openUri
@@ -73,8 +75,10 @@ private fun HistoryContent(
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text("Histórico e pendências", style = MaterialTheme.typography.headlineMedium,
                     modifier = Modifier.semantics { heading() })
-                Text("Reveja seus treinos e retome os problemas pendentes.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                TextButton(onClick = onNavigateHome, modifier = Modifier.heightIn(min = 48.dp)) { Text("Voltar ao Início") }
+                if (!compact) {
+                    Text("Reveja seus treinos e retome os problemas pendentes.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    TextButton(onClick = onNavigateHome, modifier = Modifier.heightIn(min = 48.dp)) { Text("Voltar ao Início") }
+                }
                 OutlinedButton(
                     modifier = Modifier.testTag("update-pending").heightIn(min = 48.dp),
                     enabled = updateState != PendingUpdateUiState.Loading,
@@ -84,7 +88,11 @@ private fun HistoryContent(
                         CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
                         Spacer(Modifier.width(8.dp))
                         Text("Atualizando pendências…")
-                    } else Text(if (updateState is PendingUpdateUiState.Error) "Tentar novamente" else "Atualizar agora")
+                    } else Text(when {
+                        updateState is PendingUpdateUiState.Error -> "Tentar novamente"
+                        compact -> "Atualizar pendências"
+                        else -> "Atualizar agora"
+                    })
                 }
                 when (updateState) {
                     is PendingUpdateUiState.Success -> Text(
@@ -133,11 +141,13 @@ private fun HistoryContent(
                     rating?.let { add("rating $it") }
                     tag?.let { add("tag $it") }
                 }.joinToString(" · "), modifier = Modifier.testTag("history-active-filters"))
-                TextButton(onClick = {
-                    situationName = IpsumHistorySituation.SOLVED_IN_IPSUM.name
-                    rating = null
-                    tag = null
-                }, modifier = Modifier.heightIn(min = 48.dp)) { Text("Limpar filtros") }
+                if (!compact || situation != IpsumHistorySituation.SOLVED_IN_IPSUM || rating != null || tag != null) {
+                    TextButton(onClick = {
+                        situationName = IpsumHistorySituation.SOLVED_IN_IPSUM.name
+                        rating = null
+                        tag = null
+                    }, modifier = Modifier.heightIn(min = 48.dp)) { Text("Limpar filtros") }
+                }
                 Text("${visible.size} de ${history.size} treino(s) encerrado(s)", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
@@ -145,7 +155,7 @@ private fun HistoryContent(
             if (history.isEmpty()) LoremEmptyState("Seu histórico começa no primeiro Ipsum.", "Conclua um treino para ver sua tentativa aqui. Seus dados salvos ficam disponíveis offline.")
             else LoremEmptyState("Nenhum resultado para estes filtros.", "Altere a situação ou use Limpar filtros para voltar a AC no Ipsum, sem restrição de rating ou tag.")
         }
-        items(visible, key = { "attempt-${it.ipsum.id}" }) { item -> HistoryItem(item, openProblem, onOpenResult) }
+        items(visible, key = { "attempt-${it.ipsum.id}" }) { item -> HistoryItem(item, openProblem, onOpenResult, compact) }
     }
 }
 
@@ -156,7 +166,7 @@ internal fun historySituationLabel(situation: IpsumHistorySituation): String = w
 }
 
 @Composable
-private fun HistoryItem(item: IpsumHistoryItem, onOpenProblem: (String) -> Unit, onOpenResult: ((Ipsum) -> Unit)?) {
+private fun HistoryItem(item: IpsumHistoryItem, onOpenProblem: (String) -> Unit, onOpenResult: ((Ipsum) -> Unit)?, compact: Boolean) {
     val ipsum = item.ipsum
     Card(Modifier.fillMaxWidth().testTag("history-${ipsum.problem.id.contestId}-${ipsum.problem.id.index}")) {
         Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -166,14 +176,18 @@ private fun HistoryItem(item: IpsumHistoryItem, onOpenProblem: (String) -> Unit,
                 IpsumHistorySituation.PENDING -> LoremTone.ATTENTION
             })
             Text(ipsum.problem.name, style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
-            Text("Problema: ${ipsum.problem.id.contestId}${ipsum.problem.id.index}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (!compact) Text("Problema: ${ipsum.problem.id.contestId}${ipsum.problem.id.index}", color = MaterialTheme.colorScheme.onSurfaceVariant)
             Text("Data do Ipsum: ${formatHistoryDate(ipsum.startedAtEpochMillis)}")
             Text("Tempo: ${ipsum.totalTimeMillis()?.let(::formatElapsed) ?: "indisponível"}")
-            Text("Dica utilizada: ${if (ipsum.hintRevealedAtEpochMillis != null) "sim" else "não"}")
-            Text("Erros: ${ipsum.errorCount}")
+            if (!compact) {
+                Text("Dica utilizada: ${if (ipsum.hintRevealedAtEpochMillis != null) "sim" else "não"}")
+                Text("Erros: ${ipsum.errorCount}")
+            }
             HorizontalDivider()
-            Text("Avaliação original: ${if (item.situation == IpsumHistorySituation.SOLVED_IN_IPSUM) "AC no Ipsum" else "encerrado sem AC"}")
-            Text("Encerramento: ${ipsum.endedAtEpochMillis?.let(::formatHistoryDate) ?: "indisponível"}")
+            if (!compact) {
+                Text("Avaliação original: ${if (item.situation == IpsumHistorySituation.SOLVED_IN_IPSUM) "AC no Ipsum" else "encerrado sem AC"}")
+                Text("Encerramento: ${ipsum.endedAtEpochMillis?.let(::formatHistoryDate) ?: "indisponível"}")
+            }
             Text("Variação do Rating Lorem: ${ipsum.ratingDelta?.let { if (it >= 0) "+$it" else it.toString() } ?: "indisponível"}")
             ipsum.virtualDuelResult?.let { dolor ->
                 Text("Rating Dolor: ${dev.lorem.app.ui.components.formatDolorRating(dolor.afterMicros)}", style = MaterialTheme.typography.titleMedium)
@@ -186,8 +200,10 @@ private fun HistoryItem(item: IpsumHistoryItem, onOpenProblem: (String) -> Unit,
                 Text("AC posterior: ${formatHistoryDate(requireNotNull(ipsum.solvedOutsideAtEpochMillis))}")
                 Text("O AC posterior não altera os ratings nem a taxa original de AC.", style = MaterialTheme.typography.bodySmall)
             }
-            Text("Rating do problema: ${ipsum.selectedRating}")
-            Text("Tags: ${ipsum.problem.tags.sorted().joinToString().ifEmpty { "nenhuma" }}")
+            if (!compact) {
+                Text("Rating do problema: ${ipsum.selectedRating}")
+                Text("Tags: ${ipsum.problem.tags.sorted().joinToString().ifEmpty { "nenhuma" }}")
+            }
             onOpenResult?.let { open -> TextButton(onClick = { open(ipsum) }) { Text("Ver resultado") } }
             OutlinedButton(onClick = { onOpenProblem(ipsum.problemUrl()) }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text("Abrir no Codeforces") }
         }

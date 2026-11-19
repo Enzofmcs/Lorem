@@ -55,12 +55,34 @@ class CloudTrainingViewModelTest {
         assertEquals(1, repository.commands.size)
         gate.complete(Unit)
         runCurrent()
-        assertEquals("Resposta perdida", model.state.value.error)
+        assertEquals("Resposta perdida", model.state.value.startError)
         model.start()
         runCurrent()
         assertEquals(2, repository.commands.size)
         assertEquals(repository.commands.first(), repository.commands.last())
         assertEquals(repository.attempt, model.state.value.snapshot?.active)
+    }
+
+    @Test fun `refresh recovers the saved command after a lost response and the next start uses a new id`() = runTest {
+        val repository = Repository()
+        val model = CloudTrainingViewModel("A", repository)
+        runCurrent()
+        model.start()
+        runCurrent()
+        val recovered = repository.attempt.copy(id = repository.commands.single())
+        repository.snapshot = repository.snapshot.copy(active = recovered)
+        model.refresh()
+        runCurrent()
+        assertEquals(recovered, model.state.value.snapshot?.active)
+        assertNull(model.state.value.startError)
+        repository.snapshot = repository.snapshot.copy(active = null,
+            attempts = listOf(recovered.copy(state = CloudIpsumState.FINAL)))
+        model.refresh()
+        runCurrent()
+        model.start()
+        runCurrent()
+        assertEquals(2, repository.commands.size)
+        assertNotEquals(repository.commands.first(), repository.commands.last())
     }
     @Test fun `workers retry wrong session ignore stale version and verify only original attempt`() = runTest {
         val repository = Repository().apply { snapshot = snapshot.copy(active = attempt) }

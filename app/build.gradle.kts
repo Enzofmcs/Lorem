@@ -23,7 +23,7 @@ android {
             providers.gradleProperty("lorem.firebaseAuthEnabled").orNull?.toBooleanStrict()?.toString() ?: "true")
 
         buildConfigField("boolean", "VIRTUAL_DUEL_ENABLED",
-            providers.gradleProperty("lorem.virtualDuelEnabled").orNull?.toBooleanStrict()?.toString() ?: "false")
+            providers.gradleProperty("lorem.virtualDuelEnabled").orNull?.toBooleanStrict()?.toString() ?: "true")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

@@ -46,7 +46,6 @@ class IpsumScreenTest {
         composeRule.setContent { LoremTheme { IpsumScreen(ipsum(), nowMillis = { 3_661_001L }) } }
 
         composeRule.onNodeWithText("Secret Problem").assertIsDisplayed()
-        composeRule.onNodeWithText("O rating, as tags e a categoria ficam ocultos durante o Ipsum.").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("1500", substring = true).assertDoesNotExist()
         composeRule.onNodeWithText("dynamic programming", substring = true).assertDoesNotExist()
         composeRule.onNodeWithText("CHALLENGE", substring = true).assertDoesNotExist()

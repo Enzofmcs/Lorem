@@ -13,7 +13,7 @@ class VirtualDuelCatalog(json: String) {
             artifact.getString("model_version") == DUEL_MODEL)
     }
     fun availability(ratingMicros: Long, difficulty: Int): DuelAvailability {
-        if (ratingMicros !in 21 * DUEL_SCALE..3857 * DUEL_SCALE || difficulty !in 800..3500)
+        if (ratingMicros !in DUEL_RATING_DOMAIN || difficulty !in 800..3500)
             return DuelAvailability.Unavailable("out_of_domain")
         val delta = difficulty * DUEL_SCALE - ratingMicros
         val low = Math.floorDiv(delta, 400 * DUEL_SCALE).toInt() * 400
@@ -22,8 +22,7 @@ class VirtualDuelCatalog(json: String) {
     }
     fun select(ratingMicros: Long, difficulty: Int): VirtualDuelSnapshot = when (val selected = availability(ratingMicros, difficulty)) {
         is DuelAvailability.Available -> selected.snapshot
-        is DuelAvailability.Unavailable -> throw IllegalArgumentException(
-            "Referência experimental indisponível para este nível e problema (${selected.reason}). Nenhuma tentativa iniciada.")
+        is DuelAvailability.Unavailable -> throw IllegalArgumentException("Avaliação Dolor indisponível para este nível e problema.")
     }
     fun evaluate(snapshot: VirtualDuelSnapshot, elapsedMillis: Long, accepted: Boolean): VirtualDuelResult {
         val curves = artifact.getJSONArray("curves")
