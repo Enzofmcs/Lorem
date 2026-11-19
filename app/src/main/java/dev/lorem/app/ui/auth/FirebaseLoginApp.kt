@@ -64,6 +64,9 @@ fun FirebaseLoginApp(authentication: FirebaseAuthentication, appearance: Appeara
         AuthenticationScreen(session, busy, error,
             fullScreenSignedIn = training != null,
             onSignIn = { model.signIn { credentials?.getIdToken(context) ?: throw GoogleCredentialUnavailable() } },
+            onChooseGoogleAccount = credentials?.let { request ->
+                { model.signIn { request.getIdToken(context, useAccountSheet = true) } }
+            },
             onRetry = model::refresh,
             onSignOut = { model.signOut { credentials?.clearState() } },
             deviceContent = { migration?.let { dev.lorem.app.ui.rollout.LegacyArchiveDestination(it) } },
@@ -99,6 +102,7 @@ fun AuthenticationScreen(
     onSignOut: () -> Unit,
     fullScreenSignedIn: Boolean = false,
     deviceContent: @Composable () -> Unit = {},
+    onChooseGoogleAccount: (() -> Unit)? = null,
     signedInContent: @Composable (GoogleAccount) -> Unit = { HandleOnboardingDestination() },
 ) {
     if (fullScreenSignedIn && state is AuthenticationState.SignedIn) {
@@ -143,6 +147,13 @@ fun AuthenticationScreen(
                         modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("google-sign-in")) {
                         Text(if (busy) "Entrando…" else "Entrar com Google")
                     }
+                    if (onChooseGoogleAccount != null &&
+                        (failure == AuthenticationFailure.CANCELLED || failure == AuthenticationFailure.CREDENTIAL_UNAVAILABLE)) {
+                        OutlinedButton(onClick = onChooseGoogleAccount, enabled = !busy,
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("google-account-sheet")) {
+                            Text("Escolher conta do dispositivo")
+                        }
+                    }
                     if (state is AuthenticationState.Failed && state.canRetry) {
                         TextButton(onClick = onRetry, enabled = !busy) { Text("Tentar novamente") }
                         TextButton(onClick = onSignOut, enabled = !busy) { Text("Sair ou trocar de conta") }
@@ -167,7 +178,7 @@ private fun AuthenticationFailure.message() = when (this) {
     AuthenticationFailure.QUOTA -> "O limite de uso do serviço foi atingido. Tente novamente mais tarde."
     AuthenticationFailure.INVALID_SESSION -> "Sua sessão expirou. Entre novamente com Google."
     AuthenticationFailure.PROVIDER_NOT_ALLOWED -> "Use sua conta Google para entrar no Lorem."
-    AuthenticationFailure.CANCELLED -> "A entrada foi interrompida pelo Google. Tente novamente."
+    AuthenticationFailure.CANCELLED -> "O seletor do Google fechou antes de concluir a entrada."
     AuthenticationFailure.CREDENTIAL_UNAVAILABLE -> "O Google não retornou uma credencial de acesso. Tente novamente."
     AuthenticationFailure.UNKNOWN -> "Não foi possível entrar. Tente novamente."
 }

@@ -88,6 +88,7 @@ adb logcat -v time -s LoremAuth
 | Última etapa/código | O que indica |
 | --- | --- |
 | google_picker_opened | Solicitação enviada ao seletor |
+| credential_provider_request:sign_in_button / credential_provider_request:account_sheet | Identifica o seletor do botão principal ou da ação Escolher conta do dispositivo |
 | credential_provider_cancelled / google_picker_interrupted | Google interrompeu a entrega; o Firebase ainda não recebeu uma credencial |
 | google_credential_unavailable | Provedor não entregou credencial Google válida |
 | google_credential_received → firebase_exchange_started | Credencial entregue; troca no Firebase começou |
@@ -108,10 +109,14 @@ O diagnóstico adicional preserva somente códigos numéricos do SDK:
 | detail_code:NUMERO | Código adicional do provedor, quando presente no formato reconhecido |
 | origin:unknown | SDK não expôs um código no formato reconhecido; nenhuma mensagem bruta é registrada |
 
-Não há retentativa automática que reabra o seletor após cancelamento. Se o provedor
-retornar apenas RESULT_CANCELED, complementar o Logcat com os tags do SDK
-`CredentialManager`, `GetSignInIntent` e `HiddenActivity`, revisando dados pessoais
-antes de compartilhar. [Verificação do diagnóstico](evidence/2026-10-20-google-provider-diagnostic.json).
+Após interrupção ou ausência de credencial, **Escolher conta do dispositivo** abre
+a seleção alternativa do Credential Manager por ação explícita. Ela mostra as
+contas Google disponíveis e exige seleção. A conta selecionada segue para a
+mesma validação Firebase. Se os dois seletores retornarem apenas RESULT_CANCELED,
+compare o SHA-1 da variante instalada (`./gradlew :app:signingReport`) com o
+certificado cadastrado no app `dev.lorem.app` do Firebase. Para investigar o
+retorno do provedor, consulte também os tags `CredentialManager`,
+`GetSignInIntent`, `BeginSignIn` e `HiddenActivity`. [Verificação do diagnóstico anterior](evidence/2026-10-20-google-provider-diagnostic.json)
 
 Os logs registram nomes de etapas e códigos, sem tokens, UID, e-mail ou mensagens
 brutas de exceções. A causa do retorno do provedor no aparelho não foi observada

@@ -11,6 +11,7 @@ import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.credentials.exceptions.GetCredentialException
 import androidx.credentials.exceptions.NoCredentialException
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
@@ -24,11 +25,10 @@ class GoogleCredentialRequest(context: Context, private val webClientId: String)
     // Lint 1.5 does not follow the response decoder below. Its SDK contract is
     // exercised with both Google credential types and malformed/non-Google data.
     @SuppressLint("CredentialManagerSignInWithGoogle")
-    suspend fun getIdToken(activityContext: Context): String {
+    suspend fun getIdToken(activityContext: Context, useAccountSheet: Boolean = false): String {
+        authLog(if (useAccountSheet) "credential_provider_request:account_sheet" else "credential_provider_request:sign_in_button")
         try {
-            val request = GetCredentialRequest.Builder().addCredentialOption(
-                GetSignInWithGoogleOption.Builder(webClientId).build(),
-            ).build()
+            val request = googleCredentialOptions(webClientId, useAccountSheet)
             val credential = manager.getCredential(activityContext, request).credential
             return googleIdToken(credential)
         } catch (error: GetCredentialCancellationException) {
@@ -44,6 +44,18 @@ class GoogleCredentialRequest(context: Context, private val webClientId: String)
     }
 
     suspend fun clearState() = manager.clearCredentialState(ClearCredentialStateRequest())
+}
+
+internal fun googleCredentialOptions(webClientId: String, useAccountSheet: Boolean): GetCredentialRequest {
+    val option = if (useAccountSheet) {
+        GetGoogleIdOption.Builder().setServerClientId(webClientId)
+            .setFilterByAuthorizedAccounts(false)
+            .setAutoSelectEnabled(false)
+            .build()
+    } else {
+        GetSignInWithGoogleOption.Builder(webClientId).build()
+    }
+    return GetCredentialRequest.Builder().addCredentialOption(option).build()
 }
 
 /** AndroidX may copy an ApiException message without preserving its cause/status object.
