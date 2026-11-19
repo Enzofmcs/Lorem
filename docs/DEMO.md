@@ -1,5 +1,7 @@
 # Demonstracao do Lorem
 
+Para o percurso de 200 Ipsums e Watermelon ao vivo com login Google, siga o [ensaio do TCC](TCC_DEMO.md).
+
 O roteiro percorre as Historias 00-21. O ensaio em dispositivo e opcional; o aceite
 funcional usa os testes automatizados, conforme D-014.
 

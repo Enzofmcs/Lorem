@@ -136,7 +136,12 @@ class FirestoreTrainingRepository(
         check(before.online) { "Conecte-se para iniciar um novo Ipsum." }
         check(before.active == null) { "Já existe um Ipsum ativo nesta conta." }
         val profile = before.handles.firstOrNull { it.key == key } ?: error("Selecione um handle válido.")
-        val dolor = if (duelEnabled) profile.duelRatingMicros ?: INITIAL_DOLOR_MICROS else null
+        val demoStart = profile.isAtTccDemoBaseline
+        val dolor = when {
+            demoStart -> requireNotNull(profile.duelRatingMicros) { "O saldo Dolor da demonstração está ausente." }
+            duelEnabled -> profile.duelRatingMicros ?: INITIAL_DOLOR_MICROS
+            else -> null
+        }
         if (dolor != null) check(dolor in DUEL_RATING_DOMAIN) { "Avaliação Dolor indisponível para este rating." }
         check(legacy?.reconcile()?.ready != false) { "Conclua a verificação do Ipsum anterior no arquivo local." }
         val exclusionsRef = handle(uid, key).collection("exclusions")
@@ -157,7 +162,14 @@ class FirestoreTrainingRepository(
         checkUid(uid)
         val prior = attempts(uid, key).get(Source.SERVER).await().documents.map { it.cloudIpsum() }
         val recommendationRating = dolor?.let { (it / DUEL_SCALE).toInt() } ?: profile.rating
-        val recommendation = recommender.recommend(recommendationRating, catalog.filter { it.id !in exclusions }, buildProblemHistory(history), prior.map { it.ipsum }, profile.handle)
+        val recommendation = if (demoStart) {
+            check(prior.size == TCC_DEMO_COUNT && prior.all { it.state == CloudIpsumState.FINAL &&
+                it.bindingVersion == profile.bindingVersion && profile.isTccImportedAttempt(it) }) {
+                "O histórico da demonstração está incompleto."
+            }
+            tccDemoRecommendation(catalog)
+        } else recommender.recommend(recommendationRating, catalog.filter { it.id !in exclusions },
+            buildProblemHistory(history), prior.map { it.ipsum }, profile.handle)
             ?: error("Nenhum problema inédito disponível nesta faixa.")
         val official = prepared.user
         val duel = dolor?.let { requireNotNull(duelCatalog).select(it, requireNotNull(recommendation.problem.rating)) }
@@ -251,7 +263,9 @@ class FirestoreTrainingRepository(
         checkUid(uid)
         load(uid, attempt.handleKey)
         val ref = attempts(uid, attempt.handleKey).document(attempt.id)
-        var current = ref.get(Source.SERVER).await().cloudIpsum()
+        val document = ref.get(Source.SERVER).await()
+        if (!document.exists()) return@withLock false
+        var current = document.cloudIpsum()
         if (current.state == CloudIpsumState.FINAL) {
             if (current.ipsum.status == IpsumStatus.PENDING) updateUpsolve(uid, current)
             return@withLock true
@@ -324,7 +338,8 @@ class FirestoreTrainingRepository(
         val context = "$uid:$key:${profile.bindingVersion}"
         pendingChecked[cooldownKey] = elapsedMillis()
         val pending = snapshot.attempts.filter { it.handleKey == key && it.bindingVersion == profile.bindingVersion &&
-            it.state == CloudIpsumState.FINAL && it.ipsum.status == IpsumStatus.PENDING }.sortedBy { it.id }
+            it.state == CloudIpsumState.FINAL && it.ipsum.status == IpsumStatus.PENDING &&
+            !profile.isTccImportedAttempt(it) }.sortedBy { it.id }
         if (pending.isEmpty()) return@withLock 0
         val offset = (pendingCursor[context] ?: 0) % pending.size
         val batch = (pending.drop(offset) + pending.take(offset)).take(20)

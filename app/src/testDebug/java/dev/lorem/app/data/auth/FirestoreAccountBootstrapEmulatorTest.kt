@@ -75,15 +75,19 @@ class FirestoreAccountBootstrapEmulatorTest {
     private var cfUnavailable = false
     private var cfComplete = true
     private var problemRatings = listOf(800, 800, 800, 800)
+    private var extraProblems = emptyList<CodeforcesProblem>()
     private val cf = object : CodeforcesRepository {
-        override suspend fun user(handle: String) = UserLookupResult.Success(CodeforcesUser("Tourist", "Tourist", cfRating, System.currentTimeMillis() - cfObservationAgeMillis))
+        override suspend fun user(handle: String): UserLookupResult.Success {
+            val canonical = if (handle == TCC_DEMO_HANDLE) handle else "Tourist"
+            return UserLookupResult.Success(CodeforcesUser(canonical, canonical, cfRating, System.currentTimeMillis() - cfObservationAgeMillis))
+        }
         override suspend fun submissionHistory(handle: String): SubmissionHistoryResult = if (cfUnavailable)
             SubmissionHistoryResult.NetworkFailure else SubmissionHistoryResult.Success(submitted, verificationComplete = cfComplete)
         override suspend fun problems() = ProblemCatalogResult.Success(problemRatings.mapIndexed { index, rating ->
             val contestId = 2001L + index
             CodeforcesProblem(ProblemId(contestId, "A"), "Problem ${index + 1}", rating, setOf("math"),
                 VerifiedProblemOrigin(contestId, VerifiedProblemOrigin.CUTOFF_EPOCH_MILLIS, System.currentTimeMillis()))
-        })
+        } + extraProblems)
     }
     private val scheduled = mutableListOf<CloudIpsum>()
     private fun repository(legacy: LegacyMigration? = null, scoring: ((Int?, Int) -> ScoringSnapshot)? = null,
@@ -151,6 +155,105 @@ class FirestoreAccountBootstrapEmulatorTest {
     private fun duelCatalog() = dev.lorem.app.data.cloud.VirtualDuelCatalog(
         ApplicationProvider.getApplicationContext<Application>().assets.open("virtual-duel-v1.json")
             .bufferedReader().use { it.readText() })
+
+    @Test(timeout = 120_000)
+    fun `TCC Google session restores 200 attempts and Watermelon finalizes once before a guarded reset`() = runBlocking {
+        val path = System.getenv("LOREM_DEMO_BASELINE")
+        assumeTrue("Execute o replay e informe LOREM_DEMO_BASELINE.", path != null)
+        val sample = JSONObject(File(requireNotNull(path)).readText())
+        val token = googleCredentialToken()
+        val uid = auth.signInWithCredential(GoogleAuthProvider.getCredential(token, null)).await().user!!.uid
+        FirestoreAccountBootstrap(auth, db).ensureAccount(uid)
+        val key = cloudHandleKey(TCC_DEMO_HANDLE)
+        val root = "users/$uid/handles/$key"
+        val repo = repository()
+        repo.addHandle(uid, TCC_DEMO_HANDLE)
+        repo.selectHandle(uid, key)
+        extraProblems = listOf(CodeforcesProblem(WATERMELON, "Watermelon", 800, setOf("brute force", "math"),
+            VerifiedProblemOrigin(4, 1_268_395_200_000L, System.currentTimeMillis())))
+        val old = Instant.parse("2025-01-01T00:00:00Z")
+        submitted = listOf(CodeforcesSubmission(1, WATERMELON, "WRONG_ANSWER", old),
+            CodeforcesSubmission(2, WATERMELON, "OK", old.plusSeconds(1)))
+
+        suspend fun admin(vararg options: String, succeeds: Boolean = true): String = withContext(Dispatchers.IO) {
+            check(loopback("FIRESTORE_EMULATOR_HOST").first == "127.0.0.1")
+            val command = ProcessBuilder("node", "../tools/ipsum-demo/prepare-account.mjs",
+                "--project", "demo-lorem-local", "--uid", uid, "--baseline", path, *options)
+                .redirectErrorStream(true).start()
+            try {
+                assertTrue(command.waitFor(35, java.util.concurrent.TimeUnit.SECONDS))
+                val output = command.inputStream.bufferedReader().use { it.readText() }
+                assertEquals(output, succeeds, command.exitValue() == 0)
+                output
+            } finally {
+                command.destroy()
+            }
+        }
+
+        seedFieldOnlyInEmulator(root, "progressVersion", JSONObject().put("integerValue", "1"))
+        assertTrue(admin("--apply", succeeds = false).contains("progresso preexistente"))
+        assertTrue(db.collection("$root/ipsums").get(Source.SERVER).await().isEmpty)
+        seedFieldOnlyInEmulator(root, "progressVersion", JSONObject().put("integerValue", "0"))
+        assertTrue(admin().contains("prévia da preparação"))
+        assertTrue(db.collection("$root/ipsums").get(Source.SERVER).await().isEmpty)
+        assertTrue(admin("--apply").contains("preparado"))
+        assertTrue(admin("--apply").contains("já está no Ipsum 200"))
+
+        auth.signOut()
+        assertEquals(uid, auth.signInWithCredential(GoogleAuthProvider.getCredential(token, null)).await().user!!.uid)
+        val fresh = repository()
+        assertEquals(key, fresh.selectedHandle(uid))
+        val baseline = fresh.load(uid, key)
+        assertEquals(200, baseline.attempts.size)
+        assertEquals(182, baseline.attempts.count { it.ipsum.status == IpsumStatus.COMPLETED })
+        assertTrue(baseline.attempts.all { it.ipsum.virtualDuelResult != null })
+        val profile = baseline.handles.single()
+        assertEquals(sample.getInt("rating"), profile.rating)
+        assertEquals(sample.getLong("dolorMicros"), profile.duelRatingMicros)
+        assertEquals(0, fresh.refreshPending(uid, key, force = true))
+
+        val active = fresh.start(uid, key, "live-watermelon")
+        assertEquals(WATERMELON, active.ipsum.problem.id)
+        assertEquals(profile.rating, active.ipsum.initialLoremRating)
+        assertEquals(profile.duelRatingMicros, active.ipsum.virtualDuelSnapshot!!.ratingMicros)
+        assertFalse(fresh.reconcile(uid, active))
+        assertEquals(CloudIpsumState.ACTIVE, fresh.load(uid, key).active?.state)
+        assertTrue(admin("--apply", succeeds = false).contains("Há atividade após a carga"))
+
+        val eligible = active.firstEligibleSubmissionMillis
+        kotlinx.coroutines.delay((eligible + 1000L - System.currentTimeMillis()).coerceAtLeast(0) + 30)
+        submitted = submitted + listOf(CodeforcesSubmission(3, WATERMELON, "WRONG_ANSWER", Instant.ofEpochMilli(eligible)),
+            CodeforcesSubmission(4, WATERMELON, "OK", Instant.ofEpochMilli(eligible + 1000)))
+        assertTrue(fresh.reconcile(uid, active))
+        assertTrue(repo.reconcile(uid, active))
+        val completed = fresh.load(uid, key)
+        assertNull(completed.active)
+        assertEquals(201, completed.attempts.size)
+        val live = completed.attempts.first().ipsum
+        assertEquals(201L, live.id)
+        assertEquals(1, live.errorCount)
+        assertEquals(live.finalLoremRating, completed.handles.single().rating)
+        assertEquals(live.virtualDuelResult!!.afterMicros, completed.handles.single().duelRatingMicros)
+
+        assertTrue(admin("--restore").contains("prévia da restauração"))
+        assertEquals(201, fresh.load(uid, key).attempts.size)
+        assertTrue(admin("--restore", "--apply").contains("restaurado ao Ipsum 200"))
+        assertEquals(baseline.attempts, fresh.load(uid, key).attempts)
+        val rehearsal = fresh.start(uid, key, "second-watermelon")
+        assertTrue(rehearsal.firstEligibleSubmissionMillis > eligible + 1000)
+        assertFalse(fresh.reconcile(uid, rehearsal))
+        assertTrue(admin("--restore", "--apply").contains("restaurado ao Ipsum 200"))
+        assertNull(fresh.load(uid, key).active)
+        assertTrue(admin("--restore", "--apply").contains("já está no Ipsum 200"))
+
+        val other = signInGoogle()
+        org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
+        FirestoreAccountBootstrap(auth, db).ensureAccount(other)
+        repo.addHandle(other, TCC_DEMO_HANDLE)
+        repo.selectHandle(other, key)
+        val regular = repo.start(other, key, "regular-account")
+        assertNotEquals(WATERMELON, regular.ipsum.problem.id)
+    }
 
     @Test(timeout = 90_000) fun `SDK experimental AC persists once across restart concurrent retry and next attempt uses own balance`() = runBlocking {
         val uid = signInGoogle()

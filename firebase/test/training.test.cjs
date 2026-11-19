@@ -318,6 +318,33 @@ const duelHorizon = duelArtifact.curves.find(c => c.delta_min === 0).cdf_ppm.at(
 const duelSnapshot = () => ({policy: 'virtual-duel-v1', model: 'km-delta-isotonic-20261020-v1',
   sha256: '69954b61bc111b2b2b1c33efef7e66978a74a378244ef0f41f834f9d6a8daea3',
   ratingMicros: 800000000, difficulty: 800, curveMin: 0, k: 32, horizonMillis: 7200000, assistance: 'unassisted'});
+
+test('Watermelon requires an admin-prepared binding at exactly the 200th Ipsum', async () => {
+  const c = await account();
+  const key = 'cf_lerolerolero123491432';
+  const profile = doc(c.db, path(c.uid, key));
+  const dataset = 'tcc-v1-' + 'a'.repeat(64);
+  await assertFails(setDoc(profile, {...handleData(key), demoDataset: dataset}));
+  await setDoc(profile, handleData(key));
+  await setDoc(doc(c.db, `users/${c.uid}/runtime/selection`), {schemaVersion: 1, handleKey: key, bindingVersion: 1,
+    selectionVersion: 1, selectedAt: serverTimestamp()});
+  await assertFails(updateDoc(profile, {demoDataset: dataset}));
+
+  const water = (version, originAt = 1268395200000) => row => ({...row, version,
+    snapshot: {...row.snapshot, name: 'Watermelon', originAt, virtualDuel: duelSnapshot()}});
+  await assertFails(start(c, key, 'ordinary', 4, water(0)));
+  await assertFails(start(c, key, 'forged-date', 4, water(0, 1593561600000)));
+  const seed = progressVersion => env.withSecurityRulesDisabled(context =>
+    updateDoc(doc(context.firestore(), path(c.uid, key)), {
+      demoDataset: dataset, progressVersion, lastIpsumId: `${dataset}-200`, duelRatingMicros: 800000000,
+    }));
+  await seed(201);
+  await assertFails(start(c, key, 'too-late', 4, water(201)));
+  await seed(200);
+  await assertFails(start(c, key, 'wrong-problem', 5, water(200)));
+  await assertSucceeds(start(c, key, 'live-demo', 4, water(200)));
+});
+
 async function duelFixture() {
   const c = await fixture(5000, 3000);
   await env.withSecurityRulesDisabled(async context => {

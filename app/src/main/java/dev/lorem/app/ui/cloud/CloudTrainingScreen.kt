@@ -175,7 +175,8 @@ fun CloudTrainingApp(uid: String, state: CloudTrainingUiState, now: Long?,
                         composable(LoremDestination.Statistics.route) {
                             val stats = localProfile?.let { buildIpsumStatistics(it, ipsums, ipsums.map { i -> i.problem }) }
                             StatisticsScreen(stats?.let { StatisticsUiState.Ready(it) } ?: StatisticsUiState.NoProfile, ::home, consolidation,
-                                showDolorRating = true, dolorRatingMicros = profile?.duelRatingMicros, ratingHistory = ipsums)
+                                showDolorRating = true, dolorRatingMicros = profile?.duelRatingMicros, ratingHistory = ipsums,
+                                simulatedAbility = TCC_DEMO_ABILITY.takeIf { profile?.isTccDemo == true })
                         }
                         composable(LoremDestination.Configuration.route) {
                             CloudSettings(state, onAdd, onSelect, onRefresh, theme, onThemeChange, settingsContent)

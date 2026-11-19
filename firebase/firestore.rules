@@ -209,14 +209,25 @@ service cloud.firestore {
               && (!('scoring' in s) || validScoring(s))
               && s.handle == h.handle && s.contestId is int && s.contestId > 0 && s.index is string
               && s.index.matches('[A-Za-z0-9]+') && s.name is string && s.rating is int && s.rating >= 800
-              && s.tags is list && s.factors is list && s.originAt is int && s.originAt >= 1593561600000
+              && s.tags is list && s.factors is list && s.originAt is int
+              && (s.contestId == 4 && s.index == 'A'
+                ? waterMelonDemo(h, n, s)
+                : s.originAt >= 1593561600000
+                  && !exists(/databases/$(database)/documents/users/$(uid)/handles/$(handleKey)/exclusions/$(string(s.contestId) + '_' + s.index))
+                  && !existsAfter(/databases/$(database)/documents/users/$(uid)/handles/$(handleKey)/exclusions/$(string(s.contestId) + '_' + s.index)))
               && s.originVerifiedAt is int && s.originVerifiedAt > 0 && s.originSource == 'codeforces:contest.list'
               && s.originVersion == 'origin-20200701-v1' && s.category in ['FLUENCY', 'CURRENT_LEVEL', 'CHALLENGE']
               && s.desiredMin is int && s.desiredMax is int && s.fallback is int && s.fallback >= 0 && s.fallback <= 300
-              && !exists(/databases/$(database)/documents/users/$(uid)/handles/$(handleKey)/exclusions/$(string(s.contestId) + '_' + s.index))
-              && !existsAfter(/databases/$(database)/documents/users/$(uid)/handles/$(handleKey)/exclusions/$(string(s.contestId) + '_' + s.index))
               && !exists(marker) && getAfter(marker).data.ipsumId == ipsumId && locked(uid, handleKey, ipsumId)
               && !exists(lp(uid)) && selectedHandle(uid, handleKey, n.bindingVersion);
+          }
+          function waterMelonDemo(h, n, s) {
+            let dataset = h.get('demoDataset', '');
+            return handleKey == 'cf_lerolerolero123491432'
+              && dataset is string && dataset.matches('tcc-v1-[0-9a-f]{64}')
+              && h.progressVersion == 200 && h.lastIpsumId == dataset + '-200'
+              && h.duelRatingMicros is int && hasDuel(n)
+              && s.name == 'Watermelon' && s.rating == 800 && s.originAt > 0 && s.originAt < 1593561600000;
           }
           function validTransition() {
             let n = request.resource.data;

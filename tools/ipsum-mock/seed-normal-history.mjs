@@ -28,7 +28,7 @@ function check(condition, message) {
   if (!condition) throw new Error(message);
 }
 
-function firestore(project, emulatorHost, remoteRequest) {
+export function firestore(project, emulatorHost, remoteRequest) {
   check(/^[a-z][a-z0-9-]{4,29}$/.test(project ?? ''), 'Informe o ID do projeto Firebase em --project.');
   if (emulatorHost) {
     check(project.startsWith('demo-') && /^(localhost|127\.0\.0\.1):[0-9]+$/.test(emulatorHost),

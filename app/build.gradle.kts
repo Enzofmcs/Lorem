@@ -88,6 +88,13 @@ android {
             it.inputs.property("loremFirestoreEmulatorHost", providers.environmentVariable("FIRESTORE_EMULATOR_HOST").orElse(""))
             it.inputs.property("loremMockEmulator", providers.environmentVariable("LOREM_MOCK_EMULATOR").orElse("false"))
             it.inputs.property("loremMockCloudEmulators", providers.environmentVariable("LOREM_MOCK_CLOUD_EMULATORS").orElse("false"))
+            providers.environmentVariable("LOREM_DEMO_INPUT").orNull?.let { path ->
+                it.inputs.file(path)
+                it.outputs.upToDateWhen { false }
+            }
+            providers.environmentVariable("LOREM_DEMO_BASELINE").orNull?.let { path ->
+                it.inputs.file(path)
+            }
             it.systemProperty(
                 "robolectric.dependency.repo.url",
                 "https://repo.maven.apache.org/maven2",

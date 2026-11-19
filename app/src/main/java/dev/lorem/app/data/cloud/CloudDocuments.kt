@@ -11,7 +11,7 @@ import java.util.Date
 internal fun timestamp(millis: Long) = Timestamp(Date(millis))
 internal fun DocumentSnapshot.cloudHandle() = CloudHandle(id, getString("handle")!!,
     getLong("loremRating")!!.toInt(), getLong("consolidatedRating")?.toInt(), getLong("progressVersion")!!,
-    getLong("bindingVersion")!!, getLong("duelRatingMicros"))
+    getLong("bindingVersion")!!, getLong("duelRatingMicros"), getString("demoDataset"), getString("lastIpsumId"))
 
 internal fun snapshotOf(recommendation: IpsumRecommendation, rating: Int, handle: String, cf: Int?, cfAt: Long?, scoring: ScoringSnapshot? = null, duel: dev.lorem.app.domain.VirtualDuelSnapshot? = null): Map<String, Any?> {
     val p = recommendation.problem
@@ -72,7 +72,7 @@ internal fun DocumentSnapshot.cloudIpsum(): CloudIpsum {
             recommendationFactors = RecommendationFactors(factors, number("recentOverlap").toInt()),
             initialCodeforcesRating = (s["cfRating"] as? Number)?.toInt(),
             initialCodeforcesRatingObservedAtEpochMillis = (s["cfObservedAt"] as? Number)?.toLong(),
-            studyRecordingVersion = CLOUD_RULE_VERSION,
+            studyRecordingVersion = getString("ruleVersion")?.takeIf { it == "tcc-import-v1" } ?: CLOUD_RULE_VERSION,
             scoringSnapshot = if (s.containsKey("scoring")) scoringSnapshot(s["scoring"] as Map<*, *>) else null,
             virtualDuelSnapshot = (s["virtualDuel"] as? Map<*, *>)?.let(::virtualDuelSnapshot),
             virtualDuelResult = (result?.get("virtualDuel") as? Map<*, *>)?.let(::virtualDuelResult),

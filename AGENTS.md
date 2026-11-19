@@ -52,6 +52,8 @@ backend ou abstracao sem necessidade concreta.
 
 ## Estado atual
 
+- **Ensaio do TCC, 19/11/2026:** preparação administrativa da rodada 05, comparação das duas séries, Watermelon no Ipsum 201 do perfil preparado e restauração ao ponto 200. Compilação com OAuth e ensaio no aparelho ficam com o responsável. [Guia](docs/TCC_DEMO.md).
+
 - **Histórias 58–60, 19/11/2026:** jornada Android simplificada, Rating Dolor no início padrão de novos Ipsums cloud e gráfico conjunto em Estatísticas. O início informa a modalidade sem dicas e o resultado grava Lorem e Dolor na mesma transação. A comparação lê o histórico finalizado do handle. [Aceite](docs/ROADMAP.md#historias-5860) e [capturas](docs/evidence/2026-11-19-historias-58-60/README.md).
 
 - **UI Lorem/Dolor, 23/10/2026 (D-052):** saldo anterior exibido como Rating Lorem e saldo virtual-duel como Rating Dolor, separados em início/resultado/histórico/estatísticas cloud. Preservar frações e ausência de avaliação; não inferir resultados antigos do saldo atual nem esconder saldo salvo conforme flag de novos inícios. 39 testes de UI direcionados/compilação debug passaram; [evidência](docs/evidence/2026-10-23-ratings-lorem-dolor-ui.json). Sem mudança de cálculo, esquema/Rules ou ativação. TESTE MANUAL OPCIONAL - NÃO EXECUTADO.

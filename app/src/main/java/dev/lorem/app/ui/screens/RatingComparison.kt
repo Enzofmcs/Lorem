@@ -26,7 +26,7 @@ import kotlin.math.roundToInt
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun RatingComparison(history: List<Ipsum>) {
+internal fun RatingComparison(history: List<Ipsum>, simulatedAbility: Int? = null) {
     val points = remember(history) {
         history.filter { it.status != IpsumStatus.ACTIVE && it.endedAtEpochMillis != null }
             .sortedWith(compareBy<Ipsum> { it.endedAtEpochMillis }.thenBy { it.id })
@@ -35,8 +35,11 @@ internal fun RatingComparison(history: List<Ipsum>) {
     val selectedIndex = points.indexOfFirst { it.id == selectedId }.takeIf { it >= 0 } ?: points.lastIndex
     val loremColor = MaterialTheme.colorScheme.primary
     val dolorColor = MaterialTheme.colorScheme.tertiary
-    val balances = remember(points) {
-        points.flatMap { listOfNotNull(it.finalLoremRating?.times(DUEL_SCALE), it.virtualDuelResult?.afterMicros) }
+    val referenceColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val reference = simulatedAbility?.times(DUEL_SCALE)
+    val balances = remember(points, reference) {
+        points.flatMap { listOfNotNull(it.finalLoremRating?.times(DUEL_SCALE), it.virtualDuelResult?.afterMicros) } +
+            listOfNotNull(reference)
     }
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text("Evolução dos ratings", style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
@@ -54,6 +57,10 @@ internal fun RatingComparison(history: List<Ipsum>) {
                 Text("◆", color = dolorColor, modifier = Modifier.clearAndSetSemantics {})
                 Text("Rating Dolor")
             }
+            if (simulatedAbility != null) Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text("– –", color = referenceColor, modifier = Modifier.clearAndSetSemantics {})
+                Text("Habilidade simulada = $simulatedAbility")
+            }
         }
         if (points.none { it.virtualDuelResult != null }) Text("Ainda sem avaliações Dolor no histórico.")
         if (balances.isNotEmpty()) {
@@ -65,7 +72,7 @@ internal fun RatingComparison(history: List<Ipsum>) {
                     Text(high.toString(), style = MaterialTheme.typography.bodySmall)
                     Text(low.toString(), style = MaterialTheme.typography.bodySmall)
                 }
-                RatingComparisonPlot(points, selectedIndex, low, high, loremColor, dolorColor,
+                RatingComparisonPlot(points, selectedIndex, low, high, loremColor, dolorColor, reference, referenceColor,
                     select = { selectedId = points[it].id }, modifier = Modifier.weight(1f))
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -76,6 +83,7 @@ internal fun RatingComparison(history: List<Ipsum>) {
         val point = points[selectedIndex]
         Card(Modifier.fillMaxWidth().testTag("rating-point-details").semantics { liveRegion = LiveRegionMode.Polite }) {
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                if (simulatedAbility != null) Text("Ipsum ${selectedIndex + 1}")
                 Text("${point.problem.id} · ${point.problem.name}", style = MaterialTheme.typography.titleMedium)
                 Text(formatSyncTime(requireNotNull(point.endedAtEpochMillis)))
                 val lorem = point.finalLoremRating
@@ -98,7 +106,8 @@ internal fun RatingComparison(history: List<Ipsum>) {
 @Composable
 private fun RatingComparisonPlot(
     points: List<Ipsum>, selectedIndex: Int, low: Long, high: Long,
-    loremColor: Color, dolorColor: Color, select: (Int) -> Unit, modifier: Modifier = Modifier,
+    loremColor: Color, dolorColor: Color, reference: Long?, referenceColor: Color,
+    select: (Int) -> Unit, modifier: Modifier = Modifier,
 ) {
     val axis = MaterialTheme.colorScheme.outline
     val surface = MaterialTheme.colorScheme.background
@@ -125,6 +134,11 @@ private fun RatingComparisonPlot(
         )
         drawLine(axis, Offset(pad, pad), Offset(pad, bottom), 1.dp.toPx())
         drawLine(axis, Offset(pad, bottom), Offset(right, bottom), 1.dp.toPx())
+        if (reference != null) {
+            val y = position(0, reference).y
+            drawLine(referenceColor, Offset(pad, y), Offset(right, y), 1.dp.toPx(),
+                pathEffect = PathEffect.dashPathEffect(floatArrayOf(4.dp.toPx(), 4.dp.toPx())))
+        }
         val selectedX = x(selectedIndex)
         drawLine(axis, Offset(selectedX, pad), Offset(selectedX, bottom), 1.dp.toPx())
 

@@ -47,7 +47,8 @@ private enum class StatisticsSection(val label: String) {
 
 @Composable
 fun StatisticsScreen(state: StatisticsUiState, onNavigateHome: () -> Unit = {}, consolidation: ConsolidationProgress? = null,
-    showDolorRating: Boolean = false, dolorRatingMicros: Long? = null, ratingHistory: List<Ipsum>? = null) {
+    showDolorRating: Boolean = false, dolorRatingMicros: Long? = null, ratingHistory: List<Ipsum>? = null,
+    simulatedAbility: Int? = null) {
     val padding = PaddingValues(0.dp)
     when (state) {
         StatisticsUiState.Loading -> Column(Modifier.padding(padding).padding(16.dp)) {
@@ -59,7 +60,8 @@ fun StatisticsScreen(state: StatisticsUiState, onNavigateHome: () -> Unit = {}, 
             TextButton(onClick = onNavigateHome, modifier = Modifier.heightIn(min = 48.dp)) { Text("Voltar ao Início") }
         }
         is StatisticsUiState.Ready -> key(state.statistics.ownerHandle.trim().lowercase(Locale.ROOT)) {
-            StatisticsContent(state.statistics, padding, onNavigateHome, consolidation, showDolorRating, dolorRatingMicros, ratingHistory)
+            StatisticsContent(state.statistics, padding, onNavigateHome, consolidation, showDolorRating, dolorRatingMicros,
+                ratingHistory, simulatedAbility)
         }
     }
 }
@@ -67,7 +69,7 @@ fun StatisticsScreen(state: StatisticsUiState, onNavigateHome: () -> Unit = {}, 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun StatisticsContent(stats: IpsumStatistics, padding: PaddingValues, onNavigateHome: () -> Unit, consolidation: ConsolidationProgress?,
-    showDolorRating: Boolean, dolorRatingMicros: Long?, ratingHistory: List<Ipsum>?) {
+    showDolorRating: Boolean, dolorRatingMicros: Long?, ratingHistory: List<Ipsum>?, simulatedAbility: Int?) {
     var sectionName by rememberSaveable(stats.ownerHandle) { mutableStateOf(StatisticsSection.SUMMARY.name) }
     val section = StatisticsSection.valueOf(sectionName)
     LazyColumn(
@@ -107,7 +109,7 @@ private fun StatisticsContent(stats: IpsumStatistics, padding: PaddingValues, on
         }
         when (section) {
             StatisticsSection.SUMMARY -> {
-                if (ratingHistory != null) item(key = "rating-comparison") { RatingComparison(ratingHistory) }
+                if (ratingHistory != null) item(key = "rating-comparison") { RatingComparison(ratingHistory, simulatedAbility) }
                 if (consolidation != null) item { ConsolidationCard(consolidation) }
                 item { AttemptCard("Seu desempenho", stats.overall, "statistics-overall") }
                 if (ratingHistory == null) {

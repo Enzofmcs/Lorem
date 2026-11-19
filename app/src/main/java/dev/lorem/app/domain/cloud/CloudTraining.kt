@@ -18,6 +18,8 @@ data class CloudHandle(
     val version: Long,
     val bindingVersion: Long = 1,
     val duelRatingMicros: Long? = null,
+    val demoDataset: String? = null,
+    val lastIpsumId: String? = null,
 )
 
 enum class CloudIpsumState { ACTIVE, CLOSED_AWAITING_VERIFICATION, FINAL }

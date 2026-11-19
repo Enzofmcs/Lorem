@@ -125,6 +125,65 @@ class CloudTrainingScreenTest {
         assertEquals(1, starts)
     }
 
+    @Test fun `the Lorem tabs show the demonstration line and both balances for Ipsum 200 and Watermelon`() {
+        val key = cloudHandleKey(TCC_DEMO_HANDLE)
+        val dataset = "tcc-v1-" + "a".repeat(64)
+        val before = VirtualDuelResult(935_967_520, 3_628_960, 939_596_480, 386_595, 386_595, 911_503)
+        val loremChange = 8
+        val dolorChange = 16 * DUEL_SCALE
+        val after = VirtualDuelResult(before.afterMicros, dolorChange, before.afterMicros + dolorChange, 0, 0, 911_503)
+        val history = (1L..200L).map { id ->
+            CloudIpsum("$dataset-$id", key, id - 1, CloudIpsumState.FINAL,
+                final().ipsum.copy(id = id, ownerHandle = TCC_DEMO_HANDLE,
+                    endedAtEpochMillis = 2000 + id * 1000,
+                    finalLoremRating = 1883, ratingDelta = loremChange, virtualDuelResult = before))
+        }
+        val profile = CloudHandle(key, TCC_DEMO_HANDLE, 1883, null, 200, duelRatingMicros = before.afterMicros,
+            demoDataset = dataset, lastIpsumId = "$dataset-200")
+        val live = CloudIpsum("live", key, 200, CloudIpsumState.ACTIVE,
+            active.ipsum.copy(id = 201, ownerHandle = TCC_DEMO_HANDLE, startedAtEpochMillis = 204_000,
+                problem = CodeforcesProblem(WATERMELON, "Watermelon", 800, setOf("math", "brute force"))))
+        val baseline = CloudSnapshot(listOf(profile), null, history.reversed(), true)
+        val screen = mutableStateOf(CloudTrainingUiState(baseline, key))
+        compose.setContent {
+            LoremTheme {
+                CloudTrainingApp("demo", screen.value, 205_000, {}, {},
+                    onStart = { screen.value = screen.value.copy(snapshot = baseline.copy(active = live, attempts = listOf(live) + baseline.attempts)) },
+                    onHint = {}, onClose = {}, onRefresh = {}, onPending = {})
+            }
+        }
+        compose.onNodeWithTag("tab-statistics").performClick()
+        val list = compose.onNodeWithTag("statistics-list")
+        list.performScrollToNode(hasText("Habilidade simulada = 1000"))
+        compose.onNodeWithText("Habilidade simulada = 1000").assertExists()
+        list.performScrollToNode(hasText("Ipsum 200"))
+        compose.onNodeWithText("Ipsum 200").assertExists()
+        compose.onNodeWithText("Rating Lorem: 1883 (+8)").assertExists()
+        compose.onNodeWithText("Rating Dolor: 939,59648 (+3,62896)").assertExists()
+
+        compose.onNodeWithTag("tab-home").performClick()
+        compose.onNodeWithText("Iniciar Ipsum").performScrollTo().performClick()
+        compose.onNodeWithText("Watermelon").assertExists()
+        val result = live.copy(state = CloudIpsumState.FINAL, ipsum = live.ipsum.copy(
+            status = IpsumStatus.COMPLETED, endedAtEpochMillis = 205_000, ratingDelta = loremChange,
+            finalLoremRating = 1891, virtualDuelResult = after))
+        compose.runOnIdle {
+            screen.value = screen.value.copy(snapshot = baseline.copy(
+                handles = listOf(profile.copy(version = 201, rating = 1891, duelRatingMicros = after.afterMicros)),
+                attempts = listOf(result) + baseline.attempts))
+        }
+        compose.onNodeWithText("Resultado do Ipsum").assertExists()
+        compose.onNodeWithText("Voltar ao início").performScrollTo().performClick()
+        compose.onNodeWithTag("tab-statistics").performClick()
+        list.performScrollToNode(hasText("Ipsum 201"))
+        compose.onNodeWithText("Ipsum 201").assertExists()
+        compose.onNodeWithText("4A · Watermelon").assertExists()
+        compose.onNodeWithText("Rating Lorem: 1891 (+8)").assertExists()
+        compose.onNodeWithText("Rating Dolor: 955,59648 (+16)").assertExists()
+        list.performScrollToNode(hasText("Ipsums encerrados: 201"))
+        compose.onNodeWithText("Ipsums encerrados: 201").assertExists()
+    }
+
     @Test fun `experimental active hides hint and all scoring metadata in semantics`() {
         val trial = active.copy(ipsum = active.ipsum.copy(virtualDuelSnapshot = VirtualDuelSnapshot(800*DUEL_SCALE,1200,400)))
         compose.setContent { LoremTheme { CloudTrainingApp("A", state(trial), 1000, {}, {}, {}, {}, {}, {}, {}) } }
