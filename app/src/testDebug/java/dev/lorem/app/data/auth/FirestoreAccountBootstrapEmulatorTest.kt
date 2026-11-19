@@ -9,6 +9,7 @@ import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.firebase.firestore.MemoryCacheSettings
 import com.google.firebase.firestore.MemoryLruGcSettings
@@ -146,6 +147,38 @@ class FirestoreAccountBootstrapEmulatorTest {
         assertNull(state.active)
         assertTrue(state.attempts.isEmpty())
         assertTrue(db.document(path).collection("usedProblems").get(Source.SERVER).await().isEmpty)
+    }
+
+    @Test(timeout = 90_000) fun `denied start explains rules compatibility and permits retry with the same command`() = runBlocking {
+        val uid = signInGoogle()
+        FirestoreAccountBootstrap(auth, db).ensureAccount(uid)
+        cfRating = null
+        val repo = repository(duel = true, scoring = { _, _ ->
+            // The recorded Codeforces rating is absent, so the server must reject this mismatch.
+            ScoringSnapshot(LEGACY_SCORING_POLICY, null, modelVersion = null, artifactSha256 = null,
+                inputRating = 800, unavailableReason = "artifact_not_configured")
+        })
+        val key = repo.addHandle(uid, "tourist").key
+        repo.selectHandle(uid, key)
+        val command = "retry-permission"
+        try {
+            repo.start(uid, key, command)
+            fail("Expected a denied start")
+        } catch (expected: IllegalStateException) {
+            assertTrue(expected.message!!.contains("regras publicadas no Firebase"))
+            assertEquals(FirebaseFirestoreException.Code.PERMISSION_DENIED,
+                (expected.cause as FirebaseFirestoreException).code)
+        }
+        val state = repo.load(uid, key)
+        assertNull(state.active)
+        assertTrue(state.attempts.isEmpty())
+        assertTrue(db.document("users/$uid/handles/$key").collection("usedProblems").get(Source.SERVER).await().isEmpty)
+
+        val compatible = repository(duel = true)
+        val started = compatible.start(uid, key, command)
+        assertEquals(command, started.id)
+        assertNotNull(started.ipsum.virtualDuelSnapshot)
+        assertEquals(started, compatible.start(uid, key, command))
     }
 
     private fun duelCatalog() = dev.lorem.app.data.cloud.VirtualDuelCatalog(
