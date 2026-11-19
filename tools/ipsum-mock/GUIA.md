@@ -1,6 +1,6 @@
 # Lorem Mock · Importar 200 Ipsums de um Excel
 
-O **Lorem Mock** é um APK para Android 8 ou superior, com pacote `dev.lorem.app.mock`. Selecione a variante **mock** ao compilar. Ela grava no **Firestore Emulator** quando está sem configuração local e usa o **projeto Firebase** indicado em `app/src/mock/google-services.json` quando você adiciona esse arquivo. Os registros gravados aparecem em **Histórico** e **Estatísticas**.
+O **Lorem Mock** é um APK para Android 8 ou superior, com pacote `dev.lorem.app.mock`. A variante **mock** usa o **projeto Firebase** indicado em `app/src/mock/google-services.json`. Quando falta configuração, o APK informa na tela qual etapa falta. Os registros gravados aparecem em **Histórico** e **Estatísticas**.
 
 ## Abrir no Android Studio e configurar o Firebase
 
@@ -32,7 +32,7 @@ O Rating Lorem parte de 800 e é calculado em ordem cronológica com a regra D-0
 
 ## 2. Inicie o Firestore Emulator para usar o modo local
 
-Esta etapa se aplica ao build da variante **mock** sem o JSON local. Instale **Node.js 24**, **Java 21** e **Android SDK Platform-Tools**. Abra um terminal em `tools/ipsum-mock` e rode:
+Para usar o modo local, compile na raiz com `./gradlew -Plorem.mockUseEmulator=true :app:assembleMock`. No Windows, use `gradlew.bat`. Instale **Node.js 24**, **Java 21** e **Android SDK Platform-Tools**. Abra um terminal em `tools/ipsum-mock` e rode:
 
 ```bash
 npx --yes firebase-tools@15.34.0 emulators:start --only firestore --project demo-lorem-ipsums --config firebase.json --export-on-exit=./dados-locais

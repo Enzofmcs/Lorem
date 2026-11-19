@@ -11,7 +11,9 @@ plugins {
 
 val appGoogleServices = file("google-services.json")
 val mockGoogleServices = file("src/mock/google-services.json")
-if (appGoogleServices.isFile || mockGoogleServices.isFile) {
+val mockUsesEmulator = providers.gradleProperty("lorem.mockUseEmulator").orNull?.toBooleanStrict() ?: false
+val mockFirebaseConfigured = !mockUsesEmulator && mockGoogleServices.isFile
+if (appGoogleServices.isFile || mockFirebaseConfigured) {
     apply(plugin = "com.google.gms.google-services")
     extensions.configure<GoogleServicesPluginConfig> {
         missingGoogleServicesStrategy = MissingGoogleServicesStrategy.IGNORE
@@ -19,8 +21,8 @@ if (appGoogleServices.isFile || mockGoogleServices.isFile) {
     androidComponents.onVariants(androidComponents.selector().withBuildType("mock")) {
         tasks.named<GoogleServicesTask>("processMockGoogleServices") {
             // Keep the importer from falling back to the training app's Firebase project.
-            googleServicesJsonFiles.set(listOf(mockGoogleServices))
-            if (!mockGoogleServices.isFile) {
+            googleServicesJsonFiles.set(if (mockFirebaseConfigured) listOf(mockGoogleServices) else emptyList())
+            if (!mockFirebaseConfigured) {
                 doFirst {
                     outputDirectory.get().asFile.deleteRecursively()
                     gmpAppId.get().asFile.delete()
@@ -60,7 +62,7 @@ android {
             applicationIdSuffix = ".mock"
             versionNameSuffix = "-mock"
             matchingFallbacks += "debug"
-            buildConfigField("boolean", "MOCK_CLOUD_ENABLED", mockGoogleServices.isFile.toString())
+            buildConfigField("boolean", "MOCK_USE_EMULATOR", mockUsesEmulator.toString())
         }
     }
     sourceSets.getByName("testMock") {

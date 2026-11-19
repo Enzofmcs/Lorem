@@ -64,11 +64,14 @@ class MockImportActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        val cloud = if (BuildConfig.MOCK_CLOUD_ENABLED) mockCloudFirebase(this) else null
+        val cloud = if (BuildConfig.MOCK_USE_EMULATOR) null else mockCloudFirebase(this)
         setContent {
             LoremTheme {
-                if (BuildConfig.MOCK_CLOUD_ENABLED) MockCloudLogin(cloud)
-                else MockImportApp(mockImportViewModel(), "Firestore Emulator · porta 8082")
+                if (BuildConfig.MOCK_USE_EMULATOR) {
+                    MockImportApp(mockImportViewModel(), "Firestore Emulator · porta 8082")
+                } else {
+                    MockCloudLogin(cloud)
+                }
             }
         }
     }
@@ -160,10 +163,10 @@ internal class MockImportViewModel(
             } catch (exception: FirebaseFirestoreException) {
                 val message = when {
                     exception.code != FirebaseFirestoreException.Code.PERMISSION_DENIED ->
-                        "A conexão com o Firestore falhou. " + connectionError()
+                        "A conexão com o Firestore falhou (${exception.code.name}). " + connectionError()
                     firebase == null ->
                         "O Firestore recusou a operação. Inicie o emulador com o arquivo firebase.json do Lorem Mock."
-                    else -> "O Firestore recusou a operação. Confira as regras do importador no projeto de teste."
+                    else -> "O Firestore recusou a operação. Confira as regras do importador no projeto exibido no app."
                 }
                 showError(message)
             } catch (exception: IllegalStateException) {

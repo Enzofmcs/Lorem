@@ -60,7 +60,14 @@ internal fun MockCloudLogin(firebase: FirebaseApp?) {
         Column(Modifier.windowInsetsPadding(WindowInsets.safeDrawing).padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text("Lorem Mock", style = MaterialTheme.typography.headlineMedium)
-            Text("Confira o google-services.json da variante mock e baixe a versão atualizada após habilitar o login Google.")
+            if (firebase == null || projectId == null) {
+                Text("Configuração do Firebase ausente neste APK.")
+                Text("Coloque o google-services.json do app dev.lorem.app.mock em app/src/mock/google-services.json. No Android Studio, sincronize o Gradle e execute a variante mock novamente.")
+            } else {
+                Text("Firebase · $projectId")
+                Text("Configuração do login Google ausente neste APK.")
+                Text("Habilite o provedor Google no projeto Firebase, confira a SHA-1 da variante mock e baixe novamente o google-services.json.")
+            }
         }
         return
     }
@@ -78,7 +85,7 @@ internal fun MockCloudLogin(firebase: FirebaseApp?) {
         state = session, busy = busy, error = error,
         onSignIn = { model.signIn { credentials.getIdToken(context) } },
         onRetry = model::refresh, onSignOut = signOut, fullScreenSignedIn = true,
-        deviceContent = { Text("Lorem Mock · Firebase de teste: $projectId") },
+        deviceContent = { Text("Lorem Mock · Firebase · $projectId") },
     ) { account ->
         MockImportApp(mockImportViewModel(firebase, account.uid), "Firebase · $projectId", signOut)
     }
