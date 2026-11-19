@@ -6,11 +6,16 @@ import java.security.MessageDigest
 
 /** Frozen full model always stays available for old attempts, including after disabling new starts. */
 class VirtualDuelCatalog(json: String) {
-    private val artifact = JSONObject(json)
+    private val artifact: JSONObject
+
     init {
-        val hash = MessageDigest.getInstance("SHA-256").digest(json.toByteArray()).joinToString("") { "%02x".format(it) }
-        require(hash == DUEL_SHA && artifact.getString("policy") == VIRTUAL_DUEL_POLICY &&
-            artifact.getString("model_version") == DUEL_MODEL)
+        val modelJson = json.replace("\r\n", "\n")
+        val hash = MessageDigest.getInstance("SHA-256").digest(modelJson.toByteArray(Charsets.UTF_8))
+            .joinToString("") { "%02x".format(it) }
+        require(hash == DUEL_SHA) { "O SHA-256 do modelo Dolor empacotado é inválido." }
+        artifact = JSONObject(modelJson)
+        require(artifact.getString("policy") == VIRTUAL_DUEL_POLICY &&
+            artifact.getString("model_version") == DUEL_MODEL) { "Versão do modelo Dolor incompatível." }
     }
     fun availability(ratingMicros: Long, difficulty: Int): DuelAvailability {
         if (ratingMicros !in DUEL_RATING_DOMAIN || difficulty !in 800..3500)
