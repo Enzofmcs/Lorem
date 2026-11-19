@@ -1,17 +1,46 @@
 package dev.lorem.app.data.cloud
 
+import android.content.res.AssetManager
+import android.util.Log
 import dev.lorem.app.domain.*
+import org.json.JSONException
 import org.json.JSONObject
+import java.io.IOException
 import java.security.MessageDigest
 
 /** Frozen full model always stays available for old attempts, including after disabling new starts. */
 class VirtualDuelCatalog(json: String) {
-    private val artifact = JSONObject(json)
+    private val artifact: JSONObject
+
     init {
-        val hash = MessageDigest.getInstance("SHA-256").digest(json.toByteArray()).joinToString("") { "%02x".format(it) }
-        require(hash == DUEL_SHA && artifact.getString("policy") == VIRTUAL_DUEL_POLICY &&
-            artifact.getString("model_version") == DUEL_MODEL)
+        // Git checkouts may convert LF to CRLF. Verify the canonical bytes used by the saved snapshots.
+        val canonical = json.replace("\r\n", "\n")
+        val hash = MessageDigest.getInstance("SHA-256").digest(canonical.toByteArray(Charsets.UTF_8))
+            .joinToString("") { "%02x".format(it) }
+        require(hash == DUEL_SHA) { "SHA-256 inválido para o modelo Dolor." }
+        artifact = JSONObject(canonical)
+        require(artifact.optString("policy") == VIRTUAL_DUEL_POLICY && artifact.optString("model_version") == DUEL_MODEL) {
+            "Versão incompatível do modelo Dolor."
+        }
     }
+
+    companion object {
+        internal fun load(assets: AssetManager): VirtualDuelCatalog? = try {
+            VirtualDuelCatalog(assets.open("virtual-duel-v1.json").bufferedReader().use { it.readText() })
+        } catch (error: IOException) {
+            unavailable(error)
+        } catch (error: IllegalArgumentException) {
+            unavailable(error)
+        } catch (error: JSONException) {
+            unavailable(error)
+        }
+
+        private fun unavailable(error: Exception): VirtualDuelCatalog? {
+            Log.e("LoremDolor", "Não foi possível carregar o modelo do Rating Dolor.", error)
+            return null
+        }
+    }
+
     fun availability(ratingMicros: Long, difficulty: Int): DuelAvailability {
         if (ratingMicros !in DUEL_RATING_DOMAIN || difficulty !in 800..3500)
             return DuelAvailability.Unavailable("out_of_domain")

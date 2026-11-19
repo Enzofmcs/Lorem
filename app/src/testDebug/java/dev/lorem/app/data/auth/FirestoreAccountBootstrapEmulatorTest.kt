@@ -51,6 +51,7 @@ import dev.lorem.app.data.local.RoomHandlesCache
 import dev.lorem.app.data.local.LoremDatabase
 import androidx.room.Room
 import dev.lorem.app.data.cloud.FirestoreTrainingRepository
+import dev.lorem.app.data.cloud.VirtualDuelCatalog
 import dev.lorem.app.domain.cloud.*
 import dev.lorem.app.domain.*
 import dev.lorem.app.domain.model.*
@@ -87,7 +88,8 @@ class FirestoreAccountBootstrapEmulatorTest {
     }
     private val scheduled = mutableListOf<CloudIpsum>()
     private fun repository(legacy: LegacyMigration? = null, scoring: ((Int?, Int) -> ScoringSnapshot)? = null,
-        duel: Boolean = false, category: IpsumCategory = IpsumCategory.FLUENCY): FirestoreTrainingRepository {
+        duel: Boolean = false, category: IpsumCategory = IpsumCategory.FLUENCY,
+        model: VirtualDuelCatalog? = duelCatalog()): FirestoreTrainingRepository {
         val cache = Room.inMemoryDatabaseBuilder(ApplicationProvider.getApplicationContext(), LoremDatabase::class.java).build()
         cacheDatabases.add(cache)
         return FirestoreTrainingRepository(db, { auth.currentUser?.uid }, cf,
@@ -95,9 +97,41 @@ class FirestoreAccountBootstrapEmulatorTest {
             CloudDeadline(android.os.SystemClock::elapsedRealtime) { 1 }, android.os.SystemClock::elapsedRealtime,
             { _, attempt, _ -> synchronized(scheduled) { scheduled.add(attempt) } },
             RecommendIpsum { category.ordinal.coerceAtMost(it - 1) }, legacy, exportIds,
-            duelCatalog = duelCatalog(), duelEnabled = duel,
+            duelCatalog = model, duelEnabled = duel,
             scoringSelector = scoring ?: { cfRating, _ -> ScoringSnapshot(LEGACY_SCORING_POLICY, null,
                 modelVersion = null, artifactSha256 = null, inputRating = cfRating, unavailableReason = "artifact_not_configured") })
+    }
+
+    @Test(timeout = 90_000) fun `missing Dolor model allows reading progress and leaves evaluation pending until recovery`() = runBlocking {
+        val uid = signInGoogle()
+        FirestoreAccountBootstrap(auth, db).ensureAccount(uid)
+        val healthy = repository(duel = true)
+        val unavailable = repository(duel = true, model = null)
+        val key = "cf_tourist"
+        healthy.addHandle(uid, "tourist")
+        healthy.selectHandle(uid, key)
+
+        val blocked = runCatching { unavailable.start(uid, key, "missing-model") }.exceptionOrNull()
+        assertTrue(blocked is IllegalStateException)
+        assertTrue(blocked?.message.orEmpty().contains("Modelo do Rating Dolor indisponível"))
+        val empty = unavailable.load(uid, key)
+        assertNull(empty.active)
+        assertTrue(empty.attempts.isEmpty())
+
+        val active = healthy.start(uid, key, "recover-model")
+        assertEquals(active.id, unavailable.start(uid, key, active.id).id)
+        assertTrue(runCatching { unavailable.close(uid, active, IpsumFailureReason.LOGIC_NOT_FOUND) }.isFailure)
+        val pending = unavailable.load(uid, key)
+        assertEquals(CloudIpsumState.CLOSED_AWAITING_VERIFICATION, pending.active?.state)
+        assertEquals(800, pending.handles.single().rating)
+        assertNull(pending.handles.single().duelRatingMicros)
+
+        assertTrue(healthy.reconcile(uid, active))
+        val recovered = healthy.load(uid, key)
+        assertNull(recovered.active)
+        assertEquals(1L, recovered.handles.single().version)
+        val result = requireNotNull(recovered.attempts.single().ipsum.virtualDuelResult)
+        assertEquals(result.afterMicros, recovered.handles.single().duelRatingMicros)
     }
 
     @Test(timeout = 90_000) fun `Dolor crossing 850 changes the next recommendation while Lorem stays in its previous band`() = runBlocking {
@@ -148,7 +182,7 @@ class FirestoreAccountBootstrapEmulatorTest {
         assertTrue(db.document(path).collection("usedProblems").get(Source.SERVER).await().isEmpty)
     }
 
-    private fun duelCatalog() = dev.lorem.app.data.cloud.VirtualDuelCatalog(
+    private fun duelCatalog() = VirtualDuelCatalog(
         ApplicationProvider.getApplicationContext<Application>().assets.open("virtual-duel-v1.json")
             .bufferedReader().use { it.readText() })
 

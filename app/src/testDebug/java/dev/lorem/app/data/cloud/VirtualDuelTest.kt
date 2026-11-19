@@ -14,8 +14,23 @@ import java.io.File
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [35], application = Application::class)
 class VirtualDuelTest {
-    private fun catalog() = VirtualDuelCatalog(ApplicationProvider.getApplicationContext<Application>().assets
-        .open("virtual-duel-v1.json").bufferedReader().use { it.readText() })
+    private fun modelText() = ApplicationProvider.getApplicationContext<Application>().assets
+        .open("virtual-duel-v1.json").bufferedReader().use { it.readText() }
+    private fun catalog() = VirtualDuelCatalog(modelText())
+
+    @Test fun `Windows line endings preserve the model and changed contents fail validation`() {
+        val source = modelText().replace("\r\n", "\n")
+        val windows = source.replace("\n", "\r\n")
+        assertNotEquals(source, windows)
+        val canonical = VirtualDuelCatalog(source)
+        val converted = VirtualDuelCatalog(windows)
+        val snapshot = canonical.select(INITIAL_DOLOR_MICROS, 1200)
+        assertEquals(snapshot, converted.select(INITIAL_DOLOR_MICROS, 1200))
+        assertEquals(canonical.evaluate(snapshot, 60_000, true), converted.evaluate(snapshot, 60_000, true))
+        val changed = windows.replaceFirst("\"delta_min\":-1200", "\"delta_min\":-1199")
+        assertNotEquals(windows, changed)
+        assertThrows(IllegalArgumentException::class.java) { VirtualDuelCatalog(changed) }
+    }
     @Test fun `Python fixtures match Kotlin integer calculation CDF snapshot and result serialization`() {
         val catalog = catalog()
         val fixtures = JSONObject(File("../study/results/virtual-duel-v1/scenarios.json").readText()).getJSONArray("parity_cases")

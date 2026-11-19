@@ -3,6 +3,7 @@ package dev.lorem.app
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import kotlinx.coroutines.runBlocking
+import org.junit.Assert.assertNotNull
 import org.junit.Assume.assumeTrue
 import org.junit.Rule
 import org.junit.Test
@@ -24,6 +25,7 @@ class FirebaseEntryTest {
             // This also checks that the real Google Services resources reach MainActivity.
             compose.onNodeWithTag("google-sign-in").assertIsEnabled()
             compose.onNodeWithText("O login ainda não está disponível nesta versão do aplicativo.").assertDoesNotExist()
+            assertNotNull((context.application as LoremApplication).container.cloudTraining)
         } else {
             compose.onNodeWithText("O login ainda não está disponível nesta versão do aplicativo.").performScrollTo().assertIsDisplayed()
             compose.onNodeWithTag("google-sign-in").assertIsNotEnabled()

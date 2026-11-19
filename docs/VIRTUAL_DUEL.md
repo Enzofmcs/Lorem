@@ -99,6 +99,12 @@ lock/saldo para recuperação por cliente compatível. Com a flag desabilitada,
 novos Ipsums usam somente Lorem e mantêm o saldo Dolor gravado. Um modelo futuro exige manter versões antigas
 para tentativas existentes; substituir arquivo e reutilizar hash é recusado.
 
+O Git grava o JSON do modelo com quebras LF. O Android normaliza CRLF para LF
+antes de verificar o SHA-256 usado no snapshot. Se o arquivo estiver ausente ou
+inválido, a conta e o histórico continuam acessíveis. O início do Ipsum informa
+a indisponibilidade do modelo, e avaliações Dolor em andamento aguardam uma
+versão do app com o catálogo válido.
+
 Rules validam identidade, vínculo, prior, bin, versão/hash, H/K, ausência de dica,
 CDF no prazo, limites, aritmética e atualização atômica. **No Spark, continuam
 sem comprovação independente do AC e sem reexecutar a consulta completa F(T) do
