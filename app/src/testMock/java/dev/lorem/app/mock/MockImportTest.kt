@@ -11,6 +11,8 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.Source
+import dev.lorem.app.data.cloud.MockBatchReader
+import dev.lorem.app.data.cloud.mockBatchesForUser
 import dev.lorem.app.domain.buildIpsumHistory
 import dev.lorem.app.domain.buildIpsumStatistics
 import java.io.ByteArrayOutputStream
@@ -78,10 +80,9 @@ class MockImportTest {
         return auth to db
     }
 
-    private suspend fun googleEmulatorUid(auth: FirebaseAuth): String {
+    private suspend fun googleEmulatorUid(auth: FirebaseAuth, subject: String = UUID.randomUUID().toString()): String {
         fun encode(json: JSONObject) = Base64.encodeToString(json.toString().toByteArray(),
             Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
-        val subject = UUID.randomUUID().toString()
         val token = encode(JSONObject().put("alg", "none").put("typ", "JWT")) + "." +
             encode(JSONObject().put("sub", subject).put("email", "$subject@example.invalid")
                 .put("email_verified", true).put("iss", "https://accounts.google.com").put("aud", "emulator-only")
@@ -169,11 +170,18 @@ class MockImportTest {
         assumeTrue(System.getenv("LOREM_MOCK_CLOUD_EMULATORS") == "true")
         val sample = workbook()
         val (ownerAuth, ownerDb) = cloudEmulatorClient()
-        val ownerUid = googleEmulatorUid(ownerAuth)
+        val subject = UUID.randomUUID().toString()
+        val ownerUid = googleEmulatorUid(ownerAuth, subject)
         val store = MockFirestore.forUser(ownerDb, ownerUid)
         assertTrue(store.import(sample).inserted)
         assertFalse(store.import(sample).inserted)
         assertEquals(200, store.load(sample.id)?.ipsums?.size)
+
+        val (viewerAuth, viewerDb) = cloudEmulatorClient()
+        val viewerUid = googleEmulatorUid(viewerAuth, subject)
+        assertEquals(ownerUid, viewerUid)
+        val viewer = MockBatchReader(mockBatchesForUser(viewerDb, viewerUid))
+        assertEquals(store.load(sample.id), viewer.load(sample.id))
 
         val (otherAuth, otherDb) = cloudEmulatorClient()
         val otherStore = MockFirestore.forUser(otherDb, ownerUid)

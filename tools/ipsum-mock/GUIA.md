@@ -11,6 +11,10 @@ O **Lorem Mock** é um APK para Android 8 ou superior, com pacote `dev.lorem.app
 
 Os lotes gravados nesse modo ficam em `loremMockImports/{uid}/batches/{ID do lote}/handles/cf_mock_excel/ipsums`. O acesso exige a conta Google proprietária do lote. O modo Firebase usa internet.
 
+## Consultar no Lorem debug
+
+No **Lorem Mock**, copie o **ID do lote gravado** na aba **Importar**. No app **Lorem** da variante `debug`, entre com a mesma conta Google no mesmo projeto Firebase, abra **Histórico → Abrir lote importado**, cole o ID e toque em **Abrir lote**. O lote aparece como **Histórico simulado · @mock_excel**, com histórico e estatísticas de leitura.
+
 ## 1. Prepare o Excel
 
 Abra `ipsums-200-exemplo.xlsx`. A aba **Ipsums** já contém 200 registros simulados. Para usar os seus dados, mantenha os cabeçalhos na primeira linha e substitua os valores das 200 linhas de dados. Salve como **Pasta de Trabalho do Excel (.xlsx)**. Se os valores vierem de fórmulas, copie e use **Colar especial → Valores**.
