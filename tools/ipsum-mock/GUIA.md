@@ -1,0 +1,78 @@
+# Lorem Mock · Importar 200 Ipsums de um Excel
+
+O **Lorem Mock** é um APK para Android 8 ou superior, com pacote `dev.lorem.app.mock`. Selecione a variante **mock** ao compilar. Ela grava no **Firestore Emulator** quando está sem configuração local e usa um **projeto Firebase de teste** quando você adiciona `app/src/mock/google-services.json`. Os registros gravados aparecem em **Histórico** e **Estatísticas**.
+
+## Abrir no Android Studio e configurar o Firebase de teste
+
+1. Faça checkout da branch `codex/importador-ipsums` e sincronize o Gradle. Em **Build Variants**, selecione **mock** para o módulo `app`.
+2. No Firebase Console, abra um projeto de teste dedicado ao importador, crie o Firestore padrão e habilite o provedor **Google** em **Authentication**. Cadastre um app Android com o pacote `dev.lorem.app.mock`. Registre a SHA-1 e a SHA-256 da variante **mock**, exibidas por `./gradlew :app:signingReport`.
+3. Baixe o `google-services.json` atualizado e coloque em `app/src/mock/google-services.json`. O Git ignora esse arquivo. Em **Firestore Database → Rules**, publique o conteúdo de `tools/ipsum-mock/firestore.mock-cloud.rules` no projeto dedicado.
+4. Execute **Run** ou rode `./gradlew :app:assembleMock` no terminal. O APK é gerado em `app/build/outputs/apk/mock/app-mock.apk`. Abra o Lorem Mock, confira o ID do projeto no app, entre com Google e importe a planilha.
+
+Os lotes gravados nesse modo ficam em `loremMockImports/{uid}/batches/{ID do lote}/handles/cf_mock_excel/ipsums`. O acesso exige a conta Google proprietária do lote. O modo Firebase usa internet.
+
+## 1. Prepare o Excel
+
+Abra `ipsums-200-exemplo.xlsx`. A aba **Ipsums** já contém 200 registros simulados. Para usar os seus dados, mantenha os cabeçalhos na primeira linha e substitua os valores das 200 linhas de dados. Salve como **Pasta de Trabalho do Excel (.xlsx)**. Se os valores vierem de fórmulas, copie e use **Colar especial → Valores**.
+
+| Coluna | O que preencher |
+| --- | --- |
+| `contest_id`, `indice` | ID inteiro positivo e índice como `A` ou `B2`. Cada par aparece uma vez no lote. |
+| `nome` | Título do problema. |
+| `rating_problema` | Rating de 800 a 3500, em múltiplos de 100. |
+| `tags` | Tags oficiais do Codeforces separadas por `\|`, como `math\|greedy`. |
+| `inicio_utc` | Data e hora em UTC. Use o tipo data do Excel ou texto ISO como `2025-01-01T18:00:00Z`. |
+| `duracao_min` | Tempo da tentativa, maior que zero e de até 120 minutos. Os períodos das tentativas precisam ser distintos e sem sobreposição. |
+| `resultado` | `AC` para resolução no Ipsum, `PENDENTE` para tentativa encerrada sem AC e `UPSOLVE` para resolução posterior. |
+| `erros` | Número inteiro de erros, incluindo zero. |
+| `dica_min` | Opcional. Minutos desde o início até a dica, antes do encerramento. |
+| `upsolve_utc` | Obrigatório no resultado `UPSOLVE`. Registre a data e a hora em UTC depois do fim da tentativa. Deixe vazio nos demais casos. |
+
+O Rating Lorem parte de 800 e é calculado em ordem cronológica com a regra D-012 do aplicativo. O upsolve mantém a avaliação original da tentativa. A planilha preenche o histórico e a evolução de Rating Lorem. Ela contém IDs, nomes e resultados simulados.
+
+## 2. Inicie o Firestore Emulator para usar o modo local
+
+Esta etapa se aplica ao build da variante **mock** sem o JSON local. Instale **Node.js 24**, **Java 21** e **Android SDK Platform-Tools**. Abra um terminal em `tools/ipsum-mock` e rode:
+
+```bash
+npx --yes firebase-tools@15.34.0 emulators:start --only firestore --project demo-lorem-ipsums --config firebase.json --export-on-exit=./dados-locais
+```
+
+Mantenha esse terminal aberto durante a importação. O Firestore usa a porta **8082**. A interface de conferência abre no computador em `http://127.0.0.1:4002`. O projeto começa com `demo-` e fica no computador.
+
+## 3. Instale o APK e copie a planilha
+
+Inicie um dispositivo virtual no Android Studio ou conecte um celular Android por USB, ative **Depuração USB** e aceite a autorização do computador. Em outro terminal, na pasta `tools/ipsum-mock`, rode:
+
+```bash
+adb devices
+adb install -r ../../app/build/outputs/apk/mock/app-mock.apk
+adb reverse tcp:8082 tcp:8082
+adb push ipsums-200-exemplo.xlsx /sdcard/Download/
+```
+
+Se houver mais de um dispositivo, use `adb -s SERIAL` em cada comando. Para importar seus dados, troque `ipsums-200-exemplo.xlsx` pelo nome da sua planilha. A configuração `adb reverse` é necessária no modo local.
+
+## 4. Importe e confira
+
+1. Abra **Lorem Mock**, toque em **Selecionar Excel (.xlsx)** e escolha o arquivo em **Downloads**.
+2. Confira a prévia. A planilha de exemplo mostra **160 ACs, 20 pendências e 20 upsolves**.
+3. Toque em **Gravar 200 Ipsums**. Aguarde **200 Ipsums gravados e conferidos no Firestore**.
+4. Abra **Histórico** para ver os registros e **Estatísticas** para conferir o total, os resultados e a evolução de Rating Lorem.
+5. No modo local, abra a interface do emulador, escolha **Firestore** e navegue até `users/{ID do lote}/handles/cf_mock_excel/ipsums`. No modo Firebase, confira a coleção `loremMockImports` no Console. O ID do lote pode ser copiado da aba **Importar**.
+
+A mesma planilha gera o mesmo ID de lote mesmo se o Excel salvar o arquivo com outra formatação. Reimporte para concluir uma operação interrompida ou recuperar um lote existente. Se mudar os valores das tentativas, o APK grava um novo lote com outro ID.
+
+Para guardar os dados no computador, pare o emulador com **Ctrl+C** e aguarde a exportação. Na próxima execução, acrescente `--import=./dados-locais` ao comando da etapa 2.
+
+## Compilar pela linha de comando
+
+Use SDK Android 35 e JDK 17 para o Gradle.
+
+```bash
+git fetch origin
+git switch --track origin/codex/importador-ipsums
+./gradlew :app:assembleMock
+```
+
+Use `gradlew.bat` no Windows.

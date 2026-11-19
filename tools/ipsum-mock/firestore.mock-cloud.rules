@@ -1,0 +1,35 @@
+// Standalone rules for a Firebase test project dedicated to Lorem Mock.
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function ownsBatch(uid, batch) {
+      return request.auth != null &&
+        request.auth.uid == uid &&
+        request.auth.token.firebase.sign_in_provider == 'google.com' &&
+        batch.matches('mock-[0-9a-f]{64}');
+    }
+
+    match /loremMockImports/{uid}/batches/{batch} {
+      allow get: if ownsBatch(uid, batch);
+      allow create: if ownsBatch(uid, batch) &&
+        request.resource.data.mockDatasetId == batch &&
+        request.resource.data.mockIpsumCount == 200;
+
+      match /handles/cf_mock_excel {
+        allow get, create: if ownsBatch(uid, batch);
+
+        match /ipsums/{ipsumId} {
+          allow get, list: if ownsBatch(uid, batch);
+          allow create: if ownsBatch(uid, batch) &&
+            ipsumId.matches('[1-9][0-9]{0,2}') &&
+            request.resource.data.state == 'FINAL' &&
+            request.resource.data.handleKey == 'cf_mock_excel' &&
+            request.resource.data.ruleVersion == 'mock-excel-v1';
+        }
+        match /usedProblems/{problemId} {
+          allow get, list, create: if ownsBatch(uid, batch);
+        }
+      }
+    }
+  }
+}

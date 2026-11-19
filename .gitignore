@@ -20,6 +20,8 @@ node_modules/
 firebase/functions/lib/
 .firebaserc
 app/google-services.json
+app/src/mock/google-services.json
+tools/ipsum-mock/dados-locais/
 firebase-projects.local.json
 
 # Local task scratch, logs and dependency bootstrap

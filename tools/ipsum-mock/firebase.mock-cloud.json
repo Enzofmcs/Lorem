@@ -1,0 +1,11 @@
+{
+  "firestore": { "rules": "firestore.mock-cloud.rules" },
+  "emulators": {
+    "auth": { "host": "127.0.0.1", "port": 9093 },
+    "firestore": { "host": "127.0.0.1", "port": 8083, "websocketPort": 9153 },
+    "hub": { "host": "127.0.0.1", "port": 4403 },
+    "logging": { "host": "127.0.0.1", "port": 4503 },
+    "ui": { "enabled": false },
+    "singleProjectMode": true
+  }
+}

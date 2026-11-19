@@ -1,3 +1,7 @@
+import com.google.gms.googleservices.GoogleServicesPlugin.GoogleServicesPluginConfig
+import com.google.gms.googleservices.GoogleServicesPlugin.MissingGoogleServicesStrategy
+import com.google.gms.googleservices.GoogleServicesTask
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -5,9 +9,26 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
-// Builds without a Firebase project remain reproducible. The Firebase entry reports
-// missing configuration explicitly instead of using a fabricated production app.
-if (file("google-services.json").isFile) apply(plugin = "com.google.gms.google-services")
+val appGoogleServices = file("google-services.json")
+val mockGoogleServices = file("src/mock/google-services.json")
+if (appGoogleServices.isFile || mockGoogleServices.isFile) {
+    apply(plugin = "com.google.gms.google-services")
+    extensions.configure<GoogleServicesPluginConfig> {
+        missingGoogleServicesStrategy = MissingGoogleServicesStrategy.IGNORE
+    }
+    androidComponents.onVariants(androidComponents.selector().withBuildType("mock")) {
+        tasks.named<GoogleServicesTask>("processMockGoogleServices") {
+            // Keep the importer from falling back to the training app's Firebase project.
+            googleServicesJsonFiles.set(listOf(mockGoogleServices))
+            if (!mockGoogleServices.isFile) {
+                doFirst {
+                    outputDirectory.get().asFile.deleteRecursively()
+                    gmpAppId.get().asFile.delete()
+                }
+            }
+        }
+    }
+}
 
 android {
     namespace = "dev.lorem.app"
@@ -33,6 +54,20 @@ android {
         buildConfig = true
     }
 
+    buildTypes {
+        create("mock") {
+            initWith(getByName("debug"))
+            applicationIdSuffix = ".mock"
+            versionNameSuffix = "-mock"
+            matchingFallbacks += "debug"
+            buildConfigField("boolean", "MOCK_CLOUD_ENABLED", mockGoogleServices.isFile.toString())
+        }
+    }
+    sourceSets.getByName("testMock") {
+        resources.srcDir(rootProject.file("tools/ipsum-mock"))
+        resources.include("ipsums-200-exemplo.xlsx")
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -49,6 +84,8 @@ android {
             it.inputs.property("loremFirebaseEmulators", providers.environmentVariable("LOREM_FIREBASE_EMULATORS").orElse("false"))
             it.inputs.property("loremAuthEmulatorHost", providers.environmentVariable("FIREBASE_AUTH_EMULATOR_HOST").orElse(""))
             it.inputs.property("loremFirestoreEmulatorHost", providers.environmentVariable("FIRESTORE_EMULATOR_HOST").orElse(""))
+            it.inputs.property("loremMockEmulator", providers.environmentVariable("LOREM_MOCK_EMULATOR").orElse("false"))
+            it.inputs.property("loremMockCloudEmulators", providers.environmentVariable("LOREM_MOCK_CLOUD_EMULATORS").orElse("false"))
             it.systemProperty(
                 "robolectric.dependency.repo.url",
                 "https://repo.maven.apache.org/maven2",
