@@ -2,6 +2,7 @@ package dev.lorem.app.data.cloud
 
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.Source
 import com.google.firebase.Timestamp
 import dev.lorem.app.domain.*
@@ -167,7 +168,7 @@ class FirestoreTrainingRepository(
         val snap = snapshotOf(recommendation, profile.rating, profile.handle, official.rating.takeIf { observed != null }, observed,
             scoringSelector(official.rating.takeIf { observed != null }, recommendation.problem.rating!!), duel)
         val marker = handle(uid, key).collection("usedProblems").document("${recommendation.problem.id.contestId}_${recommendation.problem.id.index}")
-        db.runTransaction { tx ->
+        val save = db.runTransaction { tx ->
             checkUid(uid)
             val old = tx.get(ref)
             val current = tx.get(handle(uid, key)).cloudHandle()
@@ -188,7 +189,16 @@ class FirestoreTrainingRepository(
                 tx.set(marker, mapOf("ipsumId" to commandId))
                 tx.set(runtime(uid), mapOf("handleKey" to key, "ipsumId" to commandId, "checkedAt" to FieldValue.serverTimestamp()))
             }
-        }.await()
+        }
+        try {
+            save.await()
+        } catch (e: FirebaseFirestoreException) {
+            if (e.code != FirebaseFirestoreException.Code.PERMISSION_DENIED) throw e
+            throw IllegalStateException(
+                "O Firestore recusou o início do Ipsum. Confira sua sessão e se as regras publicadas no Firebase são compatíveis com esta versão do app.",
+                e,
+            )
+        }
         checkUid(uid)
         val result = ref.get(Source.SERVER).await().cloudIpsum()
         load(uid, key) // Confirms server time and schedules deadline before returning to the screen.

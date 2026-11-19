@@ -1,4 +1,4 @@
-# Operação e compatibilidade do cliente 40–43
+# Operação e compatibilidade do cliente Firebase
 
 Requisitos: [história 40/#73](https://github.com/Enzofmcs/Lorem/issues/73).
 Evidência local: [2026-10-20-cloud-40-43.json](evidence/2026-10-20-cloud-40-43.json).
@@ -6,17 +6,17 @@ O responsável confirmou em 20/10/2026 OAuth autorizado e Rules atualizadas: [co
 
 ## Matriz de compatibilidade
 
-| Cliente | Rules 35–37 | Rules 38 (`26f58f0`) | Rules atuais (39, mantidas em 40–43) |
-| --- | --- | --- | --- |
-| 38 sem `snapshot.scoring` | Não cobre exclusões legadas | Contrato original | Leitura/transições legadas preservadas |
-| 39 e 40–43, D-012 com `snapshot.scoring` | Não distribuir nesta combinação | Início recusado, confirmado no emulador | Início, AC/timeout, retry e aplicação única testados com SDK real |
-| time-curve-v1 | Incompatível | Incompatível | Suporte técnico preservado; **ativação desabilitada** |
+| Cliente | Rules 35–37 | Rules 38 (`26f58f0`) | Rules 39 (`e36361a`) | Rules atuais (57+) |
+| --- | --- | --- | --- | --- |
+| 38 sem `snapshot.scoring` | Não cobre exclusões legadas | Contrato original | Leitura e transições legadas | Leitura e transições legadas |
+| D-012 com `snapshot.scoring` | Incompatível | Início recusado | Início aceito | Início aceito |
+| APK padrão da história 59 com `snapshot.virtualDuel` | Incompatível | Incompatível | Início recusado (`PERMISSION_DENIED`) | Início aceito |
+| time-curve-v1 | Incompatível | Incompatível | Suporte técnico, ativação desabilitada | Suporte técnico, ativação desabilitada |
 
-O fallback também grava `scoring`; desativar a curva não torna o cliente compatível
-com as Rules antigas. O teste `compatibility.test.cjs` usa projetos de demonstração
-separados para ambas as versões. A fixture Rules38 é cópia integral de
-`26f58f0:firebase/firestore.rules`, sem relaxamento ou alteração do arquivo atual.
-D-012 permanece a política vigente; o saldo inicial de um novo vínculo é 800.
+A avaliação D-012 também grava `snapshot.scoring`. Desde a história 59, o APK
+padrão inclui `snapshot.virtualDuel`. O teste `compatibility.test.cjs` usa projetos
+de demonstração com cópias integrais das Rules 38 e 39 e com as Rules da `main`.
+A recusa do início preserva a atomicidade do Ipsum, do marcador de uso e da trava.
 
 ## Estados observados, sem misturar evidências
 
@@ -28,9 +28,11 @@ D-012 permanece a política vigente; o saldo inicial de um novo vínculo é 800.
   O build sem esse arquivo é reproduzível e apresenta configuração ausente;
   compilar com sucesso não comprova que o login esteja operacional.
 
-## Próximo passo e roteiro de referência
+## Publicação das regras no projeto do app
 
-OAuth e atualização das Rules já foram confirmados pelo responsável; não há solicitação de novo deploy. Resta adicionar o JSON local e recompilar. Os passos de publicação abaixo ficam como referência para futuras atualizações.
+O registro de 20/10/2026 é anterior às Rules do Dolor. Se o APK da história 59
+receber `PERMISSION_DENIED` ao salvar um novo Ipsum, confira no projeto usado
+pelo app se a versão publicada aceita `snapshot.virtualDuel`.
 
 1. Conferir o projeto Firebase já escolhido, aplicativo `dev.lorem.app` e região
    existente. Não criar outro projeto nem alterar região/dados para recuperar.
@@ -38,17 +40,15 @@ OAuth e atualização das Rules já foram confirmados pelo responsável; não h�
    cliente OAuth Web, Google habilitado e SHA-1/SHA-256 do certificado que assina
    o APK. Usar `npm --prefix firebase run check-config`
    e os requisitos de [FIREBASE_SETUP.md](FIREBASE_SETUP.md). Não versionar o JSON.
-3. Comparar o SHA-256 de `firebase/firestore.rules` com a evidência e revisar o
-   arquivo inteiro. Publicar **explicitamente pelo responsável** com a seleção do
-   projeto real conferida, por exemplo
-   `firebase deploy --only firestore:rules --project <id-confirmado>`.
-   Este comando é referência para atualizações futuras; a atualização atual foi confirmada pelo usuário. O agente não o executou.
+3. Revisar `firebase/firestore.rules` da `main` e publicar apenas as regras no
+   projeto confirmado. Na raiz do repositório, com o Firebase CLI autenticado,
+   executar `firebase deploy --only firestore:rules --project <id-confirmado>`.
 4. Registrar separadamente commit/hash publicado, projeto, horário e confirmação
    do responsável; se houver leitura administrativa, registrar sua origem e o
    hash observado sem trocar confirmação por readback inexistente.
-5. Compilar o APK configurado e atualizar sem limpar dados. Conferência visual
-   opcional: Google → handle → iniciar → AC/timeout → resultado → reabrir.
-   Conservar o arquivo local e as exclusões; nunca importar seu saldo para cloud.
+5. Se o APK instalado já aponta para o projeto correto, tocar em **Iniciar Ipsum**
+   novamente após a publicação. Se foi necessário corrigir a configuração do APK,
+   recompilar e atualizar preservando os dados locais.
 
 ## Diagnóstico e recuperação
 
@@ -56,7 +56,7 @@ OAuth e atualização das Rules já foram confirmados pelo responsável; não h�
 | --- | --- |
 | Configuração ausente | Restaurar JSON/OAuth correto e recompilar; não criar usuário fictício |
 | OAuth inválido | Conferir cliente Web, pacote e certificado; voltar ao login |
-| `PERMISSION_DENIED` ao iniciar | Conferir contrato/versão publicada e sessão; não remover `scoring` nem abrir permissões |
+| `PERMISSION_DENIED` ao iniciar | Conferir sessão, projeto do APK e compatibilidade das Rules publicadas com `snapshot.scoring` e `snapshot.virtualDuel` |
 | Rede/cota/`UNAVAILABLE` | Mostrar cache/offline, preservar tentativa e repetir quando disponível |
 | Página CF incompleta, erro ou budget atingido | Nenhuma recomendação é autorizada; retomar preparação no mesmo contexto |
 | Resposta perdida após commit | Repetir o mesmo commandId; recuperar ativo/resultado sem novo saldo ou prazo |
