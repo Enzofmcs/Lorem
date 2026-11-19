@@ -1,12 +1,12 @@
 # Lorem Mock · Importar 200 Ipsums de um Excel
 
-O **Lorem Mock** é um APK para Android 8 ou superior, com pacote `dev.lorem.app.mock`. Selecione a variante **mock** ao compilar. Ela grava no **Firestore Emulator** quando está sem configuração local e usa um **projeto Firebase de teste** quando você adiciona `app/src/mock/google-services.json`. Os registros gravados aparecem em **Histórico** e **Estatísticas**.
+O **Lorem Mock** é um APK para Android 8 ou superior, com pacote `dev.lorem.app.mock`. Selecione a variante **mock** ao compilar. Ela grava no **Firestore Emulator** quando está sem configuração local e usa o **projeto Firebase** indicado em `app/src/mock/google-services.json` quando você adiciona esse arquivo. Os registros gravados aparecem em **Histórico** e **Estatísticas**.
 
-## Abrir no Android Studio e configurar o Firebase de teste
+## Abrir no Android Studio e configurar o Firebase
 
 1. Faça checkout da branch `codex/importador-ipsums` e sincronize o Gradle. Em **Build Variants**, selecione **mock** para o módulo `app`.
-2. No Firebase Console, abra um projeto de teste dedicado ao importador, crie o Firestore padrão e habilite o provedor **Google** em **Authentication**. Cadastre um app Android com o pacote `dev.lorem.app.mock`. Registre a SHA-1 e a SHA-256 da variante **mock**, exibidas por `./gradlew :app:signingReport`.
-3. Baixe o `google-services.json` atualizado e coloque em `app/src/mock/google-services.json`. O Git ignora esse arquivo. Em **Firestore Database → Rules**, publique o conteúdo de `tools/ipsum-mock/firestore.mock-cloud.rules` no projeto dedicado.
+2. No Firebase Console, abra o projeto que vai receber os lotes e confira se o Firestore padrão e o provedor **Google** em **Authentication** estão ativos. Cadastre um app Android com o pacote `dev.lorem.app.mock`. Registre a SHA-1 e a SHA-256 da variante **mock**, exibidas por `./gradlew :app:signingReport`.
+3. Baixe o `google-services.json` atualizado e coloque em `app/src/mock/google-services.json`. O Git ignora esse arquivo. Em **Firestore Database → Rules**, use o arquivo completo [`firebase/firestore.rules`](../../firebase/firestore.rules) em um projeto que já usa as regras do Lorem. Se houver ajustes feitos diretamente no Console, incorpore-os antes de publicar. Em um projeto dedicado ao importador, use [`firestore.mock-cloud.rules`](firestore.mock-cloud.rules).
 4. Execute **Run** ou rode `./gradlew :app:assembleMock` no terminal. O APK é gerado em `app/build/outputs/apk/mock/app-mock.apk`. Abra o Lorem Mock, confira o ID do projeto no app, entre com Google e importe a planilha.
 
 Os lotes gravados nesse modo ficam em `loremMockImports/{uid}/batches/{ID do lote}/handles/cf_mock_excel/ipsums`. O acesso exige a conta Google proprietária do lote. O modo Firebase usa internet.

@@ -301,6 +301,33 @@ service cloud.firestore {
       }
     }
 
+    match /loremMockImports/{uid}/batches/{batch} {
+      function ownsBatch() {
+        return googleAccount(uid) && batch.matches('mock-[0-9a-f]{64}');
+      }
+
+      allow get: if ownsBatch();
+      allow create: if ownsBatch()
+        && request.resource.data.mockDatasetId == batch
+        && request.resource.data.mockIpsumCount == 200;
+
+      match /handles/cf_mock_excel {
+        allow get, create: if ownsBatch();
+
+        match /ipsums/{ipsumId} {
+          allow get, list: if ownsBatch();
+          allow create: if ownsBatch()
+            && ipsumId.matches('[1-9][0-9]{0,2}')
+            && request.resource.data.state == 'FINAL'
+            && request.resource.data.handleKey == 'cf_mock_excel'
+            && request.resource.data.ruleVersion == 'mock-excel-v1';
+        }
+        match /usedProblems/{problemId} {
+          allow get, list, create: if ownsBatch();
+        }
+      }
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
