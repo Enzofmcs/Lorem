@@ -132,11 +132,14 @@ class FirestoreTrainingRepository(
             load(uid, key)
             return@withLock recovered.also { checkUid(uid) }
         }
+        val duelModel = if (duelEnabled) checkNotNull(duelCatalog) {
+            "Modelo do Rating Dolor indisponível. Atualize o aplicativo para iniciar um Ipsum."
+        } else null
         val before = load(uid, key)
         check(before.online) { "Conecte-se para iniciar um novo Ipsum." }
         check(before.active == null) { "Já existe um Ipsum ativo nesta conta." }
         val profile = before.handles.firstOrNull { it.key == key } ?: error("Selecione um handle válido.")
-        val dolor = if (duelEnabled) profile.duelRatingMicros ?: INITIAL_DOLOR_MICROS else null
+        val dolor = duelModel?.let { profile.duelRatingMicros ?: INITIAL_DOLOR_MICROS }
         if (dolor != null) check(dolor in DUEL_RATING_DOMAIN) { "Avaliação Dolor indisponível para este rating." }
         check(legacy?.reconcile()?.ready != false) { "Conclua a verificação do Ipsum anterior no arquivo local." }
         val exclusionsRef = handle(uid, key).collection("exclusions")
@@ -160,7 +163,7 @@ class FirestoreTrainingRepository(
         val recommendation = recommender.recommend(recommendationRating, catalog.filter { it.id !in exclusions }, buildProblemHistory(history), prior.map { it.ipsum }, profile.handle)
             ?: error("Nenhum problema inédito disponível nesta faixa.")
         val official = prepared.user
-        val duel = dolor?.let { requireNotNull(duelCatalog).select(it, requireNotNull(recommendation.problem.rating)) }
+        val duel = duelModel?.select(checkNotNull(dolor), requireNotNull(recommendation.problem.rating))
         progress(CloudPreparationProgress(CloudPreparationStage.SAVING, "Salvando o Ipsum…"))
         val observed = official.ratingObservedAtEpochMillis?.takeIf { it > 0 &&
             deadline.now(uid)?.let { now -> it <= now } == true && official.rating != null }

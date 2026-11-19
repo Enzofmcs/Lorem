@@ -8,6 +8,7 @@ import dev.lorem.app.data.local.RoomHandlesCache
 import dev.lorem.app.domain.handles.HandlesRepository
 import dev.lorem.app.data.cloud.CloudIpsumScheduler
 import dev.lorem.app.data.cloud.FirestoreTrainingRepository
+import dev.lorem.app.data.cloud.VirtualDuelCatalog
 import dev.lorem.app.domain.auth.AuthenticationState
 import dev.lorem.app.domain.cloud.CloudDeadline
 import dev.lorem.app.data.local.LocalLoremRepository
@@ -44,8 +45,7 @@ class AppContainer(context: Context) {
             CloudDeadline(android.os.SystemClock::elapsedRealtime) {
                 android.provider.Settings.Global.getInt(appContext.contentResolver, android.provider.Settings.Global.BOOT_COUNT, -1)
             }, android.os.SystemClock::elapsedRealtime, cloudScheduler::schedule,
-            duelCatalog = dev.lorem.app.data.cloud.VirtualDuelCatalog(
-                appContext.assets.open("virtual-duel-v1.json").bufferedReader().use { it.readText() }),
+            duelCatalog = VirtualDuelCatalog.load(appContext.assets),
             duelEnabled = BuildConfig.VIRTUAL_DUEL_ENABLED,
             scheduleMaintenance = cloudScheduler::maintenance,
             legacy = legacyMigration, pseudonyms = studyPseudonyms,
