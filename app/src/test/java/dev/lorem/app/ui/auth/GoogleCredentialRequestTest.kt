@@ -7,6 +7,8 @@ import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.credentials.exceptions.GetCredentialUnknownException
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.Status
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import org.junit.Assert.*
 import org.junit.Test
@@ -17,6 +19,18 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [35], application = Application::class)
 class GoogleCredentialRequestTest {
+    @Test fun `account sheet uses the same web client and requires explicit account selection`() {
+        val clientId = "1234567890-test.apps.googleusercontent.com"
+        val primary = googleCredentialOptions(clientId, useAccountSheet = false)
+            .credentialOptions.single() as GetSignInWithGoogleOption
+        val fallback = googleCredentialOptions(clientId, useAccountSheet = true)
+            .credentialOptions.single() as GetGoogleIdOption
+        assertEquals(clientId, primary.serverClientId)
+        assertEquals(clientId, fallback.serverClientId)
+        assertFalse(fallback.filterByAuthorizedAccounts)
+        assertFalse(fallback.autoSelectEnabled)
+    }
+
     @Test fun `provider codes survive AndroidX wrapping without account or raw message`() {
         val message = ApiException(Status(16, "[28444] synthetic detail sdk-contract@example.invalid synthetic-token")).message
         val error = GetCredentialCancellationException(message)

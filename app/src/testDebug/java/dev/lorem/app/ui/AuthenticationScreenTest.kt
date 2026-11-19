@@ -61,14 +61,21 @@ class AuthenticationScreenTest {
         compose.onNodeWithTag("google-sign-in").assertDoesNotExist()
         compose.onNodeWithText("Preparando sua sessão…").assertIsDisplayed()
     }
-    @Test fun `interrupted account selection shows feedback and permits retry instead of a silent return`() {
+    @Test fun `interrupted account selection offers a separate account sheet only on request`() {
+        val failure = mutableStateOf<AuthenticationFailure?>(null)
         var attempts = 0
+        var alternateAttempts = 0
         compose.setContent { LoremTheme { AuthenticationScreen(AuthenticationState.SignedOut, false,
-            AuthenticationFailure.CANCELLED, { attempts++ }, {}, {}) } }
+            failure.value, { attempts++ }, {}, {}, onChooseGoogleAccount = { alternateAttempts++ }) } }
+        compose.onNodeWithTag("google-account-sheet").assertDoesNotExist()
+        compose.runOnIdle { failure.value = AuthenticationFailure.CANCELLED }
         compose.onNodeWithTag("google-sign-in-feedback").assertIsDisplayed()
-        compose.onNodeWithText("A entrada foi interrompida pelo Google. Tente novamente.").assertExists()
+        compose.onNodeWithText("O seletor do Google fechou antes de concluir a entrada.").assertExists()
+        compose.runOnIdle { assertEquals(0, alternateAttempts) }
         compose.onNodeWithTag("google-sign-in").assertIsEnabled().performClick()
         assertEquals(1, attempts)
+        compose.onNodeWithTag("google-account-sheet").performScrollTo().assertIsEnabled().performClick()
+        assertEquals(1, alternateAttempts)
     }
     @Test fun `a sign in error remains visible while a previous session is loading`() {
         compose.setContent { LoremTheme { AuthenticationScreen(AuthenticationState.Loading, false,
